@@ -1,7 +1,7 @@
 $module = {
     __getattr__ : function(attr){
         var res = this[attr]
-        if(res===undefined){$raise('AttributeError','module has no attribute '+attr)}
+        if(res===undefined){$raise('AttributeError','module math has no attribute '+attr)}
         return res
     },
     cos : function(x){return float(Math.cos(x))},
