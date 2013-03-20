@@ -667,8 +667,6 @@ function $DictOrSetCtx(context){
             return res+'])'+$to_js(this.tree)
         }else if(this.real==='set_comp'){return 'set('+$to_js(this.items)+')'+$to_js(this.tree)}
         else if(this.real==='dict_comp'){
-            console.log('expression '+this.items[0].expression)
-            console.log('items '+this.items[0].type)
             var key_items = this.items[0].expression[0].to_js()
             var value_items = this.items[0].expression[1].to_js()
             return 'dict('+$to_js(this.items)+')'+$to_js(this.tree)
@@ -1042,7 +1040,6 @@ function $ListOrTupleCtx(context,real){
                 res += '"'+txt+'"'
                 if(i<this.intervals.length-1){res+=','}
             }
-            if(this.real==='dict_or_set_comp'){console.log('exprss '+this.expression)}
             if(this.real==='list_comp'){return '$list_comp('+res+')'}
             else if(this.real==='dict_or_set_comp'){
                 if(this.expression.length===1){return '$gen_expr('+res+')'}
