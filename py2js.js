@@ -2574,7 +2574,7 @@ function brython(debug){
                 $xmlhttp.open('GET',elt.src,false)
                 $xmlhttp.send()
                 document.$py_module_path['__main__']=elt.src 
-                __BRYTHON__.path = [elt.src]
+                __BRYTHON__.path.push(elt.src)
             }else{
                 var src = (elt.innerHTML || elt.textContent)
                 document.$py_module_path['__main__']='.' 
