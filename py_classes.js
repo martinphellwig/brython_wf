@@ -244,7 +244,6 @@ dict.update = function(self){
         }
     }
     var kw = $ns['kw']
-    console.log('kw '+kw.__class__)
     var keys = list(kw.keys())
     for(var i=0;i<keys.__len__();i++){
         dict.__setitem__(self,keys[i],kw.__getitem__(keys[i]))
