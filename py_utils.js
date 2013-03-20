@@ -72,12 +72,12 @@ function $list_comp(){
     var $res = 'res'+Math.random().toString(36).substr(2,8)
     var $py = $res+"=[]\n"
     var indent=0
-    for(var i=2;i<arguments.length;i++){
-        for(var j=0;j<indent;j++){$py += ' '}
-        $py += arguments[i]+':\n'
+    for(var $i=2;$i<arguments.length;$i++){
+        for(var $j=0;$j<indent;$j++){$py += ' '}
+        $py += arguments[$i]+':\n'
         indent += 4
     }
-    for(var j=0;j<indent;j++){$py += ' '}
+    for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.append('+arguments[1]+')'
     var $js = __BRYTHON__.py2js($py,'list comprehension').to_js()
     eval($js)
@@ -92,12 +92,12 @@ function $gen_expr(){ // generator expresssion
     var $res = 'res'+Math.random().toString(36).substr(2,8)
     var $py = $res+"=[]\n"
     var indent=0
-    for(var i=2;i<arguments.length;i++){
-        for(var j=0;j<indent;j++){$py += ' '}
-        $py += arguments[i]+':\n'
+    for(var $i=2;$i<arguments.length;$i++){
+        for(var $j=0;$j<indent;$j++){$py += ' '}
+        $py += arguments[$i]+':\n'
         indent += 4
     }
-    for(var j=0;j<indent;j++){$py += ' '}
+    for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.append('+arguments[1]+')'
     var $js = __BRYTHON__.py2js($py,'generator expression').to_js()
     eval($js)
@@ -112,20 +112,17 @@ function $dict_comp(){ // dictionary comprehension
     var $res = 'res'+Math.random().toString(36).substr(2,8)
     var $py = $res+"={}\n"
     var indent=0
-    for(var i=2;i<arguments.length;i++){
-        for(var j=0;j<indent;j++){$py += ' '}
-        $py += arguments[i]+':\n'
+    for(var $i=2;$i<arguments.length;$i++){
+        for(var $j=0;$j<indent;$j++){$py += ' '}
+        $py += arguments[$i]+':\n'
         indent += 4
     }
-    for(var j=0;j<indent;j++){$py += ' '}
+    for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.update({'+arguments[1]+'})'
-    alert($py)
     var $js = __BRYTHON__.py2js($py,'dict comprehension').to_js()
     eval($js)
     return eval($res)
 }
-
-
 
 function $generator(func){
     var res = function(){
