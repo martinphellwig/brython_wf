@@ -430,7 +430,7 @@ except:
 
 # set and dict comprehensions
 assert {x for x in range(4)}=={0,1,2,3}
-assert {x,2*x for x in range(4)}=={0:0,1:2,2:4,3:6}
+assert {x:2*x for x in range(4)}=={0:0,1:2,2:4,3:6}
 
 print('passed all tests..')
 
