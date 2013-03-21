@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130319-232656
+// version 1.1.20130321-120031
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130319-232656"]
+__BRYTHON__.version_info=[1,1,"20130321-120031"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -223,7 +223,6 @@ dict.__setitem__(self,other.$keys[i],other.$values[i])
 }
 }
 var kw=$ns['kw']
-console.log('kw '+kw.__class__)
 var keys=list(kw.keys())
 for(var i=0;i<keys.__len__();i++){
 dict.__setitem__(self,keys[i],kw.__getitem__(keys[i]))
@@ -1803,6 +1802,9 @@ throw ImportError("No module named '"+module+"'")}, 5000)
 return[$xmlhttp,fake_qs,timer]
 }
 function $import_js(module,alias,names){
+$import_js_generic(module, alias, names, __BRYTHON__.brython_path+'libs')
+}
+function $import_js_generic(module,alias,names,path){
 var imp=$importer()
 var $xmlhttp=imp[0],fake_qs=imp[1],timer=imp[2],res=null
 $xmlhttp.onreadystatechange=function(){
@@ -1816,10 +1818,10 @@ res.message="No module named '"+module+"'"
 }
 }
 }
-$xmlhttp.open('GET',__BRYTHON__.brython_path+'libs/'+module+'.js'+fake_qs,false)
+$xmlhttp.open('GET',path+'/'+module+'.js'+fake_qs,false)
 if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
 $xmlhttp.send()
-if(res.constructor===Error){throw res}
+if(res.constructor===Error){res.name="NotFoundError";throw res}
 try{
 eval(res)
 if(eval('$module')===undefined){
@@ -1830,7 +1832,7 @@ if(alias===undefined){alias=module}
 eval(alias+'=$module')
 eval(alias+'.__class__ = $type')
 eval(alias+'.__str__ = function(){return "<module \''+module+"'>\"}")
-eval(alias+'.__file__ = "' +__BRYTHON__.brython_path+'libs/'+ module + '.js"')
+eval(alias+'.__file__ = "'+path + '/' + module + '.js"')
 }else{
 if(names.length===1 && names[0]==='*'){
 for(var name in $module){
@@ -1853,19 +1855,19 @@ eval(names[i]+'=$module[names[i]]')
 }
 }
 }
-}catch(err){throw ImportError(err.message)}
+}catch(err){throw NotFoundError(err.message)}
 }
-function $import_py_search_path(module,alias,names){
+function $import_module_search_path(module,alias,names){
 var modnames=[module, '__init__']
+var import_mod=[$import_js_generic, $import_py]
 for(var i=0;i<__BRYTHON__.path.length;i++){
-for(var j=0;j < modnames.length;j++){
 var path=__BRYTHON__.path[i]
+for(var j=0;j < modnames.length;j++){
 if(modnames[j]=='__init__')path +='/' + module
-try{
-$import_py(module,alias,names,path)
-return
-}catch(err){
-if(err.name!=='ImportError'){throw err}
+for(var k=0;k < import_mod.length;k++){
+try{import_mod[k](module,alias,names,path);return
+}catch(err){if(err.name!=="NotFoundError"){throw err}
+}
 }
 }
 }
@@ -1886,7 +1888,7 @@ res=Error('ImportError',"No module named '"+module+"'")
 var module_path=path+'/'+module+'.py'
 $xmlhttp.open('GET', module_path+fake_qs,false)
 $xmlhttp.send()
-if(res.constructor===Error){res.name='ImportError';throw res}
+if(res.constructor===Error){res.name='NotFoundError';throw res}
 document.$py_module_path[module]=module_path
 var root=__BRYTHON__.py2js(res,module)
 var body=root.children
@@ -1957,7 +1959,7 @@ eval(alias+'.__file__ = "' + module_path + '"')
 eval('throw '+err.name+'(err.message)')
 }
 }
-$import_funcs=[$import_js,$import_py_search_path]
+$import_funcs=[$import_js, $import_module_search_path]
 function $import_single(name,alias,names){
 for(var j=0;j<$import_funcs.length;j++){
 try{$import_funcs[j](name,alias,names);return}
@@ -2417,7 +2419,24 @@ this.parent=C
 C.tree.push(this)
 this.tree=[]
 this.toString=function(){return '(decorator) '+this.tree}
-this.to_js=function(){return $to_js(this.tree)}
+this.transform=function(node,rank){
+var func_rank=rank+1,children=node.parent.children
+while(true){
+if(func_rank>=children.length){$_SyntaxError(C)}
+var _type=children[func_rank].C.tree[0].type
+if(_type==='decorator'){func_rank++}
+else if(_type==='def'){
+var obj=children[func_rank].C.tree[0]
+if(obj.decorators===undefined){
+obj.decorators=[this.tree]
+}else{
+obj.decorators.push(this.tree)
+}
+break
+}else{$_SyntaxError(C)}
+}
+}
+this.to_js=function(){return ''}
 }
 function $DefCtx(C){
 this.type='def'
@@ -2489,6 +2508,19 @@ if(i<this.env.length-1){txt +=','}
 }
 new $NodeJSCtx(ret_node,txt+')')
 node.parent.insert(rank+1,ret_node)
+var offset=2
+if(this.decorators!==undefined){
+var res=this.name+'=',tail=''
+for(var i=0;i<this.decorators.length;i++){
+res +=$to_js(this.decorators[i])+'('
+tail +=')'
+}
+res +=this.name+tail
+var decor_node=new $Node('expression')
+new $NodeJSCtx(decor_node,res)
+node.parent.children.splice(rank+offset,0,decor_node)
+offset++
+}
 js=this.name+'.__name__'
 if(scope !==null && scope.ntype==='class'){
 js +='=$class.'+this.name+'.__name__'
@@ -2496,12 +2528,13 @@ js +='=$class.'+this.name+'.__name__'
 js +='="'+this.name+'"'
 var name_decl=new $Node('expression')
 new $NodeJSCtx(name_decl,js)
-node.parent.children.splice(rank+2,0,name_decl)
+node.parent.children.splice(rank+offset,0,name_decl)
+offset++
 if(scope===null && node.module==='__main__'){
 js='window.'+this.name+'='+this.name
 new_node1=new $Node('expression')
 new $NodeJSCtx(new_node1,js)
-node.parent.children.splice(rank+3,0,new_node1)
+node.parent.children.splice(rank+offset,0,new_node1)
 }
 this.transformed=true
 }
@@ -2509,12 +2542,14 @@ this.add_generator_declaration=function(){
 var scope=$get_scope(this)
 var node=this.parent.node
 if(this.type==='generator'){
+var offset=2
+if(this.decorators !==undefined){offset++}
 js=this.name
 if(scope.ntype==='class'){js +="=$class."+this.name}
 js +='=$generator($'+this.name+')'
 var gen_node=new $Node('expression')
 new $NodeJSCtx(gen_node,js)
-node.parent.children.splice(this.rank+2,0,gen_node)
+node.parent.children.splice(this.rank+offset,0,gen_node)
 }
 }
 this.to_js=function(){
@@ -2592,8 +2627,6 @@ if(i<this.items.length-2){res+=','}
 return res+'])'+$to_js(this.tree)
 }else if(this.real==='set_comp'){return 'set('+$to_js(this.items)+')'+$to_js(this.tree)}
 else if(this.real==='dict_comp'){
-console.log('expression '+this.items[0].expression)
-console.log('items '+this.items[0].type)
 var key_items=this.items[0].expression[0].to_js()
 var value_items=this.items[0].expression[1].to_js()
 return 'dict('+$to_js(this.items)+')'+$to_js(this.tree)
@@ -2928,7 +2961,6 @@ txt=txt.replace(/\n/g,' ')
 res +='"'+txt+'"'
 if(i<this.intervals.length-1){res+=','}
 }
-if(this.real==='dict_or_set_comp'){console.log('exprss '+this.expression)}
 if(this.real==='list_comp'){return '$list_comp('+res+')'}
 else if(this.real==='dict_or_set_comp'){
 if(this.expression.length===1){return '$gen_expr('+res+')'}
@@ -4266,7 +4298,7 @@ src=$xmlhttp.responseText
 $xmlhttp.open('GET',elt.src,false)
 $xmlhttp.send()
 document.$py_module_path['__main__']=elt.src 
-__BRYTHON__.path=[elt.src]
+__BRYTHON__.path.push(elt.src)
 }else{
 var src=(elt.innerHTML || elt.textContent)
 document.$py_module_path['__main__']='.' 
@@ -4358,12 +4390,12 @@ eval("var "+$arg+'=$env["'+$arg+'"]')
 var $res='res'+Math.random().toString(36).substr(2,8)
 var $py=$res+"=[]\n"
 var indent=0
-for(var i=2;i<arguments.length;i++){
-for(var j=0;j<indent;j++){$py +=' '}
-$py +=arguments[i]+':\n'
+for(var $i=2;$i<arguments.length;$i++){
+for(var $j=0;$j<indent;$j++){$py +=' '}
+$py +=arguments[$i]+':\n'
 indent +=4
 }
-for(var j=0;j<indent;j++){$py +=' '}
+for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.append('+arguments[1]+')'
 var $js=__BRYTHON__.py2js($py,'list comprehension').to_js()
 eval($js)
@@ -4377,12 +4409,12 @@ eval("var "+$arg+'=$env["'+$arg+'"]')
 var $res='res'+Math.random().toString(36).substr(2,8)
 var $py=$res+"=[]\n"
 var indent=0
-for(var i=2;i<arguments.length;i++){
-for(var j=0;j<indent;j++){$py +=' '}
-$py +=arguments[i]+':\n'
+for(var $i=2;$i<arguments.length;$i++){
+for(var $j=0;$j<indent;$j++){$py +=' '}
+$py +=arguments[$i]+':\n'
 indent +=4
 }
-for(var j=0;j<indent;j++){$py +=' '}
+for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.append('+arguments[1]+')'
 var $js=__BRYTHON__.py2js($py,'generator expression').to_js()
 eval($js)
@@ -4396,14 +4428,13 @@ eval("var "+$arg+'=$env["'+$arg+'"]')
 var $res='res'+Math.random().toString(36).substr(2,8)
 var $py=$res+"={}\n"
 var indent=0
-for(var i=2;i<arguments.length;i++){
-for(var j=0;j<indent;j++){$py +=' '}
-$py +=arguments[i]+':\n'
+for(var $i=2;$i<arguments.length;$i++){
+for(var $j=0;$j<indent;$j++){$py +=' '}
+$py +=arguments[$i]+':\n'
 indent +=4
 }
-for(var j=0;j<indent;j++){$py +=' '}
+for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.update({'+arguments[1]+'})'
-alert($py)
 var $js=__BRYTHON__.py2js($py,'dict comprehension').to_js()
 eval($js)
 return eval($res)
