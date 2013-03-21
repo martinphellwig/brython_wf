@@ -469,7 +469,24 @@ function $DecoratorCtx(context){
     context.tree.push(this)
     this.tree = []
     this.toString = function(){return '(decorator) '+this.tree}
-    this.to_js = function(){return $to_js(this.tree)}
+    this.transform = function(node,rank){
+        var func_rank=rank+1,children=node.parent.children
+        while(true){
+            if(func_rank>=children.length){$_SyntaxError(context)}
+            var _type = children[func_rank].context.tree[0].type
+            if(_type==='decorator'){func_rank++}
+            else if(_type==='def'){
+                var obj = children[func_rank].context.tree[0]
+                if(obj.decorators === undefined){
+                    obj.decorators = [this.tree]
+                }else{
+                    obj.decorators.push(this.tree)
+                }
+                break
+            }else{$_SyntaxError(context)}
+        }
+    }
+    this.to_js = function(){return ''}
 }
 function $DefCtx(context){
     this.type = 'def'
@@ -553,6 +570,21 @@ function $DefCtx(context){
         new $NodeJSCtx(ret_node,txt+')')
         node.parent.insert(rank+1,ret_node)
         
+        var offset = 2
+        // if function has decorators, add a line
+        if(this.decorators!==undefined){
+            var res = this.name+'=',tail=''
+            for(var i=0;i<this.decorators.length;i++){
+                res += $to_js(this.decorators[i])+'('
+                tail +=')'
+            }
+            res += this.name+tail
+            var decor_node = new $Node('expression')
+            new $NodeJSCtx(decor_node,res)
+            node.parent.children.splice(rank+offset,0,decor_node)
+            offset++
+        }
+        
         // add function name
         js = this.name+'.__name__'
         if(scope !==null && scope.ntype==='class'){
@@ -561,14 +593,15 @@ function $DefCtx(context){
         js += '="'+this.name+'"'
         var name_decl = new $Node('expression')
         new $NodeJSCtx(name_decl,js)
-        node.parent.children.splice(rank+2,0,name_decl)
+        node.parent.children.splice(rank+offset,0,name_decl)
+        offset++
 
         // add declaration of function at window level
         if(scope===null && node.module==='__main__'){
             js = 'window.'+this.name+'='+this.name
             new_node1 = new $Node('expression')
             new $NodeJSCtx(new_node1,js)
-            node.parent.children.splice(rank+3,0,new_node1)
+            node.parent.children.splice(rank+offset,0,new_node1)
         }
         this.transformed = true
     }
@@ -577,12 +610,14 @@ function $DefCtx(context){
         var scope = $get_scope(this)
         var node = this.parent.node
         if(this.type==='generator'){
+            var offset = 2
+            if(this.decorators !== undefined){offset++}
             js = this.name
             if(scope.ntype==='class'){js += "=$class."+this.name}
             js += '=$generator($'+this.name+')'
             var gen_node = new $Node('expression')
             new $NodeJSCtx(gen_node,js)
-            node.parent.children.splice(this.rank+2,0,gen_node)        
+            node.parent.children.splice(this.rank+offset,0,gen_node)        
         }
     }
 
