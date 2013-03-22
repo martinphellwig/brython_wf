@@ -791,8 +791,8 @@ object.__class__ = $type
 object.__name__ = 'object'
 object.__str__ = "<class 'object'>"
 object.__hash__ = function () { 
-    document.$py_next_hash+=1; 
-    return document.$py_next_hash;
+    __BRYTHON__.$py_next_hash+=1; 
+    return __BRYTHON__.$py_next_hash;
 }
 
 $ObjectClass.prototype.__hash__ = object.__hash__
