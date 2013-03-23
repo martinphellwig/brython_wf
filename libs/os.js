@@ -17,8 +17,7 @@ $module = {
            chars.push(((r & 0xff) << 8) | (r & 0xff));
         }
         var s='';
-        for (var i=0; l=chars.length; i<l; i++) s++String.fromCharCode(chars[i])
-
+        for (var i=0; i< chars.length; i++) s+=String.fromCharCode(chars[i])
         return s;
     }
 }
