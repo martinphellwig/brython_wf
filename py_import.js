@@ -77,7 +77,7 @@ function $import_js_generic(module,alias,names,path){
                 }
             }
         }
-   } catch(err) {throw NotFoundError(err.message)}
+   } catch(err) {throw err}
 }
 
 function $import_module_search_path(module,alias,names){
