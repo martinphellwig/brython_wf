@@ -1976,7 +1976,7 @@ function $transition(context,token){
             context.expect = ','
             context.tree[context.tree.length-1].alias = arguments[2]
             var mod_name=context.tree[context.tree.length-1].name;
-            document.$py_module_alias[mod_name]=arguments[2]
+            __BRYTHON__.$py_module_alias[mod_name]=arguments[2]
             return context
         }else if(token==='eol' && context.expect===','){
             return $transition(context.parent,token)
@@ -2574,9 +2574,9 @@ function $tokenize(src,module){
 
 function brython(debug){
     document.$py_src = {}
-    document.$py_module_path = {}
-    document.$py_module_alias = {}
-    document.$py_next_hash = -Math.pow(2,53)
+    __BRYTHON__.$py_module_path = {}
+    __BRYTHON__.$py_module_alias = {}
+    __BRYTHON__.$py_next_hash = -Math.pow(2,53)
     document.$debug = debug
     __BRYTHON__.exception_stack = []
     var elts = document.getElementsByTagName("script")
@@ -2605,11 +2605,11 @@ function brython(debug){
                     }
                 $xmlhttp.open('GET',elt.src,false)
                 $xmlhttp.send()
-                document.$py_module_path['__main__']=elt.src 
+                __BRYTHON__.$py_module_path['__main__']=elt.src 
                 __BRYTHON__.path.push(elt.src)
             }else{
                 var src = (elt.innerHTML || elt.textContent)
-                document.$py_module_path['__main__']='.' 
+                __BRYTHON__.$py_module_path['__main__']='.' 
             }
             var root = __BRYTHON__.py2js(src,'__main__')
             var js = root.to_js()
@@ -2632,5 +2632,3 @@ function brython(debug){
         }
     }
 }
-
-

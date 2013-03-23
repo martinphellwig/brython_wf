@@ -8,6 +8,7 @@
 <script src="../py_utils.js"></script>
 <script src="../py_classes.js"></script>
 <script src="../py_import.js"></script>
+<script src="../py_VFS.js"></script>
 <script src="../py_list.js"></script>
 <script src="../py_string.js"></script>
 <script src="../py_dom.js"></script>
@@ -85,7 +86,7 @@ def show_js():
     doc["console"].value = dis.dis(src)
 </script>
 </head>
-<body onload="brython(1)">
+<body onload="brython()">
 <center>
 <table id="banner" cellpadding=0 cellspacing=0>
 <tr>
