@@ -59,6 +59,9 @@ function $import_js_module(module,alias,names,filepath,module_contents){
         if(eval('$module')===undefined){
             throw ImportError("name '$module' is not defined in module")
         }
+
+        //add module to py_modules so we know what has been imported
+        __BRYTHON__.$py_modules[module]=$module;
        
         if(names===undefined){
             if(alias===undefined){alias=module}
@@ -206,6 +209,8 @@ function $import_py_module(module,alias,names,path,module_contents) {
         eval(alias+'.__class__ = $type')
         eval(alias+'.__str__ = function(){return "<module \''+module+"'>\"}")
         eval(alias+'.__file__ = "' + path+'.py' + '"')
+        // add module to $py_modules since import was successful.
+        __BRYTHON__.$py_modules[module]=alias;
     }catch(err){
         eval('throw '+err.name+'(err.message)')
     }
@@ -214,6 +219,8 @@ function $import_py_module(module,alias,names,path,module_contents) {
 $import_funcs = [$import_js, $import_module_search_path]
 
 function $import_single(name,alias,names){
+    // check to see if module has already been imported
+    if (__BRYTHON__.$py_modules[name] !== undefined) return
     for(var j=0;j<$import_funcs.length;j++){
         try{$import_funcs[j](name,alias,names);return}
         catch(err){
