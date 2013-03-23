@@ -1565,7 +1565,6 @@ function $transition(context,token){
         }else{$_SyntaxError(context,token)}
 
     }else if(context.type==='call'){ 
-    
         if(token===','){return context}
         else if($expr_starters.indexOf(token)>-1){
             var expr = new $CallArgCtx(context)
@@ -1580,8 +1579,7 @@ function $transition(context,token){
             else{throw Error('SyntaxError')}
         }else{return $transition(context.parent,token,arguments[2])}
 
-    }else if(context.type==='call_arg'){ 
-
+    }else if(context.type==='call_arg'){
         if($expr_starters.indexOf(token)>-1 && context.expect==='id'){
             context.expect=','
             var expr = new $AbstractExprCtx(context,false)
@@ -1600,6 +1598,13 @@ function $transition(context,token){
             return $transition(context.parent,token)
         }else if(token===','&& context.expect===','){
             return new $CallArgCtx(context.parent)
+        }else if (token=='op' && context.expect===',' && arguments[2] == '**') {
+            // this is a special case when *args is followed by **kw
+            // ie myfunction(*args, **kwargs)
+            // since we "expect" , I'm thinking something isn't right with this
+            // earney
+            context.expect=','
+            return new $DoubleStarArgCtx(context)
         }else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='class'){
@@ -1851,7 +1856,7 @@ function $transition(context,token){
             context.expect = 'id'
             return context
         }else if (token==='import' && context.expect==='module' 
-                 && context.relpath !== undefined) {
+                 && context.parent_module !== undefined) {
             context.expect = 'id'
             return context
         }else if(token==='id' && context.expect==='id'){
@@ -1914,7 +1919,7 @@ function $transition(context,token){
             else if(context.expect===','){
                 context.expect = 'id'
                 return context
-            }else{$_SyntaxError(context,'token '+token+' after '+context)}            
+            }else{$_SyntaxError(context,'token '+token+' after '+context)}
         }else if(token===')'){
             if(context.expect===','){return context.parent}
             else if(context.tree.length==0){return context.parent} // no argument

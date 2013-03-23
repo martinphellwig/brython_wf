@@ -90,7 +90,7 @@ function $import_js_module(module,alias,names,filepath,module_contents){
                 }
             }
         }
-   } catch(err) {throw NotFoundError(err.message)}
+   } catch(err) {throw err}
 }
 
 
