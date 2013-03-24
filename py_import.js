@@ -17,10 +17,16 @@ function $importer(){
 }
 
 function $import_js(module,alias,names){
-   $import_js_generic(module, alias, names, __BRYTHON__.brython_path+'libs');
+   var filepath=__BRYTHON__.brython_path+'libs/' + module
+   $import_js_generic(module,alias,names,filepath)
 }
 
-function $import_js_generic(module,alias,names,path){
+function $import_js_generic(module,alias,names,filepath) {
+   var module_contents=$download_module(module, filepath+'.js')
+   $import_js_module(module, alias, names, filepath+'.js', module_contents)
+}
+
+function $download_module(module,url){
     var imp = $importer()
     var $xmlhttp = imp[0],fake_qs=imp[1],timer=imp[2],res=null
     $xmlhttp.onreadystatechange = function(){
@@ -35,17 +41,27 @@ function $import_js_generic(module,alias,names,path){
             }
         }
     }
-    $xmlhttp.open('GET',path+'/'+module+'.js'+fake_qs,false)
+    // lets use brython version for our foo value unless 
+    // debug level is set, then use default fake_qs
+    if (document.$debug === undefined) fake_qs="?foo="+__BRYTHON__.version_info[2]
+
+    $xmlhttp.open('GET',url+fake_qs,false)
     if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
     $xmlhttp.send()
     if(res.constructor===Error){res.name="NotFoundError"; throw res} // module not found
+    return res
+}
 
+function $import_js_module(module,alias,names,filepath,module_contents){
     try{
-        eval(res)
+        eval(module_contents)
         // check that module name is in namespace
         if(eval('$module')===undefined){
             throw ImportError("name '$module' is not defined in module")
         }
+
+        //add module to py_modules so we know what has been imported
+        __BRYTHON__.$py_modules[module]=$module;
        
         if(names===undefined){
             if(alias===undefined){alias=module}
@@ -54,7 +70,7 @@ function $import_js_generic(module,alias,names,path){
             // add class and __str__
             eval(alias+'.__class__ = $type')
             eval(alias+'.__str__ = function(){return "<module \''+module+"'>\"}")
-            eval(alias+'.__file__ = "'+path + '/' + module + '.js"')
+            eval(alias+'.__file__ = "'+filepath + '"')
         }else{
             if(names.length===1 && names[0]==='*'){
                 for(var name in $module){
@@ -80,14 +96,21 @@ function $import_js_generic(module,alias,names,path){
    } catch(err) {throw err}
 }
 
+
 function $import_module_search_path(module,alias,names){
-    // try all paths in __BRYTHON__.path
+    var search_path = __BRYTHON__.path
+    search_path.push(__BRYTHON__.brython_path)
+    $import_module_search_path_list(module,alias,names,search_path)
+}
+
+function $import_module_search_path_list(module,alias,names, path_list){
     var modnames = [module, '__init__']
     var import_mod = [$import_js_generic, $import_py]
-    for(var i=0;i<__BRYTHON__.path.length;i++){
-       var path = __BRYTHON__.path[i]
+    for(var i=0;i<path_list.length;i++){
        for(var j=0; j < modnames.length; j++) {
-           if (modnames[j] == '__init__') path += '/' + module
+           var path = path_list[i]
+           if (modnames[j] == '__init__') path += "/" + module
+           path+= "/" + modnames[j];
            for (var k=0; k < import_mod.length; k++) {
                try {import_mod[k](module,alias,names,path);return
                }catch(err){if(err.name!=="NotFoundError"){throw err}
@@ -102,28 +125,15 @@ function $import_module_search_path(module,alias,names){
 function $import_py(module,alias,names,path){
     // import Python modules, in the same folder as the HTML page with
     // the Brython script
-    var imp = $importer()
-    var $xmlhttp = imp[0],fake_qs=imp[1],timer=imp[2],res=null
+    var module_contents=$download_module(module, path+'.py')
+    $import_py_module(module,alias,names,path+'.py',module_contents)
+}
 
-    $xmlhttp.onreadystatechange = function(){
-        if($xmlhttp.readyState==4){
-            window.clearTimeout(timer)
-            if($xmlhttp.status==200 || $xmlhttp.status==0){res=$xmlhttp.responseText}
-            else{
-                // don't throw an exception here, it will not be caught (issue #30)
-                res = Error('ImportError',"No module named '"+module+"'")
-            }
-        }
-    }
-    
-    var module_path= path+'/'+module+'.py'
-    $xmlhttp.open('GET', module_path+fake_qs,false)
-    $xmlhttp.send()
+function $import_py_module(module,alias,names,path,module_contents) {
+    __BRYTHON__.$py_module_path[module]=path
+    __BRYTHON__.$py_module_alias[module]=alias
 
-    if(res.constructor===Error){res.name='NotFoundError';throw res} // module not found
-
-    document.$py_module_path[module]=module_path
-    var root = __BRYTHON__.py2js(res,module)
+    var root = __BRYTHON__.py2js(module_contents,module)
     var body = root.children
     root.children = []
     // use the module pattern : module name returns the results of an anonymous function
@@ -198,7 +208,9 @@ function $import_py(module,alias,names,path){
         // add class and __str__
         eval(alias+'.__class__ = $type')
         eval(alias+'.__str__ = function(){return "<module \''+module+"'>\"}")
-        eval(alias+'.__file__ = "' + module_path + '"')
+        eval(alias+'.__file__ = "' + path+'.py' + '"')
+        // add module to $py_modules since import was successful.
+        __BRYTHON__.$py_modules[module]=alias;
     }catch(err){
         eval('throw '+err.name+'(err.message)')
     }
@@ -207,6 +219,8 @@ function $import_py(module,alias,names,path){
 $import_funcs = [$import_js, $import_module_search_path]
 
 function $import_single(name,alias,names){
+    // check to see if module has already been imported
+    if (__BRYTHON__.$py_modules[name] !== undefined) return
     for(var j=0;j<$import_funcs.length;j++){
         try{$import_funcs[j](name,alias,names);return}
         catch(err){
@@ -225,26 +239,23 @@ function $import_list(modules){ // list of objects with attributes name and alia
     for(var i=0;i<modules.length;i++){
         var module = modules[i][0]
         $import_single(modules[i][0],modules[i][1])
-        document.$py_module_alias[modules[i][0]]=modules[i][1]
+        __BRYTHON__.$py_module_alias[modules[i][0]]=modules[i][1]
     }
 }
 
 function $import_from(module,names,parent_module,alias){
-    var relpath;
-
     if (parent_module !== undefined) {
        //this is a relative path import
        // ie,  from .mymodule import a,b,c
        //get parent module
 
-       //throw ImportError('from .. import .. not supported yet');
-
-       relpath=document.$py_module_path[parent_module];
-       var i=relpath.lastIndexOf('/');
-       relpath=relpath.substring(0, i);
+       var relpath=__BRYTHON__.$py_module_path[parent_module]
+       var i=relpath.lastIndexOf('/')
+       relpath=relpath.substring(0, i)
     
-       alias=document.$py_module_alias[parent_module];
-       //console.log(parent_module+','+alias+','+relpath);
+       alias=__BRYTHON__.$py_module_alias[parent_module]
+       //console.log(parent_module+','+alias+','+relpath)
+       $import_module_search_path_list(module,alias,names,[relpath])
     } else if (alias !== undefined) {
        $import_single(module,alias,names)
     } else {
