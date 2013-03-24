@@ -1580,6 +1580,7 @@ function $transition(context,token){
         }else{return $transition(context.parent,token,arguments[2])}
 
     }else if(context.type==='call_arg'){
+
         if($expr_starters.indexOf(token)>-1 && context.expect==='id'){
             context.expect=','
             var expr = new $AbstractExprCtx(context,false)
@@ -1598,13 +1599,6 @@ function $transition(context,token){
             return $transition(context.parent,token)
         }else if(token===','&& context.expect===','){
             return new $CallArgCtx(context.parent)
-        }else if (token=='op' && context.expect===',' && arguments[2] == '**') {
-            // this is a special case when *args is followed by **kw
-            // ie myfunction(*args, **kwargs)
-            // since we "expect" , I'm thinking something isn't right with this
-            // earney
-            context.expect=','
-            return new $DoubleStarArgCtx(context)
         }else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='class'){
