@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130322-170922
+// version 1.1.20130323-213329
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130322-170922"]
+__BRYTHON__.version_info=[1,1,"20130323-213329"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -1823,7 +1823,7 @@ res.message="No module named '"+module+"'"
 }
 }
 }
-if(document.$debug===undefined)fake_qs="?foo="+__BRYTHON__.version_info
+if(document.$debug===undefined)fake_qs="?foo="+__BRYTHON__.version_info[2]
 $xmlhttp.open('GET',url+fake_qs,false)
 if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
 $xmlhttp.send()
@@ -1836,6 +1836,7 @@ eval(module_contents)
 if(eval('$module')===undefined){
 throw ImportError("name '$module' is not defined in module")
 }
+__BRYTHON__.$py_modules[module]=$module
 if(names===undefined){
 if(alias===undefined){alias=module}
 eval(alias+'=$module')
@@ -1864,7 +1865,7 @@ eval(names[i]+'=$module[names[i]]')
 }
 }
 }
-}catch(err){throw NotFoundError(err.message)}
+}catch(err){throw err}
 }
 function $import_module_search_path(module,alias,names){
 var search_path=__BRYTHON__.path
@@ -1960,12 +1961,14 @@ eval(js)
 eval(alias+'.__class__ = $type')
 eval(alias+'.__str__ = function(){return "<module \''+module+"'>\"}")
 eval(alias+'.__file__ = "' + path+'.py' + '"')
+__BRYTHON__.$py_modules[module]=alias
 }catch(err){
 eval('throw '+err.name+'(err.message)')
 }
 }
 $import_funcs=[$import_js, $import_module_search_path]
 function $import_single(name,alias,names){
+if(__BRYTHON__.$py_modules[name]!==undefined)return
 for(var j=0;j<$import_funcs.length;j++){
 try{$import_funcs[j](name,alias,names);return}
 catch(err){
@@ -3643,7 +3646,7 @@ return C
 C.expect='id'
 return C
 }else if(token==='import' && C.expect==='module' 
-&& C.relpath !==undefined){
+&& C.parent_module !==undefined){
 C.expect='id'
 return C
 }else if(token==='id' && C.expect==='id'){
@@ -4276,6 +4279,7 @@ function brython(debug){
 document.$py_src={}
 __BRYTHON__.$py_module_path={}
 __BRYTHON__.$py_module_alias={}
+__BRYTHON__.$py_modules={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
 document.$debug=debug
 __BRYTHON__.exception_stack=[]
