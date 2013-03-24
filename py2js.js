@@ -1045,17 +1045,18 @@ function $ListOrTupleCtx(context,real){
                     }
                     var comp_iter = elt.tree[1].tree[0]
                     var ids = $get_ids(comp_iter)
-                    for(var i=0;i<ids.length;i++){
-                        if(env.indexOf(ids[i])===-1){env.push(ids[i])}
+                    for(var j=0;j<ids.length;j++){
+                        if(env.indexOf(ids[j])===-1){env.push(ids[j])}
                     }
                 }else if(elt.type==="comp_if"){
                     var if_expr = elt.tree[0]
                     var ids = $get_ids(if_expr)
-                    for(var i=0;i<ids.length;i++){
-                        if(env.indexOf(ids[i])===-1){env.push(ids[i])}
+                    for(var j=0;j<ids.length;j++){
+                        if(env.indexOf(ids[j])===-1){env.push(ids[j])}
                     }
                 }
             }
+            
             for(var i=0;i<res_env.length;i++){
                 if(local_env.indexOf(res_env[i])===-1){
                     env.push(res_env[i])
