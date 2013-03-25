@@ -3,7 +3,7 @@ import base64
 
 _main_root=os.getcwd()
 
-_vfs=open("py_VFS.js", "wb")
+_vfs=open("py_VFS.js", "w")
 _vfs.write("__BRYTHON__.$py_VFS={")
 
 _flag=False
