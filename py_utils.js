@@ -79,6 +79,7 @@ function $list_comp(){
     }
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.append('+arguments[1]+')'
+    alert($py)
     var $js = __BRYTHON__.py2js($py,'list comprehension').to_js()
     eval($js)
     return eval($res)
