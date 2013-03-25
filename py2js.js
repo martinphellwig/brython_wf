@@ -188,7 +188,8 @@ function $AssignCtx(context){
         var left_items = null
         if(left.type==='expr' && left.tree.length>1){
             var left_items = left.tree
-        }else if(left.type==='expr' && left.tree[0].type==='list_or_tuple'){
+        }else if(left.type==='expr' && 
+            (left.tree[0].type==='list_or_tuple'||left.tree[0].type==='target_list')){
             var left_items = left.tree[0].tree
         }else if(left.type==='target_list'){
             var left_items = left.tree
@@ -1032,13 +1033,15 @@ function $ListOrTupleCtx(context,real){
                     if(res_env.indexOf(ids[i])===-1){res_env.push(ids[i])}
                 }
             }
+            alert('res_env '+res_env)
             var comp = this.tree[0]
             for(var i=0;i<comp.tree.length;i++){
                 var elt = comp.tree[i]
                 if(elt.type==='comp_for'){
                     var target_list = elt.tree[0]
-                    for(var j=0;j<target_list.tree.length;j++){
-                        var name = target_list.tree[j].value
+                    var ids = $get_ids(target_list)
+                    for(var j=0;j<ids.length;j++){
+                        var name = ids[j]
                         if(local_env.indexOf(name)===-1){
                             local_env.push(name)
                         }
@@ -1056,12 +1059,18 @@ function $ListOrTupleCtx(context,real){
                     }
                 }
             }
-            
+            alert('local env '+local_env)
+            alert('env '+env)
             for(var i=0;i<res_env.length;i++){
                 if(local_env.indexOf(res_env[i])===-1){
                     env.push(res_env[i])
                 }
             }
+            for(var i=0;i<local_env.length;i++){
+                var ix = env.indexOf(local_env[i])
+                if(ix>-1){env.splice(ix,1)}
+            }
+            alert('env '+env)
 
             var res = '{'
             for(var i=0;i<env.length;i++){
@@ -1512,7 +1521,7 @@ function $arbo(ctx){
 }
 function $transition(context,token){
     //console.log('arbo '+$arbo(context))
-    //console.log('context '+context+' token '+token)
+    //console.log('context '+context+' token '+token+' '+arguments[2])
 
     if(context.type==='abstract_expr'){
     
@@ -1792,6 +1801,7 @@ function $transition(context,token){
         else if(token==='op'){
             // handle operator precedence
             var op_parent=context.parent,op=arguments[2]
+            console.log('token is op '+op+' weight '+$op_weight[op])
             var op1 = context.parent,repl=null
             while(true){
                 if(op1.type==='expr'){op1=op1.parent}
@@ -1804,6 +1814,7 @@ function $transition(context,token){
                 expr.expect = ','
                 context.parent = expr
                 var new_op = new $OpCtx(context,op)
+                console.log('repl=null, new op '+new_op)
                 return new $AbstractExprCtx(new_op,false)
             }
             repl.parent.tree.pop()
@@ -1811,6 +1822,7 @@ function $transition(context,token){
             expr.tree = [op1]
             repl.parent = expr
             var new_op = new $OpCtx(repl,op) // replace old operation
+            console.log('new op '+new_op)
             //var res = new $AbstractExprCtx(new_op,false)
             return new $AbstractExprCtx(new_op,false)
 
@@ -2018,7 +2030,8 @@ function $transition(context,token){
             else if(token==='.'){return new $AttrCtx(context)}
             else if(token==='op'){
                 return new $AbstractExprCtx(new $OpCtx(context,arguments[2]),false)
-            }else{return $transition(context.parent,token,arguments[2])}
+            }
+            else{return $transition(context.parent,token,arguments[2])}
         }else{
             if(context.expect===','){
                 if((context.real==='tuple'||context.real==='gen_expr')
@@ -2262,7 +2275,7 @@ function $tokenize(src,module){
         "for","lambda","try","finally","raise","def","from",
         "nonlocal","while","del","global","with",
         "as","elif","else","if","yield","assert","import",
-        "except","raise","in","not","pass",
+        "except","raise","not","pass",
         //"False","None","True","break","continue",
         // "and',"or","is"
         ]
@@ -2434,6 +2447,7 @@ function $tokenize(src,module){
                     $pos = pos-name.length
                     context = $transition(context,name)
                 } else if(name in $operators) { // and, or
+                    console.log('operator '+name)
                     $pos = pos-name.length
                     context = $transition(context,'op',name)
                 } else {
