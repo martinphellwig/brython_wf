@@ -144,7 +144,7 @@ function $import_py_module(module,alias,names,path,module_contents) {
     mod_node.children = body
     // search for module-level names : functions, classes and variables
     var mod_names = []
-    for(var i=1;i<mod_node.children.length;i++){
+    for(var i=0;i<mod_node.children.length;i++){
         var node = mod_node.children[i]
         // use function get_ctx() 
         // because attribute 'context' is renamed by make_dist...
