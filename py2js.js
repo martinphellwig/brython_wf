@@ -1033,7 +1033,6 @@ function $ListOrTupleCtx(context,real){
                     if(res_env.indexOf(ids[i])===-1){res_env.push(ids[i])}
                 }
             }
-            alert('res_env '+res_env)
             var comp = this.tree[0]
             for(var i=0;i<comp.tree.length;i++){
                 var elt = comp.tree[i]
@@ -1059,8 +1058,6 @@ function $ListOrTupleCtx(context,real){
                     }
                 }
             }
-            alert('local env '+local_env)
-            alert('env '+env)
             for(var i=0;i<res_env.length;i++){
                 if(local_env.indexOf(res_env[i])===-1){
                     env.push(res_env[i])
@@ -1070,7 +1067,6 @@ function $ListOrTupleCtx(context,real){
                 var ix = env.indexOf(local_env[i])
                 if(ix>-1){env.splice(ix,1)}
             }
-            alert('env '+env)
 
             var res = '{'
             for(var i=0;i<env.length;i++){
@@ -1788,7 +1784,7 @@ function $transition(context,token){
         }else if(token==='not'&&context.expect===','){
             return new $ExprNot(context)
         }else if(token==='in'&&context.expect===','){
-            return new $AbstractExprCtx(new $OpCtx(context,'in'),false)
+            return $transition(context,'op','in')
         }else if(token===',' && context.expect===','){
             if(context.with_commas){
                 context.expect = 'expr'
@@ -1800,7 +1796,6 @@ function $transition(context,token){
         else if(token==='op'){
             // handle operator precedence
             var op_parent=context.parent,op=arguments[2]
-            console.log('token is op '+op+' weight '+$op_weight[op])
             var op1 = context.parent,repl=null
             while(true){
                 if(op1.type==='expr'){op1=op1.parent}
@@ -1813,7 +1808,6 @@ function $transition(context,token){
                 expr.expect = ','
                 context.parent = expr
                 var new_op = new $OpCtx(context,op)
-                console.log('repl=null, new op '+new_op)
                 return new $AbstractExprCtx(new_op,false)
             }
             repl.parent.tree.pop()
@@ -1821,7 +1815,6 @@ function $transition(context,token){
             expr.tree = [op1]
             repl.parent = expr
             var new_op = new $OpCtx(repl,op) // replace old operation
-            console.log('new op '+new_op)
             //var res = new $AbstractExprCtx(new_op,false)
             return new $AbstractExprCtx(new_op,false)
 
@@ -2274,7 +2267,7 @@ function $tokenize(src,module){
         "for","lambda","try","finally","raise","def","from",
         "nonlocal","while","del","global","with",
         "as","elif","else","if","yield","assert","import",
-        "except","raise","not","pass",
+        "except","raise","in","not","pass",
         //"False","None","True","break","continue",
         // "and',"or","is"
         ]
@@ -2446,7 +2439,6 @@ function $tokenize(src,module){
                     $pos = pos-name.length
                     context = $transition(context,name)
                 } else if(name in $operators) { // and, or
-                    console.log('operator '+name)
                     $pos = pos-name.length
                     context = $transition(context,'op',name)
                 } else {
@@ -2592,7 +2584,7 @@ function brython(debug){
     __BRYTHON__.$py_module_alias = {}
     __BRYTHON__.$py_modules = {}
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
-    document.$debug = debug
+    document.$debug = debug || 0
     __BRYTHON__.exception_stack = []
     var elts = document.getElementsByTagName("script")
     var href = window.location.href
