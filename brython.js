@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130323-213329
+// version 1.1.20130326-102718
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130323-213329"]
+__BRYTHON__.version_info=[1,1,"20130326-102718"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -1905,7 +1905,7 @@ new $NodeJSCtx(mod_node,alias+'=(function()')
 root.insert(0,mod_node)
 mod_node.children=body
 var mod_names=[]
-for(var i=1;i<mod_node.children.length;i++){
+for(var i=0;i<mod_node.children.length;i++){
 var node=mod_node.children[i]
 var ctx=node.get_ctx().tree[0]
 if(ctx.type==='def'||ctx.type==='class'){
@@ -2178,7 +2178,8 @@ left=this.tree[0]
 var left_items=null
 if(left.type==='expr' && left.tree.length>1){
 var left_items=left.tree
-}else if(left.type==='expr' && left.tree[0].type==='list_or_tuple'){
+}else if(left.type==='expr' && 
+(left.tree[0].type==='list_or_tuple'||left.tree[0].type==='target_list')){
 var left_items=left.tree[0].tree
 }else if(left.type==='target_list'){
 var left_items=left.tree
@@ -2932,22 +2933,23 @@ for(var i=0;i<comp.tree.length;i++){
 var elt=comp.tree[i]
 if(elt.type==='comp_for'){
 var target_list=elt.tree[0]
-for(var j=0;j<target_list.tree.length;j++){
-var name=target_list.tree[j].value
+var ids=$get_ids(target_list)
+for(var j=0;j<ids.length;j++){
+var name=ids[j]
 if(local_env.indexOf(name)===-1){
 local_env.push(name)
 }
 }
 var comp_iter=elt.tree[1].tree[0]
 var ids=$get_ids(comp_iter)
-for(var i=0;i<ids.length;i++){
-if(env.indexOf(ids[i])===-1){env.push(ids[i])}
+for(var j=0;j<ids.length;j++){
+if(env.indexOf(ids[j])===-1){env.push(ids[j])}
 }
 }else if(elt.type==="comp_if"){
 var if_expr=elt.tree[0]
 var ids=$get_ids(if_expr)
-for(var i=0;i<ids.length;i++){
-if(env.indexOf(ids[i])===-1){env.push(ids[i])}
+for(var j=0;j<ids.length;j++){
+if(env.indexOf(ids[j])===-1){env.push(ids[j])}
 }
 }
 }
@@ -2955,6 +2957,10 @@ for(var i=0;i<res_env.length;i++){
 if(local_env.indexOf(res_env[i])===-1){
 env.push(res_env[i])
 }
+}
+for(var i=0;i<local_env.length;i++){
+var ix=env.indexOf(local_env[i])
+if(ix>-1){env.splice(ix,1)}
 }
 var res='{'
 for(var i=0;i<env.length;i++){
@@ -3584,7 +3590,7 @@ return $transition(new $AbstractExprCtx(C,false),token,arguments[2])
 }else if(token==='not'&&C.expect===','){
 return new $ExprNot(C)
 }else if(token==='in'&&C.expect===','){
-return new $AbstractExprCtx(new $OpCtx(C,'in'),false)
+return $transition(C,'op','in')
 }else if(token===',' && C.expect===','){
 if(C.with_commas){
 C.expect='expr'
@@ -3789,7 +3795,8 @@ else if(token==='('){return new $CallCtx(C)}
 else if(token==='.'){return new $AttrCtx(C)}
 else if(token==='op'){
 return new $AbstractExprCtx(new $OpCtx(C,arguments[2]),false)
-}else{return $transition(C.parent,token,arguments[2])}
+}
+else{return $transition(C.parent,token,arguments[2])}
 }else{
 if(C.expect===','){
 if((C.real==='tuple'||C.real==='gen_expr')
@@ -4281,7 +4288,7 @@ __BRYTHON__.$py_module_path={}
 __BRYTHON__.$py_module_alias={}
 __BRYTHON__.$py_modules={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
-document.$debug=debug
+document.$debug=debug || 0
 __BRYTHON__.exception_stack=[]
 var elts=document.getElementsByTagName("script")
 var href=window.location.href
