@@ -8,7 +8,6 @@
 <script src="../py_utils.js"></script>
 <script src="../py_classes.js"></script>
 <script src="../py_import.js"></script>
-<script src="../py_VFS.js"></script>
 <script src="../py_list.js"></script>
 <script src="../py_string.js"></script>
 <script src="../py_dom.js"></script>
@@ -86,7 +85,7 @@ def show_js():
     doc["console"].value = dis.dis(src)
 </script>
 </head>
-<body onload="brython()">
+<body onload="brython(1)">
 <center>
 <table id="banner" cellpadding=0 cellspacing=0>
 <tr>
@@ -113,7 +112,8 @@ Choose a test suite:
   <option value="test_datetime.py">datetime</option>
   <option value="test_decorators.py">decorators</option>
   <option value="test_import.py">imports</option>
-  <option value="issues.py">issues</option>
+  <option value="issues.py">issues (GC)</option>
+  <option value="issues_bb.py">issues (BB)</option>
   <option value="test_json.py">JSON</option>
   <option value="test_list_methods.py">list methods</option>
   <option value="test_math.py">math</option>
