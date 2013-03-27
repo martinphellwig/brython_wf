@@ -11,7 +11,12 @@ class LocalStorage:
         self.store.removeItem(key)
 
     def __getitem__(self,key):
-        return self.store.getItem(key) or None
+        for _i in range(0, self.store.length):
+            if self.store.key(_i) == key:
+               return self.store.getItem(key)
+
+        raise KeyError(key)
+        return
 
     def __setitem__(self,key,value):
         self.store.setItem(key,value)

@@ -4,7 +4,7 @@ import base64
 _main_root=os.getcwd()
 
 _vfs=open("py_VFS.js", "w")
-_vfs.write("__BRYTHON__.$py_VFS={")
+_vfs.write("__BRYTHON__.$py_VFS={\n")
 
 _flag=False
 for _mydir in ("libs", "Lib"):
@@ -17,11 +17,13 @@ for _mydir in ("libs", "Lib"):
 
                _vfs_filename=os.path.join(_root, _file).replace(_main_root, '')
                _vfs_filename=_vfs_filename.replace("\\", "/")
-               if _flag: _vfs.write(',')
-               _flag=True
-               _vfs.write("'%s':'%s'\n" % (_vfs_filename, base64.b64encode(_data)))
+               print("adding %s" % _vfs_filename)
 
-_vfs.write('}\n\n')
+               if _flag: _vfs.write(',\n')
+               _flag=True
+               _vfs.write("'%s':'%s'" % (_vfs_filename, base64.b64encode(_data)))
+
+_vfs.write('\n}\n\n')
 
 _vfs.write("""
 function readFromVFS(lib){
