@@ -21,7 +21,7 @@ else:
     storage = False
 
 def reset_src():
-    if storage:
+    if storage and "py_src" in storage:
        editor.setValue(storage["py_src"])
     else:
        editor.setValue('for i in range(10):\n\tprint(i)')
