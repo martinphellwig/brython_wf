@@ -557,7 +557,8 @@ function $DefCtx(context){
         var ret_node = new $Node('expression')
         var catch_node = new $Node('expression')
         var js = 'catch(err'+$loop_num+')'
-        js += '{throw RuntimeError(err'+$loop_num+'.message)}'
+        js += '{if(err'+$loop_num+'.py_error!==undefined){throw err'+$loop_num+'}'
+        js += 'else{throw RuntimeError(err'+$loop_num+'.message)}}'
         new $NodeJSCtx(catch_node,js)
         node.children = []
         def_func_node.add(catch_node)
@@ -1018,71 +1019,66 @@ function $ListOrTupleCtx(context,real){
     this.parent = context
     this.tree = []
     context.tree.push(this)
+    this.get_env = function(){
+        var res_env=[],local_env=[],env=[]
+        var ctx_node = this
+        while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
+        var module = ctx_node.node.module
+        var src = document.$py_src[module]
+        // get ids in the expression defining the elements of the list comp
+        for(var i=0;i<this.expression.length;i++){
+            var expr = this.expression[i].tree[0]
+            // if expression is a comprehension, include its environment
+            if(expr.type==='list_or_tuple' && 
+                ['list_comp','gen_expr','dict_or_set_comp'].indexOf(expr.real)>-1){
+                env = expr.get_env()[1]
+            }
+            var ids = $get_ids(this.expression[i])
+            for(var i=0;i<ids.length;i++){
+                if(res_env.indexOf(ids[i])===-1){res_env.push(ids[i])}
+            }
+        }
+        var comp = this.tree[0]
+        for(var i=0;i<comp.tree.length;i++){
+            var elt = comp.tree[i]
+            if(elt.type==='comp_for'){
+                var target_list = elt.tree[0]
+                var ids = $get_ids(target_list)
+                for(var j=0;j<ids.length;j++){
+                    var name = ids[j]
+                    if(local_env.indexOf(name)===-1){
+                        local_env.push(name)
+                    }
+                }
+                var comp_iter = elt.tree[1].tree[0]
+                var ids = $get_ids(comp_iter)
+                for(var j=0;j<ids.length;j++){
+                    if(env.indexOf(ids[j])===-1){env.push(ids[j])}
+                }
+            }else if(elt.type==="comp_if"){
+                var if_expr = elt.tree[0]
+                var ids = $get_ids(if_expr)
+                for(var j=0;j<ids.length;j++){
+                    if(env.indexOf(ids[j])===-1){env.push(ids[j])}
+                }
+            }
+        }
+        for(var i=0;i<res_env.length;i++){
+            if(local_env.indexOf(res_env[i])===-1){
+                env.push(res_env[i])
+            }
+        }
+        for(var i=0;i<local_env.length;i++){
+            var ix = env.indexOf(local_env[i])
+            if(ix>-1){env.splice(ix,1)}
+        }
+        return [src,env]
+    }
     this.to_js = function(){
         if(this.real==='list'){return '['+$to_js(this.tree)+']'}
         else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
-            var res_env=[],local_env=[],env=[],lc_args = []
-            var ctx_node = this
-            while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
-            // if comprehension is inside another one, root has an attribute
-            // "env" set to enclosing comprehension environment
-            var root = ctx_node.node
-            while(root.parent!==undefined){root=root.parent}
-            console.log('root for list comp '+root)
-            if(root.env !== undefined){
-                console.log('root has env !')
-                for(var attr in root.env){
-                    eval('var '+attr+'='+root.env[attr])
-                    env.push(attr)
-                }
-                console.log('env from root '+env)
-            }
-            var module = ctx_node.node.module
-            var src = document.$py_src[module]
-            // get ids in the expression defining the elements of the list comp
-            for(var i=0;i<this.expression.length;i++){
-                var ids = $get_ids(this.expression[i])
-                for(var i=0;i<ids.length;i++){
-                    if(res_env.indexOf(ids[i])===-1){res_env.push(ids[i])}
-                }
-            }
-            var comp = this.tree[0]
-            for(var i=0;i<comp.tree.length;i++){
-                var elt = comp.tree[i]
-                if(elt.type==='comp_for'){
-                    lc_args.push(elt.to_js())
-                    var target_list = elt.tree[0]
-                    var ids = $get_ids(target_list)
-                    for(var j=0;j<ids.length;j++){
-                        var name = ids[j]
-                        if(local_env.indexOf(name)===-1){
-                            local_env.push(name)
-                        }
-                    }
-                    var comp_iter = elt.tree[1].tree[0]
-                    var ids = $get_ids(comp_iter)
-                    for(var j=0;j<ids.length;j++){
-                        if(env.indexOf(ids[j])===-1){env.push(ids[j])}
-                    }
-                }else if(elt.type==="comp_if"){
-                    lc_args.push(elt.to_js())
-                    var if_expr = elt.tree[0]
-                    var ids = $get_ids(if_expr)
-                    for(var j=0;j<ids.length;j++){
-                        if(env.indexOf(ids[j])===-1){env.push(ids[j])}
-                    }
-                }
-            }
-            for(var i=0;i<res_env.length;i++){
-                if(local_env.indexOf(res_env[i])===-1){
-                    env.push(res_env[i])
-                }
-            }
-            for(var i=0;i<local_env.length;i++){
-                var ix = env.indexOf(local_env[i])
-                if(ix>-1){env.splice(ix,1)}
-            }
-            this.env = env
+            var src_env = this.get_env()
+            var src=src_env[0],env=src_env[1]
             var res = '{'
             for(var i=0;i<env.length;i++){
                 res += "'"+env[i]+"':"+env[i]
@@ -1336,7 +1332,7 @@ function $TryCtx(context){
         
         // fake line to start the 'else if' clauses
         var new_node = new $Node('expression')
-        new $NodeJSCtx(new_node,'if(false){void(0)}')
+        new $NodeJSCtx(new_node,'console.log($err'+$loop_num+'.__name__);if(false){void(0)}')
         catch_node.insert(0,new_node)
         
         // move the except and finally clauses below catch_node
