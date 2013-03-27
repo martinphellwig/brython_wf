@@ -404,7 +404,7 @@ function $CompIfCtx(context){
     this.tree = []
     context.tree.push(this)
     this.toString = function(){return '(comp if) '+this.tree}
-    this.to_js = function(){return 'comp if to js'}
+    this.to_js = function(){return $to_js(this.tree)}
 }
 
 function $ComprehensionCtx(context){
@@ -430,7 +430,7 @@ function $CompForCtx(context){
     this.expect = 'in'
     context.tree.push(this)
     this.toString = function(){return '(comp for) '+this.tree}
-    this.to_js = function(){return 'comp for to js'}
+    this.to_js = function(){return $to_js(this.tree)}
 }
 
 function $CompIterableCtx(context){
@@ -439,7 +439,7 @@ function $CompIterableCtx(context){
     this.tree = []
     context.tree.push(this)
     this.toString = function(){return '(comp iter) '+this.tree}
-    this.to_js = function(){return 'comp iter to js'}
+    this.to_js = function(){return $to_js(this.tree)}
 }
 
 function $ConditionCtx(context,token){
@@ -1021,9 +1021,22 @@ function $ListOrTupleCtx(context,real){
     this.to_js = function(){
         if(this.real==='list'){return '['+$to_js(this.tree)+']'}
         else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
-            var res_env=[],local_env=[],env=[]
+            var res_env=[],local_env=[],env=[],lc_args = []
             var ctx_node = this
             while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
+            // if comprehension is inside another one, root has an attribute
+            // "env" set to enclosing comprehension environment
+            var root = ctx_node.node
+            while(root.parent!==undefined){root=root.parent}
+            console.log('root for list comp '+root)
+            if(root.env !== undefined){
+                console.log('root has env !')
+                for(var attr in root.env){
+                    eval('var '+attr+'='+root.env[attr])
+                    env.push(attr)
+                }
+                console.log('env from root '+env)
+            }
             var module = ctx_node.node.module
             var src = document.$py_src[module]
             // get ids in the expression defining the elements of the list comp
@@ -1037,6 +1050,7 @@ function $ListOrTupleCtx(context,real){
             for(var i=0;i<comp.tree.length;i++){
                 var elt = comp.tree[i]
                 if(elt.type==='comp_for'){
+                    lc_args.push(elt.to_js())
                     var target_list = elt.tree[0]
                     var ids = $get_ids(target_list)
                     for(var j=0;j<ids.length;j++){
@@ -1051,6 +1065,7 @@ function $ListOrTupleCtx(context,real){
                         if(env.indexOf(ids[j])===-1){env.push(ids[j])}
                     }
                 }else if(elt.type==="comp_if"){
+                    lc_args.push(elt.to_js())
                     var if_expr = elt.tree[0]
                     var ids = $get_ids(if_expr)
                     for(var j=0;j<ids.length;j++){
@@ -1067,7 +1082,7 @@ function $ListOrTupleCtx(context,real){
                 var ix = env.indexOf(local_env[i])
                 if(ix>-1){env.splice(ix,1)}
             }
-
+            this.env = env
             var res = '{'
             for(var i=0;i<env.length;i++){
                 res += "'"+env[i]+"':"+env[i]
@@ -1269,6 +1284,7 @@ function $TargetListCtx(context){
     this.expect = 'id'
     context.tree.push(this)
     this.toString = function(){return '(target list) '+this.tree}
+    this.to_js = function(){return $to_js(this.tree)}
 }
 
 function $TernaryCtx(context){
@@ -2240,7 +2256,7 @@ function $transition(context,token){
     }
 }
 
-__BRYTHON__.py2js = function(src,module){
+__BRYTHON__.py2js = function(src,module,env){
     src = src.replace(/\r\n/gm,'\n')
     while (src.length>0 && (src.charAt(0)=="\n" || src.charAt(0)=="\r")){
         src = src.substr(1)
@@ -2250,6 +2266,8 @@ __BRYTHON__.py2js = function(src,module){
 
     document.$py_src[module]=src
     var root = $tokenize(src,module)
+    root.env = env // environment namespace : used in comprehensions
+    if(env!==undefined){console.log('environment '+env)}
     root.transform()
     if(document.$debug>0){$add_line_num(root,null,module)}
     return root
