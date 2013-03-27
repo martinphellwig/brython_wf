@@ -96,11 +96,13 @@ def change_theme(evt):
 
 def reset_theme():
     if storage:
-       if storage["ace_theme"] is not None:
+       try:
           if storage["ace_theme"].startswith("ace/theme/"):
              editor.setTheme(storage["ace_theme"])
 
              doc["ace_theme"].value=storage["ace_theme"]
+       except KeyError:
+          pass
 
 reset_src()
 reset_theme()
