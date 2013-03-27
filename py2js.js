@@ -2173,7 +2173,7 @@ function $transition(context,token){
     
         if($expr_starters.indexOf(token)>-1){
             return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
-        }else if(token===','){return context.parent}
+        }else if(token===','){return $transition(context.parent,token)}
         else if(token===')'){return $transition(context.parent,token)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
