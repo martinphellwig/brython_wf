@@ -68,6 +68,7 @@ function $list_comp(){
     var $env = arguments[0]
     for(var $arg in $env){
         eval("var "+$arg+'=$env["'+$arg+'"]')
+        console.log('in list comp env : '+$arg)
     }
     var $res = 'res'+Math.random().toString(36).substr(2,8)
     var $py = $res+"=[]\n"
@@ -79,7 +80,8 @@ function $list_comp(){
     }
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.append('+arguments[1]+')'
-    var $js = __BRYTHON__.py2js($py,'list comprehension').to_js()
+    var $js = __BRYTHON__.py2js($py,'list comprehension',$env).to_js()
+    alert($js)
     eval($js)
     return eval($res)
 }
