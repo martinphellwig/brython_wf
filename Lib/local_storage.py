@@ -21,4 +21,12 @@ class LocalStorage:
     def __setitem__(self,key,value):
         self.store.setItem(key,value)
 
+    #implement "in" functionality
+    def __contains__(self, key):
+        for _i in range(0, self.store.length):
+            if self.store.key(_i) == key:
+               return True
+
+        return False
+
 storage = LocalStorage()
