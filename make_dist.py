@@ -8,7 +8,7 @@ now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 sources = ['brython_builtins',
     'py_classes','py_list','py_string','py_import',
     'py2js','py_utils',
-    'py_ajax','py_dom','py_local_storage']
+    'py_ajax','py_dom']
 
 # update version number in module sys
 bltins_src = open('brython_builtins.js').read()
