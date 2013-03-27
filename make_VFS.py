@@ -17,6 +17,12 @@ for _mydir in ("libs", "Lib"):
 
                _vfs_filename=os.path.join(_root, _file).replace(_main_root, '')
                _vfs_filename=_vfs_filename.replace("\\", "/")
+
+               if _vfs_filename.startswith('libs/crypto_js/rollups/'):
+                  if _file not in ('md5.js', 'sha1.js', 'sha3.js',
+                      'sha224.js', 'sha384.js', 'sha512.js'):
+                       continue
+
                print("adding %s" % _vfs_filename)
 
                if _flag: _vfs.write(',\n')
