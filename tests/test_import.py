@@ -10,8 +10,11 @@ class Simple3(simple.Simple):
 
 text = "text in simple"
 
-print(simple.text == text)
+assert simple.text == text
 
 _s=simple.Simple()
 _s3=Simple3()
-print(_s.info==_s3.info)
+assert _s.info==_s3.info
+
+print('passed all tests')
+
