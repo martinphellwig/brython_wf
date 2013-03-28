@@ -297,10 +297,9 @@ function $class_constructor(class_name,factory,parents){
     factory.__name__ = class_name
     var f = function(){
         
-        var obj = new Object()
-        var initialized = false
+        var obj=new Object(),initialized=false
         if(factory.parents.length){
-            eval('var obj = '+factory.parents[0].__name__+'.apply(null,arguments)')
+            var obj = factory.parents[0].apply(null,arguments)
             initialized = true
         }
         obj.__class__ = f
