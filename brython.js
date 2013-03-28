@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130328-084753
+// version 1.1.20130328-110549
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130328-084753"]
+__BRYTHON__.version_info=[1,1,"20130328-110549"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -4615,10 +4615,9 @@ parent_classes.push(parents[i])
 factory.parents=parent_classes
 factory.__name__=class_name
 var f=function(){
-var obj=new Object()
-var initialized=false
+var obj=new Object(),initialized=false
 if(factory.parents.length){
-eval('var obj = '+factory.parents[0].__name__+'.apply(null,arguments)')
+var obj=factory.parents[0].apply(null,arguments)
 initialized=true
 }
 obj.__class__=f
