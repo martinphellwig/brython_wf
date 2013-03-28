@@ -3,6 +3,8 @@
 <head>
 <meta charset="iso-8859-1">
 <script src="../brython.js"></script>
+<script src="../py2js.js"></script>
+<script src="../py_dom.js"></script>
 
 </head>
 <body onLoad="brython()">
@@ -28,7 +30,10 @@ for i in range(nb_lines):
     row = TR()
     for j in range(nb_cols):
         cell_id = "cell_%i_%i" %(i,j)
-        value = storage[cell_id] or ""
+        try:
+            value = storage[cell_id]
+        except KeyError:
+            value = ""
         row <= TD(INPUT(id=cell_id,value=value,onchange="update(this)"))
     tb <= row
 t <= tb
