@@ -21,7 +21,7 @@ function list(){
 
 list.__add__ = function(self,other){
     var res = self.valueOf().concat(other.valueOf())
-    if(isinstance(self,tuple)){res = tuple.apply(self,res)}
+    if(isinstance(self,tuple)){res = tuple(res)}
     return res
 }
 
@@ -220,7 +220,9 @@ list.__setitem__ = function(self,arg,value){
 
 list.__str__ = function(self){
     if(self===undefined){return "<class 'list'>"}
-    var res = "[",items=self.valueOf()
+    var items=self.valueOf()
+    var res = '['
+    if(self.__class__===tuple){res='('}
     for(var i=0;i<self.length;i++){
         var x = self[i]
         if(isinstance(x,str)){res += "'"+x+"'"} 
@@ -228,7 +230,8 @@ list.__str__ = function(self){
         else{res += x.toString()}
         if(i<self.length-1){res += ','}
     }
-    return res+']'
+    if(self.__class__===tuple){return res+')'}
+    else{return res+']'}
 }
 
 list.append = function(self,other){self.push(other)}
@@ -381,13 +384,18 @@ Array.prototype.__getattr__ = function(attr){
     if(list[attr]===undefined){
         throw AttributeError("'"+this.__class__.__name__+"' object has no attribute '"+attr+"'")
     }
+    if(this.__class__===tuple && 
+        ['__add__','__delitem__','__setitem__',
+        'append','extend','insert','remove','pop','reverse','sort'].indexOf(attr)>-1){
+        throw AttributeError("'"+this.__class__.__name__+"' object has no attribute '"+attr+"'")
+    }
     var obj = this
     var res = function(){
         var args = [obj]
         for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
         return list[attr].apply(obj,args)
     }
-    res.__str__ = function(){return "<built-in method "+attr+" of "+this.__class__.__name__+" object>"}
+    res.__str__ = function(){return "<built-in method "+attr+" of "+obj.__class__.__name__+" object>"}
     return res
 }
 return list

@@ -566,7 +566,7 @@ Number.prototype.__mul__ = function(other){
         // make temporary copy of list
         var $temp = other.slice(0,other.length)
         for(var i=0;i<val;i++){res=res.concat($temp)}
-        if(isinstance(other,tuple)){res=tuple.apply(this,res)}
+        if(isinstance(other,tuple)){res=tuple(res)}
         return res
     }else{$UnsupportedOpType("*",int,other)}
 }
@@ -1026,35 +1026,25 @@ function sum(iterable,start){
 function $tuple(arg){return arg} // used for parenthesed expressions
 
 function tuple(){
-    var args = new Array(),i=0
-    for(i=0;i<arguments.length;i++){args.push(arguments[i])}
-    var obj = list(args)
+    var obj = list.apply(null,arguments)
     obj.__class__ = tuple
-    obj.toString = function(){
-        var res = args.__str__()
-        res = '('+res.substr(1,res.length-2)
-        if(obj.length===1){res+=','}
-        return res+')'
-    }
 
     obj.__hash__ = function () {
       // http://nullege.com/codes/show/src%40p%40y%40pypy-HEAD%40pypy%40rlib%40test%40test_objectmodel.py/145/pypy.rlib.objectmodel._hash_float/python
       var x= 0x345678
       for(var i=0; i < args.length; i++) {
-         var y=args[i].__hash__();
+         var y=_list[i].__hash__();
          x=(1000003 * x) ^ y & 0xFFFFFFFF;
       }
       return x
     }
-    obj.__str__ = obj.toString
-
+    
     return obj
 }
 tuple.__class__ = $type
 tuple.__name__ = 'tuple'
 tuple.__str__ = function(){return "<class 'tuple'>"}
 tuple.toString = tuple.__str__
-
 
 function zip(){
     var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')

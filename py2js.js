@@ -1099,7 +1099,7 @@ function $ListOrTupleCtx(context,real){
             }else{return '$gen_expr('+res+')'}
         }else if(this.real==='tuple'){
             if(this.tree.length===1 && this.has_comma===undefined){return this.tree[0].to_js()}
-            else{return 'tuple('+$to_js(this.tree)+')'}
+            else{return 'tuple(['+$to_js(this.tree)+'])'}
         }
     }
 }
