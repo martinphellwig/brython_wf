@@ -16,6 +16,7 @@ function list(){
     }
     var res = []
     list.__init__(res,arguments[0])
+    res.__brython__ = true // false for Javascript arrays - used in sort()
     return res
 }
 
@@ -345,6 +346,8 @@ list.sort = function(self){
     if(self.length==0){return}
     $qsort(func,self,0,self.length)
     if(reverse){list.reverse(self)}
+    // Javascript libraries might use the return value
+    if(!self.__brython__){return self}
 }
 
 list.toString = list.__str__

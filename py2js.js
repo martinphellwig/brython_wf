@@ -326,6 +326,7 @@ function $CallArgCtx(context){
     this.type = 'call_arg'
     this.toString = function(){return 'call_arg '+this.tree}
     this.parent = context
+    this.start = $pos
     this.tree = []
     context.tree.push(this)
     this.expect='id'
@@ -1013,8 +1014,9 @@ function $ListOrTupleCtx(context,real){
     this.closed = false
     this.toString = function(){
         if(this.real==='list'){return '(list) ['+this.tree+']'}
-        else if(this.real==='list_comp'){return '(list comp) ['+this.intervals+'-'+this.tree+']'}
-        else{return '(tuple) ('+this.tree+')'}
+        else if(this.real==='list_comp'||this.real==='gen_expr'){
+            return '('+this.real+') ['+this.intervals+'-'+this.tree+']'
+        }else{return '(tuple) ('+this.tree+')'}
     }
     this.parent = context
     this.tree = []
@@ -1075,7 +1077,7 @@ function $ListOrTupleCtx(context,real){
         return [src,env]
     }
     this.to_js = function(){
-        if(this.real==='list'){return '['+$to_js(this.tree)+']'}
+        if(this.real==='list'){return 'list(['+$to_js(this.tree)+'])'}
         else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
             var src_env = this.get_env()
             var src=src_env[0],env=src_env[1]
@@ -1605,6 +1607,17 @@ function $transition(context,token){
             return $transition(expr,token,arguments[2])
         }else if(token==='=' && context.expect===','){
             return new $ExprCtx(new $KwArgCtx(context),'kw_value',false)
+        }else if(token==='for'){
+            // comprehension
+            var lst = new $ListOrTupleCtx(context,'gen_expr')
+            lst.intervals = [context.start]
+            context.tree.pop()
+            lst.expression = context.tree
+            context.tree = [lst]
+            lst.tree = []
+            var comp = new $ComprehensionCtx(lst)
+            return new $TargetListCtx(new $CompForCtx(comp))
+
         }else if(token==='op' && context.expect==='id'){
             var op = arguments[2]
             context.expect = ','
@@ -1614,6 +1627,12 @@ function $transition(context,token){
             else if(op==='**'){context.expect=',';return new $DoubleStarArgCtx(context)}
             else{$_SyntaxError(context,'token '+token+' after '+context)}
         }else if(token===')' && context.expect===','){
+            if(context.tree.length>0){
+                var son = context.tree[context.tree.length-1]
+                if(son.type==='list_or_tuple'&&son.real==='gen_expr'){
+                    son.intervals.push($pos)
+                }
+            }
             return $transition(context.parent,token)
         }else if(token===','&& context.expect===','){
             return new $CallArgCtx(context.parent)
@@ -2066,9 +2085,12 @@ function $transition(context,token){
                     return new $TargetListCtx(new $CompForCtx(comp))
                 }else{return $transition(context.parent,token,arguments[2])}   
             }else if(context.expect==='id'){
-                if(context.real==='tuple' && token===')'){ // empty tuple
+                if(context.real==='tuple' && token===')'){
                     context.closed = true
                     return context
+                }else if(context.real==='gen_expr' && token===')'){
+                    context.closed = true
+                    return $transition(context.parent,token)
                 }else if(context.real==='list'&& token===']'){
                     context.closed = true
                     return context
