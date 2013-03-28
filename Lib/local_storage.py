@@ -22,10 +22,6 @@ class LocalStorage:
 
     #implement "in" functionality
     def __contains__(self, key):
-        for _i in range(0, self.store.length):
-            if self.store.key(_i) == key:
-               return True
-
-        return False
+        return bool(self.store.getItem(key))
 
 storage = LocalStorage()
