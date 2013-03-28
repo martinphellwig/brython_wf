@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130326-102718
+// version 1.1.20130328-083647
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130326-102718"]
+__BRYTHON__.version_info=[1,1,"20130328-083647"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -495,7 +495,7 @@ return res
 var res=[]
 var $temp=other.slice(0,other.length)
 for(var i=0;i<val;i++){res=res.concat($temp)}
-if(isinstance(other,tuple)){res=tuple.apply(this,res)}
+if(isinstance(other,tuple)){res=tuple(res)}
 return res
 }else{$UnsupportedOpType("*",int,other)}
 }
@@ -890,25 +890,16 @@ return res
 }
 function $tuple(arg){return arg}
 function tuple(){
-var args=new Array(),i=0
-for(i=0;i<arguments.length;i++){args.push(arguments[i])}
-var obj=list(args)
+var obj=list.apply(null,arguments)
 obj.__class__=tuple
-obj.toString=function(){
-var res=args.__str__()
-res='('+res.substr(1,res.length-2)
-if(obj.length===1){res+=','}
-return res+')'
-}
 obj.__hash__=function(){
 var x=0x345678
 for(var i=0;i < args.length;i++){
-var y=args[i].__hash__()
+var y=_list[i].__hash__()
 x=(1000003 * x)^ y & 0xFFFFFFFF
 }
 return x
 }
-obj.__str__=obj.toString
 return obj
 }
 tuple.__class__=$type
@@ -1043,7 +1034,7 @@ return res
 }
 list.__add__=function(self,other){
 var res=self.valueOf().concat(other.valueOf())
-if(isinstance(self,tuple)){res=tuple.apply(self,res)}
+if(isinstance(self,tuple)){res=tuple(res)}
 return res
 }
 list.__class__=$type
@@ -1220,7 +1211,9 @@ throw TypeError('list indices must be integer, not '+str(arg.__class__))
 }
 list.__str__=function(self){
 if(self===undefined){return "<class 'list'>"}
-var res="[",items=self.valueOf()
+var items=self.valueOf()
+var res='['
+if(self.__class__===tuple){res='('}
 for(var i=0;i<self.length;i++){
 var x=self[i]
 if(isinstance(x,str)){res +="'"+x+"'"}
@@ -1228,7 +1221,8 @@ else if(x['__str__']!==undefined){res +=x.__str__()}
 else{res +=x.toString()}
 if(i<self.length-1){res +=','}
 }
-return res+']'
+if(self.__class__===tuple){return res+')'}
+else{return res+']'}
 }
 list.append=function(self,other){self.push(other)}
 list.count=function(self,elt){
@@ -1357,13 +1351,18 @@ if(attr==='__class__'){return this.__class__}
 if(list[attr]===undefined){
 throw AttributeError("'"+this.__class__.__name__+"' object has no attribute '"+attr+"'")
 }
+if(this.__class__===tuple && 
+['__add__','__delitem__','__setitem__',
+'append','extend','insert','remove','pop','reverse','sort'].indexOf(attr)>-1){
+throw AttributeError("'"+this.__class__.__name__+"' object has no attribute '"+attr+"'")
+}
 var obj=this
 var res=function(){
 var args=[obj]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 return list[attr].apply(obj,args)
 }
-res.__str__=function(){return "<built-in method "+attr+" of "+this.__class__.__name__+" object>"}
+res.__str__=function(){return "<built-in method "+attr+" of "+obj.__class__.__name__+" object>"}
 return res
 }
 return list
@@ -2367,7 +2366,7 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.toString=function(){return '(comp if) '+this.tree}
-this.to_js=function(){return 'comp if to js'}
+this.to_js=function(){return $to_js(this.tree)}
 }
 function $ComprehensionCtx(C){
 this.type='comprehension'
@@ -2391,7 +2390,7 @@ this.tree=[]
 this.expect='in'
 C.tree.push(this)
 this.toString=function(){return '(comp for) '+this.tree}
-this.to_js=function(){return 'comp for to js'}
+this.to_js=function(){return $to_js(this.tree)}
 }
 function $CompIterableCtx(C){
 this.type='comp_iterable'
@@ -2399,7 +2398,7 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.toString=function(){return '(comp iter) '+this.tree}
-this.to_js=function(){return 'comp iter to js'}
+this.to_js=function(){return $to_js(this.tree)}
 }
 function $ConditionCtx(C,token){
 this.type='condition'
@@ -2505,7 +2504,8 @@ def_func_node.add(try_node)
 var ret_node=new $Node('expression')
 var catch_node=new $Node('expression')
 var js='catch(err'+$loop_num+')'
-js +='{throw RuntimeError(err'+$loop_num+'.message)}'
+js +='{if(err'+$loop_num+'.py_error!==undefined){throw err'+$loop_num+'}'
+js +='else{throw RuntimeError(err'+$loop_num+'.message)}}'
 new $NodeJSCtx(catch_node,js)
 node.children=[]
 def_func_node.add(catch_node)
@@ -2914,15 +2914,18 @@ else{return '(tuple) ('+this.tree+')'}
 this.parent=C
 this.tree=[]
 C.tree.push(this)
-this.to_js=function(){
-if(this.real==='list'){return '['+$to_js(this.tree)+']'}
-else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
+this.get_env=function(){
 var res_env=[],local_env=[],env=[]
 var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
 var src=document.$py_src[module]
 for(var i=0;i<this.expression.length;i++){
+var expr=this.expression[i].tree[0]
+if(expr.type==='list_or_tuple' && 
+['list_comp','gen_expr','dict_or_set_comp'].indexOf(expr.real)>-1){
+env=expr.get_env()[1]
+}
 var ids=$get_ids(this.expression[i])
 for(var i=0;i<ids.length;i++){
 if(res_env.indexOf(ids[i])===-1){res_env.push(ids[i])}
@@ -2962,6 +2965,13 @@ for(var i=0;i<local_env.length;i++){
 var ix=env.indexOf(local_env[i])
 if(ix>-1){env.splice(ix,1)}
 }
+return[src,env]
+}
+this.to_js=function(){
+if(this.real==='list'){return '['+$to_js(this.tree)+']'}
+else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
+var src_env=this.get_env()
+var src=src_env[0],env=src_env[1]
 var res='{'
 for(var i=0;i<env.length;i++){
 res +="'"+env[i]+"':"+env[i]
@@ -2982,7 +2992,7 @@ else{return '$dict_comp('+res+')'}
 }else{return '$gen_expr('+res+')'}
 }else if(this.real==='tuple'){
 if(this.tree.length===1 && this.has_comma===undefined){return this.tree[0].to_js()}
-else{return 'tuple('+$to_js(this.tree)+')'}
+else{return 'tuple(['+$to_js(this.tree)+'])'}
 }
 }
 }
@@ -3148,6 +3158,7 @@ this.tree=[]
 this.expect='id'
 C.tree.push(this)
 this.toString=function(){return '(target list) '+this.tree}
+this.to_js=function(){return $to_js(this.tree)}
 }
 function $TernaryCtx(C){
 this.type='ternary'
@@ -3191,7 +3202,7 @@ var catch_node=new $Node('expression')
 new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
 node.parent.insert(rank+1,catch_node)
 var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,'if(false){void(0)}')
+new $NodeJSCtx(new_node,'console.log($err'+$loop_num+'.__name__);if(false){void(0)}')
 catch_node.insert(0,new_node)
 var pos=rank+2
 var has_default=false 
@@ -3915,7 +3926,7 @@ else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='star_arg'){
 if($expr_starters.indexOf(token)>-1){
 return $transition(new $AbstractExprCtx(C,false),token,arguments[2])
-}else if(token===','){return C.parent}
+}else if(token===','){return $transition(C.parent,token)}
 else if(token===')'){return $transition(C.parent,token)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='str'){
@@ -3975,7 +3986,7 @@ return C
 return $transition(C.parent,token)
 }
 }
-__BRYTHON__.py2js=function(src,module){
+__BRYTHON__.py2js=function(src,module,env){
 src=src.replace(/\r\n/gm,'\n')
 while(src.length>0 &&(src.charAt(0)=="\n" || src.charAt(0)=="\r")){
 src=src.substr(1)
@@ -3984,6 +3995,8 @@ if(src.charAt(src.length-1)!="\n"){src+='\n'}
 if(module===undefined){module='__main__'}
 document.$py_src[module]=src
 var root=$tokenize(src,module)
+root.env=env 
+if(env!==undefined){console.log('environment '+env)}
 root.transform()
 if(document.$debug>0){$add_line_num(root,null,module)}
 return root
@@ -5424,24 +5437,3 @@ $code=$src.replace(/A/gm,$tags[$i])
 eval($code)
 eval($tags[$i]+'.name="'+$tags[$i]+'"')
 }
-function $LocalStorageClass(){
-this.__class__='localStorage'
-this.supported=typeof(Storage)!=="undefined"
-this.__delitem__=function(key){
-if(this.supported){localStorage.removeItem(key)}
-else{$raise('NameError',"local storage is not supported by this browser")}
-}
-this.__getitem__=function(key){
-if(this.supported){
-res=localStorage[key]
-if(res===undefined){return None}
-else{return res}
-}
-else{$raise('NameError',"local storage is not supported by this browser")}
-}
-this.__setitem__=function(key,value){
-if(this.supported){localStorage[key]=value}
-else{$raise('NameError',"local storage is not supported by this browser")}
-}
-}
-local_storage=new $LocalStorageClass()
