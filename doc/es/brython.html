@@ -195,13 +195,13 @@ req.send(data)
 <hr>
 <a name="locstor"><h3>Local storage</h3>
 
-El almacenamiento local que define HTML5 (clase <tt>Storage</tt> y objeto <tt>localStorage</tt> de Javascript) es accesible bajo la sintaxis <code>local_storage</code>. Se utiliza como un diccionario Python típico, con la excepción de que la búsqueda de una palabra clave vuelve <code>None</code> en vez de producir una excepción, y eliminar una clave inexistente tampoco dispara una excepción
+El almacenamiento local que define HTML5 (clase <tt>Storage</tt> y objeto <tt>localStorage</tt> de Javascript) es accesible bajo la sintaxis <code>local_storage</code>. Se utiliza como un diccionario Python típico
 
 <h4>Ejemplo</h4>
 <pre>local_storage['foo'] = 'bar'
 log(local_storage['foo'])
 del local_storage['foo']
-log(local_storage['foo']) # None
+log(local_storage['foo']) # produce KeyError
 </pre>
 
 </body>
