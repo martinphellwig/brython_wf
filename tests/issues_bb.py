@@ -2,6 +2,10 @@
 matrix = ['%s%d'%(a,n) for a in 'abc' for n in [1,2,3]]
 assert 'a1' in matrix
 
+# issue 5
+range_tuple = tuple(range(7))
+assert range_tuple == (0,1,2,3,4,5,6)
+
 # issue 6
 map_tuples = zip( 'abc', [1,2,3])
 map_array = ['%s%d'%(l, n) for l, n in map_tuples
