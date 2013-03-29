@@ -22,4 +22,11 @@ def fail_local():
 local_fail = fail_local()
 assert ['a0', 'b0', 'c0'] in local_fail, 'failed local %s'%local_fail
 
+def fail_local1():
+    local_abc = 'abc'
+    letnum = dict((num,[letter+str(num) for letter in local_abc]) for num in range(3))
+    return letnum
+
+fail_local1()
+
 print('passed all tests')
