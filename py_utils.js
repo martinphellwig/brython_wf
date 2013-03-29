@@ -69,19 +69,22 @@ function $list_comp(){
     for(var $arg in $env){
         eval("var "+$arg+'=$env["'+$arg+'"]')
     }
-    var $res = 'res'+Math.random().toString(36).substr(2,8)
-    var $py = $res+"=[]\n"
-    var indent=0
+    var $ix = Math.random().toString(36).substr(2,8)
+    var $py = 'def func'+$ix+"():\n"
+    $py += "    res=[]\n"
+    var indent=4
     for(var $i=2;$i<arguments.length;$i++){
         for(var $j=0;$j<indent;$j++){$py += ' '}
         $py += arguments[$i]+':\n'
         indent += 4
     }
     for(var $j=0;$j<indent;$j++){$py += ' '}
-    $py += $res+'.append('+arguments[1]+')'
+    $py += 'res.append('+arguments[1]+')\n'
+    $py += "    return res\n"
+    $py += "res"+$ix+"=func"+$ix+"()"
     var $js = __BRYTHON__.py2js($py,'list comprehension').to_js()
     eval($js)
-    return eval($res)
+    return eval("res"+$ix)
 }
 
 function $gen_expr(){ // generator expresssion
