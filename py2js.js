@@ -922,6 +922,17 @@ function $IdCtx(context,value,minus){
     this.parent = context
     this.tree = []
     context.tree.push(this)
+    var ctx = context
+    while(ctx.parent!==undefined){
+        if(ctx.type==='list_or_tuple'||
+            ctx.type==='dict_or_set'||
+            ctx.type==='call_arg'||
+            ctx.type=='def'){
+            if(ctx.vars===undefined){ctx.vars=[value]}
+            else if(ctx.vars.indexOf(value)===-1){ctx.vars.push(value)}
+        }
+        ctx = ctx.parent
+    }
     this.to_js = function(){
         var val = this.value
         if(['print','alert','eval','open'].indexOf(this.value)>-1){val = '$'+val}
@@ -1021,70 +1032,25 @@ function $ListOrTupleCtx(context,real){
     this.parent = context
     this.tree = []
     context.tree.push(this)
-    this.get_env = function(){
-        var res_env=[],local_env=[],env=[]
+    this.is_comp = function(){
+        return ['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1
+    }
+    this.get_src = function(){
         var ctx_node = this
         while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
         var module = ctx_node.node.module
-        var src = document.$py_src[module]
-        // get ids in the expression defining the elements of the list comp
-        for(var i=0;i<this.expression.length;i++){
-            var expr = this.expression[i].tree[0]
-            // if expression is a comprehension, include its environment
-            if(expr.type==='list_or_tuple' && 
-                ['list_comp','gen_expr','dict_or_set_comp'].indexOf(expr.real)>-1){
-                env = expr.get_env()[1]
-            }
-            var ids = $get_ids(this.expression[i])
-            for(var i=0;i<ids.length;i++){
-                if(res_env.indexOf(ids[i])===-1){res_env.push(ids[i])}
-            }
-        }
-        var comp = this.tree[0]
-        for(var i=0;i<comp.tree.length;i++){
-            var elt = comp.tree[i]
-            if(elt.type==='comp_for'){
-                var target_list = elt.tree[0]
-                var ids = $get_ids(target_list)
-                for(var j=0;j<ids.length;j++){
-                    var name = ids[j]
-                    if(local_env.indexOf(name)===-1){
-                        local_env.push(name)
-                    }
-                }
-                var comp_iter = elt.tree[1].tree[0]
-                var ids = $get_ids(comp_iter)
-                for(var j=0;j<ids.length;j++){
-                    if(env.indexOf(ids[j])===-1){env.push(ids[j])}
-                }
-            }else if(elt.type==="comp_if"){
-                var if_expr = elt.tree[0]
-                var ids = $get_ids(if_expr)
-                for(var j=0;j<ids.length;j++){
-                    if(env.indexOf(ids[j])===-1){env.push(ids[j])}
-                }
-            }
-        }
-        for(var i=0;i<res_env.length;i++){
-            if(local_env.indexOf(res_env[i])===-1){
-                env.push(res_env[i])
-            }
-        }
-        for(var i=0;i<local_env.length;i++){
-            var ix = env.indexOf(local_env[i])
-            if(ix>-1){env.splice(ix,1)}
-        }
-        return [src,env]
+        return document.$py_src[module]
     }
     this.to_js = function(){
         if(this.real==='list'){return 'list(['+$to_js(this.tree)+'])'}
         else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
-            var src_env = this.get_env()
-            var src=src_env[0],env=src_env[1]
+            var src = this.get_src()
             var res = '{'
-            for(var i=0;i<env.length;i++){
-                res += "'"+env[i]+"':"+env[i]
-                if(i<env.length-1){res+=','}
+            for(var i=0;i<this.vars.length;i++){
+                if(this.locals.indexOf(this.vars[i])===-1){
+                    res += "'"+this.vars[i]+"':"+this.vars[i]
+                    if(i<this.vars.length-1){res+=','}
+                }
             }
             res += '},'
             var qesc = new RegExp('"',"g") // to escape double quotes in arguments
@@ -1459,6 +1425,26 @@ function $augmented_assign(context,op){
     return new_op
 }
 
+function $comp_env(context,attr,src){
+    // update the attribute "attr" of all comprehensions above "context"
+    // with the ids in "src"
+    var ids = $get_ids(src)
+    var ctx = context
+    while(ctx.parent!==undefined){
+        if(['list_or_tuple','call_arg','def'].indexOf(ctx.type)>-1){
+            if(ctx[attr]===undefined){ctx[attr]=ids}
+            else{
+                for(var i=0;i<ids.length;i++){
+                    if(ctx[attr].indexOf(ids[i])===-1){
+                        ctx[attr].push(ids[i])
+                    }
+                }
+            }
+        }
+        ctx = ctx.parent
+    }
+}
+
 function $get_scope(context){
     // return the $Node indicating the scope of context
     // null for the script or a def $Node
@@ -1610,6 +1596,8 @@ function $transition(context,token){
         }else if(token==='for'){
             // comprehension
             var lst = new $ListOrTupleCtx(context,'gen_expr')
+            lst.vars = context.vars // copy variables
+            lst.locals = context.locals
             lst.intervals = [context.start]
             context.tree.pop()
             lst.expression = context.tree
@@ -1660,6 +1648,8 @@ function $transition(context,token){
             context.expect = null
             return new $AbstractExprCtx(new $CompIterableCtx(context),true)
         }else if(context.expect===null){
+            // ids in context.tree[0] are local to the comprehension
+            $comp_env(context,'locals',context.tree[0])
             return $transition(context.parent,token,arguments[2])
         }else{$_SyntaxError(context,'token '+token+' after '+context)}
 
