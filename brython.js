@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130328-110549
+// version 1.1.20130329-135800
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130328-110549"]
+__BRYTHON__.version_info=[1,1,"20130329-135800"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -1030,6 +1030,7 @@ throw TypeError("list() takes at most 1 argument ("+arguments.length+" given)")
 }
 var res=[]
 list.__init__(res,arguments[0])
+res.__brython__=true 
 return res
 }
 list.__add__=function(self,other){
@@ -1323,6 +1324,7 @@ else if(arg.name==='reverse'){reverse=arg.value}
 if(self.length==0){return}
 $qsort(func,self,0,self.length)
 if(reverse){list.reverse(self)}
+if(!self.__brython__){return self}
 }
 list.toString=list.__str__
 function $ListClass(items){
@@ -2302,6 +2304,7 @@ function $CallArgCtx(C){
 this.type='call_arg'
 this.toString=function(){return 'call_arg '+this.tree}
 this.parent=C
+this.start=$pos
 this.tree=[]
 C.tree.push(this)
 this.expect='id'
@@ -2375,6 +2378,7 @@ this.tree=[]
 C.tree.push(this)
 this.toString=function(){return '(comprehension) '+this.tree}
 this.to_js=function(){
+console.log('comprehension : env '+this.env+'\nlocal '+this.local_env)
 var intervals=[]
 for(var i=0;i<this.tree.length;i++){
 intervals.push(this.tree[i].start)
@@ -2827,6 +2831,17 @@ this.minus=minus
 this.parent=C
 this.tree=[]
 C.tree.push(this)
+var ctx=C
+while(ctx.parent!==undefined){
+if(ctx.type==='list_or_tuple'||
+ctx.type==='dict_or_set'||
+ctx.type==='call_arg'||
+ctx.type=='def'){
+if(ctx.vars===undefined){ctx.vars=[value]}
+else if(ctx.vars.indexOf(value)===-1){ctx.vars.push(value)}
+}
+ctx=ctx.parent
+}
 this.to_js=function(){
 var val=this.value
 if(['print','alert','eval','open'].indexOf(this.value)>-1){val='$'+val}
@@ -2908,74 +2923,32 @@ this.expect='id'
 this.closed=false
 this.toString=function(){
 if(this.real==='list'){return '(list) ['+this.tree+']'}
-else if(this.real==='list_comp'){return '(list comp) ['+this.intervals+'-'+this.tree+']'}
-else{return '(tuple) ('+this.tree+')'}
+else if(this.real==='list_comp'||this.real==='gen_expr'){
+return '('+this.real+') ['+this.intervals+'-'+this.tree+']'
+}else{return '(tuple) ('+this.tree+')'}
 }
 this.parent=C
 this.tree=[]
 C.tree.push(this)
-this.get_env=function(){
-var res_env=[],local_env=[],env=[]
+this.is_comp=function(){
+return['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1
+}
+this.get_src=function(){
 var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
-var src=document.$py_src[module]
-for(var i=0;i<this.expression.length;i++){
-var expr=this.expression[i].tree[0]
-if(expr.type==='list_or_tuple' && 
-['list_comp','gen_expr','dict_or_set_comp'].indexOf(expr.real)>-1){
-env=expr.get_env()[1]
-}
-var ids=$get_ids(this.expression[i])
-for(var i=0;i<ids.length;i++){
-if(res_env.indexOf(ids[i])===-1){res_env.push(ids[i])}
-}
-}
-var comp=this.tree[0]
-for(var i=0;i<comp.tree.length;i++){
-var elt=comp.tree[i]
-if(elt.type==='comp_for'){
-var target_list=elt.tree[0]
-var ids=$get_ids(target_list)
-for(var j=0;j<ids.length;j++){
-var name=ids[j]
-if(local_env.indexOf(name)===-1){
-local_env.push(name)
-}
-}
-var comp_iter=elt.tree[1].tree[0]
-var ids=$get_ids(comp_iter)
-for(var j=0;j<ids.length;j++){
-if(env.indexOf(ids[j])===-1){env.push(ids[j])}
-}
-}else if(elt.type==="comp_if"){
-var if_expr=elt.tree[0]
-var ids=$get_ids(if_expr)
-for(var j=0;j<ids.length;j++){
-if(env.indexOf(ids[j])===-1){env.push(ids[j])}
-}
-}
-}
-for(var i=0;i<res_env.length;i++){
-if(local_env.indexOf(res_env[i])===-1){
-env.push(res_env[i])
-}
-}
-for(var i=0;i<local_env.length;i++){
-var ix=env.indexOf(local_env[i])
-if(ix>-1){env.splice(ix,1)}
-}
-return[src,env]
+return document.$py_src[module]
 }
 this.to_js=function(){
-if(this.real==='list'){return '['+$to_js(this.tree)+']'}
+if(this.real==='list'){return 'list(['+$to_js(this.tree)+'])'}
 else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
-var src_env=this.get_env()
-var src=src_env[0],env=src_env[1]
+var src=this.get_src()
 var res='{'
-for(var i=0;i<env.length;i++){
-res +="'"+env[i]+"':"+env[i]
-if(i<env.length-1){res+=','}
+for(var i=0;i<this.vars.length;i++){
+if(this.locals.indexOf(this.vars[i])===-1){
+res +="'"+this.vars[i]+"':"+this.vars[i]
+if(i<this.vars.length-1){res+=','}
+}
 }
 res +='},'
 var qesc=new RegExp('"',"g")
@@ -3310,6 +3283,23 @@ C.parent.tree.pop()
 C.parent.tree.push(assign)
 return new_op
 }
+function $comp_env(C,attr,src){
+var ids=$get_ids(src)
+var ctx=C
+while(ctx.parent!==undefined){
+if(['list_or_tuple','call_arg','def'].indexOf(ctx.type)>-1){
+if(ctx[attr]===undefined){ctx[attr]=ids}
+else{
+for(var i=0;i<ids.length;i++){
+if(ctx[attr].indexOf(ids[i])===-1){
+ctx[attr].push(ids[i])
+}
+}
+}
+}
+ctx=ctx.parent
+}
+}
 function $get_scope(C){
 var ctx_node=C.parent
 while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
@@ -3438,6 +3428,17 @@ var expr=new $AbstractExprCtx(C,false)
 return $transition(expr,token,arguments[2])
 }else if(token==='=' && C.expect===','){
 return new $ExprCtx(new $KwArgCtx(C),'kw_value',false)
+}else if(token==='for'){
+var lst=new $ListOrTupleCtx(C,'gen_expr')
+lst.vars=C.vars 
+lst.locals=C.locals
+lst.intervals=[C.start]
+C.tree.pop()
+lst.expression=C.tree
+C.tree=[lst]
+lst.tree=[]
+var comp=new $ComprehensionCtx(lst)
+return new $TargetListCtx(new $CompForCtx(comp))
 }else if(token==='op' && C.expect==='id'){
 var op=arguments[2]
 C.expect=','
@@ -3447,6 +3448,12 @@ return $transition(new $AbstractExprCtx(C,false),token,op)
 else if(op==='**'){C.expect=',';return new $DoubleStarArgCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(token===')' && C.expect===','){
+if(C.tree.length>0){
+var son=C.tree[C.tree.length-1]
+if(son.type==='list_or_tuple'&&son.real==='gen_expr'){
+son.intervals.push($pos)
+}
+}
 return $transition(C.parent,token)
 }else if(token===','&& C.expect===','){
 return new $CallArgCtx(C.parent)
@@ -3468,6 +3475,7 @@ if(token==='in' && C.expect==='in'){
 C.expect=null
 return new $AbstractExprCtx(new $CompIterableCtx(C),true)
 }else if(C.expect===null){
+$comp_env(C,'locals',C.tree[0])
 return $transition(C.parent,token,arguments[2])
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='comp_iterable'){
@@ -3840,6 +3848,9 @@ return new $TargetListCtx(new $CompForCtx(comp))
 if(C.real==='tuple' && token===')'){
 C.closed=true
 return C
+}else if(C.real==='gen_expr' && token===')'){
+C.closed=true
+return $transition(C.parent,token)
 }else if(C.real==='list'&& token===']'){
 C.closed=true
 return C
