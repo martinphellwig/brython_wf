@@ -28,6 +28,7 @@ var $augmented_assigns = {
 }
 
 function $_SyntaxError(context,msg,indent){
+    console.log(msg)
     var ctx_node = context
     while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
     var tree_node = ctx_node.node
@@ -922,14 +923,18 @@ function $IdCtx(context,value,minus){
     this.parent = context
     this.tree = []
     context.tree.push(this)
+    if(context.parent.type==='call_arg'){
+        this.call_arg=true
+    }
     var ctx = context
     while(ctx.parent!==undefined){
-        if(ctx.type==='list_or_tuple'||
-            ctx.type==='dict_or_set'||
-            ctx.type==='call_arg'||
-            ctx.type=='def'){
+        if(['list_or_tuple','dict_or_set','call_arg','def','lambda'].indexOf(ctx.type)>-1){
             if(ctx.vars===undefined){ctx.vars=[value]}
             else if(ctx.vars.indexOf(value)===-1){ctx.vars.push(value)}
+            if(this.call_arg&&ctx.type==='lambda'){
+                if(ctx.locals===undefined){ctx.locals=[value]}
+                else{ctx.locals.push(value)}
+            }
         }
         ctx = ctx.parent
     }
@@ -1004,6 +1009,18 @@ function $LambdaCtx(context){
     this.tree = []
     this.args_start = $pos+6
     this.to_js = function(){
+        var env = []
+        for(var i=0;i<this.vars.length;i++){
+            if(this.locals.indexOf(this.vars[i])===-1){
+                env.push(this.vars[i])
+            }
+        }
+        env_str = '{'
+        for(var i=0;i<env.length;i++){
+            env_str+="'"+env[i]+"':"+env[i]
+            if(i<env.length-1){env_str+=','}
+        }
+        env_str += '}'
         var ctx_node = this
         while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
         var module = ctx_node.node.module
@@ -1012,7 +1029,7 @@ function $LambdaCtx(context){
 
         var args = src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
         var body = src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
-        return '$lambda("'+args+'","'+body+'")'
+        return '$lambda('+env_str+',"'+args+'","'+body+'")'
     }
 }
 
@@ -1606,7 +1623,6 @@ function $transition(context,token){
             lst.tree = []
             var comp = new $ComprehensionCtx(lst)
             return new $TargetListCtx(new $CompForCtx(comp))
-
         }else if(token==='op' && context.expect==='id'){
             var op = arguments[2]
             context.expect = ','
@@ -1623,6 +1639,8 @@ function $transition(context,token){
                 }
             }
             return $transition(context.parent,token)
+        }else if(token===':' && context.expect===',' && context.parent.parent.type==='lambda'){
+            return $transition(context.parent.parent,token)
         }else if(token===','&& context.expect===','){
             return new $CallArgCtx(context.parent)
         }else{$_SyntaxError(context,'token '+token+' after '+context)}
@@ -2016,22 +2034,23 @@ function $transition(context,token){
         }else{return $transition(context.parent,token,arguments[2])}
 
     }else if(context.type==='kwarg'){
-    
-        if(token===')'){return $transition(context.parent,token)}
-        else if(token===','){return new $CallArgCtx(context.parent)}
-        else{$_SyntaxError(context,'token '+token+' after '+context)}
+
+        if(token===','){return new $CallArgCtx(context.parent)}
+        else{return $transition(context.parent,token)}
 
     }else if(context.type==="lambda"){
     
-        if(token===':' && context.tree.length===0){
+        if(token===':' && context.args===undefined){
+            context.args = context.tree
+            context.tree = []
             context.body_start = $pos
             return new $AbstractExprCtx(context,false)
-        }else if(context.tree.length>0){ // returning from expression
+        }else if(context.args!==undefined){ // returning from expression
             context.body_end = $pos
             return $transition(context.parent,token)
-        }else if(context.tree.length===0){return context}
-        else{$_SyntaxError(context,'token '+token+' after '+context)}
-        
+        }else if(context.args===undefined){
+            return $transition(new $CallCtx(context),token,arguments[2])
+        }else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='list_or_tuple'){ 
 
