@@ -594,6 +594,15 @@ DOMNode.prototype.set_text = function(value){
 
 DOMNode.prototype.set_value = function(value){this.value = value.toString()}
 
+DOMNode.prototype.addClass = function(classname){
+   var _c = this.__getattr__('class')
+   if (_c === undefined) {
+      this.__setattr__('class', classname)
+   } else {
+      this.__setattr__('class', _c + " " + classname)
+   }
+}
+
 doc = $DOMNode(document)
 
 // creation of an HTML element
