@@ -341,6 +341,14 @@ function $class_constructor(class_name,factory,parents){
             obj.__str__.__name__ = "<bound method __str__ of "+class_name+" object>"
         }
         obj.toString = obj.__str__
+
+        // __eq__ defaults to identity
+        try{$resolve_attr(obj,factory,'__eq__')}
+        catch(err){
+            obj.__eq__ = function(other){return obj===other}
+            obj.__eq__.__name__ = "<bound method __eq__ of "+class_name+" object>"
+        }
+        
         if(!initialized){
             try{
                 var init_func = $resolve_attr(obj,factory,'__init__')
