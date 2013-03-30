@@ -29,4 +29,11 @@ def fail_local1():
 
 fail_local1()
 
+# issue 15
+def no_lambda(fail_arg):
+    lbd = lambda arg= fail_arg: arg
+    return [i for i in lbd()]
+
+assert no_lambda([1,2]) == [1,2], 'Fail lambda namespace'
+
 print('passed all tests')

@@ -151,10 +151,11 @@ function $ternary(env,cond,expr1,expr2){
     return $res
 }
 
-function $lambda(args,body){
+function $lambda($env,$args,$body){
+    for(var $attr in $env){eval('var '+$attr+'=$env["'+$attr+'"]')}
     var $res = 'res'+Math.random().toString(36).substr(2,8)
-    var $py = 'def '+$res+'('+args+'):\n'
-    $py += '    return '+body
+    var $py = 'def '+$res+'('+$args+'):\n'
+    $py += '    return '+$body
     var $js = __BRYTHON__.py2js($py,'lambda').to_js()
     eval($js)
     return eval($res)    
