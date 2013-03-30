@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130329-135800
+// version 1.1.20130329-161921
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130329-135800"]
+__BRYTHON__.version_info=[1,1,"20130329-161921"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -2378,7 +2378,6 @@ this.tree=[]
 C.tree.push(this)
 this.toString=function(){return '(comprehension) '+this.tree}
 this.to_js=function(){
-console.log('comprehension : env '+this.env+'\nlocal '+this.local_env)
 var intervals=[]
 for(var i=0;i<this.tree.length;i++){
 intervals.push(this.tree[i].start)
@@ -4427,19 +4426,22 @@ var $env=arguments[0]
 for(var $arg in $env){
 eval("var "+$arg+'=$env["'+$arg+'"]')
 }
-var $res='res'+Math.random().toString(36).substr(2,8)
-var $py=$res+"=[]\n"
-var indent=0
+var $ix=Math.random().toString(36).substr(2,8)
+var $py='def func'+$ix+"():\n"
+$py +="    res=[]\n"
+var indent=4
 for(var $i=2;$i<arguments.length;$i++){
 for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=arguments[$i]+':\n'
 indent +=4
 }
 for(var $j=0;$j<indent;$j++){$py +=' '}
-$py +=$res+'.append('+arguments[1]+')'
+$py +='res.append('+arguments[1]+')\n'
+$py +="    return res\n"
+$py +="res"+$ix+"=func"+$ix+"()"
 var $js=__BRYTHON__.py2js($py,'list comprehension').to_js()
 eval($js)
-return eval($res)
+return eval("res"+$ix)
 }
 function $gen_expr(){
 var $env=arguments[0]
