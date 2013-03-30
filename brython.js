@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130329-161921
+// version 1.1.20130330-174542
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130329-161921"]
+__BRYTHON__.version_info=[1,1,"20130330-174542"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -1016,7 +1016,7 @@ var $errors=['AssertionError','AttributeError','EOFError','FloatingPointError',
 'RuntimeError','StopIteration','SyntaxError','IndentationError','TabError',
 'SystemError','SystemExit','TypeError','UnboundLocalError','ValueError',
 'ZeroDivisionError','IOError']
-for(var i=0;i<$errors.length;i++){$make_exc($errors[i])}
+for(var $i=0;$i<$errors.length;$i++){$make_exc($errors[$i])}
 list=function(){
 function $list(){
 var args=new Array()
@@ -2903,6 +2903,7 @@ this.toString=function(){return '(lambda) '+this.args_start+' '+this.body_start}
 this.parent=C
 C.tree.push(this)
 this.tree=[]
+this.args_start=$pos+6
 this.to_js=function(){
 var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
@@ -3795,10 +3796,7 @@ if(token===')'){return $transition(C.parent,token)}
 else if(token===','){return new $CallArgCtx(C.parent)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==="lambda"){
-if(C.args_start===undefined){
-C.args_start=$pos
-return C
-}else if(token===':' && C.tree.length===0){
+if(token===':' && C.tree.length===0){
 C.body_start=$pos
 return new $AbstractExprCtx(C,false)
 }else if(C.tree.length>0){
@@ -4955,6 +4953,7 @@ return $getattr(ev,attr)
 }
 if(ev.preventDefault===undefined){ev.preventDefault=function(){ev.returnValue=false}}
 if(ev.stopPropagation===undefined){ev.stopPropagation=function(){ev.cancelBubble=true}}
+if(ev.target===undefined){ev.target=ev.srcElement}
 ev.__str__=function(){return '<DOMEvent object>'}
 ev.toString=ev.__str__
 return ev
@@ -5105,11 +5104,10 @@ return obj
 win=new $JSObject(window)
 function DOMNode(){}
 function $DOMNode(elt){
-if(elt['$brython_id']===undefined){
+if(elt['$brython_id']===undefined||elt.nodeType===9){
 elt.$brython_id=Math.random().toString(36).substr(2, 8)
 for(var attr in DOMNode.prototype){elt[attr]=DOMNode.prototype[attr]}
 elt.__str__=$DOMtoString
-elt.toString=elt.__str__
 }
 return elt
 }
@@ -5227,34 +5225,33 @@ DOMNode.prototype.__setitem__=function(key,value){
 this.childNodes[key]=value
 }
 DOMNode.prototype.get_get=function(){
-if(this.getElementsByName!==undefined){
+var obj=this
 return function(){
 var $ns=$MakeArgs('get',arguments,[],{},null,'kw')
-if('$$name'.__in__($ns['kw'])){
+if('name'.__in__($ns['kw'])){
+if(obj.getElementsByName===undefined){
+throw TypeError("DOMNode object doesn't support selection by name")
+}
 var res=[]
-var node_list=document.getElementsByName($ns['kw'].__getitem__('$$name'))
+var node_list=document.getElementsByName($ns['kw'].__getitem__('name'))
 if(node_list.length===0){return[]}
 for(var i=0;i<node_list.length;i++){
 res.push($DOMNode(node_list[i]))
 }
 }
 if('id'.__in__($ns['kw'])){
-var id_res=document.getElementById($ns['kw'].__getitem__('id'))
+if(obj.getElementById===undefined){
+throw TypeError("DOMNode object doesn't support selection by id")
+}
+var id_res=obj.getElementById($ns['kw'].__getitem__('id'))
 if(!id_res){return[]}
-else{
-var elt=$DOMNode(id_res)
-if(res===undefined){res=[elt]}
-else{
-flag=false
-for(var i=0;i<res.length;i++){
-if(elt.__eq__(res[i])){flag=true;break}
-}
-if(!flag){return[]}
-}
-}
+else{return[$DOMNode(id_res)]}
 }
 if('selector'.__in__($ns['kw'])){
-var node_list=document.querySelectorAll($ns['kw'].__getitem__('selector'))
+if(obj.querySelectorAll===undefined){
+throw TypeError("DOMNode object doesn't support selection by selector")
+}
+var node_list=obj.querySelectorAll($ns['kw'].__getitem__('selector'))
 var sel_res=[]
 if(node_list.length===0){return[]}
 for(var i=0;i<node_list.length;i++){
@@ -5276,7 +5273,6 @@ res.splice(to_delete[i],1)
 return res
 }
 return res
-}
 }
 }
 DOMNode.prototype.get_clone=function(){
@@ -5346,6 +5342,14 @@ this.innerText=str(value)
 this.textContent=str(value)
 }
 DOMNode.prototype.set_value=function(value){this.value=value.toString()}
+DOMNode.prototype.addClass=function(classname){
+var _c=this.__getattr__('class')
+if(_c===undefined){
+this.__setattr__('class', classname)
+}else{
+this.__setattr__('class', _c + " " + classname)
+}
+}
 doc=$DOMNode(document)
 function $Tag(tagName,args){
 var $i=null
