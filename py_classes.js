@@ -1177,4 +1177,4 @@ var $errors = ['AssertionError','AttributeError','EOFError','FloatingPointError'
     'RuntimeError','StopIteration','SyntaxError','IndentationError','TabError',
     'SystemError','SystemExit','TypeError','UnboundLocalError','ValueError',
     'ZeroDivisionError','IOError']
-for(var i=0;i<$errors.length;i++){$make_exc($errors[i])}
+for(var $i=0;$i<$errors.length;$i++){$make_exc($errors[$i])}
