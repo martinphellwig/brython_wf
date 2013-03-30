@@ -1002,6 +1002,7 @@ function $LambdaCtx(context){
     this.parent = context
     context.tree.push(this)
     this.tree = []
+    this.args_start = $pos+6
     this.to_js = function(){
         var ctx_node = this
         while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
@@ -2022,10 +2023,7 @@ function $transition(context,token){
 
     }else if(context.type==="lambda"){
     
-        if(context.args_start===undefined){
-            context.args_start = $pos
-            return context
-        }else if(token===':' && context.tree.length===0){
+        if(token===':' && context.tree.length===0){
             context.body_start = $pos
             return new $AbstractExprCtx(context,false)
         }else if(context.tree.length>0){ // returning from expression
