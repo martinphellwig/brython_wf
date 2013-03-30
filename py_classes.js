@@ -232,6 +232,19 @@ dict.keys = function(self){
     return new $iterator(self.$keys,"dict keys")
 }
 
+dict.pop = function(self,key,_default){
+    try{
+        var res = dict.__getitem__(self,key)
+        dict.__delitem__(self,key)
+        return res
+    }catch(err){
+        if(err.__name__==='KeyError'){
+            if(_default!==undefined){return _default}
+            throw err
+        }else{throw err}
+    }
+}
+
 dict.update = function(self){
     var params = []
     for(var i=1;i<arguments.length;i++){params.push(arguments[i])}
