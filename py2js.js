@@ -1753,6 +1753,7 @@ function $transition(context,token){
                     else{context.real='dict_comp'}
                     var lst = new $ListOrTupleCtx(context,'dict_or_set_comp')
                     lst.intervals = [context.start+1]
+                    lst.vars = context.vars
                     context.tree.pop()
                     lst.expression = context.tree
                     context.tree = [lst]
