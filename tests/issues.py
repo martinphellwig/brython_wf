@@ -29,11 +29,26 @@ def fail_local1():
 
 fail_local1()
 
+# issue 14
+a = {1:1,2:4}
+assert a.pop(1) == 1, 'Error in pop'
+assert a=={2:4}
+
 # issue 15
 def no_lambda(fail_arg):
     lbd = lambda arg= fail_arg: arg
     return [i for i in lbd()]
 
 assert no_lambda([1,2]) == [1,2], 'Fail lambda namespace'
+
+# issue 16
+class Noeq:
+    def __init__(self,oid):
+        self.oid = oid
+
+ne1, ne2 = Noeq(0),Noeq(1)
+fail_rmv = [ne1, ne2]
+fail_rmv.remove(ne1)
+assert fail_rmv == [ne2], 'Fail remove obj from list'
 
 print('passed all tests')
