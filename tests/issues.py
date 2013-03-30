@@ -51,4 +51,13 @@ fail_rmv = [ne1, ne2]
 fail_rmv.remove(ne1)
 assert fail_rmv == [ne2], 'Fail remove obj from list'
 
+# issue 17
+class No_dic_comp:
+    def __init__(self,oid):
+        self.oid = oid
+        self.ldic = {i: self.oid for i in 'ab'}
+
+ndc = No_dic_comp(0)
+assert ndc.ldic['a'] == 0, ne1
+
 print('passed all tests')
