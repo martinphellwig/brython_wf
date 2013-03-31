@@ -1,8 +1,8 @@
 
 module_dict=function() {
   var d=dict()
-  for (var key in __BRYTHON__.$py_modules) {
-      d.__setitem__(key, __BRYTHON__.$py_modules[key])
+  for (var key in __BRYTHON__.modules) {
+      d.__setitem__(key, __BRYTHON__.modules[key])
   }
   return d
 }
