@@ -602,3 +602,39 @@ DOMNode.prototype.addClass = function(classname){
 }
 
 doc = $DOMNode(document)
+
+// class used for tag sums
+function $TagSumClass(){
+    this.__class__ = $TagSum
+    this.children = []
+}
+$TagSumClass.prototype.appendChild = function(child){    
+    this.children.push(child)
+}
+
+$TagSumClass.prototype.__add__ = function(other){
+    if(isinstance(other,$TagSum)){
+        this.children = this.children.concat(other.children)
+    }else if(isinstance(other,str)){
+        this.children = this.children.concat(document.createTextNode(other))
+    }else{this.children.push(other)}
+    return this
+}
+
+$TagSumClass.prototype.__radd__ = function(other){
+    var res = $TagSum()
+    res.children = this.children.concat(document.createTextNode(other))
+    return res
+}
+
+$TagSumClass.prototype.clone = function(){
+    var res = $TagSum(), $i=0
+    for($i=0;$i<this.children.length;$i++){
+        res.children.push(this.children[$i].cloneNode(true))
+    }
+    return res
+}
+
+function $TagSum(){
+    return new $TagSumClass()
+}
