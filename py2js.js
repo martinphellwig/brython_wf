@@ -843,22 +843,17 @@ function $FromCtx(context){
     this.expect = 'module'
     this.toString = function(){return '(from) '+this.module+' (import) '+this.names + '(parent module)' + this.parent_module + '(as)' + this.aliases}
     this.to_js = function(){ 
-        var res = '$import_from("'+this.module+'",'+this.names;
-        if(this.parent_module!==undefined){res+=',"' + this.parent_module +'"'
-        } else { res+=',undefined'}
-        if(this.aliases != undefined) {
-          var a=[];
-          for (var i=0; i < this.names.length; i++) {
-              if (this.names[i] in this.aliases) {
-                 a.push(this.aliases[this.names[i]])
-              } else { 
-                 a.push(this.names[i])
-              }
-          }
-          res+=',' + a 
-        } else { res+=',undefined'}
-
-        res += ')\n'
+        var res = '$mod=$import_list([["'+this.module+'","'+this.module+'"]])[0];'
+        //if(this.parent_module!==undefined){res+=',"' + this.parent_module +'"'
+        //} else { res+=',undefined'}
+        if(this.names[0]!=='*'){
+            for(var i=0;i<this.names.length;i++){
+                res += (this.aliases[this.names[i]]||this.names[i])+'=$mod.__getattr__("'+this.names[i]+'");'
+            }
+        }else{
+            res +='for(var $attr in $mod){'
+            res +="if($attr.substr(0,1)!=='_'){eval('var '+$attr+'=$mod["+'"'+"'+$attr+'"+'"'+"]')}}"
+        }
         return res
     }
 }
@@ -953,7 +948,12 @@ function $ImportCtx(context){
     context.tree.push(this)
     this.expect = 'id'
     this.to_js = function(){
-        return '$import_list(['+$to_js(this.tree)+'])'
+        console.log(this+'')
+        var res = '$mods=$import_list(['+$to_js(this.tree)+']);'
+        for(var i=0;i<this.tree.length;i++){
+            res += 'var '+this.tree[i].alias+'=$mods['+i+'];'
+        }
+        return res 
     }
 }
 
@@ -2627,6 +2627,7 @@ function brython(debug){
     __BRYTHON__.$py_module_path = {}
     __BRYTHON__.$py_module_alias = {}
     __BRYTHON__.$py_modules = {}
+    __BRYTHON__.modules = {}
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
     document.$debug = debug || 0
     __BRYTHON__.exception_stack = []
