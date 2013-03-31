@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130331-084029
+// version 1.1.20130331-164024
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130331-084029"]
+__BRYTHON__.version_info=[1,1,"20130331-164024"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -1816,11 +1816,11 @@ return[$xmlhttp,fake_qs,timer]
 }
 function $import_js(module,alias,names){
 var filepath=__BRYTHON__.brython_path+'libs/' + module
-$import_js_generic(module,alias,names,filepath)
+return $import_js_generic(module,alias,names,filepath)
 }
 function $import_js_generic(module,alias,names,filepath){
 var module_contents=$download_module(module, filepath+'.js')
-$import_js_module(module, alias, names, filepath+'.js', module_contents)
+return $import_js_module(module, alias, names, filepath+'.js', module_contents)
 }
 function $download_module(module,url){
 var imp=$importer()
@@ -1844,46 +1844,19 @@ if(res.constructor===Error){res.name="NotFoundError";throw res}
 return res
 }
 function $import_js_module(module,alias,names,filepath,module_contents){
-try{
 eval(module_contents)
 if(eval('$module')===undefined){
 throw ImportError("name '$module' is not defined in module")
 }
-__BRYTHON__.$py_modules[module]=$module
-if(names===undefined){
-if(alias===undefined){alias=module}
-eval(alias+'=$module')
-eval(alias+'.__class__ = $type')
-eval(alias+'.__str__ = function(){return "<module \''+module+"'>\"}")
-eval(alias+'.__file__ = "'+filepath + '"')
-}else{
-if(names.length===1 && names[0]==='*'){
-for(var name in $module){
-if(name.substr(0,1)==='_'){continue}
-eval(name+'=$module[name]')
-}
-}else{
-if(alias !==undefined){
-for(var i=0;i<names.length;i++){
-if(alias[i]!==undefined){
-eval(alias[i]+'=$module[names[i]]')
-}else{
-eval(names[i]+'=$module[names[i]]')
-}
-}
-}else{
-for(var i=0;i<names.length;i++){
-eval(names[i]+'=$module[names[i]]')
-}
-}
-}
-}
-}catch(err){throw err}
+$module.__class__=$type
+$module.__str__=function(){return "<module '"+module+"' from "+filepath+" >"}
+$module.__file__=filepath+'.py'
+return $module
 }
 function $import_module_search_path(module,alias,names){
 var search_path=__BRYTHON__.path
 search_path.push(__BRYTHON__.brython_path)
-$import_module_search_path_list(module,alias,names,search_path)
+return $import_module_search_path_list(module,alias,names,search_path)
 }
 function $import_module_search_path_list(module,alias,names, path_list){
 var modnames=[module, '__init__']
@@ -1894,7 +1867,7 @@ var path=path_list[i]
 if(modnames[j]=='__init__')path +="/" + module
 path+="/" + modnames[j]
 for(var k=0;k < import_mod.length;k++){
-try{import_mod[k](module,alias,names,path);return
+try{return import_mod[k](module,alias,names,path)
 }catch(err){if(err.name!=="NotFoundError"){throw err}
 }
 }
@@ -1904,7 +1877,7 @@ throw ImportError("No module named '"+module+"'")
 }
 function $import_py(module,alias,names,path){
 var module_contents=$download_module(module, path+'.py')
-$import_py_module(module,alias,names,path+'.py',module_contents)
+return $import_py_module(module,alias,names,path+'.py',module_contents)
 }
 function $import_py_module(module,alias,names,path,module_contents){
 __BRYTHON__.$py_module_path[module]=path
@@ -1914,7 +1887,7 @@ var body=root.children
 root.children=[]
 var mod_node=new $Node('expression')
 if(names!==undefined){alias='$module'}
-new $NodeJSCtx(mod_node,alias+'=(function()')
+new $NodeJSCtx(mod_node,'$module=(function()')
 root.insert(0,mod_node)
 mod_node.children=body
 var mod_names=[]
@@ -1944,46 +1917,21 @@ mod_node.add(ret_node)
 var ex_node=new $Node('expression')
 new $NodeJSCtx(ex_node,')()')
 root.add(ex_node)
-if(names!==undefined){
-if(names.length===1 && names[0]==='*'){
-var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,'for(var $attr in $module)')
-root.add(new_node)
-var attr_node=new $Node('expression')
-new $NodeJSCtx(attr_node,'if($attr.charAt(0)!=="_"){eval($attr+"=$module[$attr]")}')
-new_node.add(attr_node)
-}else{
-if(alias !==undefined){
-for(var i=0;i<names.length;i++){
-var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,alias[i]+'=$module.'+names[i])
-root.add(new_node)
-}
-}else{
-for(var i=0;i<names.length;i++){
-var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,names[i]+'=$module.'+names[i])
-root.add(new_node)
-}
-}
-}
-}
 try{
 var js=root.to_js()
 eval(js)
-eval(alias+'.__class__ = $type')
-eval(alias+'.__str__ = function(){return "<module \''+module+"'>\"}")
-eval(alias+'.__file__ = "' + path+'.py' + '"')
-__BRYTHON__.$py_modules[module]=alias
+$module.__class__=$type
+$module.__str__=function(){return "<module '"+module+"' from "+path+" >"}
+$module.__file__=path+'.py'
+return $module
 }catch(err){
 eval('throw '+err.name+'(err.message)')
 }
 }
 $import_funcs=[$import_js, $import_module_search_path]
 function $import_single(name,alias,names){
-if(__BRYTHON__.$py_modules[name]!==undefined)return
 for(var j=0;j<$import_funcs.length;j++){
-try{$import_funcs[j](name,alias,names);return}
+try{return $import_funcs[j](name,alias,names)}
 catch(err){
 if(err.name==="NotFoundError"){
 if(j==$import_funcs.length-1){
@@ -1996,11 +1944,18 @@ continue
 }
 }
 function $import_list(modules){
+var res=[]
 for(var i=0;i<modules.length;i++){
 var module=modules[i][0]
-$import_single(modules[i][0],modules[i][1])
+if(__BRYTHON__.modules[module]!==undefined){var mod=__BRYTHON__.modules[module]}
+else{
+var mod=$import_single(modules[i][0],modules[i][1])
+__BRYTHON__.modules[module]=mod
+}
+res.push(mod)
 __BRYTHON__.$py_module_alias[modules[i][0]]=modules[i][1]
 }
+return res
 }
 function $import_from(module,names,parent_module,alias){
 if(parent_module !==undefined){
@@ -2010,9 +1965,9 @@ relpath=relpath.substring(0, i)
 alias=__BRYTHON__.$py_module_alias[parent_module]
 $import_module_search_path_list(module,alias,names,[relpath])
 }else if(alias !==undefined){
-$import_single(module,alias,names)
+return $import_single(module,alias,names)
 }else{
-$import_single(module,names,names)
+return $import_single(module,names,names)
 }
 }
 var $operators={
@@ -2772,21 +2727,15 @@ C.tree.push(this)
 this.expect='module'
 this.toString=function(){return '(from) '+this.module+' (import) '+this.names + '(parent module)' + this.parent_module + '(as)' + this.aliases}
 this.to_js=function(){
-var res='$import_from("'+this.module+'",'+this.names
-if(this.parent_module!==undefined){res+=',"' + this.parent_module +'"'
-}else{res+=',undefined'}
-if(this.aliases !=undefined){
-var a=[]
-for(var i=0;i < this.names.length;i++){
-if(this.names[i]in this.aliases){
-a.push(this.aliases[this.names[i]])
+var res='$mod=$import_list([["'+this.module+'","'+this.module+'"]])[0];'
+if(this.names[0]!=='*'){
+for(var i=0;i<this.names.length;i++){
+res +=(this.aliases[this.names[i]]||this.names[i])+'=$mod.__getattr__("'+this.names[i]+'");'
+}
 }else{
-a.push(this.names[i])
+res +='for(var $attr in $mod){'
+res +="if($attr.substr(0,1)!=='_'){eval('var '+$attr+'=$mod["+'"'+"'+$attr+'"+'"'+"]')}}"
 }
-}
-res+=',' + a 
-}else{res+=',undefined'}
-res +=')\n'
 return res
 }
 }
@@ -2872,7 +2821,12 @@ this.tree=[]
 C.tree.push(this)
 this.expect='id'
 this.to_js=function(){
-return '$import_list(['+$to_js(this.tree)+'])'
+console.log(this+'')
+var res='$mods=$import_list(['+$to_js(this.tree)+']);'
+for(var i=0;i<this.tree.length;i++){
+res +='var '+this.tree[i].alias+'=$mods['+i+'];'
+}
+return res 
 }
 }
 function $ImportedModuleCtx(C,name){
@@ -4342,6 +4296,7 @@ document.$py_src={}
 __BRYTHON__.$py_module_path={}
 __BRYTHON__.$py_module_alias={}
 __BRYTHON__.$py_modules={}
+__BRYTHON__.modules={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
 document.$debug=debug || 0
 __BRYTHON__.exception_stack=[]
@@ -5391,3 +5346,33 @@ this.__setattr__('class', _c + " " + classname)
 }
 }
 doc=$DOMNode(document)
+function $TagSumClass(){
+this.__class__=$TagSum
+this.children=[]
+}
+$TagSumClass.prototype.appendChild=function(child){
+this.children.push(child)
+}
+$TagSumClass.prototype.__add__=function(other){
+if(isinstance(other,$TagSum)){
+this.children=this.children.concat(other.children)
+}else if(isinstance(other,str)){
+this.children=this.children.concat(document.createTextNode(other))
+}else{this.children.push(other)}
+return this
+}
+$TagSumClass.prototype.__radd__=function(other){
+var res=$TagSum()
+res.children=this.children.concat(document.createTextNode(other))
+return res
+}
+$TagSumClass.prototype.clone=function(){
+var res=$TagSum(), $i=0
+for($i=0;$i<this.children.length;$i++){
+res.children.push(this.children[$i].cloneNode(true))
+}
+return res
+}
+function $TagSum(){
+return new $TagSumClass()
+}
