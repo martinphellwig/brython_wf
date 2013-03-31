@@ -603,6 +603,7 @@ DOMNode.prototype.addClass = function(classname){
 
 doc = $DOMNode(document)
 
+
 // class used for tag sums
 function $TagSumClass(){
     this.__class__ = $TagSum
