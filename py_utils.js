@@ -370,7 +370,7 @@ function $class_constructor(class_name,factory,parents){
         if(f[attr]!==undefined){return f[attr]}
         return factory[attr]
     }
-    f.__setattr__ = function(attr,value){factory[attr]=value}
+    f.__setattr__ = function(attr,value){factory[attr]=value;f[attr]=value}
     return f
 }
 
