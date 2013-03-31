@@ -469,6 +469,28 @@ DOMNode.prototype.get_get = function(){
                 res.push($DOMNode(node_list[i]))
             }
         }
+        if('tag'.__in__($ns['kw'])){
+            if(obj.getElementsByTagName===undefined){
+                throw TypeError("DOMNode object doesn't support selection by tag name")
+            }
+            var res = []
+            var node_list = document.getElementsByTagName($ns['kw'].__getitem__('tag'))
+            if(node_list.length===0){return []}
+            for(var i=0;i<node_list.length;i++){
+                res.push($DOMNode(node_list[i]))
+            }
+        }
+        if('classname'.__in__($ns['kw'])){
+            if(obj.getElementsByClassName===undefined){
+                throw TypeError("DOMNode object doesn't support selection by class name")
+            }
+            var res = []
+            var node_list = document.getElementsByClassName($ns['kw'].__getitem__('classname'))
+            if(node_list.length===0){return []}
+            for(var i=0;i<node_list.length;i++){
+                res.push($DOMNode(node_list[i]))
+            }
+        }
         if('id'.__in__($ns['kw'])){
             if(obj.getElementById===undefined){
                 throw TypeError("DOMNode object doesn't support selection by id")
@@ -535,6 +557,16 @@ DOMNode.prototype.get_parent = function(){
     else{return None}
 }
 
+DOMNode.prototype.get_id = function(){
+    if(this.id !== undefined){return this.id}
+    else{return None}
+}
+
+DOMNode.prototype.get_class = function(){
+    if(this.class !== undefined){return this.class}
+    else{return None}
+}
+
 DOMNode.prototype.get_options = function(){ // for SELECT tag
     return new $OptionsClass(this)
 }
@@ -592,14 +624,6 @@ DOMNode.prototype.set_text = function(value){
 
 DOMNode.prototype.set_value = function(value){this.value = value.toString()}
 
-DOMNode.prototype.addClass = function(classname){
-   var _c = this.__getattr__('class')
-   if (_c === undefined) {
-      this.__setattr__('class', classname)
-   } else {
-      this.__setattr__('class', _c + " " + classname)
-   }
-}
 
 doc = $DOMNode(document)
 
@@ -638,4 +662,101 @@ $TagSumClass.prototype.clone = function(){
 
 function $TagSum(){
     return new $TagSumClass()
+}
+
+//creation of jquery like helper functions..
+
+var $toDOM = function (content) {
+   if (isinstance(content,DOMNode)) {return content}
+
+   if (isinstance(content,string)) {
+      var _dom = document.createElement('html')
+      _dom.innerHTML = content
+      return _dom
+   }
+
+   // if we got this far there is a problem..
+   $raise('Error', 'Invalid argument' + content)
+}
+
+DOMNode.prototype.addClass = function(classname){
+   var _c = this.__getattr__('class')
+   if (_c === undefined) {
+      this.__setattr__('class', classname)
+   } else {
+      this.__setattr__('class', _c + " " + classname)
+   }
+   return this
+}
+
+DOMNode.prototype.after = function(content){
+   var _content=$toDOM(content);
+
+   if (this.nextSibling !== null) {
+     this.parentElement.insertBefore(_content, this.nextSibling);
+   } else {
+     this.parentElement.appendChild(_content)
+   }
+
+   return this
+}
+
+DOMNode.prototype.append = function(content){
+   var _content=$toDOM(content);
+   this.appendChild(_content);
+   return this
+}
+
+DOMNode.prototype.before = function(content){
+   var _content=$toDOM(content);
+   this.parentElement.insertBefore(_content, this);
+   return this
+}
+
+// closest will return the first ancestor that it comes across
+// while traversing up the tree.
+// note that selector parameter in regular jquery will be implemented
+// at a higher level (ie, python class).
+
+//a python class will implement very high level 
+// selector functions, which will allow maximum flexibility
+// we can also emulate jquery style selectors with the
+// python class. :)
+
+DOMNode.prototype.closest = function(ancestors){
+   var traverse=function(node, ancestor) {
+       if (node === doc) return None
+       for(var i=0; i < ancestors.length; i++) {
+          if (node === ancestor[i]) { 
+             return ancestor[i];
+          }
+       } 
+
+       return traverse(this.parentElement, ancestors);
+   }
+
+   return traverse(this, ancestors); 
+}
+
+DOMNode.prototype.css = function(property,value){
+   if (value !== undefined) {
+      this.set_style({property:value})
+      return this   
+   }
+
+   if (isinstance(property, dict)) {
+      // we also set styles here..
+      this.set_style(property)
+      return this
+   }
+
+   //this is a get request
+
+   return this.get_style(property)
+}
+
+DOMNode.prototype.empty = function(){
+   for (var i=0; i <= this.childNodes.length; i++) {
+       this.removeChild(this.childNodes[i])
+   }
 }
