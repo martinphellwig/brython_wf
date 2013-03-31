@@ -60,4 +60,15 @@ class No_dic_comp:
 ndc = No_dic_comp(0)
 assert ndc.ldic['a'] == 0, ne1
 
+# issue 19
+class No_static:
+    OBJID = 0
+    def __init__(self,oid):
+        self.oid = oid
+        self.gid = No_static.OBJID
+        No_static.OBJID += 1
+
+gids = (No_static(0).gid,No_static(1).gid)
+assert gids == (0,1), 'Fail incrementing static (%d,%d)'%gids
+
 print('passed all tests')
