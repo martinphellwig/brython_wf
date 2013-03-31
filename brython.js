@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130330-174542
+// version 1.1.20130331-084029
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130330-174542"]
+__BRYTHON__.version_info=[1,1,"20130331-084029"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -210,6 +210,18 @@ return new $iterator(zip(self.$keys,self.$values),"dict_items")
 }
 dict.keys=function(self){
 return new $iterator(self.$keys,"dict keys")
+}
+dict.pop=function(self,key,_default){
+try{
+var res=dict.__getitem__(self,key)
+dict.__delitem__(self,key)
+return res
+}catch(err){
+if(err.__name__==='KeyError'){
+if(_default!==undefined){return _default}
+throw err
+}else{throw err}
+}
 }
 dict.update=function(self){
 var params=[]
@@ -2031,6 +2043,7 @@ var $augmented_assigns={
 "%=":"imod","^=":"ipow"
 }
 function $_SyntaxError(C,msg,indent){
+console.log(msg)
 var ctx_node=C
 while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
 var tree_node=ctx_node.node
@@ -2830,14 +2843,18 @@ this.minus=minus
 this.parent=C
 this.tree=[]
 C.tree.push(this)
+if(C.parent.type==='call_arg'){
+this.call_arg=true
+}
 var ctx=C
 while(ctx.parent!==undefined){
-if(ctx.type==='list_or_tuple'||
-ctx.type==='dict_or_set'||
-ctx.type==='call_arg'||
-ctx.type=='def'){
+if(['list_or_tuple','dict_or_set','call_arg','def','lambda'].indexOf(ctx.type)>-1){
 if(ctx.vars===undefined){ctx.vars=[value]}
 else if(ctx.vars.indexOf(value)===-1){ctx.vars.push(value)}
+if(this.call_arg&&ctx.type==='lambda'){
+if(ctx.locals===undefined){ctx.locals=[value]}
+else{ctx.locals.push(value)}
+}
 }
 ctx=ctx.parent
 }
@@ -2905,6 +2922,18 @@ C.tree.push(this)
 this.tree=[]
 this.args_start=$pos+6
 this.to_js=function(){
+var env=[]
+for(var i=0;i<this.vars.length;i++){
+if(this.locals.indexOf(this.vars[i])===-1){
+env.push(this.vars[i])
+}
+}
+env_str='{'
+for(var i=0;i<env.length;i++){
+env_str+="'"+env[i]+"':"+env[i]
+if(i<env.length-1){env_str+=','}
+}
+env_str +='}'
 var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
@@ -2912,7 +2941,7 @@ var src=document.$py_src[module]
 var qesc=new RegExp('"',"g")
 var args=src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
 var body=src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
-return '$lambda("'+args+'","'+body+'")'
+return '$lambda('+env_str+',"'+args+'","'+body+'")'
 }
 }
 function $ListOrTupleCtx(C,real){
@@ -3455,6 +3484,8 @@ son.intervals.push($pos)
 }
 }
 return $transition(C.parent,token)
+}else if(token===':' && C.expect===',' && C.parent.parent.type==='lambda'){
+return $transition(C.parent.parent,token)
 }else if(token===','&& C.expect===','){
 return new $CallArgCtx(C.parent)
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
@@ -3545,6 +3576,7 @@ if(C.real==='dict_or_set'){C.real='set_comp'}
 else{C.real='dict_comp'}
 var lst=new $ListOrTupleCtx(C,'dict_or_set_comp')
 lst.intervals=[C.start+1]
+lst.vars=C.vars
 C.tree.pop()
 lst.expression=C.tree
 C.tree=[lst]
@@ -3792,18 +3824,20 @@ if($expr_starters.indexOf(token)>-1){
 $_SyntaxError(C,'token '+token+' after '+C)
 }else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='kwarg'){
-if(token===')'){return $transition(C.parent,token)}
-else if(token===','){return new $CallArgCtx(C.parent)}
-else{$_SyntaxError(C,'token '+token+' after '+C)}
+if(token===','){return new $CallArgCtx(C.parent)}
+else{return $transition(C.parent,token)}
 }else if(C.type==="lambda"){
-if(token===':' && C.tree.length===0){
+if(token===':' && C.args===undefined){
+C.args=C.tree
+C.tree=[]
 C.body_start=$pos
 return new $AbstractExprCtx(C,false)
-}else if(C.tree.length>0){
+}else if(C.args!==undefined){
 C.body_end=$pos
 return $transition(C.parent,token)
-}else if(C.tree.length===0){return C}
-else{$_SyntaxError(C,'token '+token+' after '+C)}
+}else if(C.args===undefined){
+return $transition(new $CallCtx(C),token,arguments[2])
+}else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='list_or_tuple'){
 if(C.closed){
 if(token==='['){return new $SubCtx(C.parent)}
@@ -4500,10 +4534,11 @@ res +='    var $res = '+expr2+'\n}'
 eval(res)
 return $res
 }
-function $lambda(args,body){
+function $lambda($env,$args,$body){
+for(var $attr in $env){eval('var '+$attr+'=$env["'+$attr+'"]')}
 var $res='res'+Math.random().toString(36).substr(2,8)
-var $py='def '+$res+'('+args+'):\n'
-$py +='    return '+body
+var $py='def '+$res+'('+$args+'):\n'
+$py +='    return '+$body
 var $js=__BRYTHON__.py2js($py,'lambda').to_js()
 eval($js)
 return eval($res)
@@ -4665,6 +4700,11 @@ obj.__str__=function(){return "<"+class_name+" object>"}
 obj.__str__.__name__="<bound method __str__ of "+class_name+" object>"
 }
 obj.toString=obj.__str__
+try{$resolve_attr(obj,factory,'__eq__')}
+catch(err){
+obj.__eq__=function(other){return obj===other}
+obj.__eq__.__name__="<bound method __eq__ of "+class_name+" object>"
+}
 if(!initialized){
 try{
 var init_func=$resolve_attr(obj,factory,'__init__')
@@ -4686,7 +4726,7 @@ f.__getattr__=function(attr){
 if(f[attr]!==undefined){return f[attr]}
 return factory[attr]
 }
-f.__setattr__=function(attr,value){factory[attr]=value}
+f.__setattr__=function(attr,value){factory[attr]=value;f[attr]=value}
 return f
 }
 var $dq_regexp=new RegExp('"',"g")
@@ -5351,105 +5391,3 @@ this.__setattr__('class', _c + " " + classname)
 }
 }
 doc=$DOMNode(document)
-function $Tag(tagName,args){
-var $i=null
-var elt=null
-var elt=$DOMNode(document.createElement(tagName))
-elt.parent=this
-if(args!=undefined && args.length>0){
-$start=0
-$first=args[0]
-if(!isinstance($first,$Kw)){
-$start=1
-if(isinstance($first,[str,int,float])){
-txt=document.createTextNode($first.toString())
-elt.appendChild(txt)
-}else if(isinstance($first,$TagSum)){
-for($i=0;$i<$first.children.length;$i++){
-elt.appendChild($first.children[$i])
-}
-}else{
-try{elt.appendChild($first)}
-catch(err){throw ValueError('wrong element '+$first)}
-}
-}
-for($i=$start;$i<args.length;$i++){
-$arg=args[$i]
-if(isinstance($arg,$Kw)){
-if($arg.name.toLowerCase().substr(0,2)==="on"){
-eval('elt.'+$arg.name.toLowerCase()+'=function(){'+$arg.value+'}')
-}else if($arg.name.toLowerCase()=="style"){
-elt.set_style($arg.value)
-}else{
-if($arg.value!==false){
-try{
-elt.setAttribute($arg.name.toLowerCase(),$arg.value)
-}catch(err){
-throw ValueError("can't set attribute "+$arg.name)
-}
-}
-}
-}
-}
-}
-return elt
-}
-function $TagSumClass(){
-this.__class__=$TagSum
-this.children=[]
-}
-$TagSumClass.prototype.appendChild=function(child){
-this.children.push(child)
-}
-$TagSumClass.prototype.__add__=function(other){
-if(isinstance(other,$TagSum)){
-this.children=this.children.concat(other.children)
-}else if(isinstance(other,str)){
-this.children=this.children.concat(document.createTextNode(other))
-}else{this.children.push(other)}
-return this
-}
-$TagSumClass.prototype.__radd__=function(other){
-var res=$TagSum()
-res.children=this.children.concat(document.createTextNode(other))
-return res
-}
-$TagSumClass.prototype.clone=function(){
-var res=$TagSum(), $i=0
-for($i=0;$i<this.children.length;$i++){
-res.children.push(this.children[$i].cloneNode(true))
-}
-return res
-}
-function $TagSum(){
-return new $TagSumClass()
-}
-function A(){return $Tag('A',arguments)}
-var $src=A+'' 
-$tags=['A', 'ABBR', 'ACRONYM', 'ADDRESS', 'APPLET',
-'B', 'BDO', 'BIG', 'BLOCKQUOTE', 'BUTTON',
-'CAPTION', 'CENTER', 'CITE', 'CODE',
-'DEL', 'DFN', 'DIR', 'DIV', 'DL',
-'EM', 'FIELDSET', 'FONT', 'FORM', 'FRAMESET',
-'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
-'I', 'IFRAME', 'INS', 'KBD', 'LABEL', 'LEGEND',
-'MAP', 'MENU', 'NOFRAMES', 'NOSCRIPT', 'OBJECT',
-'OL', 'OPTGROUP', 'PRE', 'Q', 'S', 'SAMP',
-'SCRIPT', 'SELECT', 'SMALL', 'SPAN', 'STRIKE',
-'STRONG', 'STYLE', 'SUB', 'SUP', 'TABLE',
-'TEXTAREA', 'TITLE', 'TT', 'U', 'UL',
-'VAR', 'BODY', 'COLGROUP', 'DD', 'DT', 'HEAD',
-'HTML', 'LI', 'P', 'TBODY','OPTION', 
-'TD', 'TFOOT', 'TH', 'THEAD', 'TR',
-'AREA', 'BASE', 'BASEFONT', 'BR', 'COL', 'FRAME',
-'HR', 'IMG', 'INPUT', 'ISINDEX', 'LINK',
-'META', 'PARAM']
-$tags=$tags.concat(['ARTICLE','ASIDE','FIGURE','FOOTER','HEADER','NAV',
-'SECTION','AUDIO','VIDEO','CANVAS','COMMAND','DATALIST',
-'DETAILS','OUTPUT','PROGRESS','HGROUP','MARK','METER','TIME',
-'RP','RT','RUBY'])
-for($i=0;$i<$tags.length;$i++){
-$code=$src.replace(/A/gm,$tags[$i])
-eval($code)
-eval($tags[$i]+'.name="'+$tags[$i]+'"')
-}
