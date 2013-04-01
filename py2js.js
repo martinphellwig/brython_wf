@@ -2625,7 +2625,7 @@ function brython(debug){
     document.$py_src = {}
     __BRYTHON__.$py_module_path = {}
     __BRYTHON__.$py_module_alias = {}
-    __BRYTHON__.$py_modules = {}
+    //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
     document.$debug = debug || 0

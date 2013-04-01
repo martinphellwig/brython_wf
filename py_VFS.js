@@ -63,12 +63,11 @@ $import_via_VFS=function(module,alias,names){
 
          var module_contents=readFromVFS(path)
          if(module_contents !== undefined) {
+           console.log("imported " + module + " via VFS")
            if (ext[j] == '.js') {
-              $import_js_module(module,alias,names,path,module_contents)
-           } else {
-              $import_py_module(module,alias,names,path,module_contents)
+              return $import_js_module(module,alias,names,path,module_contents)
            }
-           return
+           return $import_py_module(module,alias,names,path,module_contents)
          }
      }
   }
