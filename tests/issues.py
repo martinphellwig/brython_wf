@@ -60,6 +60,18 @@ class No_dic_comp:
 ndc = No_dic_comp(0)
 assert ndc.ldic['a'] == 0, ne1
 
+# issue 18
+class Base:
+    pass
+
+class No_inherit(Base):
+    def __init__(self,oid,ab):
+        self.oid , self.ab= oid, ab
+
+ndc = No_inherit(0,'ab')
+assert  isinstance(ndc,No_inherit),'Not instance %s'%ndc
+assert ndc.oid == 0,  ndc.oid
+
 # issue 19
 class No_static:
     OBJID = 0
