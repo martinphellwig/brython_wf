@@ -137,12 +137,14 @@ for arc,wfunc in (dist1,dist1.add),(dist2,dist2.add),(dist3,dist3.write):
         wfunc(os.path.join(os.getcwd(),path),
                 arcname=os.path.join(name,path))
     
-    for path in os.listdir(os.path.join(os.getcwd(),'libs')):
-        if os.path.splitext(path)[1]!='.js':
-            continue
-        abs_path = os.path.join(os.getcwd(),'libs',path)
-        print('add',path)
-        wfunc(os.path.join(os.getcwd(),'libs',path),
-            arcname=os.path.join(name,'libs',path))
+    folders = ['libs','Lib']
+    for folder in folders:
+        for path in os.listdir(os.path.join(os.getcwd(),folder)):
+            if os.path.splitext(path)[1] not in ['.js','.py']:
+                continue
+            abs_path = os.path.join(os.getcwd(),folder,path)
+            print('add',path)
+            wfunc(os.path.join(os.getcwd(),folder,path),
+                arcname=os.path.join(name,folder,path))
 
     arc.close()
