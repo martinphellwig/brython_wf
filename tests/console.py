@@ -7,7 +7,7 @@ import random
 # to state what the root path is.  
 # For now, we'll hardcode a relative path. :(
 
-sys.path.append("../Lib")
+#sys.path.append("../Lib")
 import dis
 
 _rand=random.random()
