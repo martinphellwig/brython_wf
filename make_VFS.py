@@ -1,5 +1,11 @@
 import os
 import base64
+import sys
+
+
+if sys.version_info[0] >= 3:
+   print("For the time being, because of byte issues in Bryton, please use python 2.x")
+   sys.exit()
 
 _main_root=os.getcwd()
 
@@ -11,7 +17,7 @@ for _mydir in ("libs", "Lib"):
     for _root, _dir, _files in os.walk(_mydir):
         for _file in _files:
             if _file.endswith('.js') or _file.endswith('.py'):
-               _fp=open(os.path.join(_root, _file), "rb")
+               _fp=open(os.path.join(_root, _file), "r")
                _data=_fp.read()
                _fp.close()
 
