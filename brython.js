@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130331-164024
+// version 1.1.20130401-082839
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130331-164024"]
+__BRYTHON__.version_info=[1,1,"20130401-082839"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -4616,10 +4616,10 @@ parent_classes.push(parents[i])
 factory.parents=parent_classes
 factory.__name__=class_name
 var f=function(){
-var obj=new Object(),initialized=false
+var obj=new Object()
+obj.$initialized=false
 if(factory.parents.length){
 var obj=factory.parents[0].apply(null,arguments)
-initialized=true
 }
 obj.__class__=f
 for(var attr in factory){
@@ -4660,12 +4660,13 @@ catch(err){
 obj.__eq__=function(other){return obj===other}
 obj.__eq__.__name__="<bound method __eq__ of "+class_name+" object>"
 }
-if(!initialized){
+if(!obj.$initialized){
 try{
 var init_func=$resolve_attr(obj,factory,'__init__')
 var args=[obj]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 init_func.apply(null,arguments)
+obj.$initialized
 }catch(err){void(0)}
 }
 return obj
@@ -5234,6 +5235,28 @@ for(var i=0;i<node_list.length;i++){
 res.push($DOMNode(node_list[i]))
 }
 }
+if('tag'.__in__($ns['kw'])){
+if(obj.getElementsByTagName===undefined){
+throw TypeError("DOMNode object doesn't support selection by tag name")
+}
+var res=[]
+var node_list=document.getElementsByTagName($ns['kw'].__getitem__('tag'))
+if(node_list.length===0){return[]}
+for(var i=0;i<node_list.length;i++){
+res.push($DOMNode(node_list[i]))
+}
+}
+if('classname'.__in__($ns['kw'])){
+if(obj.getElementsByClassName===undefined){
+throw TypeError("DOMNode object doesn't support selection by class name")
+}
+var res=[]
+var node_list=document.getElementsByClassName($ns['kw'].__getitem__('classname'))
+if(node_list.length===0){return[]}
+for(var i=0;i<node_list.length;i++){
+res.push($DOMNode(node_list[i]))
+}
+}
 if('id'.__in__($ns['kw'])){
 if(obj.getElementById===undefined){
 throw TypeError("DOMNode object doesn't support selection by id")
@@ -5294,6 +5317,14 @@ DOMNode.prototype.get_parent=function(){
 if(this.parentElement){return $DOMNode(this.parentElement)}
 else{return None}
 }
+DOMNode.prototype.get_id=function(){
+if(this.id !==undefined){return this.id}
+else{return None}
+}
+DOMNode.prototype.get_class=function(){
+if(this.class !==undefined){return this.class}
+else{return None}
+}
 DOMNode.prototype.get_options=function(){
 return new $OptionsClass(this)
 }
@@ -5337,14 +5368,6 @@ this.innerText=str(value)
 this.textContent=str(value)
 }
 DOMNode.prototype.set_value=function(value){this.value=value.toString()}
-DOMNode.prototype.addClass=function(classname){
-var _c=this.__getattr__('class')
-if(_c===undefined){
-this.__setattr__('class', classname)
-}else{
-this.__setattr__('class', _c + " " + classname)
-}
-}
 doc=$DOMNode(document)
 function $TagSumClass(){
 this.__class__=$TagSum
@@ -5375,4 +5398,105 @@ return res
 }
 function $TagSum(){
 return new $TagSumClass()
+}
+var $toDOM=function(content){
+if(isinstance(content,DOMNode)){return content}
+if(isinstance(content,string)){
+var _dom=document.createElement('html')
+_dom.innerHTML=content
+return _dom
+}
+$raise('Error', 'Invalid argument' + content)
+}
+DOMNode.prototype.addClass=function(classname){
+var _c=this.__getattr__('class')
+if(_c===undefined){
+this.__setattr__('class', classname)
+}else{
+this.__setattr__('class', _c + " " + classname)
+}
+return this
+}
+DOMNode.prototype.after=function(content){
+var _content=$toDOM(content)
+if(this.nextSibling !==null){
+this.parentElement.insertBefore(_content, this.nextSibling)
+}else{
+this.parentElement.appendChild(_content)
+}
+return this
+}
+DOMNode.prototype.append=function(content){
+var _content=$toDOM(content)
+this.appendChild(_content)
+return this
+}
+DOMNode.prototype.before=function(content){
+var _content=$toDOM(content)
+this.parentElement.insertBefore(_content, this)
+return this
+}
+DOMNode.prototype.closest=function(selector){
+var traverse=function(node, ancestors){
+if(node===doc)return None
+for(var i=0;i<ancestors.length;i++){
+if(node===ancestors[i]){
+return ancestors[i]
+}
+}
+return traverse(this.parentElement, ancestors)
+}
+if(isinstance(selector, str)){
+var _elements=doc.get(selector=selector)
+return traverse(this, _elements);
+}
+return traverse(this, selector)
+}
+DOMNode.prototype.css=function(property,value){
+if(value !==undefined){
+this.set_style({property:value})
+return this 
+}
+if(isinstance(property, dict)){
+this.set_style(property)
+return this
+}
+return this.get_style(property)
+}
+DOMNode.prototype.empty=function(){
+for(var i=0;i <=this.childNodes.length;i++){
+this.removeChild(this.childNodes[i])
+}
+}
+DOMNode.prototype.hasClass=function(name){
+var _c=this.__getattr__('class')
+if(_c===undefined)return False
+if(_c.indexOf(name)> -1)return True
+return False
+}
+DOMNode.prototype.prepend=function(content){
+var _content=$toDOM(content)
+this.insertBefore(_content, this.firstChild)
+}
+DOMNode.prototype.removeAttr=function(name){
+this.__setattr__(name, undefined)
+}
+DOMNode.prototype.removeClass=function(name){
+var _c=this.__getattr__('class')
+if(_c===undefined)return
+if(_c===name){
+this.__setattr__('class', undefined)
+return
+}
+_index=_c.indexOf(name)
+if(_index==-1)return
+var _class_string=_c
+if(_index==0){
+_class_string=_c.substring(name.length)
+}else if(_index==_c.length - name.length){
+_class_string=_c.substring(0, _index)
+}else{
+_class_string=_c.replace(' '+name+' ', '')
+}
+this.__setattr('class', _class_string)
 }
