@@ -381,7 +381,10 @@ function $escape_dq(arg){return arg.replace($dq_regexp,'\\"')}
 
 // default standard output and error
 // can be reset by sys.stdout or sys.stderr
-document.$stderr = {'write':function(data){void(0)}}
+document.$stderr = {
+    __getattr__:function(attr){return this[attr]},
+    'write':function(data){console.log(data)}
+}
 document.$stderr_buff = '' // buffer for standard output
 
 document.$stdout = {

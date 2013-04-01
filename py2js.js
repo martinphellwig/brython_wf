@@ -948,7 +948,6 @@ function $ImportCtx(context){
     context.tree.push(this)
     this.expect = 'id'
     this.to_js = function(){
-        console.log(this+'')
         var res = '$mods=$import_list(['+$to_js(this.tree)+']);'
         for(var i=0;i<this.tree.length;i++){
             res += 'var '+this.tree[i].alias+'=$mods['+i+'];'
@@ -2663,10 +2662,22 @@ function brython(debug){
                 var src = (elt.innerHTML || elt.textContent)
                 __BRYTHON__.$py_module_path['__main__']='.' 
             }
-            var root = __BRYTHON__.py2js(src,'__main__')
-            var js = root.to_js()
-            if(debug===2){console.log(js)}
-            eval(js)
+            try{
+                var root = __BRYTHON__.py2js(src,'__main__')
+                var js = root.to_js()
+                if(debug===2){console.log(js)}
+                eval(js)
+            }catch(err){
+                console.log(err)
+                if(err.py_error===undefined){err = RuntimeError(err+'')}
+                var trace = err.__name__+': '+err.message
+                if(err.__name__=='SyntaxError'||err.__name__==='IndentationError'){
+                    trace += err.info
+                }
+                if(document.$stderr!==undefined){document.$stderr.__getattr__('write')(trace)}
+                else{err.message += err.info}
+                throw err
+            }
         }else{ // get path of brython.js
             var br_scripts = ['brython.js','py_list.js']
             for(var j=0;j<br_scripts.length;j++){
