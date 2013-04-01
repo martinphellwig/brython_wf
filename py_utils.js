@@ -301,10 +301,10 @@ function $class_constructor(class_name,factory,parents){
     factory.__name__ = class_name
     var f = function(){
         
-        var obj=new Object(),initialized=false
+        var obj=new Object()
+        obj.$initialized=false
         if(factory.parents.length){
             var obj = factory.parents[0].apply(null,arguments)
-            initialized = true
         }
         obj.__class__ = f
         // set attributes
@@ -349,12 +349,13 @@ function $class_constructor(class_name,factory,parents){
             obj.__eq__.__name__ = "<bound method __eq__ of "+class_name+" object>"
         }
         
-        if(!initialized){
+        if(!obj.$initialized){
             try{
                 var init_func = $resolve_attr(obj,factory,'__init__')
                 var args = [obj]
                 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
                 init_func.apply(null,arguments)
+                obj.$initialized
             }catch(err){void(0)}
         }
         return obj
