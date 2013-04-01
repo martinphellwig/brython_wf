@@ -723,19 +723,24 @@ DOMNode.prototype.before = function(content){
 // we can also emulate jquery style selectors with the
 // python class. :)
 
-DOMNode.prototype.closest = function(ancestors){
-   var traverse=function(node, ancestor) {
+DOMNode.prototype.closest = function(selector){
+   var traverse=function(node, ancestors) {
        if (node === doc) return None
-       for(var i=0; i < ancestors.length; i++) {
-          if (node === ancestor[i]) { 
-             return ancestor[i];
+       for(var i=0; i<ancestors.length; i++) {
+          if (node === ancestors[i]) { 
+             return ancestors[i];
           }
        } 
 
        return traverse(this.parentElement, ancestors);
    }
 
-   return traverse(this, ancestors); 
+   if (isinstance(selector, str)) {
+      var _elements=doc.get(selector=selector)
+      return traverse(this, _elements); 
+   } 
+
+   return traverse(this, selector);
 }
 
 DOMNode.prototype.css = function(property,value){
@@ -759,4 +764,46 @@ DOMNode.prototype.empty = function(){
    for (var i=0; i <= this.childNodes.length; i++) {
        this.removeChild(this.childNodes[i])
    }
+}
+
+
+DOMNode.prototype.hasClass = function(name){
+   var _c = this.__getattr__('class')
+   if (_c === undefined) return False
+   if (_c.indexOf(name) > -1) return True
+
+   return False
+}
+
+
+DOMNode.prototype.prepend = function(content){
+   var _content=$toDOM(content);
+   this.insertBefore(_content, this.firstChild);
+}
+
+DOMNode.prototype.removeAttr = function(name){
+   this.__setattr__(name, undefined)
+}
+
+DOMNode.prototype.removeClass = function(name){
+   var _c = this.__getattr__('class')
+   if (_c === undefined) return
+
+   if (_c === name) {
+      this.__setattr__('class', undefined)
+      return
+   }
+
+   _index=_c.indexOf(name)
+   if (_index == -1) return
+
+   var _class_string=_c
+   if (_index==0) {  // class is first in list
+        _class_string=_c.substring(name.length)
+   } else if (_index == _c.length - name.length) {  // at end of string
+        _class_string=_c.substring(0, _index)
+   } else { // must be somewhere in the middle
+        _class_string=_c.replace(' '+name+' ', '')
+   }
+   this.__setattr('class', _class_string)
 }
