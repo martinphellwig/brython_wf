@@ -16,3 +16,6 @@ show("C", doc)
 
 print(doc.__class__, doc)
 show("C", doc)
+
+x = doc.createTextNode('a')
+doc.body.appendChild(x)
