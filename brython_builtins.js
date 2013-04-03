@@ -12,6 +12,7 @@ __BRYTHON__.has_local_storage = typeof(Storage)!=="undefined"
 if(__BRYTHON__.has_local_storage){
     __BRYTHON__.local_storage = function(){return JSObject(localStorage)}
 }
+__BRYTHON__.re = function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json = typeof(JSON)!=="undefined"
-__BRYTHON__.version_info = [1,1,"20130403-111725"]
+__BRYTHON__.version_info = [1,1,"20130403-170230"]
 __BRYTHON__.path = [] // path for .py modules
