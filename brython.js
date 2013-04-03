@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130403-111725
+// version 1.1.20130403-205722
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -14,8 +14,9 @@ __BRYTHON__.has_local_storage=typeof(Storage)!=="undefined"
 if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
+__BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130403-111725"]
+__BRYTHON__.version_info=[1,1,"20130403-205722"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -4282,7 +4283,6 @@ function brython(debug){
 document.$py_src={}
 __BRYTHON__.$py_module_path={}
 __BRYTHON__.$py_module_alias={}
-__BRYTHON__.$py_modules={}
 __BRYTHON__.modules={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
 document.$debug=debug || 0
@@ -4498,7 +4498,7 @@ eval($js)
 return eval($res)
 }
 function $JS2Py(src){
-if(src===null){return None}
+if(src===null||src===undefined){return None}
 if(typeof src==='number'){
 if(src%1===0){return src}
 else{return float(src)}
@@ -5042,6 +5042,8 @@ this.get_remove=function(arg){parent.options.remove(arg)}
 this.toString=this.__str__
 }
 function JSObject(obj){
+if(obj===null){return new $JSObject(obj)}
+if(obj.__class__!==undefined){return obj}
 return new $JSObject(obj)
 }
 JSObject.__class__=$type
@@ -5067,15 +5069,14 @@ if(this.js.length!==undefined){return this.js.length}
 else{throw AttributeError,this+' has no attribute __len__'}
 }
 $JSObject.prototype.__getattr__=function(attr){
-var obj=this
-if(obj.js[attr]!==undefined){
+if(this.js[attr]!==undefined){
 var obj=this.js,obj_attr=this.js[attr]
 if(typeof this.js[attr]=='function'){
 return function(){
 var args=[]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 var res=obj_attr.apply(obj,args)
-if(typeof res=='object'){return new $JSObject(res)}
+if(typeof res=='object'){return JSObject(res)}
 else if(res===undefined){return None}
 else{return $JS2Py(res)}
 }
@@ -5143,6 +5144,26 @@ if(this['get_'+attr]!==undefined){return this['get_'+attr]()}
 if(this.getAttribute!==undefined){
 var res=this.getAttribute(attr)
 if(res){return res}
+}
+if(this[attr]!==undefined){
+var res=this[attr]
+if(typeof res==="function"){
+return(function(obj){
+return function(){
+var args=[]
+for(var i=0;i<arguments.length;i++){
+if(isinstance(arguments[i],JSObject)){
+args.push(arguments[i].js)
+}else{
+args.push(arguments[i])
+}
+}
+return $JS2Py(res.apply(obj,args))
+}
+})(this)
+}else{
+return $JS2Py(this[attr])
+}
 }
 return $getattr(this,attr)
 }
