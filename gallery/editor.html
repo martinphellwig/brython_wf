@@ -2,10 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="iso-8859-1">
-<script src="../brython.js"></script>
-<script src="../py2js.js"></script>
-<script src="../py_utils.js"></script>
-<script src="../py_dom.js"></script>
+<script type="text/javascript" src="../brython_builtins.js"></script>
+<script type="text/javascript" src="../py2js.js"></script>
+<script type="text/javascript" src="../py_utils.js"></script>
+<script type="text/javascript" src="../py_classes.js"></script>
+<script type="text/javascript" src="../py_import.js"></script>
+<script type="text/javascript" src="../py_VFS.js"></script>
+<script type="text/javascript" src="../py_list.js"></script>
+<script type="text/javascript" src="../py_string.js"></script>
+<script type="text/javascript" src="../py_dom.js"></script>
+<script type="text/javascript" src="../py_ajax.js"></script>
 <style>
   h1 {
 color:#4E632C;
@@ -66,6 +72,19 @@ span.keyword {
 import html
 import string
 import keyword
+import re
+
+builtin_funcs = ("abs|divmod|input|open|staticmethod|all|enumerate|int|ord|str|any|" +
+        "eval|isinstance|pow|sum|basestring|execfile|issubclass|print|super|" +
+        "binfile|iter|property|tuple|bool|filter|len|range|type|bytearray|" +
+        "float|list|raw_input|unichr|callable|format|locals|reduce|unicode|" +
+        "chr|frozenset|long|reload|vars|classmethod|getattr|map|repr|xrange|" +
+        "cmp|globals|max|reversed|zip|compile|hasattr|memoryview|round|" +
+        "__import__|complex|hash|min|set|apply|delattr|help|next|setattr|" +
+        "buffer|dict|hex|object|slice|coerce|dir|id|oct|sorted|intern")
+
+kw_pattern = '^('+'|'.join(keyword.kwlist)+')$'
+bf_pattern = '^('+builtin_funcs+')$'
 
 def colorize(txt):
     res = ''
@@ -84,17 +103,19 @@ def colorize(txt):
         elif car == '#': # comment
             res += html.SPAN(txt[i:],Class='comment')
             break
-        elif car in string.whitespace+string.punctuation:
+        elif car in string.ascii_letters+'_':
+            name += car
+        elif car in string.digits and name:
+            name += car
+        else:
             if name:
-                if name in keyword.kwlist:
+                if re.search(kw_pattern,name):
+                    res += html.SPAN(name,Class='keyword')
+                elif re.search(bf_pattern,name):
                     res += html.SPAN(name,Class='keyword')
                 else:
                     res += name
                 name = ''
-            res += car
-        elif car in string.ascii_letters+string.digits+'_':
-            name += car
-        else:
             res += car
         i += 1
     res += name
