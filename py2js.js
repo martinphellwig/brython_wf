@@ -1148,6 +1148,8 @@ function $OpCtx(context,op){ // context is the left operand
             var res = this.tree[0].to_js()
             if(this.op==="is"){
                 res += '==='+this.tree[1].to_js()
+            }else if(this.op==="is_not"){
+                res += '!=='+this.tree[1].to_js()
             }else{
                 res += '.__'+$operators[this.op]+'__('+this.tree[1].to_js()+')'
             }
@@ -1550,8 +1552,14 @@ function $transition(context,token){
         else if(token==='('){return new $ListOrTupleCtx(new $ExprCtx(context,'tuple',commas),'tuple')}
         else if(token==='['){return new $ListOrTupleCtx(new $ExprCtx(context,'list',commas),'list')}
         else if(token==='{'){return new $DictOrSetCtx(new $ExprCtx(context,'dict_or_set',commas))}
-        else if(token==='not'){return new $NotCtx(new $ExprCtx(context,'not',commas))}
-        else if(token==='lambda'){return new $LambdaCtx(new $ExprCtx(context,'lambda',commas))}
+        else if(token==='not'){
+            if(context.type==='op'&&context.op==='is'){ // "is not"
+                context.op = 'is_not'
+                return context
+            }else{
+                return new $NotCtx(new $ExprCtx(context,'not',commas))
+            }
+        }else if(token==='lambda'){return new $LambdaCtx(new $ExprCtx(context,'lambda',commas))}
         else if(token==='op'){
             if('+-'.search(arguments[2])>-1){ // unary + or -
                 return new $UnaryCtx(context,arguments[2])
@@ -2291,8 +2299,6 @@ __BRYTHON__.py2js = function(src,module,env){
 
     document.$py_src[module]=src
     var root = $tokenize(src,module)
-    root.env = env // environment namespace : used in comprehensions
-    if(env!==undefined){console.log('environment '+env)}
     root.transform()
     if(document.$debug>0){$add_line_num(root,null,module)}
     return root
@@ -2317,7 +2323,9 @@ function $tokenize(src,module){
     var unsupported = ["nonlocal","with"]
     var $indented = ['class','def','for','condition','single_kw','try','except']
     // from https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Reserved_Words
-    var forbidden = ['case','catch','debugger','default','delete',
+    var forbidden = []
+        /*
+        ['case','catch','debugger','default','delete',
         'do','function','instanceof','new','switch','this','throw',
         'typeof','var','void','with','enum','export','extends','super',
         'Anchor','Area','arguments','Array','assign','blur','Boolean','Button',
@@ -2336,6 +2344,7 @@ function $tokenize(src,module){
         'status','statusbar','stop','String','Submit','sun','taint','Text','Textarea','toolbar',
         'top','toString','unescape','untaint','unwatch','valueOf','watch','window','Window'
         ]
+        */
 
     var punctuation = {',':0,':':0} //,';':0}
     var int_pattern = new RegExp("^\\d+")
