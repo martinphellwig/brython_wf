@@ -236,6 +236,8 @@ function $OptionsClass(parent){
 }
 
 function JSObject(obj){
+    if(obj===null){return new $JSObject(obj)}
+    if(obj.__class__!==undefined){return obj}
     return new $JSObject(obj)
 }
 JSObject.__class__ = $type
@@ -267,15 +269,14 @@ $JSObject.prototype.__len__ = function(){
 }
 
 $JSObject.prototype.__getattr__ = function(attr){
-    var obj = this
-    if(obj.js[attr] !== undefined){
+    if(this.js[attr] !== undefined){
         var obj = this.js,obj_attr = this.js[attr]
         if(typeof this.js[attr]=='function'){
             return function(){
                 var args = []
                 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
                 var res = obj_attr.apply(obj,args)
-                if(typeof res == 'object'){return new $JSObject(res)}
+                if(typeof res == 'object'){return JSObject(res)}
                 else if(res===undefined){return None}
                 else{return $JS2Py(res)}
             }
@@ -359,6 +360,26 @@ DOMNode.prototype.__getattr__ = function(attr){
     if(this.getAttribute!==undefined){
         var res = this.getAttribute(attr)
         if(res){return res}
+    }
+    if(this[attr]!==undefined){
+        var res = this[attr]
+        if(typeof res==="function"){
+            return (function(obj){
+                return function(){
+                    var args = []
+                    for(var i=0;i<arguments.length;i++){
+                        if(isinstance(arguments[i],JSObject)){
+                            args.push(arguments[i].js)
+                        }else{
+                            args.push(arguments[i])
+                        }
+                    }
+                    return $JS2Py(res.apply(obj,args))
+                }
+            })(this)
+        }else{
+            return $JS2Py(this[attr])
+        }
     }
     return $getattr(this,attr)
 }
