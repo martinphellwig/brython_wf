@@ -1,6 +1,6 @@
 // brython.js www.brython.info
-// version 1.1.20130403-111354
-// version compiled from commented, indented source files at http://code.google.com/p/brython/
+// version 1.1.20130403-111725
+// version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
 __BRYTHON__.date=function(){
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130403-111354"]
+__BRYTHON__.version_info=[1,1,"20130403-111725"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
