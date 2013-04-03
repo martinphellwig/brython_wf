@@ -163,7 +163,7 @@ function $lambda($env,$args,$body){
 
 // transform native JS types into Brython types
 function $JS2Py(src){
-    if(src===null){return None}
+    if(src===null||src===undefined){return None}
     if(typeof src==='number'){
         if(src%1===0){return src}
         else{return float(src)}
