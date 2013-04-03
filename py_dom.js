@@ -116,11 +116,14 @@ function $DOMEvent(ev){
         if(attr=="x"){return $mouseCoords(ev).x}
         if(attr=="y"){return $mouseCoords(ev).y}
         if(attr=="data"){return new $Clipboard(ev.dataTransfer)}
+        if(attr=="target"){
+            if(ev.target===undefined){return $DOMNode(ev.srcElement)}
+            else{return $DOMNode(ev.target)}
+        }
         return $getattr(ev,attr)
     }
     if(ev.preventDefault===undefined){ev.preventDefault = function(){ev.returnValue=false}}
     if(ev.stopPropagation===undefined){ev.stopPropagation = function(){ev.cancelBubble=true}}
-    if(ev.target===undefined){ev.target = ev.srcElement}
     ev.__str__ = function(){return '<DOMEvent object>'}
     ev.toString = ev.__str__
     return ev
@@ -440,9 +443,9 @@ DOMNode.prototype.__setattr__ = function(attr,value){
     }else{
         attr = attr.replace('_','-')
         if(this['set_'+attr]!==undefined){return this['set_'+attr](value)}
+        if(this[attr]!==undefined){this[attr]=value;return}
         var res = this.getAttribute(attr)
         if(res!==undefined){this.setAttribute(attr,value)}
-        else if(this[attr]!==undefined){this[attr]=value}
         else{setattr(this,attr,value)}
     }
 }
