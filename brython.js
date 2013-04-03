@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130401-082839
+// version 1.1.20130403-111354
 // version compiled from commented, indented source files at http://code.google.com/p/brython/
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -15,7 +15,7 @@ if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130401-082839"]
+__BRYTHON__.version_info=[1,1,"20130403-111354"]
 __BRYTHON__.path=[]
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -2821,7 +2821,6 @@ this.tree=[]
 C.tree.push(this)
 this.expect='id'
 this.to_js=function(){
-console.log(this+'')
 var res='$mods=$import_list(['+$to_js(this.tree)+']);'
 for(var i=0;i<this.tree.length;i++){
 res +='var '+this.tree[i].alias+'=$mods['+i+'];'
@@ -3007,6 +3006,8 @@ return res
 var res=this.tree[0].to_js()
 if(this.op==="is"){
 res +='==='+this.tree[1].to_js()
+}else if(this.op==="is_not"){
+res +='!=='+this.tree[1].to_js()
 }else{
 res +='.__'+$operators[this.op]+'__('+this.tree[1].to_js()+')'
 }
@@ -3360,8 +3361,14 @@ else if(token==='float'){return new $FloatCtx(new $ExprCtx(C,'float',commas),arg
 else if(token==='('){return new $ListOrTupleCtx(new $ExprCtx(C,'tuple',commas),'tuple')}
 else if(token==='['){return new $ListOrTupleCtx(new $ExprCtx(C,'list',commas),'list')}
 else if(token==='{'){return new $DictOrSetCtx(new $ExprCtx(C,'dict_or_set',commas))}
-else if(token==='not'){return new $NotCtx(new $ExprCtx(C,'not',commas))}
-else if(token==='lambda'){return new $LambdaCtx(new $ExprCtx(C,'lambda',commas))}
+else if(token==='not'){
+if(C.type==='op'&&C.op==='is'){
+C.op='is_not'
+return C
+}else{
+return new $NotCtx(new $ExprCtx(C,'not',commas))
+}
+}else if(token==='lambda'){return new $LambdaCtx(new $ExprCtx(C,'lambda',commas))}
 else if(token==='op'){
 if('+-'.search(arguments[2])>-1){
 return new $UnaryCtx(C,arguments[2])
@@ -3991,8 +3998,6 @@ if(src.charAt(src.length-1)!="\n"){src+='\n'}
 if(module===undefined){module='__main__'}
 document.$py_src[module]=src
 var root=$tokenize(src,module)
-root.env=env 
-if(env!==undefined){console.log('environment '+env)}
 root.transform()
 if(document.$debug>0){$add_line_num(root,null,module)}
 return root
@@ -4013,25 +4018,7 @@ var kwdict=["class","return",
 ]
 var unsupported=["nonlocal","with"]
 var $indented=['class','def','for','condition','single_kw','try','except']
-var forbidden=['case','catch','debugger','default','delete',
-'do','function','instanceof','new','switch','this','throw',
-'typeof','var','void','with','enum','export','extends','super',
-'Anchor','Area','arguments','Array','assign','blur','Boolean','Button',
-'callee','caller','captureEvents','Checkbox','clearInterval','clearTimeout',
-'close','closed','constructor','Date','defaultStatus','document','Document',
-'Element','escape','FileUpload','find','focus','Form','Frame','Frames','Function',
-'getClass','Hidden','history','History','home','Image','Infinity','InnerHeight',
-'InnerWidth','isFinite','isNan','java','JavaArray','JavaClass','JavaObject',
-'JavaPackage','length','Link','location','Location','locationbar','Math','menubar',
-'MimeType','moveBy','moveTo','name','NaN','navigate','navigator','Navigator','netscape',
-'Number','Object','onBlur','onError','onFocus','onLoad','onUnload','opener',
-'Option','outerHeight','OuterWidth','Packages','pageXoffset','pageYoffset',
-'parent','parseFloat','parseInt','Password','personalbar','Plugin','prototype',
-'Radio','ref','RegExp','releaseEvents','Reset','resizeBy','resizeTo','routeEvent',
-'scroll','scrollbars','scrollBy','scrollTo','Select','self','setInterval','setTimeout',
-'status','statusbar','stop','String','Submit','sun','taint','Text','Textarea','toolbar',
-'top','toString','unescape','untaint','unwatch','valueOf','watch','window','Window'
-]
+var forbidden=[]
 var punctuation={',':0,':':0}
 var int_pattern=new RegExp("^\\d+")
 var float_pattern1=new RegExp("^\\d+\\.\\d*(e-?\\d+)?")
@@ -4329,10 +4316,22 @@ __BRYTHON__.path.push(elt.src)
 var src=(elt.innerHTML || elt.textContent)
 __BRYTHON__.$py_module_path['__main__']='.' 
 }
+try{
 var root=__BRYTHON__.py2js(src,'__main__')
 var js=root.to_js()
 if(debug===2){console.log(js)}
 eval(js)
+}catch(err){
+console.log(err)
+if(err.py_error===undefined){err=RuntimeError(err+'')}
+var trace=err.__name__+': '+err.message
+if(err.__name__=='SyntaxError'||err.__name__==='IndentationError'){
+trace +=err.info
+}
+if(document.$stderr!==undefined){document.$stderr.__getattr__('write')(trace)}
+else{err.message +=err.info}
+throw err
+}
 }else{
 var br_scripts=['brython.js','py_list.js']
 for(var j=0;j<br_scripts.length;j++){
@@ -4687,7 +4686,10 @@ return f
 }
 var $dq_regexp=new RegExp('"',"g")
 function $escape_dq(arg){return arg.replace($dq_regexp,'\\"')}
-document.$stderr={'write':function(data){void(0)}}
+document.$stderr={
+__getattr__:function(attr){return this[attr]},
+'write':function(data){console.log(data)}
+}
 document.$stderr_buff='' 
 document.$stdout={
 __getattr__:function(attr){return this[attr]},
@@ -4945,11 +4947,14 @@ ev.__getattr__=function(attr){
 if(attr=="x"){return $mouseCoords(ev).x}
 if(attr=="y"){return $mouseCoords(ev).y}
 if(attr=="data"){return new $Clipboard(ev.dataTransfer)}
+if(attr=="target"){
+if(ev.target===undefined){return $DOMNode(ev.srcElement)}
+else{return $DOMNode(ev.target)}
+}
 return $getattr(ev,attr)
 }
 if(ev.preventDefault===undefined){ev.preventDefault=function(){ev.returnValue=false}}
 if(ev.stopPropagation===undefined){ev.stopPropagation=function(){ev.cancelBubble=true}}
-if(ev.target===undefined){ev.target=ev.srcElement}
 ev.__str__=function(){return '<DOMEvent object>'}
 ev.toString=ev.__str__
 return ev
@@ -5211,9 +5216,9 @@ this.attachEvent(attr,callback)
 }else{
 attr=attr.replace('_','-')
 if(this['set_'+attr]!==undefined){return this['set_'+attr](value)}
+if(this[attr]!==undefined){this[attr]=value;return}
 var res=this.getAttribute(attr)
 if(res!==undefined){this.setAttribute(attr,value)}
-else if(this[attr]!==undefined){this[attr]=value}
 else{setattr(this,attr,value)}
 }
 }
