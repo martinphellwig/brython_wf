@@ -96,32 +96,6 @@ str.__hash__ = function(self) {
   return hash;
 }
 
-/*
-// implements something close to what cpython produces for a string.
-// alg above is probably more efficient.
-String.prototype.__hash__ = function() {
-   c_mul=function(a,b) {
-     var c=(a*b) & 0xFFFFFFFF;
-     var d=c.toString(16);
-     d=d.substr(0, d.length-1)
-     console.log(d)
-     console.log(parseInt(d,16))
-     return parseInt(d,16)
-   }
-
-   var value=this.charCodeAt(0) << 7;
-   console.log(value)
-   for (var i=0; i < this.length; i++) {
-       value=c_mul(1000003, value) ^ this.charCodeAt(i);
-       console.log(value)
-   }
-   value=value ^ this.length;
-   console.log(value)
-   if (value == -1) return -2;
-   return value;
-}
-*/
-
 str.__in__ = function(self,item){return item.__contains__(self.valueOf())}
 
 str.__item__ = function(self,i){return self.charAt(i)}
