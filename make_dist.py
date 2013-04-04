@@ -5,9 +5,9 @@ import datetime
 
 now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
-sources = ['brython_builtins',
+sources = ['brython_builtins','py_utils',
     'py_classes','py_list','py_string','py_import',
-    'py2js','py_utils',
+    'py2js',
     'py_ajax','py_dom']
 
 # update version number in module sys

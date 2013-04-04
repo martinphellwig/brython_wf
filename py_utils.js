@@ -503,3 +503,4 @@ function $last(item){
     if(typeof item=="string"){return item.charAt(item.length-1)}
     else if(typeof item=="object"){return item[item.length-1]}
 }
+
