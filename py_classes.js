@@ -710,6 +710,14 @@ function len(obj){
         }
 }
 
+function locals(obj){
+    // used for locals() ; the translation engine adds the argument obj,
+    // a dictionary mapping local variable names to their values
+    var res = dict()
+    for(var name in obj){res.__setitem__(name,obj[name])}
+    return res
+}
+
 function map(){
     var func = arguments[0],res=[],rank=0
     while(true){
