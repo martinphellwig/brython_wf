@@ -83,4 +83,7 @@ class No_static:
 gids = (No_static(0).gid,No_static(1).gid)
 assert gids == (0,1), 'Fail incrementing static (%d,%d)'%gids
 
+# issue 20
+assert 'fail slice string!'[5:-1] == 'slice string', 'Failure in string slicing'
+
 print('passed all tests')
