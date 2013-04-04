@@ -125,8 +125,6 @@ function $Node(type){
     this.get_ctx = function(){return this.context}
 }
 
-function $last(src){return src[src.length-1]}
-
 var $loop_id=0
 
 function $AbstractExprCtx(context,with_commas){
@@ -295,6 +293,11 @@ function $AssignCtx(context){
                 if(scope.globals && scope.globals.indexOf(left.value)>-1){
                     return left.to_js()+'='+right.to_js()
                 }else{ // local to scope : prepend 'var'
+                    var scope_id = scope.context.tree[0].id
+                    var locals = __BRYTHON__.scope[scope_id].locals
+                    if(locals.indexOf(left.to_js())===-1){
+                        locals.push(left.to_js())
+                    }
                     return 'var '+left.to_js()+'='+right.to_js()
                 }
             }else if(scope.ntype==='class'){
@@ -338,6 +341,9 @@ function $CallCtx(context){
     this.type = 'call'
 
     this.func = context.tree[0]
+    if(this.func!==undefined){ // undefined for lambda
+        this.func.parent = this
+    }
     this.parent = context
     context.tree.pop()
     context.tree.push(this)
@@ -496,6 +502,9 @@ function $DefCtx(context){
     this.name = null
     this.parent = context
     this.tree = []
+    this.id = Math.random().toString(36).substr(2,8)
+    __BRYTHON__.scope[this.id] = this
+    this.locals = []
     context.tree.push(this)
     this.toString = function(){return 'def '+this.name+'('+this.tree+')'}
     this.transform = function(node,rank){
@@ -879,6 +888,15 @@ function $FuncArgIdCtx(context,name){
     this.parent = context
     this.tree = []
     context.tree.push(this)
+    // add to locals of function
+    var ctx = context
+    while(ctx.parent!==undefined){
+        if(ctx.type==='def'){
+            ctx.locals.push(name)
+            break
+        }
+        ctx = ctx.parent
+    }    
     this.toString = function(){return 'func arg id '+this.name +'='+this.tree}
     this.expect = '='
     this.to_js = function(){return this.name+$to_js(this.tree)}
@@ -936,6 +954,21 @@ function $IdCtx(context,value,minus){
     this.to_js = function(){
         var val = this.value
         if(['print','alert','eval','open'].indexOf(this.value)>-1){val = '$'+val}
+        if(['locals','globals'].indexOf(this.value)>-1){
+            if(this.parent.type==='call'){
+                var scope = $get_scope(this)
+                if(scope===null){new $StringCtx(this.parent,'"__main__"')}
+                else{
+                    var locals = scope.context.tree[0].locals
+                    var res = '{'
+                    for(var i=0;i<locals.length;i++){
+                        res+="'"+locals[i]+"':"+locals[i]
+                        if(i<locals.length-1){res+=','}
+                    }
+                    new $StringCtx(this.parent,res+'}')
+                }
+            }
+        }
         return val+$to_js(this.tree,'')
     }
 }
@@ -2216,7 +2249,7 @@ function $transition(context,token){
 
     }else if(context.type==='str'){
 
-        if(token==='['){return new $AbstractExprCtx(new $SubCtx(context),false)}
+        if(token==='['){return new $AbstractExprCtx(new $SubCtx(context.parent),false)}
         else if(token==='('){return new $CallCtx(context)}
         //else if(token==='.'){return new $AttrCtx(context)}
         else if(token=='str'){context.value += '+'+arguments[2];return context}
@@ -2296,6 +2329,7 @@ __BRYTHON__.py2js = function(src,module,env){
     }
     if(src.charAt(src.length-1)!="\n"){src+='\n'}
     if(module===undefined){module='__main__'}
+    __BRYTHON__.scope[module] = {}
 
     document.$py_src[module]=src
     var root = $tokenize(src,module)
@@ -2639,6 +2673,7 @@ function brython(debug){
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
     document.$debug = debug || 0
     __BRYTHON__.exception_stack = []
+    __BRYTHON__.scope = {}
     var elts = document.getElementsByTagName("script")
     var href = window.location.href
     var href_elts = href.split('/')
@@ -2648,7 +2683,7 @@ function brython(debug){
     
     for(var $i=0;$i<elts.length;$i++){
         var elt = elts[$i]
-        if(elt.type=="text/python"){
+        if(elt.type=="text/python"||elt.type==="text/python3"){
             if(elt.src!==''){ 
                 // format <script type="text/python" src="python_script.py">
                 // get source code by an Ajax call
