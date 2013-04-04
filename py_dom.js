@@ -587,7 +587,7 @@ DOMNode.prototype.get_id = function(){
 }
 
 DOMNode.prototype.get_class = function(){
-    if(this.class !== undefined){return this.class}
+    if(this.className !== undefined){return this.className}
     else{return None}
 }
 
