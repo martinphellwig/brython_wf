@@ -4,27 +4,26 @@ class NodeCollectionSelector(Selector):
       self._collection=collection
 
       if self._selector_type == 'id':
-         self._match=self._get_id
+         self._match=self._match_id
       elif self._selector_type == 'tag':
-         self._match=self._get_tag
+         self._match=self._match_tag
       elif self._selector_type == 'classname':
-         self._match=self._get_classname
+         self._match=self._match_classname
 
-
-  def _get_id(self, node, id):
+  def _match_id(self, node):
       if node.id is None: return False
-      return node.id == id
+      return node.id == self._selector
 
-  def _get_tag(self, node, tag):
-      return node.tag == tag
+  def _match_tag(self, node):
+      return node.tag == self._selector
 
-  def _get_classname(self, node, tag):
-      return classname in node.classname
+  def _match_classname(self, node):
+      return self._selector in node.classname
 
   def get(self):
       _c1=NodeCollection()
       for _node in self._collection:
-          if self.match():
+          if self._match(_node):
              _c1.append(_node)
 
       return _c1
@@ -243,7 +242,6 @@ class NodeCollection:
       for _node in self._nodes:
           _node.removeClass(name)
 
-
   def replaceWith(self, content):
       for _node in self._nodes:
           _node.get_parent().replaceWith(content, _node)
@@ -259,25 +257,24 @@ class NodeCollection:
       for _node in self._nodes:
           _node.set_text(content)          
 
-  def toggle(self, function=None):
-      if function is None:
+  def toggle(self, Function=None):
+      if Function is None:
          _show=not self._nodes[0].visible
          for _node in self._nodes:
              if _show:
                 _node.show()
              else:
                 _node.hide()
-
+  
              _show=not _show
 
          return
 
-         for _node in self._nodes:
-             if function(_node):
-                _node.show()
-             else:
-                _node.hide()
-      
+      for _node in self._nodes:
+          if Function(_node):
+             _node.show()
+          else:
+             _node.hide()
 
   def unwrap(self):
       for _node in self._nodes:
@@ -293,5 +290,3 @@ class NodeCollection:
 
       for _node in self._nodes:
           _node.set_width(width)
-
-
