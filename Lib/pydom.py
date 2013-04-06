@@ -5,7 +5,7 @@ class NodeCollectionSelector(Selector):
 
       if self._selector_type == 'id':
          self._match=self._match_id
-      elif self._selector_type == 'tag':
+      elif self._selector_type =='tag':
          self._match=self._match_tag
       elif self._selector_type == 'classname':
          self._match=self._match_classname
@@ -15,7 +15,7 @@ class NodeCollectionSelector(Selector):
       return node.id == self._selector
 
   def _match_tag(self, node):
-      return node.tag == self._selector
+      return node.tagName == self._selector
 
   def _match_classname(self, node):
       return self._selector in node.classname
@@ -54,7 +54,7 @@ class Selector:
             self._selector=selector[1:]
             self._selector_type="id"
          elif selector.upper() in tags:
-            self._selector=selector
+            self._selector=selector.upper()
             self._selector_type="tag"
          else:  
             self._selector=selector
@@ -85,7 +85,7 @@ class Selector:
          _matched_nodes=self._doc.get(id=self._selector)
       elif self._selector_type=="classname":
          _matched_nodes=self._doc.get(classname=self._selector)
-      elif self._selector_type=="tag":
+      elif self._selector_type == "tag":
          _matched_nodes=self._doc.get(tag=self._selector)
       elif self._selector_type=="selector":
          _matched_nodes=self._doc.get(selector=self._selector)
@@ -93,7 +93,7 @@ class Selector:
       return NodeCollection(_matched_nodes)
 
 class NodeCollection:
-  def __init__(self, nodes):
+  def __init__(self, nodes=[]):
       self._nodes=nodes
 
   def __len__(self):
@@ -104,6 +104,13 @@ class NodeCollection:
 
   def __add__(self, nodes):
       self._nodes+=nodes
+
+  def __str__(self):
+      _str=[]
+      for _node in self._nodes:
+          _str.append(_node.__str__())
+
+      return '<br>'.join(_str)
 
   def append(self, node):        
       self._nodes.append(node)
@@ -161,10 +168,14 @@ class NodeCollection:
 
   def css(self, property, value=None):
       if value is None and not isinstance(property, dict):
-         return   #doesn't make sense to me to return a node collection
+         return self._nodes[0].css(property)
 
-      for _node in self._nodes:
-          _node.css(property, value)
+      if isinstance(property, dict):
+         for _node in self._nodes:
+             _node.css(property)
+      else:
+         for _node in self._nodes:
+             _node.css(property, value)
       
   def empty(self):
       for _node in self._nodes:
@@ -178,7 +189,7 @@ class NodeCollection:
       if len(self._nodes) == 0:
          return NodeCollection()
 
-      return NodeCollection(self._nodes[0])
+      return NodeCollection([self._nodes[0]])
 
   def get(self, index=None):
       if index is None:
@@ -195,10 +206,10 @@ class NodeCollection:
 
   def height(self, value=None):
       if value is None:
-         return self._nodes[0].get_height()
+         return self._nodes[0].css('height')
 
       for _node in self._nodes:
-          _node.set_height(value)
+          _node.set_style({'height': value})
 
   def hide(self):
       for _node in self._nodes:
@@ -229,7 +240,8 @@ class NodeCollection:
           _parent=_node.get_parent()
           for _i in range(len(_parent.childNodes)):
               if _parent.childNodes[_i] == _node:
-                 _p1.append(_parent.childNodes[_i])
+                 if _i > 0:
+                    _p1.append(_parent.childNodes[_i-1])
                  break
 
       return _p1
@@ -248,23 +260,25 @@ class NodeCollection:
 
   def show(self):
       for _node in self._nodes:
-          _node.show()
+          _node.set_style({'display': 'block'})
 
   def text(self, content=None):
       if content is None:
          return self._nodes[0].get_text()
 
       for _node in self._nodes:
-          _node.set_text(content)          
+          _node.set_text(content) 
 
   def toggle(self, Function=None):
       if Function is None:
-         _show=not self._nodes[0].visible
+         _show=True
+         if self._nodes[0].css('display') != 'none':
+            _show=False
          for _node in self._nodes:
              if _show:
-                _node.show()
+                _node.set_style({'display': 'block'})
              else:
-                _node.hide()
+                _node.set_style({'display': 'none'})
   
              _show=not _show
 
@@ -272,9 +286,9 @@ class NodeCollection:
 
       for _node in self._nodes:
           if Function(_node):
-             _node.show()
+             _node.set_style({'display': 'block'})
           else:
-             _node.hide()
+             _node.set_style({'display': 'none'})
 
   def unwrap(self):
       for _node in self._nodes:
@@ -286,7 +300,7 @@ class NodeCollection:
 
   def width(self, width=None):
       if width is None:
-         return self._nodes[0].get_width()
+         return self._nodes[0].css('width')
 
       for _node in self._nodes:
-          _node.set_width(width)
+          _node.set_style({'width': width})
