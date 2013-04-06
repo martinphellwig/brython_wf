@@ -10,7 +10,5 @@ else:
 server_address = ('', 8000)
 handler = CGIHTTPRequestHandler
 httpd = server.HTTPServer(server_address, handler)
-print("server running on port %s" %server_address[1])
+print("server running on port %s" % server_address[1])
 httpd.serve_forever()
-
-
