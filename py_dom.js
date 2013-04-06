@@ -192,7 +192,7 @@ function $OptionsClass(parent){
         else if(this[attr]!==undefined){
             var res = $JS2Py(this[attr])
             return res
-            }
+        }
         else{throw AttributeError("'DOM.Options' object has no attribute '"+attr+"'")}
     }
     
@@ -591,6 +591,11 @@ DOMNode.prototype.get_class = function(){
     else{return None}
 }
 
+DOMNode.prototype.get_tagName = function(){
+    if(this.tagName !== undefined){return this.tagName}
+    else{return None}
+}
+
 DOMNode.prototype.get_options = function(){ // for SELECT tag
     return new $OptionsClass(this)
 }
@@ -693,7 +698,7 @@ function $TagSum(){
 var $toDOM = function (content) {
    if (isinstance(content,DOMNode)) {return content}
 
-   if (isinstance(content,string)) {
+   if (isinstance(content,str)) {
       var _dom = document.createElement('html')
       _dom.innerHTML = content
       return _dom
@@ -780,8 +785,8 @@ DOMNode.prototype.css = function(property,value){
    }
 
    //this is a get request
-
-   return this.get_style(property)
+   if (this.style[property] === undefined) { return None}
+   return this.style[property]
 }
 
 DOMNode.prototype.empty = function(){
@@ -790,7 +795,6 @@ DOMNode.prototype.empty = function(){
    }
 }
 
-
 DOMNode.prototype.hasClass = function(name){
    var _c = this.__getattr__('class')
    if (_c === undefined) return False
@@ -798,7 +802,6 @@ DOMNode.prototype.hasClass = function(name){
 
    return False
 }
-
 
 DOMNode.prototype.prepend = function(content){
    var _content=$toDOM(content);
