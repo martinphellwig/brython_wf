@@ -1,0 +1,208 @@
+<html>
+<head>
+<title>Brython</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" href="../doc_brython.css">
+<script src="../../src/brython.js"></script>
+</head>
+<body onload="brython()">
+
+
+<a name="syntaxe"><h3>Sintaxis</h3>
+Brython sigue la sintaxis de Python 3
+<ul>
+<li>los bloques de código delimitados por sangría
+<li>definición de listas con <code>[]</code> o <code>list()</code>, de tuplas con <code>()</code> o <code>tuple()</code>, de diccionarios con <code>{}</code> o <code>dict()</code>, de conjunto con <code>set()</code>
+<li>comprensión de listas : <code>[ expr for item in iterable if condition ]</code>
+<li>operador ternario : <code>x = r1 if condition else r2</code>
+<li>la definición de funciones pueden tener valores predeterminados y también argumentos y claves opcionales: <br><code>def foo(x,y=0,*args,**kw):</code>
+<li>desempaquetando de listas o diccionarios en la llamada de función : <code>x = foo(*args,**kw)</code>
+</ul>
+
+</ul>
+
+<a name="integr"><h3>Palabras clave y funciones integradas</h3>
+
+Brython soporta la mayoría de las palabras clave y las funciones de Python 3 :
+<ul><li>palabras claves : <code>as assert break class continue def del elif else except False finally for from global if import is lambda None pass raise return True try while yield</code>
+<li>funciones integradas : <code>abs() all() any() bool() dict() dir() enumerate() eval() exec() filter() float() getattr() hasattr() input() int() isinstance() iter() len() list() map() max() min() next() object() print() range() reversed() round() set() setattr() slice() str() sum() tuple() zip()</code>
+</ul>
+<p>Inicialmente, <code>print()</code> marca todo en la consola del navegador, y los mensajes de errores también se marcan en esta consola. <code>sys.stderr</code> y <code>sys.stdout</code> pueden ser asignados a un objeto que implementa un método <code>write()</code>. De esta manera es posible de cambiar la salida a una ventana, por ejemplo, en vez de la consola. No hay <code>sys.stdin</code>, pero hay <code>input()</code>, implementado por medio de <code>prompt()</code>
+<p>Para comenzar a imprimir en una impresora, utilice <code>win.print()</code>
+<p>No están soportados : 
+<ul>
+<li>palabras claves <code>nonlocal with</code>
+<li>entre las funciones integradas :
+<ul><li>algunas pueden ser incluidas en versiones futuras : <code>ascii(), bin(), callable(), chr(), classmethod(), complex(), delattr(), divmod(), format(), frozenset(), globals(), hex(), id(), locals(), ord(), pow(), repr(), sorted(), staticmethod(), type(), vars()</code>
+<li>otras son poco probable que sea integrada: <code>bytearray(), bytes(), compile(), hash(), help(), memoryview(), property(), super(), __import__() </code>
+<li>algunas no son relevantes en el contexto de un navegador : <code> open()</code>
+<li>el tipo de números complejos (j)
+</ul>
+</ul>
+A diferencia de Python, puede agregar atributos a los objetos creados por <code>object()</code> :
+<p><pre>x = object()
+x.foo = 44
+del x.foo
+</pre>
+<p>
+Por ultimo, se agrego algunas palabras clave y funciones integradas diseñadas para funcionar en un navegador :
+<ul>
+<li>funciones integradas : <code>alert confirm prompt</code> corresponden a su equivalente Javascript
+<li>la función integrada <code>ajax</code> permite la ejecucion de peticiones HTTP en modo Ajax
+<li>la palabra clave <code>local_storage</code> corresponde al almacenamiento local que se especifica en HTML5
+<li>la palabra clave <code>win</code> es la ventana (objeto <em>window</em> en JS) y <code>doc</code> es el documento HTML (<em>document</em> en JS)
+<li>las funciones integradas <code>A ABBR ACRONYM ADDRESS APPLET AREA ARTICLE ASIDE AUDIO B BASE BASEFONT BDO BIG BLOCKQUOTE BODY BR BUTTON CANVAS CAPTION CENTER CITE CODE COL COLGROUP COMMAND DATALIST DD DEL DETAILS DFN DIR DIV DL DT EM FIELDSET FIGURE FONT FOOTER FORM FRAME FRAMESET H1 H2 H3 H4 H5 H6 HEAD HEADER HGROUP HR HTML I IFRAME IMG INPUT INS ISINDEX KBD LABEL LEGEND LI LINK MAP MARK MENU META METER NAV NOFRAMES NOSCRIPT OBJECT OL OPTGROUP OPTION OUTPUT P PARAM PRE PROGRESS Q RP RT RUBY S SAMP SCRIPT SECTION SELECT SMALL SPAN STRIKE STRONG STYLE SUB SUP TABLE TBODY TD TEXTAREA TFOOT TH THEAD TIME TITLE TR TT U UL VAR VIDEO</code> : cada corresponde a las etiquetas HTML
+</ul>
+<hr>
+<a name="htmldocs"><h3>Manipulación de documentos HTML</h3>
+
+Una pagina HTML es visto como un árbol cuyo vértice o cima esta representado por la palabra clave <code>doc</code> y los nodos pueden ser objetos integrados de Python (cadenas, enteros...) u objetos creados por las funciones que corresponden a las etiquetas HTML
+<p>La sintaxis para crear un objeto (por ejemplo, un hiperenlace) es :
+<dl><dt><code>A(<i>[content,[attributes]]</i>)</code>
+<dd><em>content</em> es el nodo "hijo" del objeto ; <em>attributes</em> es una secuencia de palabras clave que corresponden a los atributos de la etiqueta HTML. Estos atributos deben contar con la sintaxis de Javascript, y no de CSS : <em>backgroundColor</em> y no como <em>background-color</em>
+</dl>
+Ejemplo :
+<p><pre>link1 = A('Brython',href='http://www.brython.info')
+link2 = A(B('Python'),href='http://www.python.org')
+</pre>
+<p>Para el atributo <em>style</em>, el valor debe ser un diccionario :
+<p><pre>d = DIV('Brython',style={'height':100,'width':200})
+</pre>
+
+<p>También puede crear un objeto sin argumento, y luego añadir atributos :
+<ul>
+<li>para agregar un nodo secundario, utilice el operador <=
+<li>para agregar atributos, utilice la sintaxis Python : <pre style="display:inline">objeto.attributo = valor</pre>
+</ul>
+<p>por ejemplo :
+<p><pre>link = A()
+link <= B('connexion')
+link.href = 'http://ejemplo.com'
+</pre>
+<p>También puede crear varios elementos del mismo nivel, por medio del operador añadir (+):
+<p><pre>row = TR(TH('Nombre')+TH('Apellido'))</pre>
+<p>Mediante la combinación de estos operadores y la sintaxis de Python, aquí es como crear un cuadro de selección de una lista :
+<p><pre>items = ['uno','dos','tres']
+sel = SELECT()
+for i, elt in enumerate(items):
+    sel <= OPTION(elt, value = i)
+doc <= sel
+</pre>
+<p>Tenga en cuenta que la creación de una instancia de una clase HTML implica la creación de un único objeto DOM. Si asignamos la instancia a una variable, no se puede utilizar en varios lugares. Por ejemplo, con este código :
+<p><pre>link = A('Python',href='http://www.python.org')
+doc <= 'El sitio de Python : ' + link
+doc <= P()+'repito : el sitio es ' + link
+</pre>
+el enlace se muestra solamente en la segunda linea. Una solución consiste en clonar el objeto original:
+<p><pre>link = A('Python',href='http://www.python.org')
+doc <= 'El sitio de Python : ' + link
+doc <= P()+'repito : el sitio es ' + link.clone()
+</pre>
+
+
+<p>Por lo general, las instancias de las clases de atributos HTML tienen el mismo nombre que los objetos Javascript correspondientes. Por ejemplo, puede recuperar la opción seleccionada por el atributo <tt>selectedIndex</tt> del objeto SELECT. Pero Brython añade varias cosas mas para hacer todo esto mas en el estilo que es común para los programadores Python
+
+<p>
+<ul>
+<li>para buscar objetos por identificador o por su nombre de la etiqueta, utilice la siguiente sintaxis :
+<ul>
+<li><pre style="display:inline">doc[obj_id]</pre> devuelve el objeto a partir de su identificador, o genera una excepción <code>KeyError</code>
+<li><pre style="display:inline">doc[A]</pre> devuelve una lista de todos los objetos de tipo A (hiperenlace) en el documento
+</ul>
+<li>el contenido de un nodo DOM se pueden leer o ser modificado or medio de los atributos <tt>text</tt> o <tt>html</tt>, correspondientes a <i>innerText</i> (o <i>textContent</i>) y <i>innerHTML</i> en Javascript
+<li>la colección <code>options</code> asociada a un objeto SELECT tiene una interfaz de una lista Python :
+<ul>
+<li>acceder a una opción por su indice : <pre style="display:inline">option = elt.options[index]</pre>
+<li>inserción de una opción a la posición <em>index</em> : <pre style="display:inline">elt.options.insert(index,option)</pre>
+<li>inserción de una opción al fin de una lista : <pre style="display:inline">elt.options.append(option)</pre>
+<li>eliminación de una opción : <pre style="display:inline">del elt.options[index]</pre>
+</ul>
+<li>es posible hacer una iteración de los hijos de un objeto, por medio de la sintaxis típica de Python: <pre style="display:inline">for child in dom_object:</pre>
+</ul>
+<h3>Eventos</h3>
+Para conectar una función con un evento, utilice la siguiente sintaxis:  
+<blockquote><pre>element.onclick = callback</pre></blockquote>
+La función <tt>callback</tt> acepta solo un argumento, una instancia de la clase <tt>DOMEvent</tt>. Ademas de los atributos DOM (que puede tener diferentes nombres en diferentes navegadores), este objeto tiene los siguientes atributos :
+<p><table border=1>
+<tr><th>Tipo de evento</th><th>Atributos</th></tr>
+<tr><td>clic o movimiento del ratón</td><td><tt>x,y</tt> : posición del ratón en relación con la esquina superior izquierda de la ventana</td></tr>
+<tr><td>arrastrar y soltar (HTML5)</td><td><tt>data</tt> : datos asociados con el movimiento</td></tr>
+</table>
+<p>Ejemplo :
+<table>
+<tr>
+<td>
+<pre>&lt;script type='text/python'&gt;
+def mouse_move(ev):
+    doc["trace"].value = '%s %s' %(ev.x,ev.y)
+
+doc["zone"].onmousemove = mouse_move
+&lt;/script&gt;
+
+&lt;input id="trace" value=""&gt;
+&lt;br&gt;&lt;textarea id="zone" rows=20 columns=30 style="background-color:gray"&gt;
+mover el ratón aquí&lt;/textarea&gt;
+</pre>
+</td>
+<td>
+<pre><script type='text/python'>
+def mouse_move(ev):
+    doc["trace"].value = '%s %s' %(ev.x,ev.y)
+
+doc["zone"].onmousemove = mouse_move
+</script>
+
+<input id="trace" value="">
+<br><textarea id="zone" rows=7 columns=30 style="background-color:gray">
+mover el ratón aquí</textarea>
+</pre>
+</td>
+</tr>
+</table>
+
+<p><hr>
+<a name="ajax"><h3>Ajax</h3>
+La función integrada <code>ajax()</code> devuelve un objeto similar a XMLHTTPRequest en Javascript, pero su interfaz es un poco diferente. Tiene las siguientes opciones:
+
+<ul><li><code>open(<em>metodo, url,async</em>)</code> : <em>metodo</em> es el método HTTP utilizado para la solicitud (normalmente GET o POST), <em>url</em> es la URL llamada, <em>async</em> es un valor booleano que indica si la llamada es asíncrona o no
+<li><code>set_header(<em>nombre, valor</em>)</code> : asigna el valor de <em>valor</em> para la cabecera <em>nombre</em>
+<li><code>set_timeout(<em>duracion, funcion</em>)</code> : si la solicitud no ha devuelto una respuesta adentro de <em>duracion</em> segundos, se cancela la solicitud y ejecuta la <em>funcion</em>. Esta función no toma argumentos
+<li><code>send()</code> : inicia la solicitud
+</ul>
+Para interactuar con el servidor, debe configurar los siguientes atributos, correspondientes a cada estado de la variable <tt>readyState</tt> en Javascript :
+<p><table cellspacing=0 cellpadding=0 border=1><tr><th>readyState</th><th>attribut</th></tr>
+<tr><td>0</td><td><code>on_uninitialized</code></td></tr>
+<tr><td>1</td><td><code>on_loading</code></td></tr>
+<tr><td>2</td><td><code>on_loaded</code></td></tr>
+<tr><td>3</td><td><code>on_interactive</code></td></tr>
+<tr><td>4</td><td><code>on_complete</code></td></tr>
+</table>
+<p>El valor del atributo debe ser una función con un solo argumento, que es el objeto <code>ajax</code>. Este objeto tiene los siguientes atributos :
+<ul>
+<li><code>status</code> : un entero que representa el estado de la solicitud HTTP
+<li><code>text</code> : la respuesta del servidor como una cadena de caracteres (<em>responseText</em> en Javascript)
+<li><code>xml</code> : la respuesta del servidor como objeto DOM (<em>responseXML</em> en Javascript)
+</ul>
+
+<h4>Ejemplo</h4>
+<pre>req = ajax()
+req.on_complete = on_complete
+req.set_timeout(timeout, err_msg)
+req.open('POST', url, True)
+req.set_header('content-type', 'application/x-www-form-urlencoded')
+req.send(data)
+</pre>
+<hr>
+<a name="locstor"><h3>Local storage</h3>
+
+El almacenamiento local que define HTML5 (clase <tt>Storage</tt> y objeto <tt>localStorage</tt> de Javascript) es accesible bajo la sintaxis <code>local_storage</code>. Se utiliza como un diccionario Python típico
+
+<h4>Ejemplo</h4>
+<pre>local_storage['foo'] = 'bar'
+log(local_storage['foo'])
+del local_storage['foo']
+log(local_storage['foo']) # produce KeyError
+</pre>
+
+</body>
+</html>
