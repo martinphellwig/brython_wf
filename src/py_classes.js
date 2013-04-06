@@ -806,6 +806,10 @@ function $open(){
     if(isinstance(file,JSObject)){return new $OpenFile(file.js,mode,encoding)}
 }
 
+function ord(c) {
+    return String.fromCharCode(c)
+}
+
 function $print(){
     var $ns=$MakeArgs('print',arguments,[],{},'args','kw')
     var args = $ns['args']
