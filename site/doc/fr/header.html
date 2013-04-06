@@ -1,0 +1,47 @@
+<html>
+<head>
+<meta charset="iso-8859-1">
+<link rel="stylesheet" href="../../brython.css">
+<script src="../../src/brython.js"></script>
+<title>Brython</title>
+<script type="text/python">
+import html
+# all links in the banner should point to the target _top
+for elt in doc[html.A]:
+    if elt.className == "banner":
+        elt.target="_top"
+</script>
+<script>
+function foo(){
+    var tags = document.getElementsByTagName('A')
+    var f = tags[0]
+    alert(typeof f)
+    ch = ''
+    for(attr in f){ch+=attr+' '}
+    alert(ch)
+    var res = []
+    for(var i=0;i<tags.length;i++){res.push(tags[i])}
+    alert(res)
+}
+</script>
+</head>
+<body onLoad="brython()">
+<center>
+<table id="banner" cellpadding=0 cellspacing=0>
+<tr>
+<td><a class="banner" href="../../index.html">Accueil</a></td>
+<td><a class="banner" href="../../tests/console_fr.html">Console</a></td>
+<td><a class="banner" href="../../gallery/gallery_fr.html">Galerie</a></td>
+<td><a class="banner" href="index.html">Documentation</a>
+<td><a class="banner" href="https://bitbucket.org/olemis/brython/downloads" target="_blank">Téléchargement</a></td>
+<td><a class="banner" href="https://bitbucket.org/olemis/brython/src" target="_blank">Développement</a></td>
+<td><a class="banner" href="../../groups_fr.html" target="_blank">Groupes</a></td></tr>
+</tr>
+</table>
+</center>
+
+<div style="text-align:center">
+<img src="../../brython.png"></img><b>browser python</b>
+</div>
+
+</html>

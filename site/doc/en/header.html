@@ -1,0 +1,33 @@
+<html>
+<head>
+<link rel="stylesheet" href="../../brython.css">
+<script src="../../src/brython.js"></script>
+<title>Brython</title>
+<script type="text/python">
+import html
+# all links in the banner should point to the target _top
+for elt in doc[html.A]:
+    if elt.className == "banner":
+        elt.target="_top"
+</script>
+</head>
+<body onLoad="brython()">
+<center>
+<table id="banner" cellpadding=0 cellspacing=0>
+<tr>
+<td><a class="banner" href="../../index.html">Home</a></td>
+<td><a class="banner" href="../../tests/console_en.html">Console</a></td>
+<td><a class="banner" href="../../gallery/gallery_en.html">Gallery</a></td>
+<td><a class="banner" href="index.html">Documentation</a>
+<td><a class="banner" href="https://bitbucket.org/olemis/brython/downloads" target="_blank">Download</a></td>
+<td><a class="banner" href="https://bitbucket.org/olemis/brython/src" target="_blank">Development</a></td>
+<td><a class="banner" href="../../groups_en.html" target="_blank">Groups</a></td>
+</tr>
+</table>
+</center>
+
+<div style="text-align:center">
+<img src="../../brython.png"></img><b>browser python</b>
+</div>
+
+</html>

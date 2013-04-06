@@ -2,6 +2,7 @@
 import tokenize
 import re
 import datetime
+import os
 
 now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
@@ -10,12 +11,14 @@ sources = ['brython_builtins','py_utils',
     'py2js',
     'py_ajax','py_dom']
 
+abs_path = lambda path:os.path.join(os.getcwd(),'src',path)
+
 # update version number in module sys
-bltins_src = open('brython_builtins.js').read()
+bltins_src = open(abs_path('brython_builtins.js')).read()
 
 bltins_src = re.sub('version_info = \[1,1,".*?"\]',
     'version_info = [1,1,"%s"]' %now,bltins_src)
-out = open('brython_builtins.js','w')
+out = open(abs_path('brython_builtins.js'),'w')
 out.write(bltins_src)
 out.close()
 
@@ -24,7 +27,7 @@ res += '// version 1.1.%s\n' %now
 res += '// version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src\n'
 src_size = 0
 for fname in sources:
-    src = open(fname+'.js').read()+'\n'
+    src = open(abs_path(fname)+'.js').read()+'\n'
     src_size += len(src)
     pos = 0
     while pos<len(src):
@@ -72,7 +75,7 @@ while '\n\n' in res:
 
 res = res.replace('context','C')
 
-out = open('brython.js','w')
+out = open(abs_path('brython.js'),'w')
 out.write(res)
 out.close()
 
@@ -133,18 +136,25 @@ def is_valid(filename):
 
 for arc,wfunc in (dist1,dist1.add),(dist2,dist2.add),(dist3,dist3.write):
 
-    for path in 'brython.js','brython.png','README.txt','LICENCE.txt','test.html':
+    for path in 'README.txt','LICENCE.txt':
         wfunc(os.path.join(os.getcwd(),path),
                 arcname=os.path.join(name,path))
+
+    for folder,path in [('site','brython.png'),('site','test.html')]:
+        wfunc(os.path.join(os.getcwd(),folder,path),
+                arcname=os.path.join(name,path))
+
+    wfunc(os.path.join(os.getcwd(),'src','brython.js'),
+            arcname=os.path.join(name,'brython.js'))
     
     folders = ['libs','Lib']
     for folder in folders:
-        for path in os.listdir(os.path.join(os.getcwd(),folder)):
+        for path in os.listdir(os.path.join(os.getcwd(),'src',folder)):
             if os.path.splitext(path)[1] not in ['.js','.py']:
                 continue
-            abs_path = os.path.join(os.getcwd(),folder,path)
+            #abs_path = os.path.join(os.getcwd(),'src',folder,path)
             print('add',path)
-            wfunc(os.path.join(os.getcwd(),folder,path),
+            wfunc(os.path.join(os.getcwd(),'src',folder,path),
                 arcname=os.path.join(name,folder,path))
 
     arc.close()
