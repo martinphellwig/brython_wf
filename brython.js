@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130404-145515
+// version 1.1.20130406-104253
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -16,7 +16,7 @@ __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130404-145515"]
+__BRYTHON__.version_info=[1,1,"20130406-104253"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -198,6 +198,17 @@ return function(){return func.apply(thisValue, arguments)}
 function $raise(){
 if(__BRYTHON__.exception_stack.length>0){throw $last(__BRYTHON__.exception_stack)}
 else{throw Error('Exception')}
+}
+function $report(err){
+console.log(err)
+if(err.py_error===undefined){err=RuntimeError(err+'')}
+var trace=err.__name__+': '+err.message
+if(err.__name__=='SyntaxError'||err.__name__==='IndentationError'){
+trace +=err.info
+}
+if(document.$stderr){document.$stderr.__getattr__('write')(trace)}
+else{err.message +=err.info}
+throw err
 }
 function $src_error(name,module,msg,pos){
 var pos2line={}
@@ -709,29 +720,6 @@ for(var i=0;i<iterator.__len__();i++){
 res.push([i,iterator.__item__(i)])
 }
 return res
-}
-function $eval(src){
-if(src===""){throw SyntaxError("unexpected EOF while parsing")}
-try{return eval(__BRYTHON__.py2js(src).to_js())}
-catch(err){
-if(err.py_error===undefined){throw RuntimeError(err.message)}
-if(document.$stderr){document.$stderr.__getattr__('write')(document.$stderr_buff+'\n')}
-else{err.message +=err.info;throw(err)}
-}
-}
-function exec(src){
-try{eval(__BRYTHON__.py2js(src).to_js())}
-catch(err){
-console.log(err)
-if(err.py_error===undefined){err=RuntimeError(err+'')}
-var trace=err.__name__+': '+err.message
-if(err.__name__=='SyntaxError'||err.__name__==='IndentationError'){
-trace +=err.info
-}
-if(document.$stderr){document.$stderr.__getattr__('write')(trace)}
-else{err.message +=err.info}
-throw err
-}
 }
 function filter(){
 if(arguments.length!=2){throw TypeError(
@@ -2720,13 +2708,27 @@ this.to_js=function(){return $to_js(this.tree)}
 function $CallCtx(C){
 this.type='call'
 this.func=C.tree[0]
+if(this.func!==undefined){
 this.func.parent=this
+}
 this.parent=C
 C.tree.pop()
 C.tree.push(this)
 this.tree=[]
+this.start=$pos
 this.toString=function(){return '(call) '+this.func+'('+this.tree+')'}
-this.to_js=function(){return this.func.to_js()+'('+$to_js(this.tree)+')'}
+this.to_js=function(){
+if(this.func!==undefined && 
+['eval','exec'].indexOf(this.func.value)>-1){
+var ctx_node=this
+while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
+var module=ctx_node.node.module
+var src=document.$py_src[module]
+var arg=src.substring(this.start+1,this.end)
+return 'try{eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())}catch(err){$report(err)}'
+}
+return this.func.to_js()+'('+$to_js(this.tree)+')'
+}
 }
 function $ClassCtx(C){
 this.type='class'
@@ -3868,7 +3870,7 @@ if(token===','){return C}
 else if($expr_starters.indexOf(token)>-1){
 var expr=new $CallArgCtx(C)
 return $transition(expr,token,arguments[2])
-}else if(token===')'){return C.parent}
+}else if(token===')'){C.end=$pos;return C.parent}
 else if(token==='op'){
 var op=arguments[2]
 if(op==='-'){return new $UnaryCtx(C,'-')}
@@ -4399,7 +4401,7 @@ return $transition(new $AbstractExprCtx(C,false),token,arguments[2])
 else if(token===')'){return $transition(C.parent,token)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='str'){
-if(token==='['){return new $AbstractExprCtx(new $SubCtx(C),false)}
+if(token==='['){return new $AbstractExprCtx(new $SubCtx(C.parent),false)}
 else if(token==='('){return new $CallCtx(C)}
 else if(token=='str'){C.value +='+'+arguments[2];return C}
 else{return $transition(C.parent,token,arguments[2])}
@@ -4455,7 +4457,7 @@ return C
 return $transition(C.parent,token)
 }
 }
-__BRYTHON__.py2js=function(src,module,env){
+__BRYTHON__.py2js=function(src,module){
 src=src.replace(/\r\n/gm,'\n')
 while(src.length>0 &&(src.charAt(0)=="\n" || src.charAt(0)=="\r")){
 src=src.substr(1)
@@ -5144,13 +5146,11 @@ return obj
 win=new $JSObject(window)
 function DOMNode(){}
 function $DOMNode(elt){
-console.log('create dom node from '+elt)
 if(elt['$brython_id']===undefined||elt.nodeType===9){
 elt.$brython_id=Math.random().toString(36).substr(2, 8)
 for(var attr in DOMNode.prototype){elt[attr]=DOMNode.prototype[attr]}
 elt.__str__=$DOMtoString
 }
-console.log('ok')
 return elt
 }
 DOMNode.prototype.__add__=function(other){
