@@ -7,14 +7,15 @@ if sys.version_info[0] >= 3:
    print("For the time being, because of byte issues in Bryton, please use python 2.x")
    sys.exit()
 
-_main_root=os.getcwd()
+_main_root=os.path.join(os.getcwd(), 'src')
 
-_vfs=open("py_VFS.js", "w")
+
+_vfs=open(os.path.join(_main_root, "py_VFS.js"), "w")
 _vfs.write("__BRYTHON__.$py_VFS={\n")
 
 _flag=False
 for _mydir in ("libs", "Lib"):
-    for _root, _dir, _files in os.walk(_mydir):
+    for _root, _dir, _files in os.walk(os.path.join(_main_root, _mydir)):
         for _file in _files:
             if _file.endswith('.js') or _file.endswith('.py'):
                _fp=open(os.path.join(_root, _file), "r")
