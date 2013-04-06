@@ -348,10 +348,23 @@ function $CallCtx(context){
     context.tree.pop()
     context.tree.push(this)
     this.tree = []
+    this.start = $pos
 
     this.toString = function(){return '(call) '+this.func+'('+this.tree+')'}
 
-    this.to_js = function(){return this.func.to_js()+'('+$to_js(this.tree)+')'}
+    this.to_js = function(){
+        if(this.func!==undefined && 
+            ['eval','exec'].indexOf(this.func.value)>-1){
+            // get argument
+            var ctx_node = this
+            while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
+            var module = ctx_node.node.module
+            var src = document.$py_src[module]
+            var arg = src.substring(this.start+1,this.end)
+            return 'try{eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())}catch(err){$report(err)}'
+        }
+        return this.func.to_js()+'('+$to_js(this.tree)+')'
+    }
 }
 
 function $ClassCtx(context){
@@ -1633,7 +1646,7 @@ function $transition(context,token){
         else if($expr_starters.indexOf(token)>-1){
             var expr = new $CallArgCtx(context)
             return $transition(expr,token,arguments[2])
-        }else if(token===')'){return context.parent}
+        }else if(token===')'){context.end=$pos;return context.parent}
         else if(token==='op'){
             var op=arguments[2]
             if(op==='-'){return new $UnaryCtx(context,'-')}
@@ -2322,7 +2335,7 @@ function $transition(context,token){
     }
 }
 
-__BRYTHON__.py2js = function(src,module,env){
+__BRYTHON__.py2js = function(src,module){
     src = src.replace(/\r\n/gm,'\n')
     while (src.length>0 && (src.charAt(0)=="\n" || src.charAt(0)=="\r")){
         src = src.substr(1)
