@@ -29,6 +29,13 @@ function any(iterable){
     }
 }
 
+// ascii  (build-in function)
+function ascii(obj) {
+   //for now just return the repr representation but will need to fix 
+   // this eventually so that non-ascii chars are represented correctly
+   return repr(obj)
+}
+
 // not in Python but used for tests until unittest works
 // "assert_raises(exception,function,*args)" becomes "if condition: pass else: raise AssertionError"
 function assert_raises(){
@@ -43,6 +50,32 @@ function assert_raises(){
         return
     }
     throw AssertionError("no exception raised, expected '"+$ns['exc']+"'")
+}
+
+// used by bin, hex and oct functions
+function $builtin_base_convert_helper(obj, base) {
+  var value;
+  if (isinstance(obj, int)) {
+     value=obj;
+  } else if (obj.__index__ !== undefined) {
+     value=obj.__index__()
+  }
+  if (value === undefined) {
+     // need to raise an error
+     Exception('TypeError', 'Error, argument must be an integer or contains an __index__ function')
+     return
+  }
+  if (value >=0) { 
+     return value.toString(base);
+  } else {
+    // todo:need to implement for negative values
+    return null
+  }
+}
+
+// bin() (built in function)
+function bin(obj) { 
+   return $builtin_base_convert_helper(obj, 2)
 }
 
 function bool(obj){ // return true or false
@@ -66,6 +99,33 @@ bool.__hash__ = function() {
     return 0
 }
 
+//bytearray() (built in function)
+function bytearray(source, encoding, errors) {
+  throw NotImplementedError('bytearray has not been implemented')
+}
+//bytes() (built in function)
+function bytes(source, encoding, errors) {
+  throw NotImplementedError('bytes has not been implemented')
+}
+//callable() (built in function)
+function callable(obj) {
+  if (obj.__call__) return True
+  // todo: need to figure out if an object is a class or an instance
+  // classes are callable, instances usually aren't unless they have __call__
+  // functions are callable..
+  //for now assume the worst..
+  return False
+}
+
+//chr() (built in function)
+function chr(i) {
+  if (i < 0 || i > 1114111) { Exception('ValueError', 'Outside valid range')}
+
+  return String.fromCharCode(i)
+}
+
+//classmethod() (built in function)
+
 function $class(obj,info){
     this.obj = obj
     this.info = info
@@ -73,10 +133,26 @@ function $class(obj,info){
     this.toString = function(){return "<class '"+info+"'>"}
 }
 
+//compile() (built in function)
+function compile(source, filename, mode) {
+    //for now ignore mode variable, and flags, etc
+    return __BRYTHON__.py2js(source, filename).to_js()
+}
+
+//complex() (built in function)
+
 function $confirm(src){return confirm(src)}
 
-// dictionary
+//delattr() (built in function)
+function delattr(obj, attr) {
+   if (obj.__delattr__ !== undefined) { obj.__delattr(attr)
+   } else {
+     //not sure this statement is possible or valid.. ?
+     getattr(obj, attr).__del__()
+   }
+}
 
+// dictionary
 function $DictClass($keys,$values){
     // JS dict objects are indexed by strings, not by arbitrary objects
     // so we must use 2 arrays, one for keys and one for values
@@ -304,6 +380,14 @@ function dir(obj){
     return res
 }
 
+//divmod() (built in function)
+function divmod(x,y) {
+   if (isinstance(x,float) || isinstance(y,float)) {
+      return (float(Math.floor(a/b)), a % b) 
+   }
+   return (int(Math.floor(x/y)), a % b)
+}
+
 function enumerate(iterator){
     var res = []
     for(var i=0;i<iterator.__len__();i++){
@@ -311,6 +395,9 @@ function enumerate(iterator){
     }
     return res
 }      
+
+//eval() (built in function)
+//exec() (built in function)
 
 function filter(){
     if(arguments.length!=2){throw TypeError(
@@ -463,6 +550,9 @@ for($op in $operators){
     }
 }
 
+//format() (built in function)
+//frozenset() (built in function)
+
 function getattr(obj,attr,_default){
     if(obj.__getattr__!==undefined &&
         obj.__getattr__(attr)!==undefined){
@@ -472,6 +562,8 @@ function getattr(obj,attr,_default){
     else{throw AttributeError(
         "'"+str(obj.__class__)+"' object has no attribute '"+attr+"'")}
 }
+
+//globals() (built in function)
 
 function hasattr(obj,attr){
     try{getattr(obj,attr);return True}
@@ -489,6 +581,31 @@ function hash(obj){
        throw AttributeError(
         "'"+str(obj.__class__)+"' object has no attribute '__hash__'")
     }
+}
+
+//help() (built in function)
+
+//hex() (built in function)
+function hex(x) {
+   return $builtin_base_convert_helper(obj, 16)
+}
+
+//id() (built in function)
+function id(obj) {
+   if (obj.__hashvalue__ !== undefined) {
+      return obj.__hashvalue__
+   }
+   if (obj.__hash__ === undefined || isinstance(obj, set) ||
+      isinstance(obj, list) || isinstance(obj, dict)) {
+      __BRYTHON__.$py_next_hash+=1
+      obj.__hashvalue=__BRYTHON__.$py_next_hash
+      return obj.__hashvalue__
+   }
+   if (obj.__hash__ !== undefined) {
+      return obj.__hash__()
+   }
+
+   return null
 }
 
 //not a direct alias of prompt: input has no default value
@@ -655,6 +772,8 @@ function isinstance(obj,arg){
     }
 }
 
+//issubclass() (built in function)
+
 function iter(obj){
     if('__item__' in obj){
         obj.__counter__= 0 // reset iteration counter
@@ -684,6 +803,8 @@ function len(obj){
             throw TypeError("object of type '"+obj.__class__.__name__+"' has no len()")}
         }
 }
+
+// list built in function is defined in py_list
 
 function locals(obj){
     // used for locals() ; the translation engine adds the argument obj,
@@ -752,6 +873,11 @@ function max(){
     return $extreme(args,'__gt__')
 }
 
+// memoryview()  (built in function)
+function memoryview(obj) {
+  throw NotImplementedError('memoryview is not implemented')
+}
+
 function min(){
     var args = []
     for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
@@ -793,6 +919,11 @@ object.__hash__ = function () {
 
 $ObjectClass.prototype.__hash__ = object.__hash__
 
+// oct() (built in function)
+function oct(x) {
+   return $builtin_base_convert_helper(obj, 8)
+}
+
 function $open(){
     // first argument is file : can be a string, or an instance of a DOM File object
     // XXX only DOM File supported at the moment
@@ -807,7 +938,16 @@ function $open(){
 }
 
 function ord(c) {
-    return String.fromCharCode(c)
+    return c.charCodeAt(0)
+}
+
+// pow() (built in function)
+function pow(x,y) {
+    var a,b
+    if (isinstance(x, float)) {a=x.value} else {a=x}
+    if (isinstance(y, float)) {b=y.value} else {b=y}
+
+    return Math.pow(a,b)
 }
 
 function $print(){
@@ -829,6 +969,11 @@ function $print(){
 log = function(arg){console.log(arg)} 
 
 function $prompt(text,fill){return prompt(text,fill || '')}
+
+// property (built in function)
+function property(fget, fset, fdel, doc) {
+   throw NotImplementedError('property not implemented')
+}
 
 // range
 function range(){
@@ -1014,6 +1159,30 @@ function slice(){
     return new $SliceClass(start,stop,step)
 }
 
+// sorted() built in function
+function sorted (iterable, key, reverse) {
+   if (reverse === undefined) {reverse=False}
+
+   var obj = new $list()
+   for(var i=0;i<iterable.__len__();i++){
+       obj.append(iterable.__item__(i))
+   }
+
+   if (key !== undefined) {
+      var d=$DictClass(('key', key), ('reverse', reverse))
+      obj.sort(d)
+   } else {
+      var d=$DictClass(('reverse', reverse))
+      obj.sort(d)
+   }
+
+   return obj
+}
+
+// staticmethod() built in function
+
+// str() defined somewhere else
+
 function sum(iterable,start){
     if(start===undefined){start=0}
     var res = 0
@@ -1022,6 +1191,8 @@ function sum(iterable,start){
     }
     return res
 }
+
+// super() built in function
 
 function $tuple(arg){return arg} // used for parenthesed expressions
 
@@ -1045,6 +1216,11 @@ tuple.__class__ = $type
 tuple.__name__ = 'tuple'
 tuple.__str__ = function(){return "<class 'tuple'>"}
 tuple.toString = tuple.__str__
+
+//type() (built in function)
+function type(obj) {
+  throw NotImplementedError('type not implemented yet')
+}
 
 function zip(){
     var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')
