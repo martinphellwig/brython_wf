@@ -134,6 +134,7 @@ list.__getitem__ = function(self,arg){
             else {
                 for(i=start;i<stop;i+=step){
                     if(items[i]!==undefined){res.push(items[i])}
+                    else {res.push(None)}
                 }
                 return res
             }
@@ -142,6 +143,7 @@ list.__getitem__ = function(self,arg){
             else {
                 for(i=start;i>=stop;i+=step){
                     if(items[i]!==undefined){res.push(items[i])}
+                    else {res.push(None)}
                 }
                 return res
             }
