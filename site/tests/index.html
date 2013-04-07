@@ -84,20 +84,27 @@ Theme:
 
 Test suite:
 <select name="filename" onChange="load(event)">
-  <option value="test_suite.py">basic test suite</option>
-  <option value="classes_tests.py">built-in classes</option>
-  <option value="test_classes.py">classes</option>
-  <option value="test_datetime.py">datetime</option>
-  <option value="test_decorators.py">decorators</option>
-  <option value="dom_objects.py">DOM</option>
-  <option value="test_import.py">imports</option>
-  <option value="issues_gc.py">issues (GC)</option>
-  <option value="issues.py">issues</option>
-  <option value="test_json.py">JSON</option>
-  <option value="test_list_methods.py">list methods</option>
-  <option value="test_math.py">math</option>
-  <option value="test_hashlib.py">hashlib</option>
-  <option value="test_strings.py">strings</option>
+  <optgroup label="Core language features">
+    <option value="test_suite.py">basic test suite</option>
+    <option value="classes_tests.py">built-in classes</option>
+    <option value="test_classes.py">classes</option>
+    <option value="test_decorators.py">decorators</option>
+    <option value="dom_objects.py">DOM</option>
+    <option value="test_import.py">imports</option>
+    <option value="test_list_methods.py">list methods</option>
+    <option value="test_strings.py">strings</option>
+  </optgroup>
+  <optgroup label="Issues">
+    <option value="issues_gc.py">issues (GC)</option>
+    <option value="issues.py">issues</option>
+  </optgroup>
+  <optgroup label="Modules">
+    <option value="test_datetime.py">datetime</option>
+    <option value="test_hashlib.py">hashlib</option>
+    <option value="test_json.py">JSON</option>
+    <option value="test_math.py">math</option>
+    <option value="test_re.py">re</option>
+  </optgroup>
 </select>
 </div>
   <div id="editor"></div>
