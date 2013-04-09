@@ -268,7 +268,6 @@ function $AssignCtx(context){
             var right = this.tree[1]
             if(left.type==='attribute'){ // assign to attribute or item ?
                 left.func = 'setattr'
-                //left.tree.push(last)
                 var res = left.to_js()
                 left.func = 'getattr'
                 res = res.substr(0,res.length-1) // remove trailing )
@@ -2111,7 +2110,6 @@ function $transition(context,token){
         if(context.closed){
             if(token==='['){return new $SubCtx(context.parent)}
             else if(token==='('){return new $CallCtx(context)}
-            else if(token==='.'){return new $AttrCtx(context)}
             else if(token==='op'){
                 return new $AbstractExprCtx(new $OpCtx(context,arguments[2]),false)
             }
@@ -2122,7 +2120,7 @@ function $transition(context,token){
                     && token===')'){
                     context.closed = true
                     if(context.real==='gen_expr'){context.intervals.push($pos)}
-                    return context
+                    return context.parent
                 }else if((context.real==='list'||context.real==='list_comp')
                     && token===']'){
                     context.closed = true
