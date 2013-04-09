@@ -863,17 +863,28 @@ function $FromCtx(context){
     context.tree.push(this)
     this.expect = 'module'
     this.toString = function(){return '(from) '+this.module+' (import) '+this.names + '(parent module)' + this.parent_module + '(as)' + this.aliases}
-    this.to_js = function(){ 
-        var res = '$mod=$import_list([["'+this.module+'","'+this.module+'"]])[0];'
-        //if(this.parent_module!==undefined){res+=',"' + this.parent_module +'"'
-        //} else { res+=',undefined'}
-        if(this.names[0]!=='*'){
-            for(var i=0;i<this.names.length;i++){
-                res += (this.aliases[this.names[i]]||this.names[i])+'=$mod.__getattr__("'+this.names[i]+'");'
-            }
-        }else{
-            res +='for(var $attr in $mod){'
-            res +="if($attr.substr(0,1)!=='_'){eval('var '+$attr+'=$mod["+'"'+"'+$attr+'"+'"'+"]')}}"
+    this.to_js = function(){
+        var res; 
+        if (this.parent_module!==undefined){
+           res="$mod=$import_from('" + this.module
+           res+= "', ['" + this.names.join("','") + "']"
+           res+=",'" + this.parent_module +"');"
+           for(var i=0;i<this.names.length;i++){
+             res += this.parent_module+'.__setattr__("'+(this.aliases[this.names[i]]||this.names[i])+'",$mod.__getattr__("'+this.names[i]+'"));'
+           }
+
+           //console.log(res)
+        } else {
+           res = '$mod=$import_list([["'+this.module+'","'+this.module+'"]])[0];'
+        
+           if(this.names[0]!=='*'){
+             for(var i=0;i<this.names.length;i++){
+              res += (this.aliases[this.names[i]]||this.names[i])+'=$mod.__getattr__("'+this.names[i]+'");'
+             }
+           }else{
+             res +='for(var $attr in $mod){'
+             res +="if($attr.substr(0,1)!=='_'){eval('var '+$attr+'=$mod["+'"'+"'+$attr+'"+'"'+"]')}}"
+           }
         }
         return res
     }

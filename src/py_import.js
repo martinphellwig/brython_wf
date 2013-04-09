@@ -194,6 +194,7 @@ function $import_list(modules){ // list of objects with attributes name and alia
 }
 
 function $import_from(module,names,parent_module,alias){
+    console.log(module +","+names+","+parent_module+','+alias);
     if (parent_module !== undefined) {
        //this is a relative path import
        // ie,  from .mymodule import a,b,c
@@ -204,7 +205,7 @@ function $import_from(module,names,parent_module,alias){
        relpath=relpath.substring(0, i)
     
        alias=__BRYTHON__.$py_module_alias[parent_module]
-       //console.log(parent_module+','+alias+','+relpath)
+       console.log(parent_module+','+alias+','+relpath)
        $import_module_search_path_list(module,alias,names,[relpath])
     } else if (alias !== undefined) {
        return $import_single(module,alias,names)
