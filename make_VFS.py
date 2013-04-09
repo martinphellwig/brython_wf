@@ -25,7 +25,7 @@ for _mydir in ("libs", "Lib"):
                _vfs_filename=os.path.join(_root, _file).replace(_main_root, '')
                _vfs_filename=_vfs_filename.replace("\\", "/")
 
-               if _vfs_filename.startswith('libs/crypto_js/rollups/'):
+               if _vfs_filename.startswith('/libs/crypto_js/rollups/'):
                   if _file not in ('md5.js', 'sha1.js', 'sha3.js',
                       'sha224.js', 'sha384.js', 'sha512.js'):
                        continue
@@ -70,14 +70,24 @@ function readFromVFS(lib){
 $import_via_VFS=function(module,alias,names){
   var ext=['.js', '.py']
   var search_path=__BRYTHON__.path
-  if (search_path.indexOf(__BRYTHON__.brython_path+'libs') == -1) {
-     search_path.unshift(__BRYTHON__.brython_path+'libs')
+  var root = __BRYTHON__.brython_path;
+  if (root.endsWith('/')) {
+     root=root.substring(0,root.length-1); 
   }
+  if (search_path.indexOf(root+'/libs') == -1) {
+     search_path.unshift(root+'/libs')
+  }
+
+  if (search_path.indexOf(root+'/Lib') == -1) {
+     search_path.unshift(root+'/Lib')
+  }
+
   for(var i=0; i<search_path.length; i++) {
      for (var j=0; j<ext.length; j++) {
-         var path=search_path[i].replace(__BRYTHON__.brython_path, '')
+         var path=search_path[i].replace(root, '')
          path+='/'+module+ext[j]
-
+         
+         //console.log("searching for " + path + " in VFS");
          var module_contents=readFromVFS(path)
          if(module_contents !== undefined) {
            console.log("imported " + module + " via VFS")
