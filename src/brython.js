@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130406-170123
+// version 1.1.20130409-152842
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -16,7 +16,7 @@ __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130406-170123"]
+__BRYTHON__.version_info=[1,1,"20130409-152842"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -484,6 +484,9 @@ if(bool(elt)){return True}
 }catch(err){return False}
 }
 }
+function ascii(obj){
+return repr(obj)
+}
 function assert_raises(){
 var $ns=$MakeArgs('assert_raises',arguments,['exc','func'],{},'args','kw')
 var args=$ns['args']
@@ -496,6 +499,26 @@ throw AssertionError(
 return
 }
 throw AssertionError("no exception raised, expected '"+$ns['exc']+"'")
+}
+function $builtin_base_convert_helper(obj, base){
+var value
+if(isinstance(obj, int)){
+value=obj
+}else if(obj.__index__ !==undefined){
+value=obj.__index__()
+}
+if(value===undefined){
+Exception('TypeError', 'Error, argument must be an integer or contains an __index__ function')
+return
+}
+if(value >=0){
+return value.toString(base)
+}else{
+return null
+}
+}
+function bin(obj){
+return $builtin_base_convert_helper(obj, 2)
 }
 function bool(obj){
 if(obj===null){return False}
@@ -517,13 +540,36 @@ bool.__hash__=function(){
 if(this.valueOf())return 1
 return 0
 }
+function bytearray(source, encoding, errors){
+throw NotImplementedError('bytearray has not been implemented')
+}
+function bytes(source, encoding, errors){
+throw NotImplementedError('bytes has not been implemented')
+}
+function callable(obj){
+if(obj.__call__)return True
+return False
+}
+function chr(i){
+if(i < 0 || i > 1114111){Exception('ValueError', 'Outside valid range')}
+return String.fromCharCode(i)
+}
 function $class(obj,info){
 this.obj=obj
 this.info=info
 this.__class__=Object
 this.toString=function(){return "<class '"+info+"'>"}
 }
+function compile(source, filename, mode){
+return __BRYTHON__.py2js(source, filename).to_js()
+}
 function $confirm(src){return confirm(src)}
+function delattr(obj, attr){
+if(obj.__delattr__ !==undefined){obj.__delattr(attr)
+}else{
+getattr(obj, attr).__del__()
+}
+}
 function $DictClass($keys,$values){
 var x=null
 var i=null
@@ -714,6 +760,12 @@ for(var attr in obj){res.push(attr)}
 res.sort()
 return res
 }
+function divmod(x,y){
+if(isinstance(x,float)|| isinstance(y,float)){
+return(float(Math.floor(a/b)), a % b)
+}
+return(int(Math.floor(x/y)), a % b)
+}
 function enumerate(iterator){
 var res=[]
 for(var i=0;i<iterator.__len__();i++){
@@ -871,6 +923,24 @@ return obj.__hashvalue__
 throw AttributeError(
 "'"+str(obj.__class__)+"' object has no attribute '__hash__'")
 }
+}
+function hex(x){
+return $builtin_base_convert_helper(obj, 16)
+}
+function id(obj){
+if(obj.__hashvalue__ !==undefined){
+return obj.__hashvalue__
+}
+if(obj.__hash__===undefined || isinstance(obj, set)||
+isinstance(obj, list)|| isinstance(obj, dict)){
+__BRYTHON__.$py_next_hash+=1
+obj.__hashvalue=__BRYTHON__.$py_next_hash
+return obj.__hashvalue__
+}
+if(obj.__hash__ !==undefined){
+return obj.__hash__()
+}
+return null
 }
 function input(src){
 return prompt(src)
@@ -1101,6 +1171,9 @@ var args=[]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 return $extreme(args,'__gt__')
 }
+function memoryview(obj){
+throw NotImplementedError('memoryview is not implemented')
+}
 function min(){
 var args=[]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
@@ -1136,12 +1209,24 @@ __BRYTHON__.$py_next_hash+=1;
 return __BRYTHON__.$py_next_hash
 }
 $ObjectClass.prototype.__hash__=object.__hash__
+function oct(x){
+return $builtin_base_convert_helper(obj, 8)
+}
 function $open(){
 var $ns=$MakeArgs('open',arguments,['file'],{'mode':'r','encoding':'utf-8'},'args','kw')
 for(var attr in $ns){eval('var '+attr+'=$ns["'+attr+'"]')}
 if(args.length>0){var mode=args[0]}
 if(args.length>1){var encoding=args[1]}
 if(isinstance(file,JSObject)){return new $OpenFile(file.js,mode,encoding)}
+}
+function ord(c){
+return c.charCodeAt(0)
+}
+function pow(x,y){
+var a,b
+if(isinstance(x, float)){a=x.value}else{a=x}
+if(isinstance(y, float)){b=y.value}else{b=y}
+return Math.pow(a,b)
 }
 function $print(){
 var $ns=$MakeArgs('print',arguments,[],{},'args','kw')
@@ -1159,6 +1244,9 @@ document.$stdout.__getattr__('write')(res)
 }
 log=function(arg){console.log(arg)}
 function $prompt(text,fill){return prompt(text,fill || '')}
+function property(fget, fset, fdel, doc){
+throw NotImplementedError('property not implemented')
+}
 function range(){
 var $ns=$MakeArgs('range',arguments,[],{},'args',null)
 var args=$ns['args']
@@ -1315,6 +1403,21 @@ if(args.length>=3){step=args[2]}
 if(step==0){throw ValueError("slice step must not be zero")}
 return new $SliceClass(start,stop,step)
 }
+function sorted(iterable, key, reverse){
+if(reverse===undefined){reverse=False}
+var obj=new $list()
+for(var i=0;i<iterable.__len__();i++){
+obj.append(iterable.__item__(i))
+}
+if(key !==undefined){
+var d=$DictClass(('key', key),('reverse', reverse))
+obj.sort(d)
+}else{
+var d=$DictClass(('reverse', reverse))
+obj.sort(d)
+}
+return obj
+}
 function sum(iterable,start){
 if(start===undefined){start=0}
 var res=0
@@ -1341,6 +1444,9 @@ tuple.__class__=$type
 tuple.__name__='tuple'
 tuple.__str__=function(){return "<class 'tuple'>"}
 tuple.toString=tuple.__str__
+function type(obj){
+throw NotImplementedError('type not implemented yet')
+}
 function zip(){
 var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')
 var args=$ns['args']
@@ -1575,6 +1681,7 @@ if(stop<=start){return res}
 else{
 for(i=start;i<stop;i+=step){
 if(items[i]!==undefined){res.push(items[i])}
+else{res.push(None)}
 }
 return res
 }
@@ -1583,6 +1690,7 @@ if(stop>=start){return res}
 else{
 for(i=start;i>=stop;i+=step){
 if(items[i]!==undefined){res.push(items[i])}
+else{res.push(None)}
 }
 return res
 }
@@ -4271,7 +4379,6 @@ return $transition(new $CallCtx(C),token,arguments[2])
 if(C.closed){
 if(token==='['){return new $SubCtx(C.parent)}
 else if(token==='('){return new $CallCtx(C)}
-else if(token==='.'){return new $AttrCtx(C)}
 else if(token==='op'){
 return new $AbstractExprCtx(new $OpCtx(C,arguments[2]),false)
 }
@@ -4282,7 +4389,7 @@ if((C.real==='tuple'||C.real==='gen_expr')
 && token===')'){
 C.closed=true
 if(C.real==='gen_expr'){C.intervals.push($pos)}
-return C
+return C.parent
 }else if((C.real==='list'||C.real==='list_comp')
 && token===']'){
 C.closed=true
