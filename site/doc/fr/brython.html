@@ -24,7 +24,7 @@ Brython est conforme à la syntaxe de Python 3
 
 Brython supporte l'essentiel des mots-clés et des fonctions de Python 3 :
 <ul><li>mots clés : <code>as assert break class continue def del elif else except False finally for from global if import is lambda None pass return True try while yield</code>
-<li>fonctions intégrées : <code>abs() all() any() bool() dict() dir() enumerate() eval() exec() filter() float() getattr() hasattr() input() int() isinstance() iter() len() list() map() max() min() next() object() print() range() reversed() round() set() setattr() slice() str() sum() tuple() zip()</code>
+<li>fonctions intégrées : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
 </ul>
 
 Par défaut, <code>print()</code> affiche sur la console du navigateur, et les messages d'erreur sont également affichés sur cette console. <code>sys.stderr</code> et <code>sys.stdout</code> peuvent être affectés à un objet qui implémente une méthode <code>write()</code>, ce qui permet par exemple d'afficher les messages d'erreurs dans une fenêtre
@@ -34,13 +34,12 @@ Par défaut, <code>print()</code> affiche sur la console du navigateur, et les me
 <ul>
 <li>les mots-clés <code>nonlocal with</code>
 <li>parmi les fonctions intégrées :
-<ul><li>certaines seront peut-être intégrées dans des versions futures : <code>ascii(), bin(), callable(), chr(), classmethod(), complex(), delattr(), divmod(), format(), frozenset(), globals(), hash(), hex(), id(), locals(), ord(), pow(), repr(), sorted(), staticmethod(), type(), vars()</code>
-<li>d'autres ont peu de chances d'être intégrées : <code>bytearray(), bytes(), compile(), help(), memoryview(), property(), super(), __import__() </code>
-<li>certaines ne sont pas pertinentes dans le contexte d'un navigateur : <code>open()</code>
+<ul><li>certaines seront peut-être intégrées dans des versions futures : <code>callable(), classmethod(), compile(), complex(), delattr(), format(), frozenset(), globals(), locals(), staticmethod(), type(), vars()</code>
+<li>d'autres ont peu de chances d'être intégrées : <code>bytearray(), bytes(), help(), memoryview(), property(), super(), __import__() </code>
 <li>le type des nombres complexes n'est pas supporté
 </ul>
 </ul>
-Contrairement à Python, on peut ajouter des attributs aux objects créés par la fonction intégrée <code>object()</code> :
+Contrairement à Python, on peut ajouter des attributs aux objets créés par la fonction intégrée <code>object()</code> :
 <p><pre>x = object()
 x.foo = 44
 del x.foo
@@ -48,9 +47,8 @@ del x.foo
 <p>
 Enfin, certains mots clés et fonctions intégrées adaptés au fonctionnement dans un navigateur sont ajoutés :
 <ul>
-<li>les fonctions intégrées <code>alert confirm prompt</code> correspondent à leur équivalent Javascript
-<li>la fonction intégrée <code>ajax</code> permet l'exécution de requêtes HTTP en mode Ajax
-<li>le mot clé <code>local_storage</code> représente le stockage local spécifié dans HTML5
+<li>les fonctions intégrées <code>alert(), confirm(), prompt()</code> correspondent à leur équivalent Javascript
+<li>la fonction intégrée <code>ajax()</code> permet l'exécution de requêtes HTTP en mode Ajax
 <li>le mot clé <code>win</code> représente la fenêtre (objet <em>window</em> en JS) et <code>doc</code> représente le document HTML (<em>document</em> en JS)
 </ul>
 <hr>

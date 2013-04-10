@@ -24,7 +24,7 @@ Brython follows the Python syntax:
 
 Brython supports most keywords and functions of Python 3 :
 <ul><li>keywords : <code>as assert break class continue def del elif else except False finally for from global if import is lambda None pass return True try while yield</code>
-<li>built-in functions : <code>abs() all() any() bool() dict() dir() enumerate() eval() exec() filter() float() getattr() hasattr() input() int() isinstance() iter() len() list() map() max() min() next() object() print() range() reversed() round() set() setattr() slice() str() sum() tuple() zip()</code>
+<li>built-in functions : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
 </ul>
 
 By default, <code>print()</code> will output to the web browser console and so are the error messages. <code>sys.stderr</code> and <code>sys.stdout</code> can be assigned to an object with a <code>write()</code> method, and this allows for the redirection of output to go to a window or text area, for example. sys.stdin is not implemented at this time, however there is an input() built-in function that will open a blocking input dialog (a prompt).
@@ -35,9 +35,8 @@ By default, <code>print()</code> will output to the web browser console and so a
 <ul>
 <li>keywords <code>nonlocal with</code>
 <li>amongst the built-in functions :
-<ul><li>some might be implemented in the future : <code>ascii(), bin(), callable(), chr(), classmethod(), complex(), delattr(), divmod(), format(), frozenset(), globals(), hash(), hex(), id(), locals(), ord(), pow(), repr(), sorted(), staticmethod(), type(), vars()</code></li>
-<li>while others are unlikely : <code>bytearray(), bytes(), compile(), help(), memoryview(), property(), super(), __import__() </code></li>
-<li>some are irrelevant in the context of a web browser : <code> open()</code></li>
+<ul><li>some might be implemented in the future : <code>callable(), classmethod(), compile(), complex(), delattr(), format(), frozenset(), globals(), locals(), staticmethod(), type(), vars()</code></li>
+<li>while others are unlikely : <code>bytearray(), bytes(), help(), memoryview(), property(), super(), __import__() </code></li>
 <li>the complex number type (<code>j</code>) is not supported</li>
 </ul>
 </ul>
@@ -49,11 +48,9 @@ del x.foo
 <p>
 Finally, some keywords and built-in functions designed for operation in a browser have been added :
 <ul>
-<li>built-ins <code>alert confirm prompt</code> correspond to their Javascript equivalents
-<li>the <code>ajax</code> built-in function allows the execution of HTTP requests in Ajax mode
-<li>the <code>local_storage</code> keyword corresponds to HTML5's local storage
+<li>built-ins <code>alert(), confirm(), prompt()</code> correspond to their Javascript equivalents
+<li>the <code>ajax()</code> built-in function allows the execution of HTTP requests in Ajax mode
 <li>the <code>win</code> keyword  is the window (window object in JS) and <code>doc</code> represents the HTML document (document in JS)
-<li>built-in functions <code>A ABBR ACRONYM ADDRESS APPLET AREA ARTICLE ASIDE AUDIO B BASE BASEFONT BDO BIG BLOCKQUOTE BODY BR BUTTON CANVAS CAPTION CENTER CITE CODE COL COLGROUP COMMAND DATALIST DD DEL DETAILS DFN DIR DIV DL DT EM FIELDSET FIGURE FONT FOOTER FORM FRAME FRAMESET H1 H2 H3 H4 H5 H6 HEAD HEADER HGROUP HR HTML I IFRAME IMG INPUT INS ISINDEX KBD LABEL LEGEND LI LINK MAP MARK MENU META METER NAV NOFRAMES NOSCRIPT OBJECT OL OPTGROUP OPTION OUTPUT P PARAM PRE PROGRESS Q RP RT RUBY S SAMP SCRIPT SECTION SELECT SMALL SPAN STRIKE STRONG STYLE SUB SUP TABLE TBODY TD TEXTAREA TFOOT TH THEAD TIME TITLE TR TT U UL VAR VIDEO</code> : each an equivalent of the HTML tag of the same name
 </ul>
 <hr>
 <a name="htmldocs"><h3>Handling of HTML documents</h3>

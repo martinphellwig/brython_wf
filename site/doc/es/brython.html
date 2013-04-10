@@ -25,7 +25,7 @@ Brython sigue la sintaxis de Python 3
 
 Brython soporta la mayoría de las palabras clave y las funciones de Python 3 :
 <ul><li>palabras claves : <code>as assert break class continue def del elif else except False finally for from global if import is lambda None pass raise return True try while yield</code>
-<li>funciones integradas : <code>abs() all() any() bool() dict() dir() enumerate() eval() exec() filter() float() getattr() hasattr() input() int() isinstance() iter() len() list() map() max() min() next() object() print() range() reversed() round() set() setattr() slice() str() sum() tuple() zip()</code>
+<li>funciones integradas : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
 </ul>
 <p>Inicialmente, <code>print()</code> marca todo en la consola del navegador, y los mensajes de errores también se marcan en esta consola. <code>sys.stderr</code> y <code>sys.stdout</code> pueden ser asignados a un objeto que implementa un método <code>write()</code>. De esta manera es posible de cambiar la salida a una ventana, por ejemplo, en vez de la consola. No hay <code>sys.stdin</code>, pero hay <code>input()</code>, implementado por medio de <code>prompt()</code>
 <p>Para comenzar a imprimir en una impresora, utilice <code>win.print()</code>
@@ -33,9 +33,8 @@ Brython soporta la mayoría de las palabras clave y las funciones de Python 3 :
 <ul>
 <li>palabras claves <code>nonlocal with</code>
 <li>entre las funciones integradas :
-<ul><li>algunas pueden ser incluidas en versiones futuras : <code>ascii(), bin(), callable(), chr(), classmethod(), complex(), delattr(), divmod(), format(), frozenset(), globals(), hex(), id(), locals(), ord(), pow(), repr(), sorted(), staticmethod(), type(), vars()</code>
-<li>otras son poco probable que sea integrada: <code>bytearray(), bytes(), compile(), hash(), help(), memoryview(), property(), super(), __import__() </code>
-<li>algunas no son relevantes en el contexto de un navegador : <code> open()</code>
+<ul><li>algunas pueden ser incluidas en versiones futuras : <code>callable(), classmethod(), compile(), complex(), delattr(), format(), frozenset(), globals(), locals(), staticmethod(), type(), vars()</code>
+<li>otras son poco probable que sea integrada: <code>bytearray(), bytes(), help(), memoryview(), property(), super(), __import__() </code>
 <li>el tipo de números complejos (j)
 </ul>
 </ul>
@@ -47,11 +46,9 @@ del x.foo
 <p>
 Por ultimo, se agrego algunas palabras clave y funciones integradas diseñadas para funcionar en un navegador :
 <ul>
-<li>funciones integradas : <code>alert confirm prompt</code> corresponden a su equivalente Javascript
-<li>la función integrada <code>ajax</code> permite la ejecucion de peticiones HTTP en modo Ajax
-<li>la palabra clave <code>local_storage</code> corresponde al almacenamiento local que se especifica en HTML5
+<li>funciones integradas : <code>alert(), confirm(), prompt()</code> corresponden a su equivalente Javascript
+<li>la función integrada <code>ajax()</code> permite la ejecucion de peticiones HTTP en modo Ajax
 <li>la palabra clave <code>win</code> es la ventana (objeto <em>window</em> en JS) y <code>doc</code> es el documento HTML (<em>document</em> en JS)
-<li>las funciones integradas <code>A ABBR ACRONYM ADDRESS APPLET AREA ARTICLE ASIDE AUDIO B BASE BASEFONT BDO BIG BLOCKQUOTE BODY BR BUTTON CANVAS CAPTION CENTER CITE CODE COL COLGROUP COMMAND DATALIST DD DEL DETAILS DFN DIR DIV DL DT EM FIELDSET FIGURE FONT FOOTER FORM FRAME FRAMESET H1 H2 H3 H4 H5 H6 HEAD HEADER HGROUP HR HTML I IFRAME IMG INPUT INS ISINDEX KBD LABEL LEGEND LI LINK MAP MARK MENU META METER NAV NOFRAMES NOSCRIPT OBJECT OL OPTGROUP OPTION OUTPUT P PARAM PRE PROGRESS Q RP RT RUBY S SAMP SCRIPT SECTION SELECT SMALL SPAN STRIKE STRONG STYLE SUB SUP TABLE TBODY TD TEXTAREA TFOOT TH THEAD TIME TITLE TR TT U UL VAR VIDEO</code> : cada corresponde a las etiquetas HTML
 </ul>
 <hr>
 <a name="htmldocs"><h3>Manipulación de documentos HTML</h3>
