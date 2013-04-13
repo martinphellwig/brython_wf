@@ -38,4 +38,10 @@ assert str(x)=='[1,7]'
 x.dup()
 assert str(x)=='[1,7,7]'
 
+class foo(list):
+    pass
+class bar(foo):
+    pass
+assert str(bar())=='[]'
+
 print('passed all tests..')
