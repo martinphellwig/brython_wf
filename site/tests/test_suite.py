@@ -133,4 +133,10 @@ x = [lambda x:x*2,lambda y:y*3]
 assert x[0](5)==10
 assert x[1](10)==30
 
+# inline functions and classes
+def foo(x):return 2*x
+assert foo(3)==6
+class foo(list):pass
+class bar(foo):pass
+assert str(bar())=="[]"
 print("passed all tests..")
