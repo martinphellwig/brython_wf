@@ -86,4 +86,44 @@ assert gids == (0,1), 'Fail incrementing static (%d,%d)'%gids
 # issue 20
 assert 'fail slice string!'[5:-1] == 'slice string', 'Failure in string slicing'
 
+# issue 24
+import math
+eval_zero = eval('math.sin(0)')
+exec('exec_zero=math.sin(0)')
+assert eval_zero == exec_zero, 'no math in exe or eval for sin(0) = %f'%math.sin(0)
+
+# issue 29
+import math
+eval_zero = eval('math.sin(%d)'%0)
+#eval_zero = 0
+exec('exec_zero=math.sin(%d)'%0)
+assert eval_zero == exec_zero, ' exe or eval for fails string subs = %f'%math.sin(0)
+
+# issue 30
+def delete(delete):
+    return delete
+
+class Delete:
+    def delete(self):
+        delete = 0
+        return delete
+
+delete = delete(Delete().delete())
+assert delete == 0, 'name delete cannot be used %s'%delete
+
+# issue 31
+SEED= 0
+class Base:
+    def __init__(self):
+        global SEED
+        self.value = SEED = SEED + 1
+
+class Inherit(Base):
+    def __init__(self):
+        global SEED
+        self.value = SEED = SEED + 1
+
+one = (Inherit().value)
+assert one == 1, 'Init recursed: %d'%one
+
 print('passed all tests')
