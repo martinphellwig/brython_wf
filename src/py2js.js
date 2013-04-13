@@ -28,7 +28,7 @@ var $augmented_assigns = {
 }
 
 function $_SyntaxError(context,msg,indent){
-    console.log(msg)
+    //console.log(msg)
     var ctx_node = context
     while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
     var tree_node = ctx_node.node
@@ -360,7 +360,7 @@ function $CallCtx(context){
             var module = ctx_node.node.module
             var src = document.$py_src[module]
             var arg = src.substring(this.start+1,this.end)
-            return 'try{eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())}catch(err){$report(err)}'
+            return 'eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
         }
         return this.func.to_js()+'('+$to_js(this.tree)+')'
     }
@@ -752,9 +752,11 @@ function $ExceptCtx(context){
     this.toString = function(){return '(except) '}
     this.to_js = function(){
         // in method "transform" of $TryCtx instances, related
-        // $ExceptCtx instances receive an attribute error_name
+        // $ExceptCtx instances receive an attribute __name__
         if(this.tree.length===0){return 'else'}
-        else{
+        else if(this.tree.length===1 && this.tree[0].name==='Exception'){
+            return 'else if(true)'
+        }else{
             var res ='else if(['
             for(var i=0;i<this.tree.length;i++){
                 res+='"'+this.tree[i].name+'"'
@@ -1375,7 +1377,7 @@ function $TryCtx(context){
         
         // fake line to start the 'else if' clauses
         var new_node = new $Node('expression')
-        new $NodeJSCtx(new_node,'console.log($err'+$loop_num+'.__name__);if(false){void(0)}')
+        new $NodeJSCtx(new_node,'if(false){void(0)}')
         catch_node.insert(0,new_node)
         
         // move the except and finally clauses below catch_node
@@ -1392,7 +1394,7 @@ function $TryCtx(context){
                 if(ctx.tree.length>0 && ctx.tree[0].alias!==null){
                     // syntax "except ErrorName as Alias"
                     var new_node = new $Node('expression')
-                    var js = 'var '+ctx.tree[0].alias+'=$err'+$loop_num
+                    var js = 'var '+ctx.tree[0].alias+'=__BRYTHON__.exception($err'+$loop_num+')'
                     new $NodeJSCtx(new_node,js)
                     node.parent.children[pos].insert(0,new_node)
                 }
@@ -2360,6 +2362,29 @@ __BRYTHON__.py2js = function(src,module){
     return root
 }
 
+__BRYTHON__.forbidden = ['catch','delete','function','new','this','throw','var','super']
+    /*
+    ['case','debugger','default',
+    'do','instanceof','switch',
+    'typeof','void','with','enum','export','extends',
+    'Anchor','Area','arguments','Array','assign','blur','Boolean','Button',
+    'callee','caller','captureEvents','Checkbox','clearInterval','clearTimeout',
+    'close','closed','constructor','Date','defaultStatus','document','Document',
+    'Element','escape','FileUpload','find','focus','Form','Frame','Frames','Function',
+    'getClass','Hidden','history','History','home','Image','Infinity','InnerHeight',
+    'InnerWidth','isFinite','isNan','java','JavaArray','JavaClass','JavaObject',
+    'JavaPackage','length','Link','location','Location','locationbar','Math','menubar',
+    'MimeType','moveBy','moveTo','name','NaN','navigate','navigator','Navigator','netscape',
+    'Number','Object','onBlur','onError','onFocus','onLoad','onUnload','opener',
+    'Option','outerHeight','OuterWidth','Packages','pageXoffset','pageYoffset',
+    'parent','parseFloat','parseInt','Password','personalbar','Plugin','prototype',
+    'Radio','ref','RegExp','releaseEvents','Reset','resizeBy','resizeTo','routeEvent',
+    'scroll','scrollbars','scrollBy','scrollTo','Select','self','setInterval','setTimeout',
+    'status','statusbar','stop','String','Submit','sun','taint','Text','Textarea','toolbar',
+    'top','toString','unescape','untaint','unwatch','valueOf','watch','window','Window'
+    ]
+    */
+
 function $tokenize(src,module){
     var delimiters = [["#","\n","comment"],['"""','"""',"triple_string"],
         ["'","'","string"],['"','"',"string"],
@@ -2379,28 +2404,6 @@ function $tokenize(src,module){
     var unsupported = ["nonlocal","with"]
     var $indented = ['class','def','for','condition','single_kw','try','except']
     // from https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Reserved_Words
-    var forbidden = []
-        /*
-        ['case','catch','debugger','default','delete',
-        'do','function','instanceof','new','switch','this','throw',
-        'typeof','var','void','with','enum','export','extends','super',
-        'Anchor','Area','arguments','Array','assign','blur','Boolean','Button',
-        'callee','caller','captureEvents','Checkbox','clearInterval','clearTimeout',
-        'close','closed','constructor','Date','defaultStatus','document','Document',
-        'Element','escape','FileUpload','find','focus','Form','Frame','Frames','Function',
-        'getClass','Hidden','history','History','home','Image','Infinity','InnerHeight',
-        'InnerWidth','isFinite','isNan','java','JavaArray','JavaClass','JavaObject',
-        'JavaPackage','length','Link','location','Location','locationbar','Math','menubar',
-        'MimeType','moveBy','moveTo','name','NaN','navigate','navigator','Navigator','netscape',
-        'Number','Object','onBlur','onError','onFocus','onLoad','onUnload','opener',
-        'Option','outerHeight','OuterWidth','Packages','pageXoffset','pageYoffset',
-        'parent','parseFloat','parseInt','Password','personalbar','Plugin','prototype',
-        'Radio','ref','RegExp','releaseEvents','Reset','resizeBy','resizeTo','routeEvent',
-        'scroll','scrollbars','scrollBy','scrollTo','Select','self','setInterval','setTimeout',
-        'status','statusbar','stop','String','Submit','sun','taint','Text','Textarea','toolbar',
-        'top','toString','unescape','untaint','unwatch','valueOf','watch','window','Window'
-        ]
-        */
 
     var punctuation = {',':0,':':0} //,';':0}
     var int_pattern = new RegExp("^\\d+")
@@ -2550,7 +2553,7 @@ function $tokenize(src,module){
                     $pos = pos-name.length
                     context = $transition(context,'op',name)
                 } else {
-                    if(forbidden.indexOf(name)>-1){name='$$'+name}
+                    if(__BRYTHON__.forbidden.indexOf(name)>-1){name='$$'+name}
                     $pos = pos-name.length
                     context = $transition(context,'id',name)
                 }
