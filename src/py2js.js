@@ -371,8 +371,17 @@ function $ClassCtx(context){
     this.tree = []
     context.tree.push(this)
     this.expect = 'id'
-    this.toString = function(){return 'class '+this.tree}
+    this.toString = function(){return '(class) '+this.name+' '+this.tree}
     this.transform = function(node,rank){
+        // if body is in the same line, add a child
+        if(this.parent.tree.length>1){
+            var new_node = new $Node('expression')
+            var ctx = new $NodeCtx(new_node)
+            ctx.tree = [this.parent.tree.pop()]
+            node.add(new_node)
+            this.in_line = true
+        }
+
         // insert "$class = new Object"
         var instance_decl = new $Node('expression')
         new $NodeJSCtx(instance_decl,'var $class = new Object()')
@@ -468,6 +477,16 @@ function $ConditionCtx(context,token){
     this.tree = []
     context.tree.push(this)
     this.toString = function(){return this.token+' '+this.tree}
+    this.transform = function(node,rank){
+        // if body is in the same line, add a child
+        if(this.parent.tree.length>1){
+            var new_node = new $Node('expression')
+            var ctx = new $NodeCtx(new_node)
+            ctx.tree = [this.parent.tree.pop()]
+            node.add(new_node)
+            this.in_line = true
+        }    
+    }
     this.to_js = function(){
         var tok = this.token
         if(tok==='elif'){tok='else if'}
@@ -523,11 +542,12 @@ function $DefCtx(context){
         if(this.transformed!==undefined){return}
         this.rank = rank // save rank if we must add generator declaration
         // if function body is in the same line, add a child
-        if(this.in_line!==undefined){
+        if(this.parent.tree.length>1){
             var new_node = new $Node('expression')
             var ctx = new $NodeCtx(new_node)
-            ctx.tree = [this.tree[this.tree.length-1]]
+            ctx.tree = [this.parent.tree.pop()]
             node.add(new_node)
+            this.in_line = true
         }
         // if function inside a class, the first argument represents
         // the instance
@@ -818,6 +838,14 @@ function $ForExpr(context){
     context.tree.push(this)
     this.toString = function(){return '(for) '+this.tree}
     this.transform = function(node,rank){
+        // if body is in the same line, add a child
+        if(this.parent.tree.length>1){
+            var new_node = new $Node('expression')
+            var ctx = new $NodeCtx(new_node)
+            ctx.tree = [this.parent.tree.pop()]
+            node.add(new_node)
+            this.in_line = true
+        }
         var new_nodes = []
         var new_node = new $Node('expression')
         var target = this.tree[0]
@@ -1747,11 +1775,7 @@ function $transition(context,token){
 
     }else if(context.type==='condition'){
 
-        if(token===':'){
-            var new_node = new $Node('expression')
-            context.parent.node.add(new_node)
-            return new $NodeCtx(new_node)
-        }
+        if(token===':'){return context.parent}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='decorator'){
@@ -2458,7 +2482,8 @@ function $tokenize(src,module){
                 // add a child to current node
                 current.add(new_node)
             }else if(indent<=current.indent &&
-                $indented.indexOf(context.tree[0].type)>-1){
+                $indented.indexOf(context.tree[0].type)>-1 &&
+                context.tree.length<2){
                     $pos = pos
                     $_SyntaxError(context,'expected an indented block',pos)
             }else{ // same or lower level
