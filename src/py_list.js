@@ -179,6 +179,8 @@ list.__name__ = 'list'
 
 list.__ne__ = function(self,other){return !self.__eq__(other)}
 
+list.__new__ = function(){return []}
+
 list.__next__ = function(self){
     if(self.iter===null){self.iter=0}
     if(self.iter<self.valueOf().length){
