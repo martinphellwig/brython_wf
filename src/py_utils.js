@@ -315,8 +315,9 @@ function $class_constructor(class_name,factory,parents){
         
         var obj=new Object()
         obj.$initialized=false
-        if(factory.parents.length){
-            var obj = factory.parents[0].apply(null,arguments)
+        if(factory.parents.length && 
+           factory.parents[0].__new__!==undefined){
+            var obj = factory.parents[0].__new__.apply(null,arguments)
         }
         obj.__class__ = f
         // set attributes

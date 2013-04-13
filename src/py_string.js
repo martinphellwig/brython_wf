@@ -193,6 +193,8 @@ str.__mul__ = function(self,other){
 
 str.__ne__ = function(self,other){return other!==self.valueOf()}
 
+str.__new__ = function(){return ''}
+
 str.__next__ = function(self){
     if(self.iter==null){self.iter==0}
     if(self.iter<self.value.length){

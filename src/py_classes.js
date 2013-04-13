@@ -256,6 +256,8 @@ dict.__len__ = function(self) {return self.$keys.length}
 
 dict.__ne__ = function(self,other){return !dict.__eq__(self,other)}
 
+dict.__new__ = function(){return dict()}
+
 dict.__next__ = function(self){
     if(self.iter==null){self.iter==0}
     if(self.iter<self.$keys.length){
@@ -427,6 +429,7 @@ function float(value){
 
 float.__class__ = $type
 float.__name__ = 'float'
+float.__new__ = function(){return new $FloatClass(0.0)}
 float.toString = function(){return "<class 'float'>"}
 
 float.__hash__ = function() {
@@ -629,6 +632,7 @@ function int(value){
 }
 int.__class__ = $type
 int.__name__ = 'int'
+init.__new__ = function(){return 0}
 int.toString = function(){return "<class 'int'>"}
 
 Number.prototype.__class__ = int
@@ -1049,6 +1053,7 @@ function set(){
 }
 set.__class__ = $type
 set.__name__ = 'set'
+set.__new__ = function(){return set()}
 set.toString = function(){return "<class 'set'>"}
 
 set.__hash__ = function() {throw TypeError("unhashable type: 'set'");}
@@ -1214,6 +1219,7 @@ function tuple(){
 }
 tuple.__class__ = $type
 tuple.__name__ = 'tuple'
+tuple.__new__ = function(){return tuple()}
 tuple.__str__ = function(){return "<class 'tuple'>"}
 tuple.toString = tuple.__str__
 
