@@ -139,4 +139,10 @@ assert foo(3)==6
 class foo(list):pass
 class bar(foo):pass
 assert str(bar())=="[]"
+
+i=10
+while i>0:i-=1
+if not True:print('true!')
+else:pass
+
 print("passed all tests..")
