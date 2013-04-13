@@ -354,12 +354,11 @@ function $CallCtx(context){
     this.to_js = function(){
         if(this.func!==undefined && 
             ['eval','exec'].indexOf(this.func.value)>-1){
-            // get argument
+            // get module
             var ctx_node = this
             while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
             var module = ctx_node.node.module
-            var src = document.$py_src[module]
-            var arg = src.substring(this.start+1,this.end)
+            arg = this.tree[0].to_js()
             return 'eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
         }
         return this.func.to_js()+'('+$to_js(this.tree)+')'
