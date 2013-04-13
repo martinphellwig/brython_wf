@@ -238,7 +238,10 @@ function $src_error(name,module,msg,pos) {
     info += '^\n'
     err = new Error()
     err.name = name
+    err.__class__ = Exception
     err.__name__ = name
+    err.__getattr__ = function(attr){return err[attr]}
+    err.__str__ = function(){return msg}
     err.message = msg
     err.info = info
     err.py_error = true
@@ -256,6 +259,7 @@ function $IndentationError(module,msg,pos) {
 // resolve instance attribute from its class factory
 function $resolve_attr(obj,factory,attr){
     if(attr==='__class__'){return obj.__class__}
+    if(__BRYTHON__.forbidden.indexOf(attr)!==-1){attr='$$'+attr}
     if(obj[attr]!==undefined){
         if(typeof obj[attr]==='function'){
             var res = function(){return obj[attr].apply(obj,arguments)}

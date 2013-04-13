@@ -632,7 +632,7 @@ function int(value){
 }
 int.__class__ = $type
 int.__name__ = 'int'
-init.__new__ = function(){return 0}
+int.__new__ = function(){return 0}
 int.toString = function(){return "<class 'int'>"}
 
 Number.prototype.__class__ = int
@@ -1330,7 +1330,7 @@ Exception = function (msg){
         err.info += '\n'+lines[line_num-1]
         //msg += err.info
     }
-    err.message = msg + err.info
+    err.message = msg
 
     err.args = tuple(msg.split('\n')[0])
     err.__str__ = function(){return msg}
@@ -1346,6 +1346,15 @@ Exception = function (msg){
 Exception.__str__ = function(){return "<class 'Exception'>"}
 Exception.__class__ = $type
 
+__BRYTHON__.exception = function(js_exc){
+    if(js_exc.py_error===true){var exc = js_exc}
+    else{
+        var exc = Exception(js_exc.message)
+        exc.__name__= js_exc.name
+    }
+    __BRYTHON__.exception_stack.push(exc)
+    return exc
+}
 function $make_exc(name){
     var $exc = (Exception+'').replace(/Exception/g,name)
     eval(name+'='+$exc)
