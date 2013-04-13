@@ -1,14 +1,8 @@
 import sys
 import time
 import random
-
-#this sucks..  cannot find dis since "root" path is blah/test
-#we might need to create a variable we pass via the brython function
-# to state what the root path is.  
-# For now, we'll hardcode a relative path. :(
-
-#sys.path.append("../Lib")
 import dis
+import traceback
 
 _rand=random.random()
 
@@ -65,7 +59,10 @@ def run():
        storage["py_src"]=src
 
     t0 = time.time()
-    exec(src)
+    try:
+        exec(src)
+    except Exception as exc:
+        traceback.print_exc()
     output = doc["console"].value
 
     print('<completed in %s ms>' %(time.time()-t0))
