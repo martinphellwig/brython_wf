@@ -206,7 +206,7 @@ str.__next__ = function(self){
     }
 }
 
-str.__not_in__ = function(self,item){return !item.__contains__(self.valueOf())}
+str.__not_in__ = function(self,item){return !str.__in__(self,item)}
 
 str.__setattr__ = function(self,attr,value){setattr(self,attr,value)}
 

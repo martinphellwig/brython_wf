@@ -188,7 +188,6 @@ function dict(){
 dict.__name__ = 'dict'
 dict.toString = function(){return "<class 'dict'>"}
 
-
 dict.__add__ = function(self,other){
     var msg = "unsupported operand types for +:'dict' and "
     throw TypeError(msg+"'"+(str(other.__class__) || typeof other)+"'")
@@ -269,7 +268,7 @@ dict.__next__ = function(self){
     }
 }
 
-dict.__not_in__ = function(self,item){return !(item.__contains__(self))}
+dict.__not_in__ = function(self,item){return !self.__in__(item)}
 
 dict.__setitem__ = function(self,key,value){
     for(var i=0;i<self.$keys.length;i++){
@@ -554,7 +553,16 @@ for($op in $operators){
 }
 
 //format() (built in function)
-//frozenset() (built in function)
+
+function frozenset(){
+    var res = set.apply(null,arguments)
+    res.__class__ = frozenset
+    var x = str(res)
+    res.__str__ = function(){return "frozenset("+x+")"}
+    return res
+}
+frozenset.__class__ = $type
+frozenset.__str__ = function(){return "<class 'frozenset'>"}
 
 function getattr(obj,attr,_default){
     if(obj.__getattr__!==undefined &&
@@ -681,7 +689,7 @@ Number.prototype.__mul__ = function(other){
 }
 
 Number.prototype.__not_in__ = function(item){
-    res = item.__contains__(this)
+    res = item.__getattr__('__contains__')(this)
     return !res
 }
 
@@ -1054,9 +1062,6 @@ function set(){
 set.__class__ = $type
 set.__name__ = 'set'
 set.__new__ = function(){return set()}
-set.toString = function(){return "<class 'set'>"}
-
-set.__hash__ = function() {throw TypeError("unhashable type: 'set'");}
 
 function $SetClass(){
     var x = null;
@@ -1077,25 +1082,26 @@ $SetClass.prototype.toString = function(){
     return res+'}'
 }
     
-$SetClass.prototype.__add__ = function(other){
-    return set(this.items.concat(other.items))
+set.__add__ = function(self,other){
+    return set(self.items.concat(other.items))
 }
 
-$SetClass.prototype.__class__ = set
-
-$SetClass.prototype.__contains__ = function(item){
-    for(var i=0;i<this.items.length;i++){
-        try{if(this.items[i].__eq__(item)){return True}
+set.__contains__ = function(self,item){
+    for(var i=0;i<self.items.length;i++){
+        try{if(self.items[i].__eq__(item)){return True}
         }catch(err){void(0)}
     }
     return False
 }
 
-$SetClass.prototype.__eq__ = function(other){
+set.__eq__ = function(self,other){
+    if(other===undefined){ // compare class set
+        return self===set
+    }
     if(isinstance(other,set)){
-        if(other.items.length==this.items.length){
-            for(var i=0;i<this.items.length;i++){
-                if(this.__contains__(other.items[i])===False){
+        if(other.items.length==self.items.length){
+            for(var i=0;i<self.items.length;i++){
+                if(set.__contains__(self,other.items[i])===False){
                     return False
                 }
             }
@@ -1106,32 +1112,69 @@ $SetClass.prototype.__eq__ = function(other){
 }
 
 $SetClass.prototype.__getattr__ = function(attr){
-    if(this[attr]!==undefined){return this[attr]}
-    else{throw AttributeError("'set' object has no attribute '"+attr+"'")}
+    if(attr==='__class__'){return this.__class__}
+    if(set[attr]===undefined){throw AttributeError("'set' object has no attribute '"+attr+"'")}
+    var obj = this
+    var res = function(){
+        var args = [obj]
+        for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+        return set[attr].apply(obj,args)
+    }
+    res.__str__ = function(){return "<built-in method "+attr+" of set object>"}
+    return res
 }
 
-$SetClass.prototype.__hash__ = set.__hash__
+set.__hash__ = function(self) {throw TypeError("unhashable type: 'set'");}
 
-$SetClass.prototype.__in__ = function(item){return item.__contains__(this)}
+set.__in__ = function(self,item){return item.__contains__(self)}
 
-$SetClass.prototype.__len__ = function(){return int(this.items.length)}
+set.__len__ = function(self){return int(self.items.length)}
 
-$SetClass.prototype.__item__ = function(i){return this.items[i]}
+set.__item__ = function(self,i){return self.items[i]}
 
-$SetClass.prototype.__ne__ = function(other){return !(this.__eq__(other))}
+set.__ne__ = function(self,other){return !set.__eq__(self,other)}
 
-$SetClass.prototype.__not_in__ = function(item){return !(item.__contains__(this))}
+set.__not_in__ = function(self,item){return !set.__in__(self,item)}
 
-$SetClass.prototype.__str__ = $SetClass.prototype.toString
+set.__str__ = function(self){
+    if(self===undefined){return "<class 'set'>"}
+    var res = "{"
+    for(var i=0;i<self.items.length;i++){
+        var x = self.items[i]
+        if(isinstance(x,str)){res += "'"+x+"'"} 
+        else{res += x.toString()}
+        if(i<self.items.length-1){res += ','}
+    }
+    return res+'}'
+}    
 
-$SetClass.prototype.add = function(item){
+set.add = function(self,item){
     var i=0
-    for(i=0;i<this.items.length;i++){
-        try{if(item.__eq__(this.items[i])){return}}
+    for(i=0;i<self.items.length;i++){
+        try{if(item.__eq__(self.items[i])){return}}
         catch(err){void(0)} // if equality test throws exception
     }
-    this.items.push(item)
+    self.items.push(item)
 }
+
+set.toString = function(){return "<class 'set'>"}
+
+// set prototype attributes
+for(var attr in set){
+    if(typeof set[attr]==='function'){set[attr].__str__=function(){return "<set method "+attr+">"}}
+    var func = (function(attr){
+        return function(){
+            var args = [this]
+            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+            return set[attr].apply(this,args)
+        }
+    })(attr)
+    func.__str__ = (function(attr){
+        return function(){return "<method-wrapper '"+attr+"' of set object>"}
+    })(attr)
+    $SetClass.prototype[attr] = func
+}
+$SetClass.prototype.__class__ = set
 
 function setattr(obj,attr,value){
     if(!isinstance(attr,str)){throw TypeError("setattr(): attribute name must be string")}
