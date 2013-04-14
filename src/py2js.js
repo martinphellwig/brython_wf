@@ -2641,6 +2641,23 @@ function $tokenize(src,module){
             context = $transition(context,car)
             pos++;continue
         }
+        if(car===";"){ // next instruction
+            $transition(context,'eol') // close previous instruction
+            // create a new node, at the same level as current's parent
+            if(current.context.tree.length===0){
+                // consecutive ; are not allowed
+                $pos=pos
+                $_SyntaxError(context,'invalid syntax')
+            }
+            new_node = new $Node()
+            new_node.indent = current.indent
+            new_node.line_num = lnum
+            new_node.module = module
+            current.parent.add(new_node)
+            current = new_node
+            context = new $NodeCtx(new_node)
+            pos++;continue
+        }
         // operators
         if(car in $first_op_letter){
             // find longest match
