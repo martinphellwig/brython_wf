@@ -44,4 +44,7 @@ assert x == ['bg','r','zz']
 
 assert x[1] == 'r'
 
+assert 'r' in x
+assert 'rty' not in x
+
 print("passed all tests..")
