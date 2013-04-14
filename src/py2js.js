@@ -28,7 +28,7 @@ var $augmented_assigns = {
 }
 
 function $_SyntaxError(context,msg,indent){
-    //console.log(msg)
+    console.log(msg)
     var ctx_node = context
     while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
     var tree_node = ctx_node.node
@@ -325,6 +325,17 @@ function $AttrCtx(context){
     }
 }
 
+function $BodyCtx(context){
+    // inline body for def, class, if, elif, else, try...
+    // creates a new node, child of context node
+    var ctx_node = context.parent
+    while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
+    var tree_node = ctx_node.node
+    var body_node = new $Node('expression')
+    tree_node.insert(0,body_node)
+    return new $NodeCtx(body_node)
+}
+
 function $CallArgCtx(context){
     this.type = 'call_arg'
     this.toString = function(){return 'call_arg '+this.tree}
@@ -373,15 +384,6 @@ function $ClassCtx(context){
     this.expect = 'id'
     this.toString = function(){return '(class) '+this.name+' '+this.tree}
     this.transform = function(node,rank){
-        // if body is in the same line, add a child
-        if(this.parent.tree.length>1){
-            var new_node = new $Node('expression')
-            var ctx = new $NodeCtx(new_node)
-            ctx.tree = [this.parent.tree.pop()]
-            node.add(new_node)
-            this.in_line = true
-        }
-
         // insert "$class = new Object"
         var instance_decl = new $Node('expression')
         new $NodeJSCtx(instance_decl,'var $class = new Object()')
@@ -477,16 +479,6 @@ function $ConditionCtx(context,token){
     this.tree = []
     context.tree.push(this)
     this.toString = function(){return this.token+' '+this.tree}
-    this.transform = function(node,rank){
-        // if body is in the same line, add a child
-        if(this.parent.tree.length>1){
-            var new_node = new $Node('expression')
-            var ctx = new $NodeCtx(new_node)
-            ctx.tree = [this.parent.tree.pop()]
-            node.add(new_node)
-            this.in_line = true
-        }    
-    }
     this.to_js = function(){
         var tok = this.token
         if(tok==='elif'){tok='else if'}
@@ -541,14 +533,6 @@ function $DefCtx(context){
         // already transformed ?
         if(this.transformed!==undefined){return}
         this.rank = rank // save rank if we must add generator declaration
-        // if function body is in the same line, add a child
-        if(this.parent.tree.length>1){
-            var new_node = new $Node('expression')
-            var ctx = new $NodeCtx(new_node)
-            ctx.tree = [this.parent.tree.pop()]
-            node.add(new_node)
-            this.in_line = true
-        }
         // if function inside a class, the first argument represents
         // the instance
         var scope = $get_scope(this)
@@ -838,14 +822,6 @@ function $ForExpr(context){
     context.tree.push(this)
     this.toString = function(){return '(for) '+this.tree}
     this.transform = function(node,rank){
-        // if body is in the same line, add a child
-        if(this.parent.tree.length>1){
-            var new_node = new $Node('expression')
-            var ctx = new $NodeCtx(new_node)
-            ctx.tree = [this.parent.tree.pop()]
-            node.add(new_node)
-            this.in_line = true
-        }
         var new_nodes = []
         var new_node = new $Node('expression')
         var target = this.tree[0]
@@ -1746,7 +1722,7 @@ function $transition(context,token){
         }
         else if(token==='(' && context.expect==='(:'){
             return $transition(new $AbstractExprCtx(context,true),'(')
-        }else if(token===':' && context.expect==='(:'){return context.parent}
+        }else if(token===':' && context.expect==='(:'){return $BodyCtx(context)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='comp_if'){
@@ -1775,7 +1751,7 @@ function $transition(context,token){
 
     }else if(context.type==='condition'){
 
-        if(token===':'){return context.parent}
+        if(token===':'){return $BodyCtx(context)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='decorator'){
@@ -1795,7 +1771,7 @@ function $transition(context,token){
                 return context
             }
         }else if(token==='('){return new $FuncArgs(context)}
-        else if(token===':'){return context.parent}
+        else if(token===':'){return $BodyCtx(context)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='del'){
@@ -1891,7 +1867,7 @@ function $transition(context,token){
             context.tree[context.tree.length-1].alias = arguments[2]
             return context
         }else if(token===':' && ['id','as',':'].indexOf(context.expect)>-1){
-            return context.parent
+            return $BodyCtx(context)
         }else if(token==='(' && context.expect==='id' && context.tree.length===0){
             context.parenth = true
             return context
@@ -1972,7 +1948,7 @@ function $transition(context,token){
     }else if(context.type==='for'){
     
         if(token==='in'){return new $AbstractExprCtx(context,true)}
-        else if(token===':'){return context.parent}
+        else if(token===':'){return $BodyCtx(context)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='from'){
@@ -2233,12 +2209,7 @@ function $transition(context,token){
             return new $AbstractExprCtx(yield,true)
         }else if(token==='del'){return new $AbstractExprCtx(new $DelCtx(context),true)}
         else if(token==='@'){return new $DecoratorCtx(context)}
-        else if(token===':'){ // end of if,def,for etc.
-            var tree_node = context.node
-            var new_node = new $Node('expression')
-            tree_node.add(new_node)
-            return new $NodeCtx(new_node)
-        }else if(token==='eol'){
+        else if(token==='eol'){
             if(context.tree.length===0){ // might be the case after a :
                 context.node.parent.children.pop()
                 return context.node.parent.context
@@ -2283,7 +2254,7 @@ function $transition(context,token){
 
     }else if(context.type==='single_kw'){
 
-        if(token===':'){return context.parent}
+        if(token===':'){return $BodyCtx(context)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='star_arg'){
@@ -2337,7 +2308,7 @@ function $transition(context,token){
 
     }else if(context.type==='try'){ 
 
-        if(token===':'){return context.parent}
+        if(token===':'){return $BodyCtx(context)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
     
     }else if(context.type==='unary'){
