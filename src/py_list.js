@@ -192,7 +192,7 @@ list.__next__ = function(self){
     }
 }
 
-list.__not_in__ = function(self,item){return !item.__contains__(self)}
+list.__not_in__ = function(self,item){return !list.__in__(self,item)}
 
 list.__setitem__ = function(self,arg,value){
     if(isinstance(arg,int)){
