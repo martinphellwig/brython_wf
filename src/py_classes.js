@@ -563,6 +563,7 @@ function frozenset(){
 }
 frozenset.__class__ = $type
 frozenset.__str__ = function(){return "<class 'frozenset'>"}
+frozenset.add = function(){throw AttributeError("'frozenset' object has no attribute 'add'")}
 
 function getattr(obj,attr,_default){
     if(obj.__getattr__!==undefined &&
@@ -1086,6 +1087,14 @@ set.__add__ = function(self,other){
     return set(self.items.concat(other.items))
 }
 
+set.__and__ = function(self,other){
+    var res = set()
+    for(var i=0;i<self.items.length;i++){
+        if(other.__contains__(self.items[i])){res.add(self.items[i])}
+    }
+    return res
+}
+
 set.__contains__ = function(self,item){
     for(var i=0;i<self.items.length;i++){
         try{if(self.items[i].__eq__(item)){return True}
@@ -1124,9 +1133,28 @@ $SetClass.prototype.__getattr__ = function(attr){
     return res
 }
 
+set.__ge__ = function(self,other){
+    return !set.__lt__(self,other)
+}
+
+set.__gt__ = function(self,other){
+    return !set.__le__(self,other)
+}
+
 set.__hash__ = function(self) {throw TypeError("unhashable type: 'set'");}
 
 set.__in__ = function(self,item){return item.__contains__(self)}
+
+set.__le__ = function(self,other){
+    for(var i=0;i<self.items.length;i++){
+        if(!other.__contains__(self.items[i])){return false}
+    }
+    return true    
+}
+
+set.__lt__ = function(self,other){
+    return set.__le__(self,other)&&set.__len__(self)<other.__len__()
+}
 
 set.__len__ = function(self){return int(self.items.length)}
 
@@ -1136,6 +1164,29 @@ set.__ne__ = function(self,other){return !set.__eq__(self,other)}
 
 set.__not_in__ = function(self,item){return !set.__in__(self,item)}
 
+set.__or__ = function(self,other){
+    var res = self.copy()
+    for(var i=0;i<other.items.length;i++){
+        res.add(other.items[i])
+    }
+    return res
+}
+
+set.__pow__ = function(self,other){
+    // Return a new set with elements in either the set or other but not both
+    var res = set()
+    for(var i=0;i<self.items.length;i++){
+        if(!other.__contains__(self.items[i])){
+            res.add(self.items[i])
+        }
+    }
+    for(var i=0;i<other.items.length;i++){
+        if(!self.__contains__(other.items[i])){
+            res.add(other.items[i])
+        }
+    }
+    return res
+}
 set.__str__ = function(self){
     if(self===undefined){return "<class 'set'>"}
     var res = "{"
@@ -1148,14 +1199,71 @@ set.__str__ = function(self){
     return res+'}'
 }    
 
+set.__sub__ = function(self,other){
+    // Return a new set with elements in the set that are not in the others
+    var res = set()
+    for(var i=0;i<self.items.length;i++){
+        if(!other.__contains__(self.items[i])){res.items.push(self.items[i])}
+    }
+    return res
+}
+
 set.add = function(self,item){
-    var i=0
-    for(i=0;i<self.items.length;i++){
+    if(self.__class__===frozenset){throw AttributeError("'frozenset' object has no attribute 'add'")}
+    for(var i=0;i<self.items.length;i++){
         try{if(item.__eq__(self.items[i])){return}}
         catch(err){void(0)} // if equality test throws exception
     }
     self.items.push(item)
 }
+
+set.clear = function(self){
+    if(self.__class__===frozenset){throw AttributeError("'frozenset' object has no attribute 'clear'")}
+    self.items = []
+}
+
+set.copy = function(self){
+    var res = set()
+    for(var i=0;i<self.items.length;i++){res.items[i]=self.items[i]}
+    return res
+}
+
+set.discard = function(self,item){
+    if(self.__class__===frozenset){throw AttributeError("'frozenset' object has no attribute 'discard'")}
+    try{set.remove(self,item)}
+    catch(err){if(err.__name__!=='KeyError'){throw err}}
+}
+
+set.isdisjoint = function(self,other){
+    for(var i=0;i<self.items.length;i++){
+        if(other.__contains__(self.items[i])){return false}
+    }
+    return true    
+}
+
+set.pop = function(self){
+    if(self.__class__===frozenset){throw AttributeError("'frozenset' object has no attribute 'pop'")}
+    if(self.items.length===0){throw KeyError('pop from an empty set')}
+    return self.items.pop()
+}
+
+
+set.remove = function(self,item){
+    if(self.__class__===frozenset){throw AttributeError("'frozenset' object has no attribute 'remove'")}
+    for(var i=0;i<self.items.length;i++){
+        if(self.items[i].__eq__(item)){
+            self.items.splice(i,1)
+            return None
+        }
+    }
+    throw KeyError(item)
+}
+
+set.difference = set.__sub__
+set.intersection = set.__and__
+set.issubset = set.__le__
+set.issuperset = set.__ge__
+set.union = set.__or__
 
 set.toString = function(){return "<class 'set'>"}
 
