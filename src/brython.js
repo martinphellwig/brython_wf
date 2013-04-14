@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130409-152842
+// version 1.1.20130414-073849
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -16,7 +16,7 @@ __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130409-152842"]
+__BRYTHON__.version_info=[1,1,"20130414-073849"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -228,7 +228,10 @@ for(var i=0;i<lpos;i++){info+=' '}
 info +='^\n'
 err=new Error()
 err.name=name
+err.__class__=Exception
 err.__name__=name
+err.__getattr__=function(attr){return err[attr]}
+err.__str__=function(){return msg}
 err.message=msg
 err.info=info
 err.py_error=true
@@ -242,6 +245,7 @@ $src_error('IndentationError',module,msg,pos)
 }
 function $resolve_attr(obj,factory,attr){
 if(attr==='__class__'){return obj.__class__}
+if(__BRYTHON__.forbidden.indexOf(attr)!==-1){attr='$$'+attr}
 if(obj[attr]!==undefined){
 if(typeof obj[attr]==='function'){
 var res=function(){return obj[attr].apply(obj,arguments)}
@@ -297,8 +301,14 @@ factory.__name__=class_name
 var f=function(){
 var obj=new Object()
 obj.$initialized=false
-if(factory.parents.length){
-var obj=factory.parents[0].apply(null,arguments)
+var fact=factory
+while(fact.parents!==undefined && fact.parents.length>0){
+if(fact.parents.length && 
+fact.parents[0].__new__!==undefined){
+var obj=fact.parents[0].__new__.apply(null,arguments)
+break
+}
+fact=fact.parents[0]
 }
 obj.__class__=f
 for(var attr in factory){
@@ -653,6 +663,7 @@ dict.__in__=function(self,item){return item.__contains__(self)}
 dict.__item__=function(self,i){return self.$keys[i]}
 dict.__len__=function(self){return self.$keys.length}
 dict.__ne__=function(self,other){return !dict.__eq__(self,other)}
+dict.__new__=function(){return dict()}
 dict.__next__=function(self){
 if(self.iter==null){self.iter==0}
 if(self.iter<self.$keys.length){
@@ -663,7 +674,7 @@ self.iter=null
 throw StopIteration()
 }
 }
-dict.__not_in__=function(self,item){return !(item.__contains__(self))}
+dict.__not_in__=function(self,item){return !self.__in__(item)}
 dict.__setitem__=function(self,key,value){
 for(var i=0;i<self.$keys.length;i++){
 try{
@@ -798,6 +809,7 @@ throw ValueError("Could not convert to float(): '"+str(value)+"'")
 }
 float.__class__=$type
 float.__name__='float'
+float.__new__=function(){return new $FloatClass(0.0)}
 float.toString=function(){return "<class 'float'>"}
 float.__hash__=function(){
 frexp=function(re){
@@ -899,6 +911,15 @@ if(!($opfunc in $FloatClass.prototype)){
 eval('$FloatClass.prototype.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
 }
 }
+function frozenset(){
+var res=set.apply(null,arguments)
+res.__class__=frozenset
+var x=str(res)
+res.__str__=function(){return "frozenset("+x+")"}
+return res
+}
+frozenset.__class__=$type
+frozenset.__str__=function(){return "<class 'frozenset'>"}
 function getattr(obj,attr,_default){
 if(obj.__getattr__!==undefined &&
 obj.__getattr__(attr)!==undefined){
@@ -961,6 +982,7 @@ return parseInt(value.value)
 }
 int.__class__=$type
 int.__name__='int'
+int.__new__=function(){return 0}
 int.toString=function(){return "<class 'int'>"}
 Number.prototype.__class__=int
 Number.prototype.__floordiv__=function(other){
@@ -1000,7 +1022,7 @@ return res
 }else{$UnsupportedOpType("*",int,other)}
 }
 Number.prototype.__not_in__=function(item){
-res=item.__contains__(this)
+res=item.__getattr__('__contains__')(this)
 return !res
 }
 Number.prototype.__pow__=function(other){
@@ -1313,8 +1335,7 @@ throw TypeError("set expected at most 1 argument, got "+arguments.length)
 }
 set.__class__=$type
 set.__name__='set'
-set.toString=function(){return "<class 'set'>"}
-set.__hash__=function(){throw TypeError("unhashable type: 'set'");}
+set.__new__=function(){return set()}
 function $SetClass(){
 var x=null
 var i=null
@@ -1332,22 +1353,24 @@ if(i<this.items.length-1){res +=','}
 }
 return res+'}'
 }
-$SetClass.prototype.__add__=function(other){
-return set(this.items.concat(other.items))
+set.__add__=function(self,other){
+return set(self.items.concat(other.items))
 }
-$SetClass.prototype.__class__=set
-$SetClass.prototype.__contains__=function(item){
-for(var i=0;i<this.items.length;i++){
-try{if(this.items[i].__eq__(item)){return True}
+set.__contains__=function(self,item){
+for(var i=0;i<self.items.length;i++){
+try{if(self.items[i].__eq__(item)){return True}
 }catch(err){void(0)}
 }
 return False
 }
-$SetClass.prototype.__eq__=function(other){
+set.__eq__=function(self,other){
+if(other===undefined){
+return self===set
+}
 if(isinstance(other,set)){
-if(other.items.length==this.items.length){
-for(var i=0;i<this.items.length;i++){
-if(this.__contains__(other.items[i])===False){
+if(other.items.length==self.items.length){
+for(var i=0;i<self.items.length;i++){
+if(set.__contains__(self,other.items[i])===False){
 return False
 }
 }
@@ -1357,24 +1380,58 @@ return True
 return False
 }
 $SetClass.prototype.__getattr__=function(attr){
-if(this[attr]!==undefined){return this[attr]}
-else{throw AttributeError("'set' object has no attribute '"+attr+"'")}
+if(attr==='__class__'){return this.__class__}
+if(set[attr]===undefined){throw AttributeError("'set' object has no attribute '"+attr+"'")}
+var obj=this
+var res=function(){
+var args=[obj]
+for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+return set[attr].apply(obj,args)
 }
-$SetClass.prototype.__hash__=set.__hash__
-$SetClass.prototype.__in__=function(item){return item.__contains__(this)}
-$SetClass.prototype.__len__=function(){return int(this.items.length)}
-$SetClass.prototype.__item__=function(i){return this.items[i]}
-$SetClass.prototype.__ne__=function(other){return !(this.__eq__(other))}
-$SetClass.prototype.__not_in__=function(item){return !(item.__contains__(this))}
-$SetClass.prototype.__str__=$SetClass.prototype.toString
-$SetClass.prototype.add=function(item){
+res.__str__=function(){return "<built-in method "+attr+" of set object>"}
+return res
+}
+set.__hash__=function(self){throw TypeError("unhashable type: 'set'");}
+set.__in__=function(self,item){return item.__contains__(self)}
+set.__len__=function(self){return int(self.items.length)}
+set.__item__=function(self,i){return self.items[i]}
+set.__ne__=function(self,other){return !set.__eq__(self,other)}
+set.__not_in__=function(self,item){return !set.__in__(self,item)}
+set.__str__=function(self){
+if(self===undefined){return "<class 'set'>"}
+var res="{"
+for(var i=0;i<self.items.length;i++){
+var x=self.items[i]
+if(isinstance(x,str)){res +="'"+x+"'"}
+else{res +=x.toString()}
+if(i<self.items.length-1){res +=','}
+}
+return res+'}'
+}
+set.add=function(self,item){
 var i=0
-for(i=0;i<this.items.length;i++){
-try{if(item.__eq__(this.items[i])){return}}
+for(i=0;i<self.items.length;i++){
+try{if(item.__eq__(self.items[i])){return}}
 catch(err){void(0)}
 }
-this.items.push(item)
+self.items.push(item)
 }
+set.toString=function(){return "<class 'set'>"}
+for(var attr in set){
+if(typeof set[attr]==='function'){set[attr].__str__=function(){return "<set method "+attr+">"}}
+var func=(function(attr){
+return function(){
+var args=[this]
+for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+return set[attr].apply(this,args)
+}
+})(attr)
+func.__str__=(function(attr){
+return function(){return "<method-wrapper '"+attr+"' of set object>"}
+})(attr)
+$SetClass.prototype[attr]=func
+}
+$SetClass.prototype.__class__=set
 function setattr(obj,attr,value){
 if(!isinstance(attr,str)){throw TypeError("setattr(): attribute name must be string")}
 obj[attr]=value
@@ -1442,6 +1499,7 @@ return obj
 }
 tuple.__class__=$type
 tuple.__name__='tuple'
+tuple.__new__=function(){return tuple()}
 tuple.__str__=function(){return "<class 'tuple'>"}
 tuple.toString=tuple.__str__
 function type(obj){
@@ -1532,7 +1590,7 @@ var lines=document.$py_src[module].split('\n')
 err.info +="\nmodule '"+module+"' line "+line_num
 err.info +='\n'+lines[line_num-1]
 }
-err.message=msg + err.info
+err.message=msg
 err.args=tuple(msg.split('\n')[0])
 err.__str__=function(){return msg}
 err.toString=err.__str__
@@ -1545,6 +1603,15 @@ return err
 }
 Exception.__str__=function(){return "<class 'Exception'>"}
 Exception.__class__=$type
+__BRYTHON__.exception=function(js_exc){
+if(js_exc.py_error===true){var exc=js_exc}
+else{
+var exc=Exception(js_exc.message)
+exc.__name__=js_exc.name
+}
+__BRYTHON__.exception_stack.push(exc)
+return exc
+}
 function $make_exc(name){
 var $exc=(Exception+'').replace(/Exception/g,name)
 eval(name+'='+$exc)
@@ -1717,6 +1784,7 @@ else{throw TypeError("can't multiply sequence by non-int of type '"+other.__name
 }
 list.__name__='list'
 list.__ne__=function(self,other){return !self.__eq__(other)}
+list.__new__=function(){return[]}
 list.__next__=function(self){
 if(self.iter===null){self.iter=0}
 if(self.iter<self.valueOf().length){
@@ -1727,7 +1795,7 @@ self.iter=null
 throw StopIteration('')
 }
 }
-list.__not_in__=function(self,item){return !item.__contains__(self)}
+list.__not_in__=function(self,item){return !list.__in__(self,item)}
 list.__setitem__=function(self,arg,value){
 if(isinstance(arg,int)){
 var pos=arg
@@ -2079,6 +2147,7 @@ for(var i=0;i<other;i++){$res+=self.valueOf()}
 return $res
 }
 str.__ne__=function(self,other){return other!==self.valueOf()}
+str.__new__=function(){return ''}
 str.__next__=function(self){
 if(self.iter==null){self.iter==0}
 if(self.iter<self.value.length){
@@ -2089,7 +2158,7 @@ self.iter=null
 throw StopIteration()
 }
 }
-str.__not_in__=function(self,item){return !item.__contains__(self.valueOf())}
+str.__not_in__=function(self,item){return !str.__in__(self,item)}
 str.__setattr__=function(self,attr,value){setattr(self,attr,value)}
 self.__setitem__=function(self,attr,value){
 throw TypeError("'str' object does not support item assignment")
@@ -2489,11 +2558,13 @@ __BRYTHON__.$py_module_alias[modules[i][0]]=modules[i][1]
 return res
 }
 function $import_from(module,names,parent_module,alias){
+console.log(module +","+names+","+parent_module+','+alias)
 if(parent_module !==undefined){
 var relpath=__BRYTHON__.$py_module_path[parent_module]
 var i=relpath.lastIndexOf('/')
 relpath=relpath.substring(0, i)
 alias=__BRYTHON__.$py_module_alias[parent_module]
+console.log(parent_module+','+alias+','+relpath)
 $import_module_search_path_list(module,alias,names,[relpath])
 }else if(alias !==undefined){
 return $import_single(module,alias,names)
@@ -2803,6 +2874,14 @@ if(name!=='__getattr__'){name='__'+this.func+'__("'+name+'")'}
 return this.value.to_js()+'.'+name
 }
 }
+function $BodyCtx(C){
+var ctx_node=C.parent
+while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
+var tree_node=ctx_node.node
+var body_node=new $Node('expression')
+tree_node.insert(0,body_node)
+return new $NodeCtx(body_node)
+}
 function $CallArgCtx(C){
 this.type='call_arg'
 this.toString=function(){return 'call_arg '+this.tree}
@@ -2831,9 +2910,8 @@ if(this.func!==undefined &&
 var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
-var src=document.$py_src[module]
-var arg=src.substring(this.start+1,this.end)
-return 'try{eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())}catch(err){$report(err)}'
+arg=this.tree[0].to_js()
+return 'eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
 }
 return this.func.to_js()+'('+$to_js(this.tree)+')'
 }
@@ -2844,7 +2922,7 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.expect='id'
-this.toString=function(){return 'class '+this.tree}
+this.toString=function(){return '(class) '+this.name+' '+this.tree}
 this.transform=function(node,rank){
 var instance_decl=new $Node('expression')
 new $NodeJSCtx(instance_decl,'var $class = new Object()')
@@ -2980,12 +3058,6 @@ this.toString=function(){return 'def '+this.name+'('+this.tree+')'}
 this.transform=function(node,rank){
 if(this.transformed!==undefined){return}
 this.rank=rank 
-if(this.in_line!==undefined){
-var new_node=new $Node('expression')
-var ctx=new $NodeCtx(new_node)
-ctx.tree=[this.tree[this.tree.length-1]]
-node.add(new_node)
-}
 var scope=$get_scope(this)
 var required=''
 var defaults=''
@@ -3183,7 +3255,9 @@ this.expect='id'
 this.toString=function(){return '(except) '}
 this.to_js=function(){
 if(this.tree.length===0){return 'else'}
-else{
+else if(this.tree.length===1 && this.tree[0].name==='Exception'){
+return 'else if(true)'
+}else{
 var res='else if(['
 for(var i=0;i<this.tree.length;i++){
 res+='"'+this.tree[i].name+'"'
@@ -3280,7 +3354,16 @@ C.tree.push(this)
 this.expect='module'
 this.toString=function(){return '(from) '+this.module+' (import) '+this.names + '(parent module)' + this.parent_module + '(as)' + this.aliases}
 this.to_js=function(){
-var res='$mod=$import_list([["'+this.module+'","'+this.module+'"]])[0];'
+var res;
+if(this.parent_module!==undefined){
+res="$mod=$import_from('" + this.module
+res+="', ['" + this.names.join("','")+ "']"
+res+=",'" + this.parent_module +"');"
+for(var i=0;i<this.names.length;i++){
+res +=this.parent_module+'.__setattr__("'+(this.aliases[this.names[i]]||this.names[i])+'",$mod.__getattr__("'+this.names[i]+'"));'
+}
+}else{
+res='$mod=$import_list([["'+this.module+'","'+this.module+'"]])[0];'
 if(this.names[0]!=='*'){
 for(var i=0;i<this.names.length;i++){
 res +=(this.aliases[this.names[i]]||this.names[i])+'=$mod.__getattr__("'+this.names[i]+'");'
@@ -3288,6 +3371,7 @@ res +=(this.aliases[this.names[i]]||this.names[i])+'=$mod.__getattr__("'+this.na
 }else{
 res +='for(var $attr in $mod){'
 res +="if($attr.substr(0,1)!=='_'){eval('var '+$attr+'=$mod["+'"'+"'+$attr+'"+'"'+"]')}}"
+}
 }
 return res
 }
@@ -3735,7 +3819,7 @@ var catch_node=new $Node('expression')
 new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
 node.parent.insert(rank+1,catch_node)
 var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,'console.log($err'+$loop_num+'.__name__);if(false){void(0)}')
+new $NodeJSCtx(new_node,'if(false){void(0)}')
 catch_node.insert(0,new_node)
 var pos=rank+2
 var has_default=false 
@@ -3749,7 +3833,7 @@ if(has_else){$_SyntaxError(C,"'except' or 'finally' after 'else'")}
 ctx.error_name='$err'+$loop_num
 if(ctx.tree.length>0 && ctx.tree[0].alias!==null){
 var new_node=new $Node('expression')
-var js='var '+ctx.tree[0].alias+'=$err'+$loop_num
+var js='var '+ctx.tree[0].alias+'=__BRYTHON__.exception($err'+$loop_num+')'
 new $NodeJSCtx(new_node,js)
 node.parent.children[pos].insert(0,new_node)
 }
@@ -4034,7 +4118,7 @@ return C
 }
 else if(token==='(' && C.expect==='(:'){
 return $transition(new $AbstractExprCtx(C,true),'(')
-}else if(token===':' && C.expect==='(:'){return C.parent}
+}else if(token===':' && C.expect==='(:'){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='comp_if'){
 return $transition(C.parent,token,arguments[2])
@@ -4053,11 +4137,7 @@ if(token==='if'){return new $AbstractExprCtx(new $CompIfCtx(C),false)}
 else if(token==='for'){return new $TargetListCtx(new $CompForCtx(C))}
 else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='condition'){
-if(token===':'){
-var new_node=new $Node('expression')
-C.parent.node.add(new_node)
-return new $NodeCtx(new_node)
-}
+if(token===':'){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='decorator'){
 if(token==='id' && C.tree.length===0){
@@ -4073,7 +4153,7 @@ C.name=arguments[2]
 return C
 }
 }else if(token==='('){return new $FuncArgs(C)}
-else if(token===':'){return C.parent}
+else if(token===':'){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='del'){
 if(token==='eol'){return $transition(C.parent,token)}
@@ -4158,7 +4238,7 @@ else{C.expect=':'}
 C.tree[C.tree.length-1].alias=arguments[2]
 return C
 }else if(token===':' &&['id','as',':'].indexOf(C.expect)>-1){
-return C.parent
+return $BodyCtx(C)
 }else if(token==='(' && C.expect==='id' && C.tree.length===0){
 C.parenth=true
 return C
@@ -4229,7 +4309,7 @@ return new $AbstractExprCtx(new $OpCtx(C.parent,'not_in'),false)
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='for'){
 if(token==='in'){return new $AbstractExprCtx(C,true)}
-else if(token===':'){return C.parent}
+else if(token===':'){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='from'){
 if(token==='id' && C.expect==='module'){
@@ -4461,12 +4541,7 @@ var yield=new $YieldCtx(C)
 return new $AbstractExprCtx(yield,true)
 }else if(token==='del'){return new $AbstractExprCtx(new $DelCtx(C),true)}
 else if(token==='@'){return new $DecoratorCtx(C)}
-else if(token===':'){
-var tree_node=C.node
-var new_node=new $Node('expression')
-tree_node.add(new_node)
-return new $NodeCtx(new_node)
-}else if(token==='eol'){
+else if(token==='eol'){
 if(C.tree.length===0){
 C.node.parent.children.pop()
 return C.node.parent.C
@@ -4499,7 +4574,7 @@ return $transition(C.parent,token)
 }else if(C.type==='return'){
 return $transition(C.parent,token)
 }else if(C.type==='single_kw'){
-if(token===':'){return C.parent}
+if(token===':'){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='star_arg'){
 if($expr_starters.indexOf(token)>-1){
@@ -4539,7 +4614,7 @@ else{$_SyntaxError(C,'token '+token+' after '+C)}
 if(token==='else'){return new $AbstractExprCtx(C,false)}
 else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='try'){
-if(token===':'){return C.parent}
+if(token===':'){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='unary'){
 if(['int','float'].indexOf(token)>-1){
@@ -4578,6 +4653,7 @@ root.transform()
 if(document.$debug>0){$add_line_num(root,null,module)}
 return root
 }
+__BRYTHON__.forbidden=['catch','delete','function','new','this','throw','var','super']
 function $tokenize(src,module){
 var delimiters=[["#","\n","comment"],['"""','"""',"triple_string"],
 ["'","'","string"],['"','"',"string"],
@@ -4594,7 +4670,6 @@ var kwdict=["class","return",
 ]
 var unsupported=["nonlocal","with"]
 var $indented=['class','def','for','condition','single_kw','try','except']
-var forbidden=[]
 var punctuation={',':0,':':0}
 var int_pattern=new RegExp("^\\d+")
 var float_pattern1=new RegExp("^\\d+\\.\\d*(e-?\\d+)?")
@@ -4641,7 +4716,8 @@ $_SyntaxError(C,'unexpected indent',pos)
 }
 current.add(new_node)
 }else if(indent<=current.indent &&
-$indented.indexOf(C.tree[0].type)>-1){
+$indented.indexOf(C.tree[0].type)>-1 &&
+C.tree.length<2){
 $pos=pos
 $_SyntaxError(C,'expected an indented block',pos)
 }else{
@@ -4729,7 +4805,7 @@ C=$transition(C,name)
 $pos=pos-name.length
 C=$transition(C,'op',name)
 }else{
-if(forbidden.indexOf(name)>-1){name='$$'+name}
+if(__BRYTHON__.forbidden.indexOf(name)>-1){name='$$'+name}
 $pos=pos-name.length
 C=$transition(C,'id',name)
 }
