@@ -11,16 +11,26 @@ var $operators = {
     "is":"is","not_in":"not_in","is_not":"is_not" // fake
     }
 // operators weight for precedence
-var $op_weight={
-    'or':1,'and':2,
-    'in':3,'not_in':3,
-    '<':4, '<=':4, '>':4, '>=':4, '!=':4, '==':4,'is':4,
-    '+':5,
-    '-':6,
-    '/':7,'//':7,'%':7,
-    '*':8,
-    '**':9
+var $op_order = [['or'],['and'],
+    ['in','not_in'],
+    ['<','<=','>','>=','!=','==','is'],
+    ['|','^','&'],
+    ['+'],
+    ['-'],
+    ['/','//','%'],
+    ['*'],
+    ['**']
+]
+
+var $op_weight={}
+var $weight=1
+for (var $i=0;$i<$op_order.length;$i++){
+    for(var $j=0;$j<$op_order[$i].length;$j++){
+        $op_weight[$op_order[$i][$j]]=$weight
     }
+    $weight++
+}
+
 var $augmented_assigns = {
     "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
     "**=":"ipow","+=":"iadd","-=":"isub","*=":"imul","/=":"itruediv",
@@ -1791,6 +1801,10 @@ function $transition(context,token){
         }else{
             if(context.expect===','){
                 if(token==='}'){
+                    if(context.real==='dict_or_set'&&context.tree.length===1){
+                        // set with single element
+                        context.real = 'set'
+                    }
                     if(['set','set_comp','dict_comp'].indexOf(context.real)>-1||
                         (context.real==='dict'&&context.tree.length%2===0)){
                         context.items = context.tree
