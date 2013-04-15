@@ -301,6 +301,29 @@ dict.__str__ = function(self){
     return res.substr(0,res.length-1)+'}'
 }
 
+dict.clear = function(self){
+    // Remove all items from the dictionary.
+    self.$keys = []
+    self.$values = []
+}
+
+dict.copy = function(self){
+    // Return a shallow copy of the dictionary
+    var res = dict()
+    for(var i=0;i<self.__len__();i++){
+        res.__setitem__(self.$keys[i],self.$values[i])
+    }
+    return res
+}
+
+dict.get = function(self,key,_default){
+    try{var res = dict.__getitem__(self,key);console.log(res);return res}
+    catch(err){
+        if(_default!==undefined){return _default}
+        else{throw KeyError(key)}
+    }
+}
+
 dict.items = function(self){
     return new $iterator(zip(self.$keys,self.$values),"dict_items")
 }
@@ -347,32 +370,36 @@ dict.values = function(self){
 
 $DictClass.prototype.__class__ = dict
 
+// set other $DictClass.prototype attributes
+for(var attr in dict){
+    if(typeof dict[attr]==='function'){dict[attr].__str__=function(){return "<dict method "+attr+">"}}
+    var func = (function(attr){
+        return function(){
+            var args = [this]
+            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+            return dict[attr].apply(this,args)
+        }
+    })(attr)
+    func.__str__ = (function(attr){
+        return function(){return "<method-wrapper '"+attr+"' of dict object>"}
+    })(attr)
+    $DictClass.prototype[attr] = func
+}
+
 $DictClass.prototype.__getattr__ = function(attr){
     if(attr==='__class__'){return this.__class__}
     if(dict[attr]===undefined){throw AttributeError("'dict' object has no attribute '"+attr+"'")}
     var obj = this
-    var res = function(){
-        var args = [obj]
-        for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-        return dict[attr].apply(obj,args)
-    }
+    var res = (function(attr){ 
+        return function(){
+            var args = [obj]
+            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+            return dict[attr].apply(obj,args)
+        }
+        })(attr)
     res.__str__ = function(){return "<built-in method "+attr+" of dict object>"}
     return res
 }
-
-// set other $DictClass.prototype attributes
-for(var attr in dict){
-    if($DictClass.prototype[attr]===undefined){
-        $DictClass.prototype[attr]=(function(attr){
-            return function(){
-                var args = [this]
-                for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-                return dict[attr].apply(this,args)
-            }
-        })(attr)
-    }
-}
-
 
 function dir(obj){
     var res = []
@@ -967,9 +994,8 @@ function $print(){
     var $ns=$MakeArgs('print',arguments,[],{},'args','kw')
     var args = $ns['args']
     var kw = $ns['kw']
-    var end = '\n'
+    var end = kw.get('end','\n')
     var res = ''
-    if(kw['end']!==undefined){end=kw['end']}
     for(var i=0;i<args.length;i++){
         res += str(args[i])
         if(i<args.length-1){res += ' '}
