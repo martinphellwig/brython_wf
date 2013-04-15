@@ -57,7 +57,7 @@ $import_via_VFS=function(module,alias,names){
   var ext=['.js', '.py']
   var search_path=__BRYTHON__.path
   var root = __BRYTHON__.brython_path;
-  if (root.endsWith('/')) {
+  if (root.endswith('/')) {
      root=root.substring(0,root.length-1); 
   }
   if (search_path.indexOf(root+'/libs') == -1) {
