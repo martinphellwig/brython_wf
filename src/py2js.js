@@ -2774,7 +2774,7 @@ function brython(debug){
                 throw err
             }
         }else{ // get path of brython.js
-            var br_scripts = ['brython.js','py_list.js']
+            var br_scripts = ['brython.js','py_list.js','loader.js']
             for(var j=0;j<br_scripts.length;j++){
                 var bs = br_scripts[j]
                 if(elt.src.substr(elt.src.length-bs.length)==bs){
