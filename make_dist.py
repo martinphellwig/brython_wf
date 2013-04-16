@@ -22,6 +22,14 @@ out = open(abs_path('brython_builtins.js'),'w')
 out.write(bltins_src)
 out.close()
 
+loader_src = open(abs_path('loader.js')).read()
+
+loader_src = re.sub('version_info = \[1,1,".*?"\]',
+    'version_info = [1,1,"%s"]' %now,loader_src)
+out = open(abs_path('loader.js'),'w')
+out.write(loader_src)
+out.close()
+
 res = '// brython.js www.brython.info\n'
 res += '// version 1.1.%s\n' %now
 res += '// version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src\n'
