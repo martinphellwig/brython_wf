@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130415-193754
+// version 1.1.20130416-231551
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -16,7 +16,7 @@ __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130415-193754"]
+__BRYTHON__.version_info=[1,1,"20130416-231551"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -5124,7 +5124,7 @@ else{err.message +=err.info}
 throw err
 }
 }else{
-var br_scripts=['brython.js','py_list.js']
+var br_scripts=['brython.js','py_list.js','py_loader.js']
 for(var j=0;j<br_scripts.length;j++){
 var bs=br_scripts[j]
 if(elt.src.substr(elt.src.length-bs.length)==bs){
