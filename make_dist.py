@@ -22,11 +22,11 @@ out = open(abs_path('brython_builtins.js'),'w')
 out.write(bltins_src)
 out.close()
 
-loader_src = open(abs_path('loader.js')).read()
+loader_src = open(abs_path('py_loader.js')).read()
 
 loader_src = re.sub('version_info = \[1,1,".*?"\]',
     'version_info = [1,1,"%s"]' %now,loader_src)
-out = open(abs_path('loader.js'),'w')
+out = open(abs_path('py_loader.js'),'w')
 out.write(loader_src)
 out.close()
 
