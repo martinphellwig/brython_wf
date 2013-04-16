@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130414-073849
+// version 1.1.20130415-193754
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -16,7 +16,7 @@ __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130414-073849"]
+__BRYTHON__.version_info=[1,1,"20130415-193754"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -703,6 +703,24 @@ res +=key+':'+value+','
 }
 return res.substr(0,res.length-1)+'}'
 }
+dict.clear=function(self){
+self.$keys=[]
+self.$values=[]
+}
+dict.copy=function(self){
+var res=dict()
+for(var i=0;i<self.__len__();i++){
+res.__setitem__(self.$keys[i],self.$values[i])
+}
+return res
+}
+dict.get=function(self,key,_default){
+try{var res=dict.__getitem__(self,key);console.log(res);return res}
+catch(err){
+if(_default!==undefined){return _default}
+else{throw KeyError(key)}
+}
+}
 dict.items=function(self){
 return new $iterator(zip(self.$keys,self.$values),"dict_items")
 }
@@ -742,28 +760,33 @@ dict.values=function(self){
 return new $iterator(self.$values,"dict values")
 }
 $DictClass.prototype.__class__=dict
-$DictClass.prototype.__getattr__=function(attr){
-if(attr==='__class__'){return this.__class__}
-if(dict[attr]===undefined){throw AttributeError("'dict' object has no attribute '"+attr+"'")}
-var obj=this
-var res=function(){
-var args=[obj]
-for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-return dict[attr].apply(obj,args)
-}
-res.__str__=function(){return "<built-in method "+attr+" of dict object>"}
-return res
-}
 for(var attr in dict){
-if($DictClass.prototype[attr]===undefined){
-$DictClass.prototype[attr]=(function(attr){
+if(typeof dict[attr]==='function'){dict[attr].__str__=function(){return "<dict method "+attr+">"}}
+var func=(function(attr){
 return function(){
 var args=[this]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 return dict[attr].apply(this,args)
 }
 })(attr)
+func.__str__=(function(attr){
+return function(){return "<method-wrapper '"+attr+"' of dict object>"}
+})(attr)
+$DictClass.prototype[attr]=func
 }
+$DictClass.prototype.__getattr__=function(attr){
+if(attr==='__class__'){return this.__class__}
+if(dict[attr]===undefined){throw AttributeError("'dict' object has no attribute '"+attr+"'")}
+var obj=this
+var res=(function(attr){
+return function(){
+var args=[obj]
+for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+return dict[attr].apply(obj,args)
+}
+})(attr)
+res.__str__=function(){return "<built-in method "+attr+" of dict object>"}
+return res
 }
 function dir(obj){
 var res=[]
@@ -920,6 +943,7 @@ return res
 }
 frozenset.__class__=$type
 frozenset.__str__=function(){return "<class 'frozenset'>"}
+frozenset.add=function(){throw AttributeError("'frozenset' object has no attribute 'add'")}
 function getattr(obj,attr,_default){
 if(obj.__getattr__!==undefined &&
 obj.__getattr__(attr)!==undefined){
@@ -1254,9 +1278,8 @@ function $print(){
 var $ns=$MakeArgs('print',arguments,[],{},'args','kw')
 var args=$ns['args']
 var kw=$ns['kw']
-var end='\n'
+var end=kw.get('end','\n')
 var res=''
-if(kw['end']!==undefined){end=kw['end']}
 for(var i=0;i<args.length;i++){
 res +=str(args[i])
 if(i<args.length-1){res +=' '}
@@ -1356,6 +1379,13 @@ return res+'}'
 set.__add__=function(self,other){
 return set(self.items.concat(other.items))
 }
+set.__and__=function(self,other){
+var res=set()
+for(var i=0;i<self.items.length;i++){
+if(other.__contains__(self.items[i])){res.add(self.items[i])}
+}
+return res
+}
 set.__contains__=function(self,item){
 for(var i=0;i<self.items.length;i++){
 try{if(self.items[i].__eq__(item)){return True}
@@ -1391,12 +1421,48 @@ return set[attr].apply(obj,args)
 res.__str__=function(){return "<built-in method "+attr+" of set object>"}
 return res
 }
+set.__ge__=function(self,other){
+return !set.__lt__(self,other)
+}
+set.__gt__=function(self,other){
+return !set.__le__(self,other)
+}
 set.__hash__=function(self){throw TypeError("unhashable type: 'set'");}
 set.__in__=function(self,item){return item.__contains__(self)}
+set.__le__=function(self,other){
+for(var i=0;i<self.items.length;i++){
+if(!other.__contains__(self.items[i])){return false}
+}
+return true 
+}
+set.__lt__=function(self,other){
+return set.__le__(self,other)&&set.__len__(self)<other.__len__()
+}
 set.__len__=function(self){return int(self.items.length)}
 set.__item__=function(self,i){return self.items[i]}
 set.__ne__=function(self,other){return !set.__eq__(self,other)}
 set.__not_in__=function(self,item){return !set.__in__(self,item)}
+set.__or__=function(self,other){
+var res=self.copy()
+for(var i=0;i<other.items.length;i++){
+res.add(other.items[i])
+}
+return res
+}
+set.__pow__=function(self,other){
+var res=set()
+for(var i=0;i<self.items.length;i++){
+if(!other.__contains__(self.items[i])){
+res.add(self.items[i])
+}
+}
+for(var i=0;i<other.items.length;i++){
+if(!self.__contains__(other.items[i])){
+res.add(other.items[i])
+}
+}
+return res
+}
 set.__str__=function(self){
 if(self===undefined){return "<class 'set'>"}
 var res="{"
@@ -1408,14 +1474,61 @@ if(i<self.items.length-1){res +=','}
 }
 return res+'}'
 }
+set.__sub__=function(self,other){
+var res=set()
+for(var i=0;i<self.items.length;i++){
+if(!other.__contains__(self.items[i])){res.items.push(self.items[i])}
+}
+return res
+}
 set.add=function(self,item){
-var i=0
-for(i=0;i<self.items.length;i++){
+if(self.__class__===frozenset){throw AttributeError("'frozenset' object has no attribute 'add'")}
+for(var i=0;i<self.items.length;i++){
 try{if(item.__eq__(self.items[i])){return}}
 catch(err){void(0)}
 }
 self.items.push(item)
 }
+set.clear=function(self){
+if(self.__class__===frozenset){throw AttributeError("'frozenset' object has no attribute 'clear'")}
+self.items=[]
+}
+set.copy=function(self){
+var res=set()
+for(var i=0;i<self.items.length;i++){res.items[i]=self.items[i]}
+return res
+}
+set.discard=function(self,item){
+if(self.__class__===frozenset){throw AttributeError("'frozenset' object has no attribute 'discard'")}
+try{set.remove(self,item)}
+catch(err){if(err.__name__!=='KeyError'){throw err}}
+}
+set.isdisjoint=function(self,other){
+for(var i=0;i<self.items.length;i++){
+if(other.__contains__(self.items[i])){return false}
+}
+return true 
+}
+set.pop=function(self){
+if(self.__class__===frozenset){throw AttributeError("'frozenset' object has no attribute 'pop'")}
+if(self.items.length===0){throw KeyError('pop from an empty set')}
+return self.items.pop()
+}
+set.remove=function(self,item){
+if(self.__class__===frozenset){throw AttributeError("'frozenset' object has no attribute 'remove'")}
+for(var i=0;i<self.items.length;i++){
+if(self.items[i].__eq__(item)){
+self.items.splice(i,1)
+return None
+}
+}
+throw KeyError(item)
+}
+set.difference=set.__sub__
+set.intersection=set.__and__
+set.issubset=set.__le__
+set.issuperset=set.__ge__
+set.union=set.__or__
 set.toString=function(){return "<class 'set'>"}
 for(var attr in set){
 if(typeof set[attr]==='function'){set[attr].__str__=function(){return "<set method "+attr+">"}}
@@ -2584,15 +2697,23 @@ var $operators={
 "or":"or","and":"and", "in":"in", 
 "is":"is","not_in":"not_in","is_not":"is_not" 
 }
-var $op_weight={
-'or':1,'and':2,
-'in':3,'not_in':3,
-'<':4, '<=':4, '>':4, '>=':4, '!=':4, '==':4,'is':4,
-'+':5,
-'-':6,
-'/':7,'//':7,'%':7,
-'*':8,
-'**':9
+var $op_order=[['or'],['and'],
+['in','not_in'],
+['<','<=','>','>=','!=','==','is'],
+['|','^','&'],
+['+'],
+['-'],
+['/','//','%'],
+['*'],
+['**']
+]
+var $op_weight={}
+var $weight=1
+for(var $i=0;$i<$op_order.length;$i++){
+for(var $j=0;$j<$op_order[$i].length;$j++){
+$op_weight[$op_order[$i][$j]]=$weight
+}
+$weight++
 }
 var $augmented_assigns={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -4168,6 +4289,9 @@ return new $AbstractExprCtx(new $OpCtx(C,arguments[2]),false)
 }else{
 if(C.expect===','){
 if(token==='}'){
+if(C.real==='dict_or_set'&&C.tree.length===1){
+C.real='set'
+}
 if(['set','set_comp','dict_comp'].indexOf(C.real)>-1||
 (C.real==='dict'&&C.tree.length%2===0)){
 C.items=C.tree
@@ -4891,6 +5015,21 @@ pos+=2;continue
 if(car in punctuation){
 $pos=pos
 C=$transition(C,car)
+pos++;continue
+}
+if(car===";"){
+$transition(C,'eol')
+if(current.C.tree.length===0){
+$pos=pos
+$_SyntaxError(C,'invalid syntax')
+}
+new_node=new $Node()
+new_node.indent=current.indent
+new_node.line_num=lnum
+new_node.module=module
+current.parent.add(new_node)
+current=new_node
+C=new $NodeCtx(new_node)
 pos++;continue
 }
 if(car in $first_op_letter){

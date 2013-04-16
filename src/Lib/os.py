@@ -1,5 +1,7 @@
 import random
 
+name="brython"
+
 altsep=None
 curdir="."
 
@@ -12,7 +14,6 @@ def getloadavg():
     OSError('Function getloadavg not supported')
 
 linesep="\n"
-name="brython"
 pathsep=";"
 pardir=".."
 sep='/'
