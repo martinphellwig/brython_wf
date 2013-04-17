@@ -61,7 +61,7 @@ function $import_js_module(module,alias,names,filepath,module_contents){
     // add class and __str__
     $module.__class__ = $type
     $module.__str__ = function(){return "<module '"+module+"' from "+filepath+" >"}
-    $module.__file__ = filepath+'.py'
+    $module.__file__ = filepath
    
     return $module
 }
@@ -69,7 +69,10 @@ function $import_js_module(module,alias,names,filepath,module_contents){
 
 function $import_module_search_path(module,alias,names){
     var search_path = __BRYTHON__.path
-    search_path.push(__BRYTHON__.brython_path)
+    //console.log(search_path)
+    //if (!search_path.contains(__BRYTHON__.brython_path)) {
+    //   search_path.push(__BRYTHON__.brython_path)
+    //}
     return $import_module_search_path_list(module,alias,names,search_path)
 }
 
@@ -153,7 +156,7 @@ function $import_py_module(module,alias,names,path,module_contents) {
         // add class and __str__
         $module.__class__ = $type
         $module.__str__ = function(){return "<module '"+module+"' from "+path+" >"}
-        $module.__file__ = path+'.py'
+        $module.__file__ = path
         return $module
     }catch(err){
         eval('throw '+err.name+'(err.message)')
@@ -164,9 +167,15 @@ $import_funcs = [$import_js, $import_module_search_path]
 
 function $import_single(name,alias,names){
     // check to see if module has already been imported
+    if(__BRYTHON__.modules[name]!==undefined){
+      return __BRYTHON__.modules[name]
+    }
     for(var j=0;j<$import_funcs.length;j++){
-        try{return $import_funcs[j](name,alias,names)}
-        catch(err){
+        try{var mod=$import_funcs[j](name,alias,names)
+            __BRYTHON__.modules[name]=mod
+            __BRYTHON__.$py_module_alias[name]=alias
+            return mod
+        } catch(err){
             if(err.name==="NotFoundError"){
                 if(j==$import_funcs.length-1){
                     throw ImportError("no module named '"+name+"'")
@@ -206,10 +215,10 @@ function $import_from(module,names,parent_module,alias){
     
        alias=__BRYTHON__.$py_module_alias[parent_module]
        console.log(parent_module+','+alias+','+relpath)
-       $import_module_search_path_list(module,alias,names,[relpath])
+       return $import_module_search_path_list(module,alias,names,[relpath])
     } else if (alias !== undefined) {
-       return $import_single(module,alias,names)
-    } else {
-       return $import_single(module,names,names)
-    }
+       return $import_single(modules,alias,names)
+    } 
+
+    return $import_single(modules,names,names)
 }
