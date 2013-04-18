@@ -141,7 +141,17 @@ str.__mod__ = function(self,args){
             }else if(this.type=="f" || this.type=="F"){
                 if(!isinstance(src,[int,float])){throw TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
-                return str(float(src))
+                var num = parseFloat(src)
+                if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
+                res = num+''
+                if(this.flag===' '){res = ' '+res}
+                else if(this.flag==='+' && num>=0){res = '+'+res}
+                if(this.min_width){
+                    var pad = ' '
+                    if(this.flag==='0'){pad="0"}
+                    while(res.length<parseInt(this.min_width)){res=pad+res}
+                }
+                return res
             }
         }
     }

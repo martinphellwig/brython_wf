@@ -345,6 +345,20 @@ dict.pop = function(self,key,_default){
     }
 }
 
+dict.popitem = function(self){
+    if(self.$keys.length===0){throw KeyError("'popitem(): dictionary is empty'")}
+    return tuple([self.$keys.pop(),self.$values.pop()])
+}
+
+dict.setdefault = function(self,key,_default){
+    try{return dict.__getitem__(self,key)}
+    catch(err){
+        if(_default===undefined){_default=None}
+        dict.__setitem__(self,key,_default)
+        return _default
+    }
+}
+
 dict.update = function(self){
     var params = []
     for(var i=1;i<arguments.length;i++){params.push(arguments[i])}
