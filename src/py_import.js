@@ -180,7 +180,7 @@ function $import_list(modules){ // list of objects with attributes name and alia
         if(__BRYTHON__.modules[module]===undefined){
            __BRYTHON__.modules[module]={}  // this could be a recursive import, so lets set modules={}
            mod = $import_single(modules[i][0],modules[i][1])
-           __BRYTHON__.modules[module]=mod
+          // __BRYTHON__.modules[module]=mod  // not needed, done in import_single
         } else{
            mod=__BRYTHON__.modules[module]
         }
