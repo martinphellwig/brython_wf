@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130419-074510
+// version 1.1.20130419-161925
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -16,7 +16,7 @@ __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130419-074510"]
+__BRYTHON__.version_info=[1,1,"20130419-161925"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -495,7 +495,18 @@ if(bool(elt)){return True}
 }
 }
 function ascii(obj){
-return repr(obj)
+function padWithLeadingZeros(string,pad){
+return new Array(pad+1-string.length).join("0")+ string
+}
+function charEscape(charCode){
+if(charCode>255){return "\\u" + padWithLeadingZeros(charCode.toString(16),4)}
+else{return "\\x" + padWithLeadingZeros(charCode.toString(16),2)}
+}
+return obj.split("").map(function(char){
+var charCode=char.charCodeAt(0)
+return charCode > 127 ? charEscape(charCode): char
+})
+.join("")
 }
 function assert_raises(){
 var $ns=$MakeArgs('assert_raises',arguments,['exc','func'],{},'args','kw')
@@ -675,6 +686,16 @@ throw StopIteration()
 }
 }
 dict.__not_in__=function(self,item){return !self.__in__(item)}
+dict.__repr__=function(self){
+if(self===undefined){return "<class 'dict'>"}
+var res="{",key=null,value=null,i=null 
+var qesc=new RegExp('"',"g")
+for(var i=0;i<self.$keys.length;i++){
+res +=repr(self.$keys[i])+':'+repr(self.$values[i])
+if(i<self.$keys.length-1){res +=','}
+}
+return res+'}'
+}
 dict.__setitem__=function(self,key,value){
 for(var i=0;i<self.$keys.length;i++){
 try{
@@ -689,20 +710,7 @@ void(0)
 self.$keys.push(key)
 self.$values.push(value)
 }
-dict.__str__=function(self){
-if(self===undefined){return "<class 'dict'>"}
-if(self.$keys.length==0){return '{}'}
-var res="{",key=null,value=null,i=null 
-var qesc=new RegExp('"',"g")
-for(var i=0;i<self.$keys.length;i++){
-if(typeof self.$keys[i]==="string"){key='"'+$escape_dq(self.$keys[i])+'"'}
-else{key=str(self.$keys[i])}
-if(typeof self.$values[i]==="string"){value='"'+$escape_dq(self.$values[i])+'"'}
-else{value=str(self.$values[i])}
-res +=key+':'+value+','
-}
-return res.substr(0,res.length-1)+'}'
-}
+dict.__str__=dict.__repr__
 dict.clear=function(self){
 self.$keys=[]
 self.$values=[]
@@ -895,6 +903,7 @@ else{throw AttributeError("'float' object has no attribute '"+attr+"'")}
 $FloatClass.prototype.__hash__=float.__hash__
 $FloatClass.prototype.__in__=function(item){return item.__contains__(this)}
 $FloatClass.prototype.__not_in__=function(item){return !(item.__contains__(this))}
+$FloatClass.prototype.__repr__=$FloatClass.prototype.toString
 $FloatClass.prototype.__str__=$FloatClass.prototype.toString
 $FloatClass.prototype.__truediv__=function(other){
 if(isinstance(other,int)){
@@ -1065,6 +1074,7 @@ Number.prototype.__pow__=function(other){
 if(typeof other==="number"){return int(Math.pow(this.valueOf(),other.valueOf()))}
 else{$UnsupportedOpType("//",int,other.__class__)}
 }
+Number.prototype.__repr__=function(){return this.toString()}
 Number.prototype.__setattr__=function(attr,value){throw AttributeError(
 "'int' object has no attribute "+attr+"'")}
 Number.prototype.__str__=function(){return this.toString()}
@@ -1328,7 +1338,10 @@ for(var i=start;i>stop;i+=step){res.push(i)}
 }
 return res
 }
-function repr(obj){return obj.toString()}
+function repr(obj){
+if(obj.__repr__!==undefined){return obj.__repr__()}
+else{throw AttributeError("object  has no attribute __repr__")}
+}
 function reversed(seq){
 if(isinstance(seq,list)){seq.reverse();return seq}
 else if(isinstance(seq,str)){
@@ -1475,17 +1488,16 @@ res.add(other.items[i])
 }
 return res
 }
-set.__str__=function(self){
+set.__repr__=function(self){
 if(self===undefined){return "<class 'set'>"}
 var res="{"
 for(var i=0;i<self.items.length;i++){
-var x=self.items[i]
-if(isinstance(x,str)){res +="'"+x+"'"}
-else{res +=x.toString()}
+res +=repr(x)
 if(i<self.items.length-1){res +=','}
 }
 return res+'}'
 }
+set.__str__=set.__repr__
 set.__sub__=function(self,other){
 var res=set()
 for(var i=0;i<self.items.length;i++){
@@ -1673,6 +1685,7 @@ Boolean.prototype.toString=function(){
 if(this.valueOf())return "True"
 return "False"
 }
+Boolean.prototype.__repr__=Boolean.prototype.toString
 Boolean.prototype.__str__=Boolean.prototype.toString
 function $NoneClass(){
 this.__class__=new $class(this,"NoneType")
@@ -1685,6 +1698,7 @@ else{throw AttributeError("'NoneType' object has no attribute '"+attr+"'")}
 }
 this.__hash__=function(){return 0}
 this.__ne__=function(other){return other!==None}
+this.__repr__=function(){return 'None'}
 this.__str__=function(){return 'None'}
 var comp_ops=['ge','gt','le','lt']
 for(var key in $comps){
@@ -1921,6 +1935,19 @@ throw StopIteration('')
 }
 }
 list.__not_in__=function(self,item){return !list.__in__(self,item)}
+list.__repr__=function(self){
+if(self===undefined){return "<class 'list'>"}
+var items=self.valueOf()
+var res='['
+if(self.__class__===tuple){res='('}
+for(var i=0;i<self.length;i++){
+var x=self[i]
+res +=x.__repr__()
+if(i<self.length-1){res +=','}
+}
+if(self.__class__===tuple){return res+')'}
+else{return res+']'}
+}
 list.__setitem__=function(self,arg,value){
 if(isinstance(arg,int)){
 var pos=arg
@@ -1946,21 +1973,7 @@ throw TypeError("can only assign an iterable")
 throw TypeError('list indices must be integer, not '+str(arg.__class__))
 }
 }
-list.__str__=function(self){
-if(self===undefined){return "<class 'list'>"}
-var items=self.valueOf()
-var res='['
-if(self.__class__===tuple){res='('}
-for(var i=0;i<self.length;i++){
-var x=self[i]
-if(isinstance(x,str)){res +="'"+x+"'"}
-else if(x['__str__']!==undefined){res +=x.__str__()}
-else{res +=x.toString()}
-if(i<self.length-1){res +=','}
-}
-if(self.__class__===tuple){return res+')'}
-else{return res+']'}
-}
+list.__str__=list.__repr__
 list.append=function(self,other){self.push(other)}
 list.count=function(self,elt){
 var res=0
@@ -2218,8 +2231,54 @@ if(this.mapping_key!==null){
 if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
 src=src.__getitem__(this.mapping_key)
 }
-if(this.type=="s"){return str(src)}
-else if(this.type=="x" || this.type=="X"){
+if(this.type=="s"){
+var res=str(src)
+if(this.precision){res=res.substr(0,parseInt(this.precision.substr(1)))}
+return res
+}else if(this.type=="r"){
+var res=repr(src)
+if(this.precision){res=res.substr(0,parseInt(this.precision.substr(1)))}
+return res
+}else if(this.type=="a"){
+var res=ascii(src)
+if(this.precision){res=res.substr(0,parseInt(this.precision.substr(1)))}
+return res
+}else if(this.type=="g" || this.type=="G"){
+if(!isinstance(src,[int,float])){throw TypeError(
+"%"+this.type+" format : a number is required, not "+str(src.__class__))}
+var prec=-4
+if(this.precision){prec=parseInt(this.precision.substr(1))}
+var res=parseFloat(src).toExponential()
+var elts=res.split('e')
+if((this.precision && eval(elts[1])>prec)||
+(!this.precision && eval(elts[1])<-4)){
+this.type==='g' ? this.type='e' : this.type='E'
+var prec=6
+if(this.precision){prec=parseInt(this.precision.substr(1))-1}
+var res=parseFloat(src).toExponential(prec)
+var elts=res.split('e')
+var res=elts[0]+this.type+elts[1].charAt(0)
+if(elts[1].length===2){res +='0'}
+return res+elts[1].substr(1)
+}else{
+var prec=6
+if(this.precision){prec=parseInt(this.precision.substr(1))-1}
+var elts=str(src).split('.')
+this.precision='.'+(prec-elts[0].length)
+this.type="f"
+return this.format(src)
+}
+}else if(this.type=="e" || this.type=="E"){
+if(!isinstance(src,[int,float])){throw TypeError(
+"%"+this.type+" format : a number is required, not "+str(src.__class__))}
+var prec=6
+if(this.precision){prec=parseInt(this.precision.substr(1))}
+var res=parseFloat(src).toExponential(prec)
+var elts=res.split('e')
+var res=elts[0]+this.type+elts[1].charAt(0)
+if(elts[1].length===2){res +='0'}
+return res+elts[1].substr(1)
+}else if(this.type=="x" || this.type=="X"){
 if(!isinstance(src,[int,float])){throw TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=src
@@ -2321,6 +2380,11 @@ throw StopIteration()
 }
 }
 str.__not_in__=function(self,item){return !str.__in__(self,item)}
+str.__repr__=function(self){
+if(self===undefined){return "<class 'str'>"}
+var qesc=new RegExp("'","g")
+return "'"+self.replace(qesc,"\\'")+"'"
+}
 str.__setattr__=function(self,attr,value){setattr(self,attr,value)}
 self.__setitem__=function(self,attr,value){
 throw TypeError("'str' object does not support item assignment")
@@ -2616,7 +2680,9 @@ $module.__file__=filepath
 return $module
 }
 function $import_module_search_path(module,alias,names){
-var path_list=__BRYTHON__.path
+return $import_module_search_path_list(module,alias,names,__BRYTHON__.path)
+}
+function $import_module_search_path_list(module,alias,names,path_list){
 var modnames=[module, module+'/__init__']
 var import_mod=[$import_js_generic, $import_py]
 for(var i=0;i<path_list.length;i++){
@@ -4582,8 +4648,9 @@ C.parent.parent.type==='call_arg'){
 return new $AbstractExprCtx(new $KwArgCtx(C.parent),false)
 }else{return $transition(C.parent,token,arguments[2])}
 }else if(token==='op'){return $transition(C.parent,token,arguments[2])}
-else if(token=='id'){$_SyntaxError(C,'token '+token+' after '+C)}
-else{return $transition(C.parent,token,arguments[2])}
+else if(['id','str','int','float'].indexOf(token)>-1){
+$_SyntaxError(C,'token '+token+' after '+C)
+}else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='import'){
 if(token==='id' && C.expect==='id'){
 new $ImportedModuleCtx(C,arguments[2])
@@ -4842,6 +4909,9 @@ var punctuation={',':0,':':0}
 var int_pattern=new RegExp("^\\d+")
 var float_pattern1=new RegExp("^\\d+\\.\\d*(e-?\\d+)?")
 var float_pattern2=new RegExp("^\\d+(e-?\\d+)")
+var hex_pattern=new RegExp("^0[xX]([0-9a-fA-F]+)")
+var octal_pattern=new RegExp("^0[oO]([0-7]+)")
+var binary_pattern=new RegExp("^0[bB]([01]+)")
 var id_pattern=new RegExp("[\\$_a-zA-Z]\\w*")
 var qesc=new RegExp('"',"g")
 var C=null
@@ -4937,7 +5007,7 @@ if(_type=="triple_string" && src.substr(end,3)!=car+car+car){
 end++
 }else{
 found=true
-$pos=pos-zone.length-1
+$pos=pos
 var string=zone.substr(1).replace(qesc,'\\"')
 C=$transition(C,'str',zone+car)
 pos=end+1
@@ -4985,6 +5055,26 @@ if(car=="."){
 $pos=pos
 C=$transition(C,'.')
 pos++;continue
+}
+if(car==="0"){
+var res=hex_pattern.exec(src.substr(pos))
+if(res){
+C=$transition(C,'int',parseInt(res[1],16))
+pos +=res[0].length
+continue
+}
+var res=octal_pattern.exec(src.substr(pos))
+if(res){
+C=$transition(C,'int',parseInt(res[1],8))
+pos +=res[0].length
+continue
+}
+var res=binary_pattern.exec(src.substr(pos))
+if(res){
+C=$transition(C,'int',parseInt(res[1],2))
+pos +=res[0].length
+continue
+}
 }
 if(car.search(/\d/)>-1){
 var res=float_pattern1.exec(src.substr(pos))

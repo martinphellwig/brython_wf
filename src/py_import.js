@@ -67,7 +67,11 @@ function $import_js_module(module,alias,names,filepath,module_contents){
 }
 
 function $import_module_search_path(module,alias,names){
-    var path_list=__BRYTHON__.path;
+  // this module is needed by $import_from, so don't remove
+  return $import_module_search_path_list(module,alias,names,__BRYTHON__.path);
+}
+
+function $import_module_search_path_list(module,alias,names,path_list){
     var modnames = [module, module+'/__init__']
     var import_mod = [$import_js_generic, $import_py]
     for(var i=0;i<path_list.length;i++){
