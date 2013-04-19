@@ -15,7 +15,7 @@ assert str(z)=="[1,2,3]"
 d = {1:'Z','y':88}
 assert d.__class__ == dict
 assert isinstance(d,dict)
-assert str(d)=='{1:"Z","y":88}'
+assert str(d)=="{1:'Z','y':88}"
 t = (1,8)
 assert t.__class__ == tuple
 assert isinstance(t,tuple)
