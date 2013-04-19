@@ -134,10 +134,37 @@ str.__mod__ = function(self,args){
                 src=src.__getitem__(this.mapping_key)
             }
             if(this.type=="s"){return str(src)}
-            else if(this.type=="i" || this.type=="d"){
+            else if(this.type=="x" || this.type=="X"){
                 if(!isinstance(src,[int,float])){throw TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
-                return str(int(src))
+                var num = src
+                res = src.toString(16)
+                if(this.flag===' '){res = ' '+res}
+                else if(this.flag==='+' && num>=0){res = '+'+res}
+                else if(this.flag==='#'){
+                    if(this.type==='x'){res = '0x'+res}
+                    else{res = '0X'+res}
+                }
+                if(this.min_width){
+                    var pad = ' '
+                    if(this.flag==='0'){pad="0"}
+                    while(res.length<parseInt(this.min_width)){res=pad+res}
+                }
+                return res
+            }else if(this.type=="i" || this.type=="d"){
+                if(!isinstance(src,[int,float])){throw TypeError(
+                    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
+                var num = parseInt(src)
+                if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
+                res = num+''
+                if(this.flag===' '){res = ' '+res}
+                else if(this.flag==='+' && num>=0){res = '+'+res}
+                if(this.min_width){
+                    var pad = ' '
+                    if(this.flag==='0'){pad="0"}
+                    while(res.length<parseInt(this.min_width)){res=pad+res}
+                }
+                return res
             }else if(this.type=="f" || this.type=="F"){
                 if(!isinstance(src,[int,float])){throw TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
