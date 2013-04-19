@@ -133,8 +133,15 @@ str.__mod__ = function(self,args){
                 if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
                 src=src.__getitem__(this.mapping_key)
             }
-            if(this.type=="s"){return str(src)}
-            else if(this.type=="x" || this.type=="X"){
+            if(this.type=="s"){
+                var res = str(src)
+                if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
+                return res
+            }else if(this.type=="a"){
+                var res = ascii(src)
+                if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
+                return res
+            }else if(this.type=="x" || this.type=="X"){
                 if(!isinstance(src,[int,float])){throw TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = src
@@ -244,6 +251,12 @@ str.__next__ = function(self){
 }
 
 str.__not_in__ = function(self,item){return !str.__in__(self,item)}
+
+str.__repr__ = function(self){
+    if(self===undefined){return "<class 'str'>"}
+    var qesc = new RegExp("'","g") // to escape single quote
+    return "'"+self.replace(qesc,"\\'")+"'"
+}
 
 str.__setattr__ = function(self,attr,value){setattr(self,attr,value)}
 

@@ -270,6 +270,18 @@ dict.__next__ = function(self){
 
 dict.__not_in__ = function(self,item){return !self.__in__(item)}
 
+dict.__repr__ = function(self){
+    if(self===undefined){return "<class 'dict'>"}
+    //if(self.$keys.length==0){return '{}'}
+    var res = "{",key=null,value=null,i=null        
+    var qesc = new RegExp('"',"g") // to escape double quotes in arguments
+    for(var i=0;i<self.$keys.length;i++){
+        res += repr(self.$keys[i])+':'+repr(self.$values[i])
+        if(i<self.$keys.length-1){res += ','}
+    }
+    return res+'}'
+}
+
 dict.__setitem__ = function(self,key,value){
     for(var i=0;i<self.$keys.length;i++){
         try{
@@ -286,20 +298,7 @@ dict.__setitem__ = function(self,key,value){
     self.$values.push(value)
 }
 
-dict.__str__ = function(self){
-    if(self===undefined){return "<class 'dict'>"}
-    if(self.$keys.length==0){return '{}'}
-    var res = "{",key=null,value=null,i=null        
-    var qesc = new RegExp('"',"g") // to escape double quotes in arguments
-    for(var i=0;i<self.$keys.length;i++){
-        if(typeof self.$keys[i]==="string"){key='"'+$escape_dq(self.$keys[i])+'"'}
-        else{key = str(self.$keys[i])}
-        if(typeof self.$values[i]==="string"){value='"'+$escape_dq(self.$values[i])+'"'}
-        else{value = str(self.$values[i])}
-        res += key+':'+value+','
-    }
-    return res.substr(0,res.length-1)+'}'
-}
+dict.__str__ = dict.__repr__
 
 dict.clear = function(self){
     // Remove all items from the dictionary.
@@ -534,6 +533,8 @@ $FloatClass.prototype.__in__ = function(item){return item.__contains__(this)}
 
 $FloatClass.prototype.__not_in__ = function(item){return !(item.__contains__(this))}
 
+$FloatClass.prototype.__repr__ = $FloatClass.prototype.toString
+
 $FloatClass.prototype.__str__ = $FloatClass.prototype.toString
 
 $FloatClass.prototype.__truediv__ = function(other){
@@ -739,6 +740,8 @@ Number.prototype.__pow__ = function(other){
     if(typeof other==="number"){return int(Math.pow(this.valueOf(),other.valueOf()))}
     else{$UnsupportedOpType("//",int,other.__class__)}
 }
+
+Number.prototype.__repr__ = function(){return this.toString()}
 
 Number.prototype.__setattr__ = function(attr,value){throw AttributeError(
     "'int' object has no attribute "+attr+"'")}
@@ -1054,7 +1057,10 @@ function range(){
     return res
 }
 
-function repr(obj){return obj.toString()}
+function repr(obj){
+    if(obj.__repr__!==undefined){return obj.__repr__()}
+    else{throw AttributeError("object  has no attribute __repr__")}
+}
 
 function reversed(seq){
     // returns an iterator with elements in the reverse order from seq
@@ -1227,17 +1233,17 @@ set.__pow__ = function(self,other){
     }
     return res
 }
-set.__str__ = function(self){
+set.__repr__ = function(self){
     if(self===undefined){return "<class 'set'>"}
     var res = "{"
     for(var i=0;i<self.items.length;i++){
-        var x = self.items[i]
-        if(isinstance(x,str)){res += "'"+x+"'"} 
-        else{res += x.toString()}
+        res += repr(x)
         if(i<self.items.length-1){res += ','}
     }
     return res+'}'
-}    
+}
+
+set.__str__ = set.__repr__
 
 set.__sub__ = function(self,other){
     // Return a new set with elements in the set that are not in the others
@@ -1473,6 +1479,8 @@ Boolean.prototype.toString = function(){
     return "False"
 }
 
+Boolean.prototype.__repr__ = Boolean.prototype.toString
+
 Boolean.prototype.__str__ = Boolean.prototype.toString
 
 function $NoneClass(){
@@ -1486,6 +1494,7 @@ function $NoneClass(){
     }
     this.__hash__ = function(){return 0}
     this.__ne__ = function(other){return other!==None}
+    this.__repr__ = function(){return 'None'}
     this.__str__ = function(){return 'None'}
     var comp_ops = ['ge','gt','le','lt']
     for(var key in $comps){ // None is not orderable with any type

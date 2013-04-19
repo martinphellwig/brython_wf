@@ -194,6 +194,20 @@ list.__next__ = function(self){
 
 list.__not_in__ = function(self,item){return !list.__in__(self,item)}
 
+list.__repr__ = function(self){
+    if(self===undefined){return "<class 'list'>"}
+    var items=self.valueOf()
+    var res = '['
+    if(self.__class__===tuple){res='('}
+    for(var i=0;i<self.length;i++){
+        var x = self[i]
+        res += x.__repr__()
+        if(i<self.length-1){res += ','}
+    }
+    if(self.__class__===tuple){return res+')'}
+    else{return res+']'}
+}
+
 list.__setitem__ = function(self,arg,value){
     if(isinstance(arg,int)){
         var pos = arg
@@ -222,22 +236,7 @@ list.__setitem__ = function(self,arg,value){
     }
 }
 
-
-list.__str__ = function(self){
-    if(self===undefined){return "<class 'list'>"}
-    var items=self.valueOf()
-    var res = '['
-    if(self.__class__===tuple){res='('}
-    for(var i=0;i<self.length;i++){
-        var x = self[i]
-        if(isinstance(x,str)){res += "'"+x+"'"} 
-        else if(x['__str__']!==undefined){res += x.__str__()}
-        else{res += x.toString()}
-        if(i<self.length-1){res += ','}
-    }
-    if(self.__class__===tuple){return res+')'}
-    else{return res+']'}
-}
+list.__str__ = list.__repr__
 
 list.append = function(self,other){self.push(other)}
 
