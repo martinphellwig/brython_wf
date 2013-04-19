@@ -141,7 +141,6 @@ function $AbstractExprCtx(context,with_commas){
     this.type = 'abstract_expr'
     // allow expression with comma-separted values, or a single value ?
     this.with_commas = with_commas
-    this.name = name
     this.parent = context
     this.tree = []
     context.tree.push(this)
