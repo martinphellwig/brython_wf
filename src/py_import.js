@@ -66,7 +66,8 @@ function $import_js_module(module,alias,names,filepath,module_contents){
     return $module
 }
 
-function $import_module_search_path(module,alias,names, path_list){
+function $import_module_search_path(module,alias,names){
+    var path_list=__BRYTHON__.path;
     var modnames = [module, module+'/__init__']
     var import_mod = [$import_js_generic, $import_py]
     for(var i=0;i<path_list.length;i++){
