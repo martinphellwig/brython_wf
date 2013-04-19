@@ -137,10 +137,51 @@ str.__mod__ = function(self,args){
                 var res = str(src)
                 if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
                 return res
+            }else if(this.type=="r"){
+                var res = repr(src)
+                if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
+                return res
             }else if(this.type=="a"){
                 var res = ascii(src)
                 if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
                 return res
+            }else if(this.type=="g" || this.type=="G"){
+                if(!isinstance(src,[int,float])){throw TypeError(
+                    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
+                var prec = -4
+                if(this.precision){prec=parseInt(this.precision.substr(1))}
+                var res = parseFloat(src).toExponential()
+                var elts = res.split('e')
+                if((this.precision && eval(elts[1])>prec)||
+                    (!this.precision && eval(elts[1])<-4)){
+                    this.type === 'g' ? this.type='e' : this.type='E'
+                    // The precision determines the number of significant digits 
+                    // before and after the decimal point and defaults to 6
+                    var prec = 6
+                    if(this.precision){prec=parseInt(this.precision.substr(1))-1}
+                    var res = parseFloat(src).toExponential(prec)
+                    var elts = res.split('e')
+                    var res = elts[0]+this.type+elts[1].charAt(0)
+                    if(elts[1].length===2){res += '0'}
+                    return res+elts[1].substr(1)
+                }else{
+                    var prec = 6
+                    if(this.precision){prec=parseInt(this.precision.substr(1))-1}
+                    var elts = str(src).split('.')
+                    this.precision = '.'+(prec-elts[0].length)
+                    this.type="f"
+                    return this.format(src)
+                }
+            }else if(this.type=="e" || this.type=="E"){
+                if(!isinstance(src,[int,float])){throw TypeError(
+                    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
+                var prec = 6
+                if(this.precision){prec=parseInt(this.precision.substr(1))}
+                var res = parseFloat(src).toExponential(prec)
+                var elts = res.split('e')
+                var res = elts[0]+this.type+elts[1].charAt(0)
+                if(elts[1].length===2){res += '0'}
+                return res+elts[1].substr(1)
             }else if(this.type=="x" || this.type=="X"){
                 if(!isinstance(src,[int,float])){throw TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
@@ -520,7 +561,6 @@ str.strip = function(self,x){
 }
 
 str.upper = function(self){return self.toUpperCase()}
-
 
 // set String.prototype attributes
 
