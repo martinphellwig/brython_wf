@@ -29,11 +29,23 @@ function any(iterable){
     }
 }
 
-// ascii  (build-in function)
 function ascii(obj) {
-   //for now just return the repr representation but will need to fix 
-   // this eventually so that non-ascii chars are represented correctly
-   return repr(obj)
+   // adapted from 
+   // http://stackoverflow.com/questions/7499473/need-to-ecape-non-ascii-characters-in-javascript
+    function padWithLeadingZeros(string,pad) {
+        return new Array(pad+1-string.length).join("0") + string;
+    }
+    
+    function charEscape(charCode) {
+        if(charCode>255){return "\\u" + padWithLeadingZeros(charCode.toString(16),4)}
+        else{return "\\x" + padWithLeadingZeros(charCode.toString(16),2)}
+    }
+    
+    return obj.split("").map(function (char) {
+             var charCode = char.charCodeAt(0);
+             return charCode > 127 ? charEscape(charCode) : char;
+         })
+         .join("");
 }
 
 // not in Python but used for tests until unittest works
