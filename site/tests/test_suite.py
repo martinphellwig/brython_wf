@@ -14,6 +14,20 @@ assert x==0
 assert y==0
 assert z==0
 
+# hex, octal, binary literals
+a=0xaf
+assert a==175
+a=0Xaf
+assert a==175
+a=0o754
+assert a==492
+a=0O754
+assert a==492
+a=0b10100110
+assert a==166
+a=0B10100110
+assert a==166
+
 #not sure how to convert this to assert (raise)?
 try:
   print(n)

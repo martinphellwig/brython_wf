@@ -2416,6 +2416,9 @@ function $tokenize(src,module){
     var int_pattern = new RegExp("^\\d+")
     var float_pattern1 = new RegExp("^\\d+\\.\\d*(e-?\\d+)?")
     var float_pattern2 = new RegExp("^\\d+(e-?\\d+)")
+    var hex_pattern = new RegExp("^0[xX]([0-9a-fA-F]+)")
+    var octal_pattern = new RegExp("^0[oO]([0-7]+)")
+    var binary_pattern = new RegExp("^0[bB]([01]+)")
     var id_pattern = new RegExp("[\\$_a-zA-Z]\\w*")
     var qesc = new RegExp('"',"g") // to escape double quotes in arguments
 
@@ -2574,6 +2577,27 @@ function $tokenize(src,module){
             $pos = pos
             context = $transition(context,'.')
             pos++;continue
+        }
+        // octal, hexadecimal, binary
+        if(car==="0"){
+            var res = hex_pattern.exec(src.substr(pos))
+            if(res){
+                context=$transition(context,'int',parseInt(res[1],16))
+                pos += res[0].length
+                continue
+            }
+            var res = octal_pattern.exec(src.substr(pos))
+            if(res){
+                context=$transition(context,'int',parseInt(res[1],8))
+                pos += res[0].length
+                continue
+            }
+            var res = binary_pattern.exec(src.substr(pos))
+            if(res){
+                context=$transition(context,'int',parseInt(res[1],2))
+                pos += res[0].length
+                continue
+            }
         }
         // number
         if(car.search(/\d/)>-1){
