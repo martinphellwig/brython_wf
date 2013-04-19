@@ -66,24 +66,12 @@ function $import_js_module(module,alias,names,filepath,module_contents){
     return $module
 }
 
-
-function $import_module_search_path(module,alias,names){
-    var search_path = __BRYTHON__.path
-    //console.log(search_path)
-    //if (!search_path.contains(__BRYTHON__.brython_path)) {
-    //   search_path.push(__BRYTHON__.brython_path)
-    //}
-    return $import_module_search_path_list(module,alias,names,search_path)
-}
-
-function $import_module_search_path_list(module,alias,names, path_list){
-    var modnames = [module, '__init__']
+function $import_module_search_path(module,alias,names, path_list){
+    var modnames = [module, module+'/__init__']
     var import_mod = [$import_js_generic, $import_py]
     for(var i=0;i<path_list.length;i++){
        for(var j=0; j < modnames.length; j++) {
-           var path = path_list[i]
-           if (modnames[j] == '__init__') path += "/" + module
-           path+= "/" + modnames[j];
+           var path = path_list[i] + "/" + modnames[j];
            for (var k=0; k < import_mod.length; k++) {
                try {return import_mod[k](module,alias,names,path)
                }catch(err){if(err.name!=="NotFoundError"){throw err}
@@ -166,10 +154,6 @@ function $import_py_module(module,alias,names,path,module_contents) {
 $import_funcs = [$import_js, $import_module_search_path]
 
 function $import_single(name,alias,names){
-    // check to see if module has already been imported
-    if(__BRYTHON__.modules[name]!==undefined){
-      return __BRYTHON__.modules[name]
-    }
     for(var j=0;j<$import_funcs.length;j++){
         try{var mod=$import_funcs[j](name,alias,names)
             __BRYTHON__.modules[name]=mod
@@ -191,10 +175,13 @@ function $import_list(modules){ // list of objects with attributes name and alia
     var res = []
     for(var i=0;i<modules.length;i++){
         var module = modules[i][0]
-        if(__BRYTHON__.modules[module]!==undefined){var mod=__BRYTHON__.modules[module]}
-        else{
-            var mod = $import_single(modules[i][0],modules[i][1])
-            __BRYTHON__.modules[module]=mod
+        var mod;
+        if(__BRYTHON__.modules[module]===undefined){
+           __BRYTHON__.modules[module]={}  // this could be a recursive import, so lets set modules={}
+           mod = $import_single(modules[i][0],modules[i][1])
+           __BRYTHON__.modules[module]=mod
+        } else{
+           mod=__BRYTHON__.modules[module]
         }
         res.push(mod)
         __BRYTHON__.$py_module_alias[modules[i][0]]=modules[i][1]
@@ -203,7 +190,7 @@ function $import_list(modules){ // list of objects with attributes name and alia
 }
 
 function $import_from(module,names,parent_module,alias){
-    console.log(module +","+names+","+parent_module+','+alias);
+    //console.log(module +","+names+","+parent_module+','+alias);
     if (parent_module !== undefined) {
        //this is a relative path import
        // ie,  from .mymodule import a,b,c
@@ -214,7 +201,7 @@ function $import_from(module,names,parent_module,alias){
        relpath=relpath.substring(0, i)
     
        alias=__BRYTHON__.$py_module_alias[parent_module]
-       console.log(parent_module+','+alias+','+relpath)
+       //console.log(parent_module+','+alias+','+relpath)
        return $import_module_search_path_list(module,alias,names,[relpath])
     } else if (alias !== undefined) {
        return $import_single(modules,alias,names)

@@ -16,5 +16,10 @@ _s=simple.Simple()
 _s3=Simple3()
 assert _s.info==_s3.info
 
+import recursive_import
+_s=recursive_import.myclass()
+
+assert str(_str) == "success!"
+
 print('passed all tests')
 

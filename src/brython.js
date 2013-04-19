@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130416-231551
+// version 1.1.20130418-173031
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -16,7 +16,7 @@ __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130416-231551"]
+__BRYTHON__.version_info=[1,1,"20130418-173031"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -737,6 +737,18 @@ if(err.__name__==='KeyError'){
 if(_default!==undefined){return _default}
 throw err
 }else{throw err}
+}
+}
+dict.popitem=function(self){
+if(self.$keys.length===0){throw KeyError("'popitem(): dictionary is empty'")}
+return tuple([self.$keys.pop(),self.$values.pop()])
+}
+dict.setdefault=function(self,key,_default){
+try{return dict.__getitem__(self,key)}
+catch(err){
+if(_default===undefined){_default=None}
+dict.__setitem__(self,key,_default)
+return _default
 }
 }
 dict.update=function(self){
@@ -2214,7 +2226,17 @@ return str(int(src))
 }else if(this.type=="f" || this.type=="F"){
 if(!isinstance(src,[int,float])){throw TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
-return str(float(src))
+var num=parseFloat(src)
+if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
+res=num+''
+if(this.flag===' '){res=' '+res}
+else if(this.flag==='+' && num>=0){res='+'+res}
+if(this.min_width){
+var pad=' '
+if(this.flag==='0'){pad="0"}
+while(res.length<parseInt(this.min_width)){res=pad+res}
+}
+return res
 }
 }
 }
@@ -2528,6 +2550,9 @@ throw ImportError("No module named '"+module+"'")}, 5000)
 return[$xmlhttp,fake_qs,timer]
 }
 function $import_js(module,alias,names){
+if(__BRYTHON__.modules[name]!==undefined){
+return __BRYTHON__.modules[name]
+}
 var filepath=__BRYTHON__.brython_path+'libs/' + module
 return $import_js_generic(module,alias,names,filepath)
 }
@@ -2563,22 +2588,19 @@ throw ImportError("name '$module' is not defined in module")
 }
 $module.__class__=$type
 $module.__str__=function(){return "<module '"+module+"' from "+filepath+" >"}
-$module.__file__=filepath+'.py'
+$module.__file__=filepath
 return $module
 }
 function $import_module_search_path(module,alias,names){
 var search_path=__BRYTHON__.path
-search_path.push(__BRYTHON__.brython_path)
 return $import_module_search_path_list(module,alias,names,search_path)
 }
 function $import_module_search_path_list(module,alias,names, path_list){
-var modnames=[module, '__init__']
+var modnames=[module, module+'/__init__']
 var import_mod=[$import_js_generic, $import_py]
 for(var i=0;i<path_list.length;i++){
 for(var j=0;j < modnames.length;j++){
-var path=path_list[i]
-if(modnames[j]=='__init__')path +="/" + module
-path+="/" + modnames[j]
+var path=path_list[i]+ "/" + modnames[j]
 for(var k=0;k < import_mod.length;k++){
 try{return import_mod[k](module,alias,names,path)
 }catch(err){if(err.name!=="NotFoundError"){throw err}
@@ -2635,7 +2657,7 @@ var js=root.to_js()
 eval(js)
 $module.__class__=$type
 $module.__str__=function(){return "<module '"+module+"' from "+path+" >"}
-$module.__file__=path+'.py'
+$module.__file__=path
 return $module
 }catch(err){
 eval('throw '+err.name+'(err.message)')
@@ -2644,8 +2666,11 @@ eval('throw '+err.name+'(err.message)')
 $import_funcs=[$import_js, $import_module_search_path]
 function $import_single(name,alias,names){
 for(var j=0;j<$import_funcs.length;j++){
-try{return $import_funcs[j](name,alias,names)}
-catch(err){
+try{var mod=$import_funcs[j](name,alias,names)
+__BRYTHON__.modules[name]=mod
+__BRYTHON__.$py_module_alias[name]=alias
+return mod
+}catch(err){
 if(err.name==="NotFoundError"){
 if(j==$import_funcs.length-1){
 throw ImportError("no module named '"+name+"'")
@@ -2660,10 +2685,13 @@ function $import_list(modules){
 var res=[]
 for(var i=0;i<modules.length;i++){
 var module=modules[i][0]
-if(__BRYTHON__.modules[module]!==undefined){var mod=__BRYTHON__.modules[module]}
-else{
-var mod=$import_single(modules[i][0],modules[i][1])
+var mod
+if(__BRYTHON__.modules[module]===undefined){
+__BRYTHON__.modules[module]={}
+mod=$import_single(modules[i][0],modules[i][1])
 __BRYTHON__.modules[module]=mod
+}else{
+mod=__BRYTHON__.modules[module]
 }
 res.push(mod)
 __BRYTHON__.$py_module_alias[modules[i][0]]=modules[i][1]
@@ -2678,12 +2706,11 @@ var i=relpath.lastIndexOf('/')
 relpath=relpath.substring(0, i)
 alias=__BRYTHON__.$py_module_alias[parent_module]
 console.log(parent_module+','+alias+','+relpath)
-$import_module_search_path_list(module,alias,names,[relpath])
+return $import_module_search_path_list(module,alias,names,[relpath])
 }else if(alias !==undefined){
-return $import_single(module,alias,names)
-}else{
-return $import_single(module,names,names)
+return $import_single(modules,alias,names)
 }
+return $import_single(modules,names,names)
 }
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
