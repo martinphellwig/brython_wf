@@ -2080,8 +2080,9 @@ function $transition(context,token){
                     return new $AbstractExprCtx(new $KwArgCtx(context.parent),false)
             }else{return $transition(context.parent,token,arguments[2])}             
         }else if(token==='op'){return $transition(context.parent,token,arguments[2])}
-        else if(token=='id'){$_SyntaxError(context,'token '+token+' after '+context)}
-        else{return $transition(context.parent,token,arguments[2])}
+        else if(['id','str','int','float'].indexOf(token)>-1){
+            $_SyntaxError(context,'token '+token+' after '+context)
+        }else{return $transition(context.parent,token,arguments[2])}
 
     }else if(context.type==='import'){
     
@@ -2527,7 +2528,7 @@ function $tokenize(src,module){
                     } else {
                         found = true
                         // end of string
-                        $pos = pos-zone.length-1
+                        $pos = pos
                         var string = zone.substr(1).replace(qesc,'\\"')
                         context = $transition(context,'str',zone+car)
                         pos = end+1
