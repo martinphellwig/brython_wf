@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130418-173031
+// version 1.1.20130419-074510
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -16,7 +16,7 @@ __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130418-173031"]
+__BRYTHON__.version_info=[1,1,"20130419-074510"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -2219,10 +2219,37 @@ if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
 src=src.__getitem__(this.mapping_key)
 }
 if(this.type=="s"){return str(src)}
-else if(this.type=="i" || this.type=="d"){
+else if(this.type=="x" || this.type=="X"){
 if(!isinstance(src,[int,float])){throw TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
-return str(int(src))
+var num=src
+res=src.toString(16)
+if(this.flag===' '){res=' '+res}
+else if(this.flag==='+' && num>=0){res='+'+res}
+else if(this.flag==='#'){
+if(this.type==='x'){res='0x'+res}
+else{res='0X'+res}
+}
+if(this.min_width){
+var pad=' '
+if(this.flag==='0'){pad="0"}
+while(res.length<parseInt(this.min_width)){res=pad+res}
+}
+return res
+}else if(this.type=="i" || this.type=="d"){
+if(!isinstance(src,[int,float])){throw TypeError(
+"%"+this.type+" format : a number is required, not "+str(src.__class__))}
+var num=parseInt(src)
+if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
+res=num+''
+if(this.flag===' '){res=' '+res}
+else if(this.flag==='+' && num>=0){res='+'+res}
+if(this.min_width){
+var pad=' '
+if(this.flag==='0'){pad="0"}
+while(res.length<parseInt(this.min_width)){res=pad+res}
+}
+return res
 }else if(this.type=="f" || this.type=="F"){
 if(!isinstance(src,[int,float])){throw TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
@@ -2550,9 +2577,6 @@ throw ImportError("No module named '"+module+"'")}, 5000)
 return[$xmlhttp,fake_qs,timer]
 }
 function $import_js(module,alias,names){
-if(__BRYTHON__.modules[name]!==undefined){
-return __BRYTHON__.modules[name]
-}
 var filepath=__BRYTHON__.brython_path+'libs/' + module
 return $import_js_generic(module,alias,names,filepath)
 }
@@ -2592,10 +2616,7 @@ $module.__file__=filepath
 return $module
 }
 function $import_module_search_path(module,alias,names){
-var search_path=__BRYTHON__.path
-return $import_module_search_path_list(module,alias,names,search_path)
-}
-function $import_module_search_path_list(module,alias,names, path_list){
+var path_list=__BRYTHON__.path
 var modnames=[module, module+'/__init__']
 var import_mod=[$import_js_generic, $import_py]
 for(var i=0;i<path_list.length;i++){
@@ -2689,7 +2710,6 @@ var mod
 if(__BRYTHON__.modules[module]===undefined){
 __BRYTHON__.modules[module]={}
 mod=$import_single(modules[i][0],modules[i][1])
-__BRYTHON__.modules[module]=mod
 }else{
 mod=__BRYTHON__.modules[module]
 }
@@ -2699,13 +2719,11 @@ __BRYTHON__.$py_module_alias[modules[i][0]]=modules[i][1]
 return res
 }
 function $import_from(module,names,parent_module,alias){
-console.log(module +","+names+","+parent_module+','+alias)
 if(parent_module !==undefined){
 var relpath=__BRYTHON__.$py_module_path[parent_module]
 var i=relpath.lastIndexOf('/')
 relpath=relpath.substring(0, i)
 alias=__BRYTHON__.$py_module_alias[parent_module]
-console.log(parent_module+','+alias+','+relpath)
 return $import_module_search_path_list(module,alias,names,[relpath])
 }else if(alias !==undefined){
 return $import_single(modules,alias,names)
@@ -2846,7 +2864,6 @@ var $loop_id=0
 function $AbstractExprCtx(C,with_commas){
 this.type='abstract_expr'
 this.with_commas=with_commas
-this.name=name
 this.parent=C
 this.tree=[]
 C.tree.push(this)
