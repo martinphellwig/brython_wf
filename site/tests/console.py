@@ -27,10 +27,10 @@ def reset_src():
 def write(data):
     doc["console"].value += str(data)
 
-sys.stdout = object()
+#sys.stdout = object()    #not needed when importing sys via src/Lib/sys.py
 sys.stdout.write = write
 
-sys.stderr = object()
+#sys.stderr = object()    # ditto
 sys.stderr.write = write
 
 def to_str(xx):
