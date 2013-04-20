@@ -2,21 +2,21 @@ import random
 
 name="brython"
 
-altsep=None
-curdir="."
+#altsep=None
+#curdir="."
 
 def devnull():
     OSError('Function devnull not supported')
 
-extsep='.'
+#extsep='.'
 
 def getloadavg():
     OSError('Function getloadavg not supported')
 
-linesep="\n"
-pathsep=";"
-pardir=".."
-sep='/'
+#linesep="\n"
+#pathsep=";"
+#pardir=".."
+#sep='/'
 
 def urandom(length):
     _c=[]
@@ -25,12 +25,10 @@ def urandom(length):
         
     return ''.join(_c)
 
-import posixpath as path
-sys.modules['os.path'] = path
+#import posixpath as path
+#sys.modules['os.path'] = path
 
-#from os.path import (curdir, pardir, sep, pathsep, defpath, extsep, altsep,
-#    devnull)
-
+#from os.path import (curdir, pardir, sep, pathsep, defpath, extsep, altsep)
 
 # Python uses fixed values for the SEEK_ constants; they are mapped
 # to native constants if necessary in posixmodule.c
@@ -39,6 +37,13 @@ SEEK_CUR = 1
 SEEK_END = 2
 
 def walk(top, topdown=True, onerror=None, followlinks=False):
+    #receive scope error in brython
+    # why have os.walk in brython?  server side javascript (nodejs)
+    # immediately can use os.walk to compile libs and Lib modules
+    # to javascript equivalent..
+    OSError('Function os.walk not supported yet')
+    return
+
     """Directory tree generator.
 
     For each directory in the directory tree rooted at top (including top
@@ -94,7 +99,8 @@ def walk(top, topdown=True, onerror=None, followlinks=False):
         if 'CVS' in dirs:
             dirs.remove('CVS')  # don't visit CVS directories
     """
-
+    """
+    
     islink, join, isdir = path.islink, path.join, path.isdir
 
     # We may not have read permission for top, in which case we can't
@@ -110,16 +116,17 @@ def walk(top, topdown=True, onerror=None, followlinks=False):
         if onerror is not None:
             onerror(err)
         return
-
+    
     dirs, nondirs = [], []
     for name in names:
         if isdir(join(top, name)):
             dirs.append(name)
         else:
             nondirs.append(name)
-
+    
     if topdown:
         yield top, dirs, nondirs
+    
     for name in dirs:
         new_path = join(top, name)
         if followlinks or not islink(new_path):
@@ -127,3 +134,4 @@ def walk(top, topdown=True, onerror=None, followlinks=False):
                 yield x
     if not topdown:
         yield top, dirs, nondirs
+    """

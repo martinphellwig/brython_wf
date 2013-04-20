@@ -17,6 +17,12 @@ _flag=False
 for _mydir in ("libs", "Lib"):
     for _root, _dir, _files in os.walk(os.path.join(_main_root, _mydir)):
         for _file in _files:
+            if _file.endswith('.py'):
+               # we only want to include a .py file if a compiled javascript
+               # version is not available
+               if os.path.exists(os.path.join(_root, _file.replace('.py', '.js'))):
+                  continue
+
             if _file.endswith('.js') or _file.endswith('.py'):
                _fp=open(os.path.join(_root, _file), "r")
                _data=_fp.read()
@@ -90,7 +96,7 @@ $import_via_VFS=function(module,alias,names){
          //console.log("searching for " + path + " in VFS");
          var module_contents=readFromVFS(path)
          if(module_contents !== undefined) {
-           console.log("imported " + module + " via VFS")
+           console.log("imported ("+module+") via VFS:" + path)
            if (ext[j] == '.js') {
               return $import_js_module(module,alias,names,path,module_contents)
            }
