@@ -59,6 +59,59 @@ function node_import(module,alias,names) {
   throw res
 }
 
+$compile_python=function(module_contents,module) {
+    var root = __BRYTHON__.py2js(module_contents,module)
+    var body = root.children
+    root.children = []
+    // use the module pattern : module name returns the results of an anonymous function
+    var mod_node = new $Node('expression')
+    //if(names!==undefined){alias='$module'}
+    new $NodeJSCtx(mod_node,'$module=(function()')
+    root.insert(0,mod_node)
+    mod_node.children = body
+    // search for module-level names : functions, classes and variables
+    var mod_names = []
+    for(var i=0;i<mod_node.children.length;i++){
+        var node = mod_node.children[i]
+        // use function get_ctx() 
+        // because attribute 'context' is renamed by make_dist...
+        var ctx = node.get_ctx().tree[0]
+        if(ctx.type==='def'||ctx.type==='class'){
+            if(mod_names.indexOf(ctx.name)===-1){mod_names.push(ctx.name)}
+            
+        }else if(ctx.type==='assign'){
+            var left = ctx.tree[0]
+            if(left.type==='expr'&&left.tree[0].type==='id'&&left.tree[0].tree.length===0){
+                var id_name = left.tree[0].value
+                if(mod_names.indexOf(id_name)===-1){mod_names.push(id_name)}
+            }
+        }
+    }
+    // create the object that will be returned when the anonymous function is run
+    var ret_code = 'return {'
+    for(var i=0;i<mod_names.length;i++){
+        ret_code += mod_names[i]+':'+mod_names[i]+','
+    }
+    ret_code += '__getattr__:function(attr){return this[attr]},'
+    ret_code += '__setattr__:function(attr,value){this[attr]=value}'
+    ret_code += '}'
+    var ret_node = new $Node('expression')
+    new $NodeJSCtx(ret_node,ret_code)
+    mod_node.add(ret_node)
+    // add parenthesis for anonymous function execution
+    
+    var ex_node = new $Node('expression')
+    new $NodeJSCtx(ex_node,')()')
+    root.add(ex_node)
+    
+    try{
+        var js = root.to_js()
+        return js;
+    }catch(err){
+        eval('throw '+err.name+'(err.message)')
+    }
+    return undefined;
+}
 
 function execute_python_script(filename) {
   _py_src=fs.readFileSync(filename, 'utf8')
@@ -69,9 +122,6 @@ function execute_python_script(filename) {
 }
 
 // Read and eval library
-//jscode = fs.readFileSync('src/brython_builtins.js', 'utf8');
-//eval(jscode);
-
 jscode = fs.readFileSync('src/brython.js','utf8');
 eval(jscode);
 
@@ -79,10 +129,10 @@ console.log("try to execute compile script");
 
 __BRYTHON__.$py_module_path = __BRYTHON__.$py_module_path || {}
 __BRYTHON__.$py_module_alias = __BRYTHON__.$py_module_alias || {}
-//__BRYTHON__.$py_next_hash = -Math.pow(2,53)
 __BRYTHON__.exception_stack = __BRYTHON__.exception_stack || []
 __BRYTHON__.scope = __BRYTHON__.scope || {}
 __BRYTHON__.modules = __BRYTHON__.modules || {}
+__BRYTHON__.compile_python=$compile_python
 
 // other import algs don't work in node
 $import_funcs=[node_import]

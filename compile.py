@@ -24,11 +24,9 @@ class FileIO:
       self._fs=JSObject(fs)
 
   def read(self):
-      #print("before read")
       return self._fs.readFileSync(self._filename, 'utf8')
 
   def write(self, data):
-      #print("before write")
       return self._fs.writeFileSync(self._filename, data, 'utf8')
 
   def close(self):
@@ -38,22 +36,14 @@ class FileIO:
 print("done importing")
 def compile_file(root, file):
     print("compiling %s" % os_path_join(root, file))
-    #print("test")
     _fp=FileIO(os_path_join(root, file), 'r')
-    #print("open fine")
     _src=_fp.read()
-    #print("read")
     _fp.close()
 
-    #print(_src)
-    #fixme, try to get this working with dis module (gives __repr__ error)
-    #print("got thsi far")
-    _js=JSObject(__BRYTHON__.py2js(_src, '__main__')) #.to_js()
-    #print("got thsi far")
+    _js=__BRYTHON__.compile_python(_src,file);
     if _js is not None:
        _fp1=FileIO(os_path_join(root, file.replace('.py', '.js')), 'w')
-       #print(_js.to_js())
-       _fp1.write(_js.to_js())
+       _fp1.write(_js)
        _fp1.close()
     else:
        print("error compiling %s" % os_path_join(root, file))
@@ -61,10 +51,11 @@ def compile_file(root, file):
 #fixme, todo: modify to os.walk once scope issue is fixed..
 #for _root, _dirs, _files in os.walk('./src'):
 print("files")
-_files=['errno.py', 'local_storage.py', 'string.py', 'keyword.py', 'os.py']
-# issues with the 4 files below
-        # 'traceback.py', 'pydom.py', 're.py', 'dis.py']
+_files=['errno.py', 'local_storage.py', 'string.py', 'keyword.py', 'os.py',
+        'sys.py', 'traceback.py']
+
+# issues with the 3 files below
+#'pydom.py', 're.py', 'dis.py'
 
 for _file in _files:
-    print(_file)
     compile_file('src/Lib', _file)

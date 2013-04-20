@@ -2,13 +2,22 @@ import os
 import base64
 import sys
 
+#check to see if slimit or some other minification library is installed
+#set minify equal to slimit's minify function
 
+#NOTE: minify could be any function that takes a string and returns a string
+# Therefore other minification libraries could be used.
+try:
+  import slimit
+  minify=slimit.minify
+except:
+  minify=None  
+  
 if sys.version_info[0] >= 3:
    print("For the time being, because of byte issues in Bryton, please use python 2.x")
    sys.exit()
 
 _main_root=os.path.join(os.getcwd(), 'src')
-
 
 _vfs=open(os.path.join(_main_root, "py_VFS.js"), "w")
 _vfs.write("__BRYTHON__.$py_VFS={\n")
@@ -27,6 +36,9 @@ for _mydir in ("libs", "Lib"):
                _fp=open(os.path.join(_root, _file), "r")
                _data=_fp.read()
                _fp.close()
+
+               if _file.endswith('.js') and minify is not None:
+                  _data=minify(_data)
 
                _vfs_filename=os.path.join(_root, _file).replace(_main_root, '')
                _vfs_filename=_vfs_filename.replace("\\", "/")
