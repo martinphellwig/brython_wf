@@ -1392,15 +1392,14 @@ function $TryCtx(context){
         new $NodeJSCtx(new_node,'if(false){void(0)}')
         catch_node.insert(0,new_node)
         
-        // move the except and finally clauses below catch_node
         var pos = rank+2
         var has_default = false // is there an "except:" ?
         var has_else = false // is there an "else" clause ?
         while(true){
             if(pos===node.parent.children.length){break}
             var ctx = node.parent.children[pos].context.tree[0]
-            if(ctx.type==='except'||
-                (ctx.type==='single_kw' && ctx.token==='finally')){
+            if(ctx.type==='except'){
+                // move the except clauses below catch_node
                 if(has_else){$_SyntaxError(context,"'except' or 'finally' after 'else'")}
                 ctx.error_name = '$err'+$loop_num
                 if(ctx.tree.length>0 && ctx.tree[0].alias!==null){
@@ -1412,11 +1411,14 @@ function $TryCtx(context){
                 }
                 catch_node.insert(catch_node.children.length,
                     node.parent.children[pos])
-                if(ctx.type==='except' && ctx.tree.length===0){
+                if(ctx.tree.length===0){
                     if(has_default){$_SyntaxError(context,'more than one except: line')}
                     has_default=true
                 }
                 node.parent.children.splice(pos,1)
+            }else if(ctx.type==='single_kw' && ctx.token==='finally'){
+                if(has_else){$_SyntaxError(context,"'finally' after 'else'")}
+                pos++
             }else if(ctx.type==='single_kw' && ctx.token==='else'){
                 if(has_else){$_SyntaxError(context,"more than one 'else'")}
                 has_else = true
