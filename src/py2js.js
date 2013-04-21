@@ -2739,14 +2739,18 @@ function $tokenize(src,module){
 
 }
 
-function brython(debug){
+function brython(options){
     document.$py_src = {}
     __BRYTHON__.$py_module_path = {}
     __BRYTHON__.$py_module_alias = {}
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
-    document.$debug = debug || 0
+    document.$debug = 0
+    if (options.debug == 1 || options.debug == 2) {
+       document.$debug = options.debug
+    }
+    __BRYTHON__.$options=options
     __BRYTHON__.exception_stack = []
     __BRYTHON__.scope = {}
     var elts = document.getElementsByTagName("script")
@@ -2754,8 +2758,16 @@ function brython(debug){
     var href_elts = href.split('/')
     href_elts.pop()
     var script_path = href_elts.join('/')
-    __BRYTHON__.path = [script_path]
-    
+
+    __BRYTHON__.path = []
+    if (isinstance(options.pythonpath, list)) {
+       __BRYTHON__.path = options.pythonpath
+    }
+
+    if (!(__BRYTHON__.path.indexOf(script_path) > -1)) {
+       __BRYTHON__.path.push(script_path)
+    }
+
     for(var $i=0;$i<elts.length;$i++){
         var elt = elts[$i]
         if(elt.type=="text/python"||elt.type==="text/python3"){
@@ -2776,7 +2788,9 @@ function brython(debug){
                 $xmlhttp.open('GET',elt.src,false)
                 $xmlhttp.send()
                 __BRYTHON__.$py_module_path['__main__']=elt.src 
-                __BRYTHON__.path.push(elt.src)
+                if (!(__BRYTHON__.path.indexOf(elt.src) > -1)) {
+                   __BRYTHON__.path.push(elt.src)
+                }
             }else{
                 var src = (elt.innerHTML || elt.textContent)
                 __BRYTHON__.$py_module_path['__main__']='.' 
@@ -2784,7 +2798,7 @@ function brython(debug){
             try{
                 var root = __BRYTHON__.py2js(src,'__main__')
                 var js = root.to_js()
-                if(debug===2){console.log(js)}
+                if(document.$debug===2){console.log(js)}
                 eval(js)
             }catch(err){
                 console.log(err)
@@ -2806,7 +2820,9 @@ function brython(debug){
                         elt.src.charAt(elt.src.length-bs.length-1)=='/'){
                             var path = elt.src.substr(0,elt.src.length-bs.length)
                             __BRYTHON__.brython_path = path
-                            __BRYTHON__.path.push(path+'Lib')
+                            if (!(__BRYTHON__.path.indexOf(path+'Lib')> -1)) {
+                               __BRYTHON__.path.push(path+'Lib')
+                            }
                             break
                     }
                 }

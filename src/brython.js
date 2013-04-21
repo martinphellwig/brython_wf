@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130419-191952
+// version 1.1.20130420-194405
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -16,7 +16,7 @@ __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130419-191952"]
+__BRYTHON__.version_info=[1,1,"20130420-194405"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -2634,7 +2634,17 @@ var $xmlhttp=new XMLHttpRequest()
 }else{
 var $xmlhttp=new ActiveXObject("Microsoft.XMLHTTP")
 }
-var fake_qs='?foo='+Math.random().toString(36).substr(2,8)
+var fake_qs
+if(__BRYTHON__.$options.cache===undefined ||
+__BRYTHON__.$options.cache=='none'){
+fake_qs="?v="+Math.random().toString(36).substr(2,8)
+}else if(__BRYTHON__.$options.cache=='version'){
+fake_qs="?v="+__BRYTHON__.version_info[2]
+}else if(__BRYTHON__.$options.cache=='browser'){
+fake_qs=""
+}else{
+fake_qs="?v="+Math.random().toString(36).substr(2,8)
+}
 var timer=setTimeout(function(){
 $xmlhttp.abort()
 throw ImportError("No module named '"+module+"'")}, 5000)
@@ -2662,7 +2672,6 @@ res.message="No module named '"+module+"'"
 }
 }
 }
-if(document.$debug===undefined)fake_qs="?foo="+__BRYTHON__.version_info[2]
 $xmlhttp.open('GET',url+fake_qs,false)
 if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
 $xmlhttp.send()
@@ -5203,13 +5212,17 @@ $_SyntaxError(br_err[0],"Unbalanced bracket "+br_stack.charAt(br_stack.length-1)
 }
 return root
 }
-function brython(debug){
+function brython(options){
 document.$py_src={}
 __BRYTHON__.$py_module_path={}
 __BRYTHON__.$py_module_alias={}
 __BRYTHON__.modules={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
-document.$debug=debug || 0
+document.$debug=0
+if(options.debug==1 || options.debug==2){
+document.$debug=options.debug
+}
+__BRYTHON__.$options=options
 __BRYTHON__.exception_stack=[]
 __BRYTHON__.scope={}
 var elts=document.getElementsByTagName("script")
@@ -5217,7 +5230,13 @@ var href=window.location.href
 var href_elts=href.split('/')
 href_elts.pop()
 var script_path=href_elts.join('/')
-__BRYTHON__.path=[script_path]
+__BRYTHON__.path=[]
+if(isinstance(options.pythonpath, list)){
+__BRYTHON__.path=options.pythonpath
+}
+if(!(__BRYTHON__.path.indexOf(script_path)> -1)){
+__BRYTHON__.path.append(script_path)
+}
 for(var $i=0;$i<elts.length;$i++){
 var elt=elts[$i]
 if(elt.type=="text/python"||elt.type==="text/python3"){
@@ -5236,7 +5255,9 @@ src=$xmlhttp.responseText
 $xmlhttp.open('GET',elt.src,false)
 $xmlhttp.send()
 __BRYTHON__.$py_module_path['__main__']=elt.src 
+if(!(__BRYTHON__.path.indexOf(elt.src)> -1)){
 __BRYTHON__.path.push(elt.src)
+}
 }else{
 var src=(elt.innerHTML || elt.textContent)
 __BRYTHON__.$py_module_path['__main__']='.' 
@@ -5244,7 +5265,7 @@ __BRYTHON__.$py_module_path['__main__']='.'
 try{
 var root=__BRYTHON__.py2js(src,'__main__')
 var js=root.to_js()
-if(debug===2){console.log(js)}
+if(document.$debug===2){console.log(js)}
 eval(js)
 }catch(err){
 console.log(err)
@@ -5266,7 +5287,9 @@ if(elt.src.length===bs.length ||
 elt.src.charAt(elt.src.length-bs.length-1)=='/'){
 var path=elt.src.substr(0,elt.src.length-bs.length)
 __BRYTHON__.brython_path=path
+if(!(__BRYTHON__.path.indexOf(path+'Lib')> -1)){
 __BRYTHON__.path.push(path+'Lib')
+}
 break
 }
 }

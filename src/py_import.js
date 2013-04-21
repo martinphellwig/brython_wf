@@ -7,9 +7,21 @@ function $importer(){
     }else{// code for IE6, IE5
         var $xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
-    // we must add a fake query string to force the browser to execute the
-    // request - some use the cache after the first request
-    var fake_qs = '?foo='+Math.random().toString(36).substr(2,8)
+
+    var fake_qs;
+    // lets use $options to figure out how to make requests
+    if (__BRYTHON__.$options.cache === undefined ||
+        __BRYTHON__.$options.cache == 'none') {
+      //generate random number to pass in request to "bust" browser caching
+      fake_qs="?v="+Math.random().toString(36).substr(2,8)
+    } else if (__BRYTHON__.$options.cache == 'version') {
+      fake_qs="?v="+__BRYTHON__.version_info[2]
+    } else if (__BRYTHON__.$options.cache == 'browser') {
+      fake_qs=""
+    } else {  // default is to send random string to bust cache
+      fake_qs="?v="+Math.random().toString(36).substr(2,8)
+    }
+
     var timer = setTimeout( function() {
         $xmlhttp.abort()
         throw ImportError("No module named '"+module+"'")}, 5000)
@@ -41,9 +53,6 @@ function $download_module(module,url){
             }
         }
     }
-    // lets use brython version for our foo value unless 
-    // debug level is set, then use default fake_qs
-    if (document.$debug === undefined) fake_qs="?foo="+__BRYTHON__.version_info[2]
 
     $xmlhttp.open('GET',url+fake_qs,false)
     if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
