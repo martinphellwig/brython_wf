@@ -9,7 +9,16 @@
 <title>Brython</title>
 <link rel="stylesheet" href="brython.css">
 </head>
-<body onload="brython(2)">
+<!--  
+options:
+  debug: can equal 0,1,2.  more verbose as number increases
+  cache: 'none', 'version', 'browser'.
+         'none' - no caching allowed. a new random number is appended to end of each request
+         'version' - caching allowed for each new brython version
+         'browser' - nothing is appended to request.  A clients browser is responsible for caching actions.
+  pythonpath: a list of additional urls/paths to search for modules
+-->
+<body onload="brython({debug:1, cache:'none'})">
 <center>
 <table id="banner" cellpadding=0 cellspacing=0>
 <tr>
