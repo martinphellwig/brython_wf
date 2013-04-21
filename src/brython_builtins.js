@@ -12,7 +12,21 @@ __BRYTHON__.has_local_storage = typeof(Storage)!=="undefined"
 if(__BRYTHON__.has_local_storage){
     __BRYTHON__.local_storage = function(){return JSObject(localStorage)}
 }
+
+var _indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB;
+__BRYTHON__.has_indexedDB = typeof(_indexedDB) !== "undefined"
+if (__BRYTHON__.has_indexedDB) {
+   __BRYTHON__.indexedDB = function() {return JSObject(_indexedDB)}
+}
+
+// Handle the prefix of Chrome to IDBTransaction/IDBKeyRange.
+// todo: need to look into this further?  do we need these IDB thingees?
+if ('webkitIndexedDB' in window) {
+  window.IDBTransaction = window.webkitIDBTransaction;
+  window.IDBKeyRange = window.webkitIDBKeyRange;
+}
+
 __BRYTHON__.re = function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json = typeof(JSON)!=="undefined"
-__BRYTHON__.version_info = [1,1,"20130420-194405"]
+__BRYTHON__.version_info = [1,1,"20130420-210958"]
 __BRYTHON__.path = [] // path for .py modules
