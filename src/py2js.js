@@ -2749,6 +2749,7 @@ function brython(options){
     __BRYTHON__.modules = {}
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
     document.$debug = 0
+    if(options===undefined){options={'debug':0}}
     if (options.debug == 1 || options.debug == 2) {
        document.$debug = options.debug
     }
