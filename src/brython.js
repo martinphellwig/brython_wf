@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130420-210958
+// version 1.1.20130421-162028
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -25,7 +25,7 @@ window.IDBKeyRange=window.webkitIDBKeyRange
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130420-210958"]
+__BRYTHON__.version_info=[1,1,"20130421-162028"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -2569,10 +2569,10 @@ str.split=function(self){
 var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
 var $ns=$MakeArgs("str.split",args,[],{},'args','kw')
-var sep=null,maxsplit=-1
+var sep=None,maxsplit=-1
 if($ns['args'].length>=1){sep=$ns['args'][0]}
 if($ns['args'].length==2){maxsplit=$ns['args'][1]}
-if(sep===null){var re=/\s/}
+if(sep===None){var re=/\s/}
 else{
 var escaped=list('*.[]()|$^')
 var esc_sep=''
@@ -2582,11 +2582,21 @@ esc_sep +=sep.charAt(i)
 }
 var re=new RegExp(esc_sep)
 }
-if(maxsplit==-1)return self.split(re,maxsplit)
+if(maxsplit==-1){
+var a=self.split(re,maxsplit)
+}else{
 var l=self.split(re,-1)
 var a=l.splice(0, maxsplit)
 var b=l.splice(maxsplit-1, l.length)
 a.push(b.join(sep))
+}
+if(sep===None){
+var b=[]
+for(var i=0;i<a.length;i++){
+if(a[i]!==''){b.push(a[i])}
+}
+return b
+}
 return a
 }
 str.splitlines=function(self){return str.split(self,'\n')}
@@ -4076,8 +4086,7 @@ var has_else=false
 while(true){
 if(pos===node.parent.children.length){break}
 var ctx=node.parent.children[pos].C.tree[0]
-if(ctx.type==='except'||
-(ctx.type==='single_kw' && ctx.token==='finally')){
+if(ctx.type==='except'){
 if(has_else){$_SyntaxError(C,"'except' or 'finally' after 'else'")}
 ctx.error_name='$err'+$loop_num
 if(ctx.tree.length>0 && ctx.tree[0].alias!==null){
@@ -4088,11 +4097,14 @@ node.parent.children[pos].insert(0,new_node)
 }
 catch_node.insert(catch_node.children.length,
 node.parent.children[pos])
-if(ctx.type==='except' && ctx.tree.length===0){
+if(ctx.tree.length===0){
 if(has_default){$_SyntaxError(C,'more than one except: line')}
 has_default=true
 }
 node.parent.children.splice(pos,1)
+}else if(ctx.type==='single_kw' && ctx.token==='finally'){
+if(has_else){$_SyntaxError(C,"'finally' after 'else'")}
+pos++
 }else if(ctx.type==='single_kw' && ctx.token==='else'){
 if(has_else){$_SyntaxError(C,"more than one 'else'")}
 has_else=true
@@ -5228,6 +5240,7 @@ __BRYTHON__.$py_module_alias={}
 __BRYTHON__.modules={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
 document.$debug=0
+if(options===undefined){options={'debug':0}}
 if(options.debug==1 || options.debug==2){
 document.$debug=options.debug
 }
