@@ -506,10 +506,10 @@ str.split = function(self){
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
     var $ns=$MakeArgs("str.split",args,[],{},'args','kw')
-    var sep=null,maxsplit=-1
+    var sep=None,maxsplit=-1
     if($ns['args'].length>=1){sep=$ns['args'][0]}
     if($ns['args'].length==2){maxsplit=$ns['args'][1]}
-    if(sep===null){var re=/\s/}
+    if(sep===None){var re=/\s/}
     else{
         var escaped = list('*.[]()|$^')
         var esc_sep = ''
@@ -519,16 +519,26 @@ str.split = function(self){
         }
         var re = new RegExp(esc_sep)
     }
-    if (maxsplit==-1) return self.split(re,maxsplit)
-
-    // javascript split behavior is different from python when
-    // a maxsplit argument is supplied. (see javascript string split
-    // function docs for details)
-
-    var l=self.split(re,-1)
-    var a=l.splice(0, maxsplit)
-    var b=l.splice(maxsplit-1, l.length)
-    a.push(b.join(sep))
+    if (maxsplit==-1){
+        var a = self.split(re,maxsplit)
+    }else{
+        // javascript split behavior is different from python when
+        // a maxsplit argument is supplied. (see javascript string split
+        // function docs for details)
+    
+        var l=self.split(re,-1)
+        var a=l.splice(0, maxsplit)
+        var b=l.splice(maxsplit-1, l.length)
+        a.push(b.join(sep))
+    }
+    if(sep===None){
+        // remove empty strings
+        var b = []
+        for(var i=0;i<a.length;i++){
+            if(a[i]!==''){b.push(a[i])}
+        }
+        return b
+    }
     return a;
 }
 
