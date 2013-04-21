@@ -509,8 +509,36 @@ str.split = function(self){
     var sep=None,maxsplit=-1
     if($ns['args'].length>=1){sep=$ns['args'][0]}
     if($ns['args'].length==2){maxsplit=$ns['args'][1]}
-    if(sep===None){var re=/\s/}
-    else{
+    maxsplit = $ns['kw'].get('maxsplit',maxsplit)
+    if(sep===None){
+        var res = []
+        var pos = 0
+        while(pos<self.length&&self.charAt(pos).search(/\s/)>-1){pos++}
+        if(pos===self.length-1){return []}
+        var name = ''
+        while(true){
+            if(self.charAt(pos).search(/\s/)===-1){
+                if(name===''){name=self.charAt(pos)}
+                else{name+=self.charAt(pos)}
+            }else{
+                if(name!==''){
+                    res.push(name)
+                    if(maxsplit!==-1&&res.length===maxsplit+1){
+                        res.pop()
+                        res.push(name+self.substr(pos))
+                        return res
+                    }
+                    name=''
+                }
+            }
+            pos++
+            if(pos>self.length-1){
+                if(name){res.push(name)}
+                break
+            }
+        }
+        return res
+    }else{
         var escaped = list('*.[]()|$^')
         var esc_sep = ''
         for(var i=0;i<sep.length;i++){
@@ -518,28 +546,20 @@ str.split = function(self){
             esc_sep += sep.charAt(i)
         }
         var re = new RegExp(esc_sep)
-    }
-    if (maxsplit==-1){
-        var a = self.split(re,maxsplit)
-    }else{
-        // javascript split behavior is different from python when
-        // a maxsplit argument is supplied. (see javascript string split
-        // function docs for details)
-    
-        var l=self.split(re,-1)
-        var a=l.splice(0, maxsplit)
-        var b=l.splice(maxsplit-1, l.length)
-        a.push(b.join(sep))
-    }
-    if(sep===None){
-        // remove empty strings
-        var b = []
-        for(var i=0;i<a.length;i++){
-            if(a[i]!==''){b.push(a[i])}
+        if (maxsplit==-1){
+            var a = self.split(re,maxsplit)
+        }else{
+            // javascript split behavior is different from python when
+            // a maxsplit argument is supplied. (see javascript string split
+            // function docs for details)
+        
+            var l=self.split(re,-1)
+            var a=l.splice(0, maxsplit)
+            var b=l.splice(maxsplit-1, l.length)
+            a.push(b.join(sep))
         }
-        return b
+        return a;
     }
-    return a;
 }
 
 str.splitlines = function(self){return str.split(self,'\n')}
