@@ -49,6 +49,9 @@ assert "azeryty".rstrip('ty')=="azer"
 
 assert "az er ty".split()==["az","er","ty"]
 assert "azferfty".split('f')==["az","er","ty"]
+assert " aBc  dEf ".split(maxsplit=1)==['aBc','dEf ']
+assert " aBc  dEf ".split()==['aBc','dEf']
+
 assert "az\ner\nty".splitlines()==["az","er","ty"]
 
 assert "azerty".startswith('az')
