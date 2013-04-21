@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130420-194405
+// version 1.1.20130420-210958
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -14,9 +14,18 @@ __BRYTHON__.has_local_storage=typeof(Storage)!=="undefined"
 if(__BRYTHON__.has_local_storage){
 __BRYTHON__.local_storage=function(){return JSObject(localStorage)}
 }
+var _indexedDB=window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB
+__BRYTHON__.has_indexedDB=typeof(_indexedDB)!=="undefined"
+if(__BRYTHON__.has_indexedDB){
+__BRYTHON__.indexedDB=function(){return JSObject(_indexedDB)}
+}
+if('webkitIndexedDB' in window){
+window.IDBTransaction=window.webkitIDBTransaction
+window.IDBKeyRange=window.webkitIDBKeyRange
+}
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130420-194405"]
+__BRYTHON__.version_info=[1,1,"20130420-210958"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -5235,7 +5244,7 @@ if(isinstance(options.pythonpath, list)){
 __BRYTHON__.path=options.pythonpath
 }
 if(!(__BRYTHON__.path.indexOf(script_path)> -1)){
-__BRYTHON__.path.append(script_path)
+__BRYTHON__.path.push(script_path)
 }
 for(var $i=0;$i<elts.length;$i++){
 var elt=elts[$i]
