@@ -393,7 +393,9 @@ function $class_constructor(class_name,factory,parents){
         if(f[attr]!==undefined){return f[attr]}
         return factory[attr]
     }
-    f.__setattr__ = function(attr,value){factory[attr]=value;f[attr]=value}
+    f.__setattr__ = function(attr,value){
+        factory[attr]=value;f[attr]=value
+    }
     return f
 }
 
@@ -470,6 +472,8 @@ function $test_expr(){
 
 // define a function __eq__ for functions to allow test on Python classes
 // such as object.__class__ == SomeClass
+Function.prototype.__call__ = function(){return this.apply(null,arguments)}
+
 Function.prototype.__eq__ = function(other){
     if(typeof other !== 'function'){return False}
     return other+''===this+''

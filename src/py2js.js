@@ -381,7 +381,9 @@ function $CallCtx(context){
             arg = this.tree[0].to_js()
             return 'eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
         }
-        return this.func.to_js()+'('+$to_js(this.tree)+')'
+        if(this.tree.length>0){
+            return this.func.to_js()+'.__call__('+$to_js(this.tree)+')'
+        }else{return this.func.to_js()+'.__call__()'}
     }
 }
 
@@ -511,20 +513,26 @@ function $DecoratorCtx(context){
     this.toString = function(){return '(decorator) '+this.tree}
     this.transform = function(node,rank){
         var func_rank=rank+1,children=node.parent.children
+        var decorators = [this.tree]
         while(true){
             if(func_rank>=children.length){$_SyntaxError(context)}
-            var _type = children[func_rank].context.tree[0].type
-            if(_type==='decorator'){func_rank++}
-            else if(_type==='def'){
-                var obj = children[func_rank].context.tree[0]
-                if(obj.decorators === undefined){
-                    obj.decorators = [this.tree]
-                }else{
-                    obj.decorators.push(this.tree)
-                }
-                break
-            }else{$_SyntaxError(context)}
+            else if(children[func_rank].context.tree[0].type==='decorator'){
+                decorators.push(children[func_rank].context.tree[0].tree)
+                children.splice(func_rank,1)
+            }else{break}
         }
+        var obj = children[func_rank].context.tree[0]
+        // add a line after decorated element
+        var callable = children[func_rank].context
+        var res = obj.name+'=',tail=''
+        for(var i=0;i<decorators.length;i++){
+            res += $to_js(decorators[i])+'('
+            tail +=')'
+        }
+        res += obj.name+tail
+        var decor_node = new $Node('expression')
+        new $NodeJSCtx(decor_node,res)
+        node.parent.children.splice(func_rank+1,0,decor_node)
     }
     this.to_js = function(){return ''}
 }
@@ -608,19 +616,7 @@ function $DefCtx(context){
         node.parent.insert(rank+1,ret_node)
         
         var offset = 2
-        // if function has decorators, add a line
-        if(this.decorators!==undefined){
-            var res = this.name+'=',tail=''
-            for(var i=0;i<this.decorators.length;i++){
-                res += $to_js(this.decorators[i])+'('
-                tail +=')'
-            }
-            res += this.name+tail
-            var decor_node = new $Node('expression')
-            new $NodeJSCtx(decor_node,res)
-            node.parent.children.splice(rank+offset,0,decor_node)
-            offset++
-        }
+
         
         // add function name
         js = this.name+'.__name__'
