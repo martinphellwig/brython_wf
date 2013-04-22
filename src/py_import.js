@@ -214,8 +214,19 @@ function $import_from(module,names,parent_module,alias){
        var i=relpath.lastIndexOf('/')
        relpath=relpath.substring(0, i)
     
+       if (module === 'undefined') {
+          // from . import mymodule
+          var res=[]
+          for (var i=0; i < names.length; i++) {
+              console.log(names[i])
+              res.push($import_module_search_path_list(names[i],alias,names[i],[relpath]))
+          }
+          return res
+       }
+
+       // todo: does the next statement make sense? 
        alias=__BRYTHON__.$py_module_alias[parent_module]
-       //console.log(parent_module+','+alias+','+relpath)
+      // console.log(parent_module+','+alias+','+relpath)
        return $import_module_search_path_list(module,alias,names,[relpath])
     } else if (alias !== undefined) {
        return $import_single(modules,alias,names)

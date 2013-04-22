@@ -1375,7 +1375,7 @@ function $TryCtx(context){
             $_SyntaxError(context,"missing clause after 'try' 1")
         }else{
             var next_ctx = node.parent.children[rank+1].context.tree[0]
-            if(['except','finally'].indexOf(next_ctx.type)===-1){
+            if(['except','finally','single_kw'].indexOf(next_ctx.type)===-1){
                 $_SyntaxError(context,"missing clause after 'try' 2")
             }
         }

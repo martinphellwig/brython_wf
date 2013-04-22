@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130421-162028
+// version 1.1.20130421-201038
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -25,7 +25,7 @@ window.IDBKeyRange=window.webkitIDBKeyRange
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130421-162028"]
+__BRYTHON__.version_info=[1,1,"20130421-201038"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -2572,8 +2572,36 @@ var $ns=$MakeArgs("str.split",args,[],{},'args','kw')
 var sep=None,maxsplit=-1
 if($ns['args'].length>=1){sep=$ns['args'][0]}
 if($ns['args'].length==2){maxsplit=$ns['args'][1]}
-if(sep===None){var re=/\s/}
-else{
+maxsplit=$ns['kw'].get('maxsplit',maxsplit)
+if(sep===None){
+var res=[]
+var pos=0
+while(pos<self.length&&self.charAt(pos).search(/\s/)>-1){pos++}
+if(pos===self.length-1){return[]}
+var name=''
+while(true){
+if(self.charAt(pos).search(/\s/)===-1){
+if(name===''){name=self.charAt(pos)}
+else{name+=self.charAt(pos)}
+}else{
+if(name!==''){
+res.push(name)
+if(maxsplit!==-1&&res.length===maxsplit+1){
+res.pop()
+res.push(name+self.substr(pos))
+return res
+}
+name=''
+}
+}
+pos++
+if(pos>self.length-1){
+if(name){res.push(name)}
+break
+}
+}
+return res
+}else{
 var escaped=list('*.[]()|$^')
 var esc_sep=''
 for(var i=0;i<sep.length;i++){
@@ -2581,7 +2609,6 @@ if(escaped.indexOf(sep.charAt(i))>-1){esc_sep +='\\'}
 esc_sep +=sep.charAt(i)
 }
 var re=new RegExp(esc_sep)
-}
 if(maxsplit==-1){
 var a=self.split(re,maxsplit)
 }else{
@@ -2590,14 +2617,8 @@ var a=l.splice(0, maxsplit)
 var b=l.splice(maxsplit-1, l.length)
 a.push(b.join(sep))
 }
-if(sep===None){
-var b=[]
-for(var i=0;i<a.length;i++){
-if(a[i]!==''){b.push(a[i])}
-}
-return b
-}
 return a
+}
 }
 str.splitlines=function(self){return str.split(self,'\n')}
 str.startswith=function(self){
@@ -2817,6 +2838,14 @@ if(parent_module !==undefined){
 var relpath=__BRYTHON__.$py_module_path[parent_module]
 var i=relpath.lastIndexOf('/')
 relpath=relpath.substring(0, i)
+if(module==='undefined'){
+var res=[]
+for(var i=0;i < names.length;i++){
+console.log(names[i])
+res.push($import_module_search_path_list(names[i],alias,names[i],[relpath]))
+}
+return res
+}
 alias=__BRYTHON__.$py_module_alias[parent_module]
 return $import_module_search_path_list(module,alias,names,[relpath])
 }else if(alias !==undefined){
@@ -4069,7 +4098,7 @@ if(node.parent.children.length===rank+1){
 $_SyntaxError(C,"missing clause after 'try' 1")
 }else{
 var next_ctx=node.parent.children[rank+1].C.tree[0]
-if(['except','finally'].indexOf(next_ctx.type)===-1){
+if(['except','finally','single_kw'].indexOf(next_ctx.type)===-1){
 $_SyntaxError(C,"missing clause after 'try' 2")
 }
 }

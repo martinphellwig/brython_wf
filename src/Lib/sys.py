@@ -11,3 +11,5 @@ has_json=__BRYTHON__.has_json
 version_info=__BRYTHON__.version_info
 path=__BRYTHON__.path
 builtin_module_names=['posix']
+
+byteorder='little'
