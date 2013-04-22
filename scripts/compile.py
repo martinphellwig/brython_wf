@@ -51,11 +51,12 @@ def compile_file(root, file):
 #fixme, todo: modify to os.walk once scope issue is fixed..
 #for _root, _dirs, _files in os.walk('./src'):
 print("files")
-_files=['errno.py', 'local_storage.py', 'string.py', 'keyword.py', 'os.py',
+_files=['errno.py', 'local_storage.py', 'keyword.py', 'os.py',
         'sys.py', 'traceback.py']
 
-# issues with the 3 files below
-#'pydom.py', 're.py', 'dis.py'
+
+# Object object has no __repr__ error
+# string.py, re.py, dis.py, pydom.py
 
 for _file in _files:
-    compile_file('src/Lib', _file)
+    compile_file('../src/Lib', _file)
