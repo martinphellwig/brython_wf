@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130421-201038
+// version 1.1.20130422-173807
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -25,7 +25,7 @@ window.IDBKeyRange=window.webkitIDBKeyRange
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130421-201038"]
+__BRYTHON__.version_info=[1,1,"20130422-173807"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -380,7 +380,9 @@ f.__getattr__=function(attr){
 if(f[attr]!==undefined){return f[attr]}
 return factory[attr]
 }
-f.__setattr__=function(attr,value){factory[attr]=value;f[attr]=value}
+f.__setattr__=function(attr,value){
+factory[attr]=value;f[attr]=value
+}
 return f
 }
 var $dq_regexp=new RegExp('"',"g")
@@ -431,6 +433,7 @@ return bool(expr)
 function $test_expr(){
 return document.$test_result
 }
+Function.prototype.__call__=function(){return this.apply(null,arguments)}
 Function.prototype.__eq__=function(other){
 if(typeof other !=='function'){return False}
 return other+''===this+''
@@ -3201,7 +3204,9 @@ var module=ctx_node.node.module
 arg=this.tree[0].to_js()
 return 'eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
 }
-return this.func.to_js()+'('+$to_js(this.tree)+')'
+if(this.tree.length>0){
+return this.func.to_js()+'.__call__('+$to_js(this.tree)+')'
+}else{return this.func.to_js()+'.__call__()'}
 }
 }
 function $ClassCtx(C){
@@ -3316,20 +3321,25 @@ this.tree=[]
 this.toString=function(){return '(decorator) '+this.tree}
 this.transform=function(node,rank){
 var func_rank=rank+1,children=node.parent.children
+var decorators=[this.tree]
 while(true){
 if(func_rank>=children.length){$_SyntaxError(C)}
-var _type=children[func_rank].C.tree[0].type
-if(_type==='decorator'){func_rank++}
-else if(_type==='def'){
+else if(children[func_rank].C.tree[0].type==='decorator'){
+decorators.push(children[func_rank].C.tree[0].tree)
+children.splice(func_rank,1)
+}else{break}
+}
 var obj=children[func_rank].C.tree[0]
-if(obj.decorators===undefined){
-obj.decorators=[this.tree]
-}else{
-obj.decorators.push(this.tree)
+var callable=children[func_rank].C
+var res=obj.name+'=',tail=''
+for(var i=0;i<decorators.length;i++){
+res +=$to_js(decorators[i])+'('
+tail +=')'
 }
-break
-}else{$_SyntaxError(C)}
-}
+res +=obj.name+tail
+var decor_node=new $Node('expression')
+new $NodeJSCtx(decor_node,res)
+node.parent.children.splice(func_rank+1,0,decor_node)
 }
 this.to_js=function(){return ''}
 }
@@ -3402,18 +3412,6 @@ if(i<this.env.length-1){txt +=','}
 new $NodeJSCtx(ret_node,txt+')')
 node.parent.insert(rank+1,ret_node)
 var offset=2
-if(this.decorators!==undefined){
-var res=this.name+'=',tail=''
-for(var i=0;i<this.decorators.length;i++){
-res +=$to_js(this.decorators[i])+'('
-tail +=')'
-}
-res +=this.name+tail
-var decor_node=new $Node('expression')
-new $NodeJSCtx(decor_node,res)
-node.parent.children.splice(rank+offset,0,decor_node)
-offset++
-}
 js=this.name+'.__name__'
 if(scope !==null && scope.ntype==='class'){
 js +='=$class.'+this.name+'.__name__'
@@ -4947,7 +4945,8 @@ root.transform()
 if(document.$debug>0){$add_line_num(root,null,module)}
 return root
 }
-__BRYTHON__.forbidden=['catch','delete','function','new','this','throw','var','super']
+__BRYTHON__.forbidden=['catch','delete','default',
+'function','new','this','throw','var','super']
 function $tokenize(src,module){
 var delimiters=[["#","\n","comment"],['"""','"""',"triple_string"],
 ["'","'","string"],['"','"',"string"],
