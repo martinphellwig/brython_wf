@@ -27,7 +27,7 @@ __BRYTHON__.scope = {}
 __BRYTHON__.modules = {}
 
 function node_import(module,alias,names) {
-  var search_path=['src/libs', 'src/Lib'];
+  var search_path=['../src/libs', '../src/Lib'];
   var ext=['.js', '.py'];
   var mods=[module, module+'/__init__'];
 
@@ -122,10 +122,10 @@ function execute_python_script(filename) {
 }
 
 // Read and eval library
-jscode = fs.readFileSync('src/brython.js','utf8');
+jscode = fs.readFileSync('../src/brython.js','utf8');
 eval(jscode);
 
-console.log("try to execute compile script");
+//console.log("try to execute compile script");
 
 __BRYTHON__.$py_module_path = __BRYTHON__.$py_module_path || {}
 __BRYTHON__.$py_module_alias = __BRYTHON__.$py_module_alias || {}
