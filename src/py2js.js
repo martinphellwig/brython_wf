@@ -2372,7 +2372,8 @@ __BRYTHON__.py2js = function(src,module){
     return root
 }
 
-__BRYTHON__.forbidden = ['catch','delete','function','new','this','throw','var','super']
+__BRYTHON__.forbidden = ['catch','delete','default',
+    'function','new','this','throw','var','super']
     /*
     ['case','debugger','default',
     'do','instanceof','switch',
