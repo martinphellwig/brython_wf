@@ -94,12 +94,13 @@ La traduction et l'exécution d'un script Brython par <b>py2js.js</b> passent par
 <li>deux points (:)
 <li>parenthèse / crochet / accolade ouvrant ou fermant
 <li>affectation (signe =)
+<li>décorateur (signe @)
 <li>fin de ligne
 </ul>
 
 <p>Pour chaque jeton, un appel est réalisé à la fonction <tt>$transition()</tt> qui renvoie un nouvel état en fonction de l'état courant et du jeton
-<p>A chaque ligne de code source correspond un noeud dans l'arbre (instance de la classe <tt>$Node</tt>)
-<p>A chaque élément de syntaxe (identifiant, appel de fonction, expression, opérateur...) correspond une classe décrivant le contexte de cet élément. Les classes sont définies à partir de <code>function $AbstractExprCtx</code> jusqu'à <code>$UnaryCtx</code>
+<p>A chaque instruction du code source correspond un noeud dans l'arbre (instance de la classe <tt>$Node</tt>). Si une ligne comporte plusieurs instructions séparées par ":" (<code>def foo(x):return x</code>) ou par ; (<code>x=1;print(x)</code>), plusieurs noeuds sont créés pour cette ligne
+<p>A chaque élément de syntaxe (identifiant, appel de fonction, expression, opérateur...) correspond une classe décrivant le contexte de cet élément (voir dans le code source de <b>py2js.js</b> entre <code>function $AbstractExprCtx</code> et <code>function $UnaryCtx</code>)
 <p>Dans cette étape, des erreurs peuvent être signalées : 
 <ul>
 <li>erreur de syntaxe
@@ -113,22 +114,25 @@ La traduction et l'exécution d'un script Brython par <b>py2js.js</b> passent par
 <li>Transformation de l'arbre
 <p>Pour certains éléments de la syntaxe Python, il est nécessaire de modifier l'arbre représentant le code source (ajouter des branches) avant de passer à la traduction en Javascript. Ceci est réalisé en appelant récursivement la méthode <code>transform</code> depuis le sommet de l'arbre, et en appliquant la méthode de même nom sur les contextes de chaque noeud
 <p>Par exemple, pour le code Python <code>assert <i>condition</i></code> qui produit une branche de l'arbre, cette étape la transforme en une branche <code>if not <i>condition</i></code> et une branche "fille" de celle-ci correspondant à <code>raise AssertionError</code>
-<p>Les éléments concernés sont : <code>assert</code>, l'assignation en chaine (<code>x=y=0</code>) et multiple (<code>x,y=1,2</code>), <code>class, def, except, for, try</code>. Cette étape sert aussi à mémoriser les variables déclarées par <code>global</code>
+<p>Les éléments concernés sont : <code>assert</code>, l'assignation en chaine (<code>x=y=0</code>) et multiple (<code>x,y=1,2</code>), <code>class, def, except, for, try</code>
+<p>Cette étape sert aussi à mémoriser les variables déclarées par <code>global</code>
 
 <p>
 <li>Exécution du code Javascript généré
 <p>Le script généré peut faire appel en cours d'exécution :
 <ul>
 <li>aux classes intégrées définies dans <tt>py_classes.js, py_string.js, py_list.js, py_dom.js, py_ajax.js, py_local_storage.js, py_svg.js</tt>
-<li>à des fonctions internes, non accessibles en Python (leur nom commence systématiquement par $) qui sont pour la plupart dans <tt>$py_utils.js</tt>. Les plus importantes sont :
+<li>à des fonctions internes, non accessibles en Python (leur nom commence systématiquement par $) qui sont pour la plupart définies dans <tt>$py_utils.js</tt>. Les plus importantes sont :
 <ul>
-<li><tt>$JS2py</tt> : prend un seul argument et renvoie :
+<li><tt>$JS2Py</tt> : prend un seul argument et renvoie :
 <ul>
 <li>l'argument sans changement s'il est d'un type reconnu par Brython (c'est-à-dire s'il possède un attribut <tt>__class__</tt>)
 <li>une instance de DOMObject (respectivement DOMEvent) si l'argument est un objet (resp. un événement) DOM
 <li>une instance de JSObject "enveloppant" l'argument sinon
 </ul>
-<li><tt>$MakeArgs</tt> appelée au début de l'exécution de chaque fonction dont la signature comporte au moins un argument. Elle construit un espace de noms à partir des arguments passés à la fonction, en appelant notamment la fonction $JS2py sur tous les arguments
+<li><tt>$MakeArgs</tt> appelée au début de l'exécution de chaque fonction dont la signature comporte au moins un argument. Elle construit un espace de noms à partir des arguments passés à la fonction, en appelant notamment la fonction $JS2Py sur tous les arguments
+<li><tt>$class_constructor</tt> est appelée pour la définition des classes
+<li><tt>$resolve_attr</tt> est appelée pour la résolution des attributs d'instances de classes, en gérant l'héritage multiple
 <li><tt>$list_comp</tt> est appelée pour chaque liste en extansion
 <li><tt>$lambda</tt> est appelée pour les fonctions anonymes définies par <code>lambda</code>
 <li><tt>$test_expr</tt> et <tt>$test_item</tt> sont utilisés dans l'évaluation de conditions combinées par <code>and</code> ou <code>or</code>

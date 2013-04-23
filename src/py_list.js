@@ -201,7 +201,8 @@ list.__repr__ = function(self){
     if(self.__class__===tuple){res='('}
     for(var i=0;i<self.length;i++){
         var x = self[i]
-        res += x.__repr__()
+        if(x.__repr__!==undefined){res+=x.__repr__()}
+        else{res += x.toString()}
         if(i<self.length-1){res += ','}
     }
     if(self.__class__===tuple){return res+')'}

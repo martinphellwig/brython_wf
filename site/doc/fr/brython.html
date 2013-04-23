@@ -12,10 +12,19 @@ Brython est conforme à la syntaxe de Python 3
 <ul>
 <li>blocs délimités par l'indentation
 <li>définition de listes par <code>[]</code> ou <code>list()</code>, de tuples par <code>()</code> ou <code>tuple()</code>, de dictionnaires par <code>{}</code> ou <code>dict()</code>, d'ensembles par <code>{}</code> ou <code>set()</code> 
-<li>listes en extansion : <code>[ expr for item in iterable if condition ]</code>
+<li>listes, dictionnaires, ensembles en extansion : 
+<ul>
+<li><code>[ expr for item in iterable if condition ]</code>
+<li><code> dict((i,2*i) for i in range(5))</code>
+<li><code>set(x for x in 'abcdcga')</code>
+</ul>
+<li>générateurs (mot-clé <code>yield</code>), expressions de générateur : <code>foo(x for x in bar if x>5)</code>
 <li>opérateur ternaire : <code>x = r1 if condition else r2</code>
 <li>la définition des fonctions peut comporter des valeurs par défaut et des arguments et mot-clés optionnels : <br><code>def foo(x,y=0,*args,**kw):</code>
 <li>décompactage de listes ou de dictionnaires dans l'appel de fonctions : <code>x = foo(*args,**kw)</code>
+<li>classes avec héritage multiple
+<li>décorateurs
+<li>importation : <code>import foo, from foo import X, import foo as bar, from foo import X as Y, from foo import *</code>
 </ul>
 
 </ul>
@@ -24,19 +33,17 @@ Brython est conforme à la syntaxe de Python 3
 
 Brython supporte l'essentiel des mots-clés et des fonctions de Python 3 :
 <ul><li>mots clés : <code>as assert break class continue def del elif else except False finally for from global if import is lambda None pass return True try while yield</code>
-<li>fonctions intégrées : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
+<li>fonctions intégrées : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
 </ul>
 
 Par défaut, <code>print()</code> affiche sur la console du navigateur, et les messages d'erreur sont également affichés sur cette console. <code>sys.stderr</code> et <code>sys.stdout</code> peuvent être affectés à un objet qui implémente une méthode <code>write()</code>, ce qui permet par exemple d'afficher les messages d'erreurs dans une fenêtre
 <p>Pour lancer une impression sur imprimante, utiliser <code>win.print</code>
 
-<p>Ne sont pas pris en charge : 
+<p>Ne sont pas pris en charge dans la version actuelle : 
 <ul>
 <li>les mots-clés <code>nonlocal with</code>
-<li>parmi les fonctions intégrées :
-<ul><li>certaines seront peut-être intégrées dans des versions futures : <code>callable(), classmethod(), compile(), complex(), delattr(), format(), frozenset(), globals(), locals(), staticmethod(), type(), vars()</code>
-<li>d'autres ont peu de chances d'être intégrées : <code>bytearray(), bytes(), help(), memoryview(), property(), super(), __import__() </code>
-<li>le type des nombres complexes n'est pas supporté
+<li>les fonctions intégrées <code>bytearray(), bytes(), callable(), classmethod(), compile(), complex(), delattr(), format(), globals(), help(), locals(), memoryview(), property(), staticmethod(), super(), type(), vars(), __import__</code>
+<li>les nombres complexes
 </ul>
 </ul>
 Contrairement à Python, on peut ajouter des attributs aux objets créés par la fonction intégrée <code>object()</code> :
@@ -111,6 +118,11 @@ doc <= html.P()+'Je répète : le site est '+link.clone()
 <li><pre style="display:inline">doc[obj_id]</pre> renvoie l'objet d'après son identifiant, ou déclenche une exception <code>KeyError</code>
 <li><pre style="display:inline">doc[A]</pre> renvoie une liste de tous les objets de type A (lien hypertexte) dans le document
 </ul>
+<li>la méthode <code>get()</code> permet de rechercher des éléments de plusieurs façons :
+<ul>
+<li><code>elt.get(name=N)</code> retourne une liste avec tous les éléments descendant de <code>elt</code> dont l'attribut <code>name</code> est égal à <code>N</code>
+<li><code>elt.get(selector=S)</code> retourne une liste avec tous les élements descendant de <code>elt</code> dont le sélecteur CSS correspond à <code>S</code>
+</ul>
 <li>le contenu d'un noeud DOM peut être lu ou modifié par les attributs <tt>text</tt> ou <tt>html</tt>, correspondant respectivement aux attributs <i>innerText</i> (ou <i>textContent</i>) et à <i>innerHTML</i> des objets DOM
 <li>la collection <code>options</code> associée à un objet SELECT a l'interface d'une liste Python :
 <ul>
@@ -119,7 +131,7 @@ doc <= html.P()+'Je répète : le site est '+link.clone()
 <li>insertion d'une option en fin de liste : <pre style="display:inline">elt.options.append(option)</pre>
 <li>suppression d'une option : <pre style="display:inline">del elt.options[index]</pre>
 </ul>
-<li>on peut itérer sur les enfants d'un objet par la syntaxe classique Python : <pre style="display:inline">for child in dom_object:</pre>
+<li>on peut itérer sur les enfants d'un élément par la syntaxe classique Python : <pre style="display:inline">for child in dom_object:</pre>
 </ul>
 <h3>Evénements</h3>
 Pour attacher une fonction à un événement, on utilise la syntaxe 
@@ -236,14 +248,14 @@ doc['result'].value = JSObject(circle).surface(10)
 </blockquote>
 <p><hr>
 <a name="ajax"><h3>Ajax</h3>
-La fonction intégrée <code>ajax()</code> renvoie un objet comparable à XMLHTTPRequest en Javascript, mais son interface est légèrement différente. Il possède les méthodes suivantes
+La fonction intégrée <code>ajax()</code> renvoie un objet qui permet d'exécuter des requêtes Ajax. Il possède les méthodes suivantes
 
-<ul><li><code>open(<em>methode,url,async</em>)</code> : <em>methode</em> est la méthode HTTP utilisée pour la requête (habituellement GET ou POST), <em>url</em> est l'url appelée, <em>async</em> est un booléen qui indique si l'appel est asynchrone ou non
+<ul><li><code>open(<em>methode,url,async</em>)</code> : <em>methode</em> est la méthode HTTP utilisée pour la requête (habituellement GET ou POST), <em>url</em> est l'url appelée, <em>async</em> est un booléen qui indique si l'appel est asynchrone (le script qui a effectué la requpete continue de s'exécuter sans attendre la réponse à cette requête) ou non (l'exécution du script s'arrête en attendant la réponse)
 <li><code>set_header(<em>nom,valeur</em>)</code> : affecte la valeur <em>valeur</em> à l'entête <em>nom</em>
 <li><code>set_timeout(<em>duree,fonction</em>)</code> : si la requête n'a pas renvoyé de réponse dans les <em>duree</em> secondes, annule la requête et exécute la <em>fonction</em>. Cette fonction ne prend pas d'argument
 <li><code>send()</code> : lance la requête
 </ul>
-Pour interagir avec le serveur, il faut définir les attributs suivants, correspondant à chaque état de la variable <tt>readyState</tt> en Javascript :
+Pour interagir avec le serveur, il faut définir les attributs suivants, correspondant à chaque état de l'attribut <tt>readyState</tt> de l'objet Ajax :
 <p><table cellspacing=0 cellpadding=0 border=1><tr><th>readyState</th><th>attribut</th></tr>
 <tr><td>0</td><td><code>on_uninitialized</code></td></tr>
 <tr><td>1</td><td><code>on_loading</code></td></tr>
