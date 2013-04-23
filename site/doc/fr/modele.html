@@ -64,6 +64,7 @@
 
 Le fichier <b>brython.js</b> est généré par compilation de plusieurs scripts :
 <ul>
+<li><b>brython_builtins.js.js</b> : définit l'objet __BRYTHON__ qui sert de passerelle entre les objets natifs Javascript (Date, RegExp, Storage...) et Brython
 <li><b>py2js.js</b> : opère la conversion entre le code Python et le code Javascript
 <li><b>py_utils.js</b> : fonctions utilitaires (conversion de types entre Javascript et Python)
 <li><b>py_string.js</b> : implémentation de la classe str de Python à partir de l'objet Javascript String
@@ -72,8 +73,6 @@ Le fichier <b>brython.js</b> est généré par compilation de plusieurs scripts :
 <li><b>py_import.js</b> : implémentation du mot-clé <tt>import</tt>
 <li><b>py_dom.js</b> : interaction avec le document HTML (DOM)
 <li><b>py_ajax.js</b> : implémentation d'Ajax
-<li><b>py_local_storage.js</b> : implémentation du stockage local HTML5
-<li><b>py_svg.py</b> : support de SVG (dessin vectoriel)
 </ul>
 
 
