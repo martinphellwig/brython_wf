@@ -32,3 +32,6 @@ a.glink{
     background-color: #FFF;
     color: #000;
 }
+li {
+    margin-bottom: 5px;
+}

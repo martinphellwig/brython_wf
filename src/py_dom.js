@@ -359,12 +359,12 @@ DOMNode.prototype.__getattr__ = function(attr){
     if(this['get_'+attr]!==undefined){return this['get_'+attr]()}
     if(this.getAttribute!==undefined){
         var res = this.getAttribute(attr)
-        if(res){return res}
+        if(res!==undefined&&res!==null){return res}
     }
     if(this[attr]!==undefined){
         var res = this[attr]
         if(typeof res==="function"){
-            return (function(obj){
+            var func = (function(obj){
                 return function(){
                     var args = []
                     for(var i=0;i<arguments.length;i++){
@@ -377,6 +377,8 @@ DOMNode.prototype.__getattr__ = function(attr){
                     return $JS2Py(res.apply(obj,args))
                 }
             })(this)
+            func.__name__ = attr
+            return func
         }else{
             return $JS2Py(this[attr])
         }
@@ -466,8 +468,8 @@ DOMNode.prototype.__setattr__ = function(attr,value){
         if(this['set_'+attr]!==undefined){return this['set_'+attr](value)}
         if(this[attr]!==undefined){this[attr]=value;return}
         var res = this.getAttribute(attr)
-        if(res!==undefined){this.setAttribute(attr,value)}
-        else{setattr(this,attr,value)}
+        if(res!==undefined&&res!==null){console.log('in dom setAttribute '+res);this.setAttribute(attr,value)}
+        else{this[attr]=value}
     }
 }
     
