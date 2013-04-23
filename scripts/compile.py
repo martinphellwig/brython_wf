@@ -12,8 +12,6 @@ import os
 #import dis
 
 #fixme  os.path.join doesn't work (ie, import posixpath as path, does not work)
-#def os_path_join(*args):
-#    return '/'.join(*args)
 def os_path_join(a,b):
     return "%s/%s" % (a,b)
 
@@ -32,8 +30,6 @@ class FileIO:
   def close(self):
       pass
 
-
-print("done importing")
 def compile_file(root, file):
     print("compiling %s" % os_path_join(root, file))
     _fp=FileIO(os_path_join(root, file), 'r')
@@ -50,13 +46,9 @@ def compile_file(root, file):
 
 #fixme, todo: modify to os.walk once scope issue is fixed..
 #for _root, _dirs, _files in os.walk('./src'):
-print("files")
 _files=['errno.py', 'local_storage.py', 'keyword.py', 'os.py',
-        'sys.py', 'traceback.py']
+        'sys.py', 'traceback.py', 'string.py', 're.py', 'dis.py', 'pydom.py']
 
-
-# Object object has no __repr__ error
-# string.py, re.py, dis.py, pydom.py
-
+_root="../src/Lib"
 for _file in _files:
-    compile_file('../src/Lib', _file)
+    compile_file(_root, _file)
