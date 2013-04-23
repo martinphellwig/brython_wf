@@ -351,12 +351,8 @@ function $class_constructor(class_name,factory,parents){
                 })(attr)
             }else{obj[attr] = factory[attr]}
         }
-        obj.__getattr__ = function(attr){
-            return $resolve_attr(obj,factory,attr)
-        }
-        obj.__setattr__ = function(attr,value){
-            obj[attr]=value
-        }
+        obj.__getattr__ = function(attr){return $resolve_attr(obj,factory,attr)}
+        obj.__setattr__ = function(attr,value){obj[attr]=value}
         try{$resolve_attr(obj,factory,'__str__')}
         catch(err){
             obj.__str__ = function(){return "<"+class_name+" object>"}
