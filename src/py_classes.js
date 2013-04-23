@@ -1040,6 +1040,9 @@ function $prompt(text,fill){return prompt(text,fill || '')}
 
 // property (built in function)
 function property(fget, fset, fdel, doc) {
+   if (fget !== undefined) { return fget()}
+   console.log(fset)
+   console.log(fdel)
    throw NotImplementedError('property not implemented')
 }
 
