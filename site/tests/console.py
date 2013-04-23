@@ -5,9 +5,19 @@ import dis
 import traceback
 
 _rand=random.random()
-
-editor=JSObject(ace).edit("editor")
-editor.getSession().setMode("ace/mode/python")
+has_ace = True
+try:
+    editor=JSObject(ace).edit("editor")
+    editor.getSession().setMode("ace/mode/python")
+except:
+    import html
+    editor = html.TEXTAREA(rows=20,cols=70)
+    doc["editor"] <= editor
+    def get_value(): return editor.value
+    def set_value(x):editor.value=x
+    editor.getValue = get_value
+    editor.setValue = set_value
+    has_ace = False
 
 if sys.has_local_storage:
     from local_storage import storage
@@ -23,6 +33,11 @@ def reset_src():
     editor.scrollToRow(0)
     editor.gotoLine(0)
 
+def reset_src_area():
+    if storage and "py_src" in storage:
+       editor.value = storage["py_src"]
+    else:
+       editor.value = 'for i in range(10):\n\tprint(i)'
 
 def write(data):
     doc["console"].value += str(data)
@@ -70,8 +85,9 @@ def run():
 # load a Python script
 def on_complete(req):
     editor.setValue(req.text)
-    editor.scrollToRow(0)
-    editor.gotoLine(0)
+    if has_ace:
+        editor.scrollToRow(0)
+        editor.gotoLine(0)
 
 def load(evt):
     _name=evt.target.value
@@ -97,5 +113,8 @@ def reset_theme():
           editor.setTheme(storage["ace_theme"])
           doc["ace_theme"].value=storage["ace_theme"]
 
-reset_src()
-reset_theme()
+if has_ace:
+    reset_src()
+    reset_theme()
+else:
+    reset_src_area()

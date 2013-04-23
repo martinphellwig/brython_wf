@@ -1073,6 +1073,8 @@ function $LambdaCtx(context){
     context.tree.push(this)
     this.tree = []
     this.args_start = $pos+6
+    this.vars = []
+    this.locals = []
     this.to_js = function(){
         var env = []
         for(var i=0;i<this.vars.length;i++){
@@ -1777,8 +1779,8 @@ function $transition(context,token){
                 context.name = arguments[2]
                 return context
             }
-        }else if(token==='('){return new $FuncArgs(context)}
-        else if(token===':'){return $BodyCtx(context)}
+        }else if(token==='('){context.has_args=true;return new $FuncArgs(context)}
+        else if(token===':' && context.has_args){return $BodyCtx(context)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='del'){
@@ -1903,8 +1905,11 @@ function $transition(context,token){
             return $transition(context,'op','in')
         }else if(token===',' && context.expect===','){
             if(context.with_commas){
-                context.expect = 'expr'
-                return context
+                // implicit tuple
+                context.parent.tree.pop()
+                var tuple = new $ListOrTupleCtx(context.parent,'tuple')
+                tuple.tree = [context]
+                return tuple
             }else{return $transition(context.parent,token)}
         }else if(token==='.'){return new $AttrCtx(context)}
         else if(token==='['){return new $AbstractExprCtx(new $SubCtx(context),false)}
@@ -2368,8 +2373,8 @@ __BRYTHON__.py2js = function(src,module){
     return root
 }
 
-__BRYTHON__.forbidden = ['catch','delete','default',
-    'function','new','this','throw','var','super']
+__BRYTHON__.forbidden = ['catch','Date','delete','default','document',
+    'function','location','Math','new','RegExp','this','throw','var','super','window']
     /*
     ['case','debugger','default',
     'do','instanceof','switch',

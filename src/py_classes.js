@@ -1103,7 +1103,6 @@ function round(arg,n){
 
 // set
 function set(){
-    var i=0
     if(arguments.length==0){return new $SetClass()}
     else if(arguments.length==1){    // must be an iterable
         var arg=arguments[0]
@@ -1111,10 +1110,11 @@ function set(){
         var obj = new $SetClass()
         try{
             for(var i=0;i<arg.__len__();i++){
-                obj.items.push(arg.__getitem__(i))
+                set.add(obj,arg.__getitem__(i))
             }
             return obj
         }catch(err){
+            console.log(err)
             throw TypeError("'"+arg.__class__.__name__+"' object is not iterable")
         }
     } else {
@@ -1252,7 +1252,7 @@ set.__repr__ = function(self){
     if(self===undefined){return "<class 'set'>"}
     var res = "{"
     for(var i=0;i<self.items.length;i++){
-        res += repr(x)
+        res += repr(self.items[i])
         if(i<self.items.length-1){res += ','}
     }
     return res+'}'

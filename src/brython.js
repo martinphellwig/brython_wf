@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130422-173807
+// version 1.1.20130423-092651
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -25,7 +25,7 @@ window.IDBKeyRange=window.webkitIDBKeyRange
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130422-173807"]
+__BRYTHON__.version_info=[1,1,"20130423-092651"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -341,12 +341,8 @@ return res
 })(attr)
 }else{obj[attr]=factory[attr]}
 }
-obj.__getattr__=function(attr){
-return $resolve_attr(obj,factory,attr)
-}
-obj.__setattr__=function(attr,value){
-obj[attr]=value
-}
+obj.__getattr__=function(attr){return $resolve_attr(obj,factory,attr)}
+obj.__setattr__=function(attr,value){obj[attr]=value}
 try{$resolve_attr(obj,factory,'__str__')}
 catch(err){
 obj.__str__=function(){return "<"+class_name+" object>"}
@@ -1954,7 +1950,8 @@ var res='['
 if(self.__class__===tuple){res='('}
 for(var i=0;i<self.length;i++){
 var x=self[i]
-res +=x.__repr__()
+if(x.__repr__!==undefined){res+=x.__repr__()}
+else{res +=x.toString()}
 if(i<self.length-1){res +=','}
 }
 if(self.__class__===tuple){return res+')'}
@@ -4552,8 +4549,11 @@ return new $ExprNot(C)
 return $transition(C,'op','in')
 }else if(token===',' && C.expect===','){
 if(C.with_commas){
-C.expect='expr'
-return C
+console.log('virgule, parent '+C.parent.type)
+C.parent.tree.pop()
+var tuple=new $ListOrTupleCtx(C.parent,'tuple')
+tuple.tree=[C]
+return tuple
 }else{return $transition(C.parent,token)}
 }else if(token==='.'){return new $AttrCtx(C)}
 else if(token==='['){return new $AbstractExprCtx(new $SubCtx(C),false)}
@@ -5712,12 +5712,12 @@ if(attr==='__class__'){return DOMObject}
 if(this['get_'+attr]!==undefined){return this['get_'+attr]()}
 if(this.getAttribute!==undefined){
 var res=this.getAttribute(attr)
-if(res){return res}
+if(res!==undefined&&res!==null){return res}
 }
 if(this[attr]!==undefined){
 var res=this[attr]
 if(typeof res==="function"){
-return(function(obj){
+var func=(function(obj){
 return function(){
 var args=[]
 for(var i=0;i<arguments.length;i++){
@@ -5730,6 +5730,8 @@ args.push(arguments[i])
 return $JS2Py(res.apply(obj,args))
 }
 })(this)
+func.__name__=attr
+return func
 }else{
 return $JS2Py(this[attr])
 }
@@ -5808,8 +5810,8 @@ attr=attr.replace('_','-')
 if(this['set_'+attr]!==undefined){return this['set_'+attr](value)}
 if(this[attr]!==undefined){this[attr]=value;return}
 var res=this.getAttribute(attr)
-if(res!==undefined){this.setAttribute(attr,value)}
-else{setattr(this,attr,value)}
+if(res!==undefined&&res!==null){console.log('in dom setAttribute '+res);this.setAttribute(attr,value)}
+else{this[attr]=value}
 }
 }
 DOMNode.prototype.__setitem__=function(key,value){
