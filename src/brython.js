@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130423-092651
+// version 1.1.20130423-133840
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
@@ -25,7 +25,7 @@ window.IDBKeyRange=window.webkitIDBKeyRange
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130423-092651"]
+__BRYTHON__.version_info=[1,1,"20130423-133840"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -1320,6 +1320,9 @@ document.$stdout.__getattr__('write')(res)
 log=function(arg){console.log(arg)}
 function $prompt(text,fill){return prompt(text,fill || '')}
 function property(fget, fset, fdel, doc){
+if(fget !==undefined){return fget()}
+console.log(fset)
+console.log(fdel)
 throw NotImplementedError('property not implemented')
 }
 function range(){
@@ -1371,7 +1374,6 @@ var res=Number(Math.round(arg*mult)).__truediv__(mult)
 if(n==0){return int(res)}else{return float(res)}
 }
 function set(){
-var i=0
 if(arguments.length==0){return new $SetClass()}
 else if(arguments.length==1){
 var arg=arguments[0]
@@ -1379,10 +1381,11 @@ if(isinstance(arg,set)){return arg}
 var obj=new $SetClass()
 try{
 for(var i=0;i<arg.__len__();i++){
-obj.items.push(arg.__getitem__(i))
+set.add(obj,arg.__getitem__(i))
 }
 return obj
 }catch(err){
+console.log(err)
 throw TypeError("'"+arg.__class__.__name__+"' object is not iterable")
 }
 }else{
@@ -1500,7 +1503,7 @@ set.__repr__=function(self){
 if(self===undefined){return "<class 'set'>"}
 var res="{"
 for(var i=0;i<self.items.length;i++){
-res +=repr(x)
+res +=repr(self.items[i])
 if(i<self.items.length-1){res +=','}
 }
 return res+'}'
@@ -3817,6 +3820,8 @@ this.parent=C
 C.tree.push(this)
 this.tree=[]
 this.args_start=$pos+6
+this.vars=[]
+this.locals=[]
 this.to_js=function(){
 var env=[]
 for(var i=0;i<this.vars.length;i++){
@@ -4437,8 +4442,8 @@ $_SyntaxError(C,'token '+token+' after '+C)
 C.name=arguments[2]
 return C
 }
-}else if(token==='('){return new $FuncArgs(C)}
-else if(token===':'){return $BodyCtx(C)}
+}else if(token==='('){C.has_args=true;return new $FuncArgs(C)}
+else if(token===':' && C.has_args){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='del'){
 if(token==='eol'){return $transition(C.parent,token)}
@@ -4549,7 +4554,6 @@ return new $ExprNot(C)
 return $transition(C,'op','in')
 }else if(token===',' && C.expect===','){
 if(C.with_commas){
-console.log('virgule, parent '+C.parent.type)
 C.parent.tree.pop()
 var tuple=new $ListOrTupleCtx(C.parent,'tuple')
 tuple.tree=[C]
@@ -4945,8 +4949,8 @@ root.transform()
 if(document.$debug>0){$add_line_num(root,null,module)}
 return root
 }
-__BRYTHON__.forbidden=['catch','delete','default',
-'function','new','this','throw','var','super']
+__BRYTHON__.forbidden=['catch','Date','delete','default','document',
+'function','location','Math','new','RegExp','this','throw','var','super','window']
 function $tokenize(src,module){
 var delimiters=[["#","\n","comment"],['"""','"""',"triple_string"],
 ["'","'","string"],['"','"',"string"],
