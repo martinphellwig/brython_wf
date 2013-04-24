@@ -32,7 +32,7 @@ Brython follows the Python syntax:
 
 Brython supports most keywords and functions of Python 3 :
 <ul><li>keywords : <code>as assert break class continue def del elif else except False finally for from global if import is lambda None pass return True try while yield</code>
-<li>built-in functions : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
+<li>built-in functions : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), property(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
 </ul>
 
 By default, <code>print()</code> will output to the web browser console and so are the error messages. <code>sys.stderr</code> and <code>sys.stdout</code> can be assigned to an object with a <code>write()</code> method, and this allows for the redirection of output to go to a window or text area, for example
@@ -43,7 +43,7 @@ By default, <code>print()</code> will output to the web browser console and so a
 <p>The following are not implemented in the current version : 
 <ul>
 <li>keywords <code>nonlocal with</code>
-<li>built-in functions <code>bytearray(), bytes(), callable(), classmethod(), compile(), complex(), delattr(), format(), globals(), help(), locals(), memoryview(), property(), staticmethod(), super(), type(), vars(), __import__</code>
+<li>built-in functions <code>bytearray(), bytes(), callable(), classmethod(), compile(), complex(), delattr(), format(), globals(), help(), locals(), memoryview(), staticmethod(), super(), type(), vars(), __import__</code>
 <li>the complex number type (<code>j</code>) is not supported</li>
 </ul>
 </ul>

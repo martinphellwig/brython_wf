@@ -33,7 +33,7 @@ Brython est conforme à la syntaxe de Python 3
 
 Brython supporte l'essentiel des mots-clés et des fonctions de Python 3 :
 <ul><li>mots clés : <code>as assert break class continue def del elif else except False finally for from global if import is lambda None pass return True try while yield</code>
-<li>fonctions intégrées : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
+<li>fonctions intégrées : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), property(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
 </ul>
 
 Par défaut, <code>print()</code> affiche sur la console du navigateur, et les messages d'erreur sont également affichés sur cette console. <code>sys.stderr</code> et <code>sys.stdout</code> peuvent être affectés à un objet qui implémente une méthode <code>write()</code>, ce qui permet par exemple d'afficher les messages d'erreurs dans une fenêtre ou un textarea par exemple
@@ -43,7 +43,7 @@ Par défaut, <code>print()</code> affiche sur la console du navigateur, et les me
 <p>Ne sont pas pris en charge dans la version actuelle : 
 <ul>
 <li>les mots-clés <code>nonlocal with</code>
-<li>les fonctions intégrées <code>bytearray(), bytes(), callable(), classmethod(), compile(), complex(), delattr(), format(), globals(), help(), locals(), memoryview(), property(), staticmethod(), super(), type(), vars(), __import__</code>
+<li>les fonctions intégrées <code>bytearray(), bytes(), callable(), classmethod(), compile(), complex(), delattr(), format(), globals(), help(), locals(), memoryview(), staticmethod(), super(), type(), vars(), __import__</code>
 <li>les nombres complexes
 </ul>
 </ul>
