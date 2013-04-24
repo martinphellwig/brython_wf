@@ -1395,6 +1395,9 @@ function sorted (iterable, key, reverse) {
 }
 
 // staticmethod() built in function
+function staticmethod(func) {
+   return func
+}
 
 // str() defined somewhere else
 
