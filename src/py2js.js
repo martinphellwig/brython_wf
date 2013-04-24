@@ -525,6 +525,10 @@ function $DecoratorCtx(context){
         // add a line after decorated element
         var callable = children[func_rank].context
         var res = obj.name+'=',tail=''
+        var scope = $get_scope(this)
+        if(scope !==null && scope.ntype==='class'){
+            res += '$class.'+obj.name+'='
+        }
         for(var i=0;i<decorators.length;i++){
             res += $to_js(decorators[i])+'('
             tail +=')'
