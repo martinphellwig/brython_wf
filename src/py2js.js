@@ -650,7 +650,7 @@ function $DefCtx(context){
             var offset = 2
             if(this.decorators !== undefined){offset++}
             js = this.name
-            if(scope.ntype==='class'){js += "=$class."+this.name}
+            if(scope !== null && scope.ntype==='class'){js += "=$class."+this.name}
             js += '=$generator($'+this.name+')'
             var gen_node = new $Node('expression')
             new $NodeJSCtx(gen_node,js)
