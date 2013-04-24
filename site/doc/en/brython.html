@@ -12,10 +12,18 @@ Brython follows the Python syntax:
 <ul>
 <li>whitespaces are significant and define blocks
 <li>lists are created with <code>[]</code> or <code>list()</code>, tuples with <code>()</code> or <code>tuple()</code>, dictionnaries with <code>{}</code> or <code>dict()</code> and sets with <code>set()</code>
-<li>list comprehensions: <code>[ expr for item in iterable if condition ]</code>
+<li>list, dict and set comprehensions: <ul>
+<li><code>[ expr for item in iterable if condition ]</code>
+<li><code> dict((i,2*i) for i in range(5))</code>
+<li><code>set(x for x in 'abcdcga')</code>
+</ul>
+<li>generators (keyword <code>yield</code>), generator expressions : <code>foo(x for x in bar if x>5)</code>
 <li>ternary operator: x = r1 if condition else r2
 <li>functions can be defined with any combination of fixed arguments, default values, variable positional arguments and variable keyword arguments : <br><code>def foo(x, y=0, *args, **kw):</code>
 <li>unpacking of argument lists or dictionaries in function calls: x = foor(*args, **kw)
+<li>classes with multiple inheritance
+<li>decorators
+<li>imports : <code>import foo, from foo import X, import foo as bar, from foo import X as Y, from foo import *</code>
 </ul>
 
 </ul>
@@ -24,19 +32,18 @@ Brython follows the Python syntax:
 
 Brython supports most keywords and functions of Python 3 :
 <ul><li>keywords : <code>as assert break class continue def del elif else except False finally for from global if import is lambda None pass return True try while yield</code>
-<li>built-in functions : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
+<li>built-in functions : <code>abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()</code>
 </ul>
 
-By default, <code>print()</code> will output to the web browser console and so are the error messages. <code>sys.stderr</code> and <code>sys.stdout</code> can be assigned to an object with a <code>write()</code> method, and this allows for the redirection of output to go to a window or text area, for example. sys.stdin is not implemented at this time, however there is an input() built-in function that will open a blocking input dialog (a prompt).
+By default, <code>print()</code> will output to the web browser console and so are the error messages. <code>sys.stderr</code> and <code>sys.stdout</code> can be assigned to an object with a <code>write()</code> method, and this allows for the redirection of output to go to a window or text area, for example
+<p><code>sys.stdin</code> is not implemented at this time, however there is an <code>input()</code> built-in function that will open a blocking input dialog (a prompt).
 <p>To open a print dialog (to a printer), call <code>win.print</code>
 
 
-<p>The following are not implemented : 
+<p>The following are not implemented in the current version : 
 <ul>
 <li>keywords <code>nonlocal with</code>
-<li>amongst the built-in functions :
-<ul><li>some might be implemented in the future : <code>callable(), classmethod(), compile(), complex(), delattr(), format(), frozenset(), globals(), locals(), staticmethod(), type(), vars()</code></li>
-<li>while others are unlikely : <code>bytearray(), bytes(), help(), memoryview(), property(), super(), __import__() </code></li>
+<li>built-in functions <code>bytearray(), bytes(), callable(), classmethod(), compile(), complex(), delattr(), format(), globals(), help(), locals(), memoryview(), property(), staticmethod(), super(), type(), vars(), __import__</code>
 <li>the complex number type (<code>j</code>) is not supported</li>
 </ul>
 </ul>
@@ -56,17 +63,24 @@ Finally, some keywords and built-in functions designed for operation in a browse
 <a name="htmldocs"><h3>Handling of HTML documents</h3>
 
 An HTML page is seen as a tree whose root node is represented by the tag <code>doc</code>. Subsequent nodes are either built-in Python objects (strings, integers ...) or objects created by the functions corresponding to their HTML tags
-<p>The syntax to create an object (eg a hyperlink) is :
+<p>These functions stand in the built-in module <code>html</code> that must be imported. The tag name is in uppercase letters. As for all Python modules, you can 
+<ul>
+<li>either only import the module name : <code>import html</code>, then reference the tags by <code>html.DIV</code>
+<li>or import the names required in the programe : <code>from html import A,B,DIV</code>, or if there is no risk of naming conflicts : <code>from html import *</code>
+</ul><p>The syntax to create an object (eg a hyperlink) is :
 <dl><dt><code>A(<i>[content,[attributes]]</i>)</code>
 <dd><em>content</em> is the child node of the the object ; <em>attributes</em> is a sequence of keywords corresponding to the attributes of the HTML tag. These attributes must be provided as Javascript syntax, not CSS: <em>backgroundColor</em> instead of <em>background-color</em>
 </dl>
 Example :
-<p><pre>link1 = A('Brython', href='http://www.brython.info')
-link2 = A(B('Python'), href='http://www.python.org')
+<p><pre>import html
+link1 = html.A('Brython', href='http://www.brython.info')
+link2 = html.A(html.B('Python'), href='http://www.python.org')
 </pre>
 <p>For the <em>style</em> attribute, the value must be a dictionary :
-<p><pre>d = DIV('Brython', style={'height':100, 'width':200})
+<p><pre>d = html.DIV('Brython', style={'height':100, 'width':200})
 </pre>
+<p>To avoid conflicts with Python keywords, attributes such as <em>class</em> or <em>id</em> must be capitalized :
+<blockquote><pre>d = html.DIV('Brython',Id="zone",Class="container")</pre></blockquote>
 
 <p>You can also create an object without argument, then build it up:
 <ul>
@@ -99,7 +113,7 @@ doc <= P() + 'I repeat: the site is ' + link.clone()
 </pre>
 
 
-<p>As a rule of thumb, instances of classes HTML attributes have the same name as the corresponding JavaScript objects. It can for example retrieve the option selected by the<tt>selectedIndex</tt> attribute of the SELECT object. Brython adds a few things to make the manipulation a bit more Pythonic
+<p>As a rule of thumb, instances of classes HTML attributes have the same name as the corresponding DOM objects. It can for example retrieve the option selected by the<tt>selectedIndex</tt> attribute of the SELECT object. Brython adds a few things to make the manipulation a bit more Pythonic
 
 <p>
 <ul>
@@ -108,7 +122,14 @@ doc <= P() + 'I repeat: the site is ' + link.clone()
 <li><pre style="display:inline">doc[obj_id]</pre>  returns the object from its identifier, or throws a <code>KeyError</code>
 <li><pre style="display:inline">doc[A]</pre>  returns a list of all objects of type A (hyperlink) in the document
 </ul>
-<li>the content of a DOM node can be read or modified by the <tt>text</tt> or <tt>html</tt> attributes, corresponding to <i>innerText</i> (or <i>textContent</i>) and <i>innerHTML</i> respectively, in Javascript
+
+<li>the <code>get()</code> method can be used to search for elements :
+<ul>
+<li><code>elt.get(name=N)</code> returns a list of all the elements within <em>elt</em> whose attribute <code>name</code> is equal to <code>N</code>
+<li><code>elt.get(selector=S)</code> returns a list of all the elements within <em>elt</em> that match the specified selector
+</ul>
+
+<li>the content of a DOM node can be read or modified by the <tt>text</tt> or <tt>html</tt> attributes, corresponding to <i>innerText</i> (or <i>textContent</i>) and <i>innerHTML</i> respectively for DOM objects
 <li>The <code>options</code> collection associated with a SELECT object has an interface of a Python list :
 <ul>
 <li>access to an option by its index : <pre style="display:inline">option = elt.options[index]</pre>
@@ -160,6 +181,78 @@ move the mouse over here</textarea>
 </table>
 
 <p><hr>
+<a name="svg"><h3>SVG graphics</h3>
+
+To create graphics in the SVG format, supported by most browsers, use the built-in module <code>svg</code>. It holds the name of the components available to draw forms or write text
+
+<p>For instance, if the HTML document has an SVG graphics zone defined by
+
+<pre>
+&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+    width="140" height="200" style="border-style:solid;border-width:1;border-color:#000;"&gt;
+  &lt;g id="panel"&gt;
+  &lt;/g&gt;
+&lt;/svg&gt;
+</pre>
+
+you can insert forms and text by :
+<table>
+<tr>
+<td>
+<pre>import svg
+title = svg.text('Title',x=70,y=25,font_size=22,text_anchor="middle")
+circle = svg.circle(cx="70",cy="120",r="40",stroke="black",stroke_width="2",fill="red")
+
+panel = doc['panel']
+panel <= title
+panel <= circle
+</pre>
+<button onclick="run_svg()">clic !</button>
+</td>
+
+<td>
+<script type="text/python">
+def run_svg():
+    import svg
+    title = svg.text('Title',x=70,y=25,font_size=22,text_anchor="middle")
+    circle = svg.circle(cx=70,cy=120,r=40,stroke="black",stroke_width=2,fill="red")
+    
+    panel = doc['panel']
+    panel <= title
+    panel <= circle
+
+</script>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+    width="140" height="200" style="border-style:solid;border-width:1;border-color:#000;">
+  <g id="panel">
+  </g>
+</svg>
+</td>
+
+</tr>
+
+</table>
+
+<p><hr>
+<a name="jsobjects"><h3>Using Javascript objects</h3>
+
+We have to handle the transition period when Brython is going to coexist with Javascript ;-)
+
+<p>An HTML document can use Javscript scripts or libraries, and Python scripts or libraries Python. Brython can't use Javascript objects directly : for instance attribute lookup is done by the method <tt>__getattr__</tt>, which doesn't exist for Javascript objects
+<p>To be able to use them in a Python script, they must be explicitely transformed by the built-in function <tt>JSObject</tt>
+<p>For instance :
+
+<blockquote>
+<pre>
+&lt;script type="text/javascript"&gt;
+circle = {surface:function(r){return 3.14*r*r}}
+&lt;/script&gt;
+&lt;script type="text/python"&gt;
+doc['result'].value = JSObject(circle).surface(10)
+&lt;/script&gt;
+</pre>
+</blockquote>
+<p><hr>
 <a name="ajax"><h3>Ajax</h3>
 The <code>ajax()</code> built-in function returns an object similar to XMLHttpRequest in Javascript, but its interface is slightly different. It has the following methods
 
@@ -168,7 +261,7 @@ The <code>ajax()</code> built-in function returns an object similar to XMLHttpRe
 <li><code>set_timeout(<em>duration, function</em>)</code> : if the query did not return response within <em>duration</em> in seconds, it will cancel the query and execute the <em>function</em>. This function cannot have arguments
 <li><code>send()</code> : send (starts) the request
 </ul>
-To interact with the server, you must set the following attributes corresponding to each state of the <tt>readyState</tt> variable in Javascript :
+To interact with the server, you must set the following attributes corresponding to each state of the <tt>readyState</tt> attribute of the Ajax objects :
 <p><table><tr><th>readyState</th><th>attribute</th></tr>
 <tr><td>0</td><td><code>on_uninitialized</code></td></tr>
 <tr><td>1</td><td><code>on_loading</code></td></tr>
@@ -184,11 +277,20 @@ To interact with the server, you must set the following attributes corresponding
 </ul>
 
 <h4>Example</h4>
-<pre>req = ajax()
+We suppose there is a DIV with id <em>result</em> in the HTML page
+<p>
+<pre>
+def on_complete(req):
+    if req.status==200 or req.status==0:
+        doc["result"].html = req.text
+    else:
+        doc["result"].html = "error "+req.text
+
+req = ajax()
 req.on_complete = on_complete
-req.set_timeout(timeout, err_msg)
-req.open('POST', url, True)
-req.set_header('content-type', 'application/x-www-form-urlencoded')
+req.set_timeout(timeout,err_msg)
+req.open('POST',url,True)
+req.set_header('content-type','application/x-www-form-urlencoded')
 req.send(data)
 </pre>
 <hr>

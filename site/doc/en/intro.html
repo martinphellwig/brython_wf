@@ -58,9 +58,8 @@ def echo():
 
 <p>Please note that in this case the Python script will be loaded through an Ajax call : it must be in the same domain as the HTML page
 
-<p>In the above two examples of code, when we click on the button, the onclick event calls and run the <code>echo()</code> function, which was defined in the Python script. This function gets the value of the INPUT element, through its id (<tt>zone</tt>). This is accomplished by the syntax <code>doc["zone"]</code> instead of the Javascript equivalent of <code>document.getElementById("zone")</code>  : <code>doc</code> is a keyword in Brython, which behaves just like a dictionary whose keys are the ids of the elements of the DOM. Hence, in our example, <code>doc["zone"]</code> is an object that maps to the INPUT element ; the <tt>value</tt> property holds, interestingly enough, the value of the object
-<p>In Brython, the output can be accomplished in various ways, including with the <code>alert()</code> built-in function. It works in the exact same way as the function of the same name in Javascript.
-
+<p>In the above two examples of code, when we click on the button, the onclick event calls and run the <code>echo()</code> function, which was defined in the Python script. This function gets the value of the INPUT element, through its id (<tt>zone</tt>). This is accomplished by the syntax <code>doc["zone"]</code> : <code>doc</code> is a keyword in Brython, which behaves just like a dictionary whose keys are the ids of the elements of the DOM. Hence, in our example, <code>doc["zone"]</code> is an object that maps to the INPUT element ; the <tt>value</tt> property holds, interestingly enough, the value of the object
+<p>In Brython, the output can be accomplished in various ways, including with the <code>alert()</code> built-in function which shows a popup window with the text passed as an argument
 
 </body>
 </html>
