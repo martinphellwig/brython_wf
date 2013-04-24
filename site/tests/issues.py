@@ -126,4 +126,13 @@ class Inherit(Base):
 one = (Inherit().value)
 assert one == 1, 'Init recursed: %d'%one
 
+#issue 43
+class myclass:
+  @property
+  def getx(self):
+      return 5
+
+c=myclass()
+assert c.getx == 5
+
 print('passed all tests')
