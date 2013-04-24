@@ -1041,8 +1041,6 @@ function $prompt(text,fill){return prompt(text,fill || '')}
 // property (built in function)
 function property(fget, fset, fdel, doc) {
    if (fget !== undefined) { return fget()}
-   console.log(fset)
-   console.log(fdel)
    throw NotImplementedError('property not implemented')
 }
 
@@ -1074,7 +1072,7 @@ function range(){
 
 function repr(obj){
     if(obj.__repr__!==undefined){return obj.__repr__()}
-    else{throw AttributeError("object  has no attribute __repr__")}
+    else{throw AttributeError("object has no attribute __repr__")}
 }
 
 function reversed(seq){
