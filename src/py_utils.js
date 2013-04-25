@@ -267,7 +267,14 @@ function $resolve_attr(obj,factory,attr){
                 return "<bound method '"+attr+"' of "+obj.__class__.__name__+" object>"
             }
             return res
-        }else{return obj[attr]}
+        }
+        else {
+            // FIXME: Improve descriptor access
+            res = obj[attr];
+            if (res.__get__ != undefined && typeof res.__get__==='function' && res === factory[attr])
+                res = res.__get__.apply(res, [obj, factory])
+            return res
+        }
     }
     if(factory[attr]!==undefined){
         var res = factory[attr]
@@ -287,6 +294,9 @@ function $resolve_attr(obj,factory,attr){
                 }
             })(attr)
         }
+        // FIXME: Improve descriptor access
+        if (res.__get__ !== undefined && typeof res.__get__==='function')
+            res = res.__get__.apply(res, [obj, factory])
         return res
     }else{ // inheritance
         for(var i=0;i<factory.parents.length;i++){
@@ -381,9 +391,12 @@ function $class_constructor(class_name,factory,parents){
     f.__str__ = function(){return "<class '"+class_name+"'>"}
     for(var attr in factory){
         f[attr]=factory[attr]
-        f[attr].__str__ = (function(x){
-            return function(){return "<function "+class_name+'.'+x+'>'}
-            })(attr)
+        // FIXME: Improve
+        if (typeof f[attr] === 'function') {
+            f[attr].__str__ = (function(x){
+                return function(){return "<function "+class_name+'.'+x+'>'}
+                })(attr)
+        }
     }
     f.__getattr__ = function(attr){
         if(f[attr]!==undefined){return f[attr]}
