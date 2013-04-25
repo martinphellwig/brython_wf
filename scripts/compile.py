@@ -49,6 +49,7 @@ def compile_file(root, file):
 _files=['errno.py', 'local_storage.py', 'keyword.py', 'os.py',
         'sys.py', 'traceback.py', 'string.py', 're.py', 'dis.py', 'pydom.py']
 
+
 _root="../src/Lib"
 for _file in _files:
     compile_file(_root, _file)
