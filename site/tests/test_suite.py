@@ -159,4 +159,11 @@ while i>0:i-=1
 if not True:print('true!')
 else:pass
 
+assert bin(12) == '0b1100'
+assert oct(12) == '0o14'
+assert hex(12) == '0xc'
+assert bin(-12) == '-0b1100'
+assert oct(-12) == '-0o14'
+assert hex(-12) == '-0xc'
+
 print("passed all tests..")

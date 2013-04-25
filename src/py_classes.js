@@ -77,11 +77,18 @@ function $builtin_base_convert_helper(obj, base) {
      Exception('TypeError', 'Error, argument must be an integer or contains an __index__ function')
      return
   }
+  var prefix = "";
+  if (base == 8) { prefix = "0o" }
+  else if (base == 16) { prefix = '0x' }
+  else if (base == 2) { prefix = '0b' }
+  else {
+    // FIXME : Choose better prefix
+    prefix = ''
+  }
   if (value >=0) { 
-     return value.toString(base);
+     return prefix + value.toString(base);
   } else {
-    // todo:need to implement for negative values
-    return null
+    return '-' + prefix + (-value).toString(base);
   }
 }
 
@@ -661,7 +668,7 @@ function hash(obj){
 
 //hex() (built in function)
 function hex(x) {
-   return $builtin_base_convert_helper(obj, 16)
+   return $builtin_base_convert_helper(x, 16)
 }
 
 //id() (built in function)
@@ -999,7 +1006,7 @@ $ObjectClass.prototype.__hash__ = object.__hash__
 
 // oct() (built in function)
 function oct(x) {
-   return $builtin_base_convert_helper(obj, 8)
+   return $builtin_base_convert_helper(x, 8)
 }
 
 function $open(){
