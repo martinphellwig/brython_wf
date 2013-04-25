@@ -1,6 +1,7 @@
 // brython.js www.brython.info
-// version 1.1.20130423-133840
+// version 1.1.20130424-205353
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
+
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
 __BRYTHON__.date=function(){
@@ -25,7 +26,7 @@ window.IDBKeyRange=window.webkitIDBKeyRange
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130423-133840"]
+__BRYTHON__.version_info=[1,1,"20130424-205353"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -476,6 +477,7 @@ function $last(item){
 if(typeof item=="string"){return item.charAt(item.length-1)}
 else if(typeof item=="object"){return item[item.length-1]}
 }
+
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
 else if(isinstance(obj,float)){return float(Math.abs(obj.value))}
@@ -940,6 +942,13 @@ var $ops={'+':'add','-':'sub','*':'mul','%':'mod'}
 for($op in $ops){
 eval('$FloatClass.prototype.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 }
+$FloatClass.prototype.__pow__=function(other){
+if(isinstance(other,int)){return float(Math.pow(this,other))}
+else if(isinstance(other,float)){return float(Math.pow(this.value,other.value))}
+else{throw TypeError(
+"unsupported operand type(s) for -: "+this.value+" (float) and '"+other.__class__+"'")
+}
+}
 var $comp_func=function(other){
 if(isinstance(other,int)){return this.value > other.valueOf()}
 else if(isinstance(other,float)){return this.value > other.value}
@@ -1079,8 +1088,9 @@ res=item.__getattr__('__contains__')(this)
 return !res
 }
 Number.prototype.__pow__=function(other){
-if(typeof other==="number"){return int(Math.pow(this.valueOf(),other.valueOf()))}
-else{$UnsupportedOpType("//",int,other.__class__)}
+if(isinstance(other, int)){return int(Math.pow(this.valueOf(),other.valueOf()))}
+else if(isinstance(other, float)){return float(Math.pow(this.valueOf(), other.valueOf()))}
+else{$UnsupportedOpType("**",int,other.__class__)}
 }
 Number.prototype.__repr__=function(){return this.toString()}
 Number.prototype.__setattr__=function(attr,value){throw AttributeError(
@@ -1321,8 +1331,6 @@ log=function(arg){console.log(arg)}
 function $prompt(text,fill){return prompt(text,fill || '')}
 function property(fget, fset, fdel, doc){
 if(fget !==undefined){return fget()}
-console.log(fset)
-console.log(fdel)
 throw NotImplementedError('property not implemented')
 }
 function range(){
@@ -1351,7 +1359,7 @@ return res
 }
 function repr(obj){
 if(obj.__repr__!==undefined){return obj.__repr__()}
-else{throw AttributeError("object  has no attribute __repr__")}
+else{throw AttributeError("object has no attribute __repr__")}
 }
 function reversed(seq){
 if(isinstance(seq,list)){seq.reverse();return seq}
@@ -1622,6 +1630,9 @@ var d=$DictClass(('reverse', reverse))
 obj.sort(d)
 }
 return obj
+}
+function staticmethod(func){
+return func
 }
 function sum(iterable,start){
 if(start===undefined){start=0}
@@ -2671,6 +2682,7 @@ return str[attr].apply(this,args)
 }
 return str
 }()
+
 function $importer(){
 if(window.XMLHttpRequest){
 var $xmlhttp=new XMLHttpRequest()
@@ -3332,6 +3344,10 @@ children.splice(func_rank,1)
 var obj=children[func_rank].C.tree[0]
 var callable=children[func_rank].C
 var res=obj.name+'=',tail=''
+var scope=$get_scope(this)
+if(scope !==null && scope.ntype==='class'){
+res +='$class.'+obj.name+'='
+}
 for(var i=0;i<decorators.length;i++){
 res +=$to_js(decorators[i])+'('
 tail +=')'
@@ -3436,7 +3452,7 @@ if(this.type==='generator'){
 var offset=2
 if(this.decorators !==undefined){offset++}
 js=this.name
-if(scope.ntype==='class'){js +="=$class."+this.name}
+if(scope !==null && scope.ntype==='class'){js +="=$class."+this.name}
 js +='=$generator($'+this.name+')'
 var gen_node=new $Node('expression')
 new $NodeJSCtx(gen_node,js)
@@ -5351,6 +5367,7 @@ break
 }
 }
 }
+
 function $XmlHttpClass(obj){
 this.__class__='XMLHttpRequest'
 this.__getattr__=function(attr){
@@ -5420,6 +5437,7 @@ seconds*1000);
 function ajax(){
 return new $AjaxClass()
 }
+
 function $getMouseOffset(target, ev){
 ev=ev || window.event
 var docPos=$getPosition(target)

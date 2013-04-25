@@ -4,6 +4,60 @@ import re
 import datetime
 import os
 
+try:
+  import slimit 
+  minify=slimit.minify
+except ImportError:
+  minify=None
+
+def custom_minify(src):
+    _res=''
+    pos = 0
+    while pos<len(src):
+        if src[pos] in ['"',"'"]:
+            end = src.find(src[pos],pos+1)
+            if end==-1:
+                line = src[:pos].count('\n')
+                raise SyntaxError('string not closed in %s line %s : %s' %(fname,line,src[pos:pos+20]))
+            _res += src[pos:end+1]
+            pos = end+1
+        elif src[pos]=='\r':
+            pos += 1
+        elif src[pos]==' ':
+            if _res and _res[-1] in '({=[)}];\n':
+                pos += 1
+                continue
+            _res += ' '
+            while pos<len(src) and src[pos]==' ':
+                pos+=1
+        elif src[pos] in '\r\n':
+            _res += src[pos]
+            while pos<len(src) and src[pos] in '\r\n ':
+                pos+=1
+        elif src[pos:pos+2]=='//':
+            end = src.find('\n',pos)
+            if end==-1:
+                break
+            pos = end
+        elif src[pos:pos+2]=='/*':
+            end = src.find('*/',pos)
+            if end==-1:
+                break
+            pos = end+2
+        elif src[pos] in '={[(' and _res and _res[-1]==' ':
+            _res = _res[:-1]+src[pos]
+            pos += 1
+        elif src[pos]==';' and pos<len(src)-1 and src[pos+1] in '\r\n':
+            pos +=1
+        else:
+            _res += src[pos]
+            pos += 1
+
+    while '\n\n' in _res:
+       _res = _res.replace('\n\n','\n')
+
+    return _res
+
 now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
 sources = ['brython_builtins','py_utils',
@@ -37,49 +91,10 @@ src_size = 0
 for fname in sources:
     src = open(abs_path(fname)+'.js').read()+'\n'
     src_size += len(src)
-    pos = 0
-    while pos<len(src):
-        if src[pos] in ['"',"'"]:
-            end = src.find(src[pos],pos+1)
-            if end==-1:
-                line = src[:pos].count('\n')
-                raise SyntaxError('string not closed in %s line %s : %s' %(fname,line,src[pos:pos+20]))
-            res += src[pos:end+1]
-            pos = end+1
-        elif src[pos]=='\r':
-            pos += 1
-        elif src[pos]==' ':
-            if res and res[-1] in '({=[)}];\n':
-                pos += 1
-                continue
-            res += ' '
-            while pos<len(src) and src[pos]==' ':
-                pos+=1
-        elif src[pos] in '\r\n':
-            res += src[pos]
-            while pos<len(src) and src[pos] in '\r\n ':
-                pos+=1
-        elif src[pos:pos+2]=='//':
-            end = src.find('\n',pos)
-            if end==-1:
-                break
-            pos = end
-        elif src[pos:pos+2]=='/*':
-            end = src.find('*/',pos)
-            if end==-1:
-                break
-            pos = end+2
-        elif src[pos] in '={[(' and res and res[-1]==' ':
-            res = res[:-1]+src[pos]
-            pos += 1
-        elif src[pos]==';' and pos<len(src)-1 and src[pos+1] in '\r\n':
-            pos +=1
-        else:
-            res += src[pos]
-            pos += 1
-
-while '\n\n' in res:
-    res = res.replace('\n\n','\n')
+    try:
+      res+=minify(src)
+    except:
+      res+=custom_minify(src)
 
 res = res.replace('context','C')
 
