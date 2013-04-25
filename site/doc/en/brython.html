@@ -238,7 +238,7 @@ def run_svg():
 
 We have to handle the transition period when Brython is going to coexist with Javascript ;-)
 
-<p>An HTML document can use Javscript scripts or libraries, and Python scripts or libraries. Brython can't use Javascript objects directly : for instance attribute lookup is done by the method <tt>__getattr__</tt>, which doesn't exist for Javascript objects
+<p>An HTML document can use Javascript scripts or libraries, and Python scripts or libraries. Brython can't use Javascript objects directly : for instance attribute lookup is done by the method <tt>__getattr__</tt>, which doesn't exist for Javascript objects
 <p>To be able to use them in a Python script, they must be explicitely transformed by the built-in function <tt>JSObject</tt>
 <p>For instance :
 
