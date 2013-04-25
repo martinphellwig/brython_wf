@@ -24,7 +24,6 @@ assert obj.test()=='test in foo'
 assert obj.test1(2)=='test1test1'
 assert obj.test2()=='test2'
 
-#there is an error here, displayed on web console
 assert obj.machin == 99
 
 class stack(list):
@@ -43,5 +42,25 @@ class foo(list):
 class bar(foo):
     pass
 assert str(bar())=='[]'
+
+# property and object descriptors
+
+class myclass:
+  def __init__(self):
+    self.a = 2
+
+  @property
+  def getx(self):
+      return self.a + 5
+
+assert myclass().getx == 7
+
+@property
+def gety(self):
+    return self.a + 9
+
+x.gety = gety
+
+assert x.gety is gety
 
 print('passed all tests..')
