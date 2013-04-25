@@ -1055,10 +1055,26 @@ log = function(arg){console.log(arg)}
 function $prompt(text,fill){return prompt(text,fill || '')}
 
 // property (built in function)
-function property(fget, fset, fdel, doc) {
-   if (fget !== undefined) { return fget()}
-   throw NotImplementedError('property not implemented')
+function $PropertyClass() {
+    this.__class__ = "<class 'property'>"
 }
+
+$PropertyClass.prototype.__hash__ = object.__hash__
+$PropertyClass.prototype.toString = $PropertyClass.prototype.__str__ = function() {return "<property object at " + hex(this.__hash__()) + ">" }
+
+function property(fget, fset, fdel, doc) {
+    var p = new $PropertyClass()
+    p.__get__ = function(instance, factory) { return fget.__call__(instance) }; 
+    //p.__set__ = fdel; 
+    //p.__delete__ = fdel;
+    p.__doc__ = doc || "";
+    return p;
+}
+
+property.__class__ = $type
+property.__name__ = 'property'
+property.toString = property.__str__ = function() { return "<class 'property'>" }
+property.__hash__ = object.__hash__
 
 // range
 function range(){
