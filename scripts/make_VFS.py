@@ -10,7 +10,7 @@ import sys
 try:
   import slimit
   minify=slimit.minify
-except:
+except ImportError:
   minify=None  
   
 if sys.version_info[0] >= 3:
