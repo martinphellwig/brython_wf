@@ -481,7 +481,7 @@ function float(value){
 float.__class__ = $type
 float.__name__ = 'float'
 float.__new__ = function(){return new $FloatClass(0.0)}
-float.toString = function(){return "<class 'float'>"}
+float.toString = float.__str__ = function(){return "<class 'float'>"}
 
 float.__hash__ = function() {
     // http://cw.tactileint.com/++Floats/Ruby,JavaScript,Ruby
@@ -704,7 +704,7 @@ function int(value){
 int.__class__ = $type
 int.__name__ = 'int'
 int.__new__ = function(){return 0}
-int.toString = function(){return "<class 'int'>"}
+int.toString = int.__str__ = function(){return "<class 'int'>"}
 
 Number.prototype.__class__ = int
 
@@ -989,7 +989,7 @@ function object(){
 }
 object.__class__ = $type
 object.__name__ = 'object'
-object.__str__ = "<class 'object'>"
+object.toString = object.__str__ = function() { return "<class 'object'>" }
 object.__hash__ = function () { 
     __BRYTHON__.$py_next_hash+=1; 
     return __BRYTHON__.$py_next_hash;
