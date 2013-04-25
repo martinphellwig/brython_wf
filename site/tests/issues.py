@@ -135,4 +135,15 @@ class myclass:
 c=myclass()
 assert c.getx == 5
 
+#issue 45
+
+assert 2**2 == 4
+assert 2.0**2 == 4.0
+assert 2**2.0 == 4.0
+assert 2.0**2.0 == 4.0
+#also do 3**2 since 2**2 == 2*2
+assert 3**2 == 9
+assert 3.0**2 == 9.0
+assert 3**2.0 == 9.0
+assert 3.0**2.0 == 9.0
 print('passed all tests')

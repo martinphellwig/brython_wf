@@ -579,6 +579,14 @@ for($op in $ops){
     eval('$FloatClass.prototype.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 }
 
+$FloatClass.prototype.__pow__= function(other){
+    if(isinstance(other,int)){return float(Math.pow(this,other))}
+    else if(isinstance(other,float)){return float(Math.pow(this.value,other.value))}
+    else{throw TypeError(
+        "unsupported operand type(s) for -: "+this.value+" (float) and '"+other.__class__+"'")
+    }
+}
+
 // comparison methods
 var $comp_func = function(other){
     if(isinstance(other,int)){return this.value > other.valueOf()}
@@ -749,8 +757,9 @@ Number.prototype.__not_in__ = function(item){
 }
 
 Number.prototype.__pow__ = function(other){
-    if(typeof other==="number"){return int(Math.pow(this.valueOf(),other.valueOf()))}
-    else{$UnsupportedOpType("//",int,other.__class__)}
+    if(isinstance(other, int)) {return int(Math.pow(this.valueOf(),other.valueOf()))}
+    else if (isinstance(other, float)) { return float(Math.pow(this.valueOf(), other.valueOf()))}
+    else{$UnsupportedOpType("**",int,other.__class__)}
 }
 
 Number.prototype.__repr__ = function(){return this.toString()}
