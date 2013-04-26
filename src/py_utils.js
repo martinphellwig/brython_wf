@@ -390,6 +390,7 @@ function $class_constructor(class_name,factory,parents){
     }
     f.__str__ = function(){return "<class '"+class_name+"'>"}
     for(var attr in factory){
+        if(attr==='__call__'){continue}
         f[attr]=factory[attr]
         // FIXME: Improve
         if (typeof f[attr] === 'function') {
