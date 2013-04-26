@@ -43,6 +43,17 @@ class bar(foo):
     pass
 assert str(bar())=='[]'
 
+# __call__
+
+class StaticCall():
+    def __init__(self):
+        self.from_init = 88
+    def __call__(self, *args, **kwargs):
+        return 99
+
+assert StaticCall().from_init == 88
+assert StaticCall()() == 99
+
 # property and object descriptors
 
 class myclass:
