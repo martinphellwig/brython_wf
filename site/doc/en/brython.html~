@@ -137,7 +137,7 @@ doc <= P() + 'I repeat: the site is ' + link.clone()
 <li>insertion of an option at the end of the list : <pre style="display:inline">elt.options.append(option)</pre>
 <li>deleting an option : <pre style="display:inline">del elt.options[index]</pre>
 </ul>
-<li>it is possible to iterate the object's children using the typical Python syntax : <pre style="display:inline">for child in dom_object:</pre>
+<li>it is possible to iterate the objet's children using the typical Python syntax : <pre style="display:inline">for child in dom_object:</pre>
 </ul>
 <h3>Events</h3>
 To attach a function to an event, we use the syntax 

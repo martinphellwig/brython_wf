@@ -271,8 +271,8 @@ Para interactuar con el servidor debes poner los siguientes atributos, correspon
 <p>El atributo debe ser una funci&oacute;n que tomar&aacute; un &uacute;nico argumento: el objeto <code>ajax</code>. Este objeto posee los siguientes atributos :
 <ul>
 <li><code>status</code> : un entero que representa el estado HTTP de la petici&oacute;n
-<li><code>text</code> : la respuesta del servidor como una cadena de caracteres (corresponder&iacute;a a <tt>responseText</tt> en Javascript)
-<li><code>xml</code> : la respuesta del servidor como un objeto DOM (corresponder&iacute;a a <tt>responseXML</tt> en Javascript)
+<li><code>text</code> : la respuesta del servido como una cadena de caracteres (corresponder&iacute;a a <tt>responseText</tt> en Javascript)
+<li><code>xml</code> : la respuesta del servido como un objeto DOM (corresponder&iacute;a a <tt>responseXML</tt> en Javascript)
 </ul>
 
 <h4>Ejemplo</h4>
