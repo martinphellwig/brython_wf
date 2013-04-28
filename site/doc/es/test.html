@@ -1,0 +1,33 @@
+<html>
+<head>
+<meta charset="iso-8859-1">
+<title>Brython</title>
+<link rel="stylesheet" href="../doc_brython.css">
+</head>
+<body>
+<a name="test"><h3>Pruebas y depuraci&oacute;n</h3>
+
+
+<h3>Pruebas interactivas</h3>
+
+El sitio oficial de Brython o su copia disponible para descarga, incluye una consola donde se pueden hacer pruebas de c&oacute;digo Python
+<p>Ten en cuenta que el espacio de nombres no se 'refresca' cuando haces click en "run", debes recargar la p&aacute;gina para ello
+<p>Para las pruebas y la depuraci&oacute;n de Brython, se pueden encontrar una serie de scripts de prueba en la carpeta <code>tests</code> ; puedes acceder a ellos pulsando el enlace "Test pages" en la consola y despu&eacute;s elegir los diferentes tests y ejecutarlos
+
+<h3>Scripts de depuraci&oacute;n</h3>
+
+Cualquiera que sea el nivel de depuraci&oacute;n (debug mode), se informa en la consola del navegador de los errores sint&aacute;cticos (o en los lugares definidos mediante <code>sys.stderr</code>)
+<p>Por ejemplo, el c&oacute;digo
+<blockquote><pre>x = $a
+</pre></blockquote>
+<p>genera el mensaje
+<blockquote><pre>SyntaxError: unknown token [$]
+module '__main__' line 1
+x = $a
+    ^
+</pre></blockquote>
+
+<p>Si seleccionamos el nivel de depuraci&oacute;n 1 en la llamada a la funci&oacute;n <code>brython(<i>debug_mode</i>)</code>, las excepciones lanzadas durante el tiempo de ejecuci&oacute;n y no definidas por un <code>except</code> tambi&eacute;n producen un mensaje de error, tan similar como sea posible a aquel creado por Python3
+
+</body>
+</html>
