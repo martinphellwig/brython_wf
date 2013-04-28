@@ -144,6 +144,24 @@ function chr(i) {
 }
 
 //classmethod() (built in function)
+function $ClassMethodClass() {
+    this.__class__ = "<class 'classmethod'>"
+}
+
+$ClassMethodClass.prototype.__hash__ = object.__hash__
+$ClassMethodClass.prototype.toString = $ClassMethodClass.prototype.__str__ = function() {return "<classmethod object at " + hex(this.__hash__()) + ">" }
+
+function classmethod(func) {
+    var c = new $ClassMethodClass()
+    c.__get__ = function(instance, factory) { return func.__call__(instance) }; 
+    c.__doc__ = doc || "";
+    return c;
+}
+
+classmethod.__class__ = $type
+classmethod.__name__ = 'classmethod'
+classmethod.toString = classmethod.__str__ = function() { return "<class 'classmethod'>" }
+classmethod.__hash__ = object.__hash__
 
 function $class(obj,info){
     this.obj = obj
