@@ -21,7 +21,7 @@ def getloadavg():
 def urandom(length):
     _c=[]
     for _i in range(length):
-        _c.append(ord(random.randint(0,255)))
+        _c.append(chr(random.randint(0,255)))
         
     return ''.join(_c)
 
