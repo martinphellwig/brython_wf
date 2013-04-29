@@ -86,6 +86,10 @@ assert gids == (0,1), 'Fail incrementing static (%d,%d)'%gids
 # issue 20
 assert 'fail slice string!'[5:-1] == 'slice string', 'Failure in string slicing'
 
+#issue 21
+_s='   abc   '
+assert _s.rjust(15, 'b') == 'bbbbbb   abc   '
+
 # issue 24
 import math
 eval_zero = eval('math.sin(0)')
@@ -146,4 +150,5 @@ assert 3**2 == 9
 assert 3.0**2 == 9.0
 assert 3**2.0 == 9.0
 assert 3.0**2.0 == 9.0
+
 print('passed all tests')

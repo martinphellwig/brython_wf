@@ -594,7 +594,13 @@ str.rindex = function(){
 }
 
 str.rjust = function(self) {
-  throw NotImplementedError("function rjust not implemented yet");
+    var $ns=$MakeArgs("str.rjust",arguments,['self','width'],
+                      {'fillchar':' '},null,null)
+    var width = $ns['width'],fillchar=$ns['fillchar']
+
+    if (width <= self.length) return self
+
+    return Array(width - self.length + 1).join(fillchar) + self
 }
 
 str.rpartition = function(self) {
