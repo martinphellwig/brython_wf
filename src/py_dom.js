@@ -269,7 +269,9 @@ $JSObject.prototype.__len__ = function(){
 }
 
 $JSObject.prototype.__getattr__ = function(attr){
-    if(this.js[attr] !== undefined){
+    if(this['get_'+attr]!==undefined){
+      return this['get_'+attr]
+    }else if(this.js[attr] !== undefined){
         var obj = this.js,obj_attr = this.js[attr]
         if(typeof this.js[attr]=='function'){
             return function(){
@@ -835,4 +837,14 @@ DOMNode.prototype.removeClass = function(name){
         _class_string=_c.replace(' '+name+' ', '')
    }
    this.__setattr('class', _class_string)
+}
+
+win.get_postMessage = function(msg,targetOrigin){
+    if(isinstance(msg,dict)){
+        var temp = new Object()
+        temp.__class__='dict'
+        for(var i=0;i<msg.__len__();i++){temp[msg.$keys[i]]=msg.$values[i]}
+        msg = temp
+    }
+    return window.postMessage(msg,targetOrigin)
 }
