@@ -339,6 +339,10 @@ str.capitalize = function(self){
     return self.charAt(0).toUpperCase()+self.substr(1).toLowerCase()
 }
 
+str.casefold = function(self) {
+  throw NotImplementedError("function casefold not implemented yet");
+}
+
 str.center = function(self,width,fillchar){
     if(fillchar===undefined){fillchar=' '}else{fillchar=fillchar}
     if(width<=self.length){return self}
@@ -361,6 +365,12 @@ str.count = function(self,elt){
     }
     return res
 }
+
+str.encode = function(self) {
+  throw NotImplementedError("function encode not implemented yet");
+}
+
+
 str.endswith = function(self){
     // Return True if the string ends with the specified suffix, otherwise 
     // return False. suffix can also be a tuple of suffixes to look for. 
@@ -381,6 +391,10 @@ str.endswith = function(self){
             s.substr(s.length-suffix.length)==suffix){return True}
     }
     return False
+}
+
+str.expandtabs = function(self) {
+  throw NotImplementedError("function expandtabs not implemented yet");
 }
 
 str.find = function(self){
@@ -407,11 +421,80 @@ str.find = function(self){
     else{return start+res}
 }
 
+str.format = function(self) {
+  throw NotImplementedError("function format not implemented yet");
+}
+
+str.format_map = function(self) {
+  throw NotImplementedError("function format_map not implemented yet");
+}
+
 str.index = function(self){
     // Like find(), but raise ValueError when the substring is not found.
     var res = str.find.apply(self,arguments)
     if(res===-1){throw ValueError("substring not found")}
     else{return res}
+}
+
+str.isalnum = function(self) {
+  var pat=/^[a-z0-9]+$/i;
+  return pat.test(self)
+}
+
+str.isalpha = function(self) {
+  var pat=/^[a-z]+$/i;
+  return pat.test(self)
+}
+
+str.isdecimal = function(self) {
+  throw NotImplementedError("function isdecimal not implemented yet");
+}
+
+str.isdigit = function(self) {
+  var pat=/^[0-9]+$/;
+  return pat.test(self)
+}
+
+str.isidentifier = function(self) {
+  var keywords=['False', 'None', 'True', 'and', 'as', 'assert', 'break',
+     'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally',
+     'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal',
+     'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield'];
+
+  if (keywords.contain(self)) return True
+
+  // fixme..  this isn't complete but should be a good start
+  var pat=/^[a-z][0-9a-z_]+$/i;
+  return pat.test(self)
+}
+
+str.islower = function(self) {
+  var pat=/^[a-z]+$/;
+  return pat.test(self)
+}
+
+str.isnumeric = function(self) {
+  // not sure how to handle unicode variables
+  var pat=/^[0-9]+$/;
+  return pat.test(self)
+}
+
+str.isprintable = function(self) {
+  throw NotImplementedError("function isprintable not implemented yet");
+}
+
+str.isspace = function(self) {
+  var pat=/^\s+$/i;
+  return pat.test(self)
+}
+
+str.istitle = function(self) {
+  throw NotImplementedError("function istitle not implemented yet");
+}
+
+str.isupper = function(self) {
+  var pat=/^[A-Z]+$/;
+  return pat.test(self)
 }
 
 str.join = function(self,iterable){
@@ -430,6 +513,13 @@ str.join = function(self,iterable){
     return res
 }
 
+str.ljust = function(self, width, fillchar) {
+  //if (width <= self.length) return self
+  //if (fillchar === undefined) { fillchar=' '}
+  
+  throw NotImplementedError("function ljust not implemented yet");
+}
+
 str.lower = function(self){return self.toLowerCase()}
 
 str.lstrip = function(self,x){
@@ -438,6 +528,14 @@ str.lstrip = function(self,x){
     else{pattern = "["+x+"]*"}
     var sp = new RegExp("^"+pattern)
     return self.replace(sp,"")
+}
+
+str.maketrans = function(self) {
+  throw NotImplementedError("function isalpha not implemented yet");
+}
+
+str.partition = function(self) {
+  throw NotImplementedError("function isalpha not implemented yet");
 }
 
 function $re_escape(str)
@@ -493,6 +591,18 @@ str.rindex = function(){
     var res = str.rfind.apply(this,arguments)
     if(res==-1){throw ValueError("substring not found")}
     else{return res}
+}
+
+str.rjust = function(self) {
+  throw NotImplementedError("function rjust not implemented yet");
+}
+
+str.rpartition = function(self) {
+  throw NotImplementedError("function rpartition not implemented yet");
+}
+
+str.rsplit = function(self) {
+  throw NotImplementedError("function rsplit not implemented yet");
 }
 
 str.rstrip = function(self,x){
@@ -590,7 +700,23 @@ str.strip = function(self,x){
     return str.rstrip(str.lstrip(self,x),x)
 }
 
+str.swapcase = function(self) {
+  throw NotImplementedError("function swapcase not implemented yet");
+}
+
+str.title = function(self) {
+  throw NotImplementedError("function title not implemented yet");
+}
+
+str.translate = function(self) {
+  throw NotImplementedError("function translate not implemented yet");
+}
+
 str.upper = function(self){return self.toUpperCase()}
+
+str.zfill = function(self) {
+  throw NotImplementedError("function isalpha not implemented yet");
+}
 
 // set String.prototype attributes
 
