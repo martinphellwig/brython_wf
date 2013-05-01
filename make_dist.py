@@ -163,10 +163,6 @@ for arc,wfunc in (dist1,dist1.add),(dist2,dist2.add),(dist3,dist3.write):
         wfunc(os.path.join(os.getcwd(),path),
                 arcname=os.path.join(name,path))
 
-    for folder,path in [('site','brython.png'),('site','test.html')]:
-        wfunc(os.path.join(os.getcwd(),folder,path),
-                arcname=os.path.join(name,path))
-
     wfunc(os.path.join(os.getcwd(),'src','brython.js'),
             arcname=os.path.join(name,'brython.js'))
     
