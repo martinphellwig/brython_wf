@@ -2744,7 +2744,11 @@ function $tokenize(src,module){
         var br_err = br_pos[0]
         $pos = br_err[1]
         $_SyntaxError(br_err[0],"Unbalanced bracket "+br_stack.charAt(br_stack.length-1))
-    } 
+    }
+    if($indented.indexOf(context.tree[0].type)>-1){
+        $pos = pos-1
+        $_SyntaxError(context,'expected an indented block',pos)    
+    }
     
     return root
 
