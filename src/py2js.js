@@ -2206,6 +2206,9 @@ function $transition(context,token){
         if($expr_starters.indexOf(token)>-1){
             var expr = new $AbstractExprCtx(context,true)
             return $transition(expr,token,arguments[2])
+        }else if(token==="op" && '+-'.search(arguments[2])>-1){
+            var expr = new $AbstractExprCtx(context,true)
+            return $transition(expr,token,arguments[2])
         }else if(token==='class'){return new $ClassCtx(context)}
         else if(token==='def'){return new $DefCtx(context)}
         else if(token==='for'){return new $TargetListCtx(new $ForExpr(context))}
