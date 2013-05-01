@@ -263,7 +263,7 @@ dict.__eq__ = function(self,other){
                         return False
                     }
                 }
-            }catch(err){void(0)}
+            }catch(err){$pop_exc()}
         }
     }
     return True
@@ -327,7 +327,7 @@ dict.__setitem__ = function(self,key,value){
                 return
             }
         }catch(err){ // if __eq__ throws an exception
-            void(0)
+            $pop_exc()
         }
     }
     // create a new key/value
@@ -355,6 +355,7 @@ dict.copy = function(self){
 dict.get = function(self,key,_default){
     try{var res = dict.__getitem__(self,key);console.log(res);return res}
     catch(err){
+        $pop_exc()
         if(_default!==undefined){return _default}
         else{throw KeyError(key)}
     }
@@ -374,6 +375,7 @@ dict.pop = function(self,key,_default){
         dict.__delitem__(self,key)
         return res
     }catch(err){
+        $pop_exc()
         if(err.__name__==='KeyError'){
             if(_default!==undefined){return _default}
             throw err

@@ -245,6 +245,7 @@ function $src_error(name,module,msg,pos) {
     err.message = msg
     err.info = info
     err.py_error = true
+    __BRYTHON__.exception_stack.push(err)
     throw err
 }
 
@@ -255,6 +256,9 @@ function $SyntaxError(module,msg,pos) {
 function $IndentationError(module,msg,pos) {
     $src_error('IndentationError',module,msg,pos)
 }
+
+// function to remove internal exceptions from stack exposed to programs
+function $pop_exc(){__BRYTHON__.exception_stack.pop()}
 
 // resolve instance attribute from its class factory
 function $resolve_attr(obj,factory,attr){
@@ -365,6 +369,7 @@ function $class_constructor(class_name,factory,parents){
         obj.__setattr__ = function(attr,value){obj[attr]=value}
         try{$resolve_attr(obj,factory,'__str__')}
         catch(err){
+            $pop_exc()
             obj.__str__ = function(){return "<"+class_name+" object>"}
             obj.__str__.__name__ = "<bound method __str__ of "+class_name+" object>"
         }
@@ -373,6 +378,7 @@ function $class_constructor(class_name,factory,parents){
         // __eq__ defaults to identity
         try{$resolve_attr(obj,factory,'__eq__')}
         catch(err){
+            $pop_exc()
             obj.__eq__ = function(other){return obj===other}
             obj.__eq__.__name__ = "<bound method __eq__ of "+class_name+" object>"
         }
@@ -384,7 +390,7 @@ function $class_constructor(class_name,factory,parents){
                 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
                 init_func.apply(null,arguments)
                 obj.$initialized
-            }catch(err){void(0)}
+            }catch(err){$pop_exc()}
         }
         return obj
     }
