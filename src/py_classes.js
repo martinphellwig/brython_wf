@@ -1551,13 +1551,16 @@ Boolean.prototype.__repr__ = Boolean.prototype.toString
 
 Boolean.prototype.__str__ = Boolean.prototype.toString
 
-function $NoneClass(){
-    this.__class__ = new $class(this,"NoneType")
-    this.value = null
+function $NoneClass() {
+    this.__class__ = {'__class__':$type,
+        '__str__':function(){return "<class 'NoneType'>"},
+        '__getattr__':function(attr){return this[attr]}
+    }
     this.__bool__ = function(){return False}
     this.__eq__ = function(other){return other===None}
     this.__getattr__ = function(attr){
-        if(this[attr]!==undefined){return this[attr]}
+        console.log('get None attr '+attr)
+        if(this[attr]!==undefined){console.log('return '+this[attr]);return this[attr]}
         else{throw AttributeError("'NoneType' object has no attribute '"+attr+"'")}
     }
     this.__hash__ = function(){return 0}
@@ -1577,7 +1580,7 @@ function $NoneClass(){
     for(var func in this){
         if(typeof this[func]==='function'){
             this[func].__str__ = (function(f){
-                return function(){return "<mthod-wrapper "+f+" of NoneType object>"}
+                return function(){return "<method-wrapper "+f+" of NoneType object>"}
             })(func)
         }
     }
