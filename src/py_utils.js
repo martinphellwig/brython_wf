@@ -488,7 +488,10 @@ function $test_expr(){
 
 // define a function __eq__ for functions to allow test on Python classes
 // such as object.__class__ == SomeClass
-Function.prototype.__call__ = function(){return this.apply(null,arguments)}
+Function.prototype.__call__ = function(){
+    var res = this.apply(null,arguments)
+    if(res===undefined){return None}else{return res}    
+}
 
 Function.prototype.__eq__ = function(other){
     if(typeof other !== 'function'){return False}
