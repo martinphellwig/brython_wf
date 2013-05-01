@@ -583,7 +583,7 @@ str.rfind = function(self){
     for(var i=s.length-1;i>=0;i--){reversed += s.charAt(i)}
     var res = reversed.search(sub)
     if(res==-1){return -1}
-    else{return start+s.length-1-res}
+    else{return start+s.length-1-res-sub.length+1}
 }
 
 str.rindex = function(){
