@@ -56,11 +56,14 @@ def myKeyPress(event):
         src = doc['code'].value
         currentLine = src[src.rfind('>>>')+4:].lstrip()
         doc['code'].value+='\n'
+        log('line %s' %currentLine)
         try:
             _ = eval(currentLine)
+            log('line %s ok' %currentLine)
             if _ is not None:
                 print(_)
         except:
+            log('error')
             traceback.print_exc()
         doc['code'].value += '>>> '
         event.preventDefault()
