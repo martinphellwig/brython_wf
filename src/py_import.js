@@ -82,7 +82,7 @@ function $import_module_search_path(module,alias,names){
 
 function $import_module_search_path_list(module,alias,names,path_list){
     var modnames = [module, module+'/__init__']
-    var import_mod = [$import_js_generic, $import_py]
+    var import_mod = [$import_py]
     for(var i=0;i<path_list.length;i++){
        for(var j=0; j < modnames.length; j++) {
            var path = path_list[i] + "/" + modnames[j];
@@ -140,7 +140,8 @@ function $import_py_module(module,alias,names,path,module_contents) {
     for(var i=0;i<mod_names.length;i++){
         ret_code += mod_names[i]+':'+mod_names[i]+','
     }
-    ret_code += '__getattr__:function(attr){return this[attr]},'
+    ret_code += '__getattr__:function(attr){if(this[attr]!==undefined){return this[attr]}'
+    ret_code += 'else{throw AttributeError("module '+module+' has no attribute \''+'"+attr+"\'")}},'
     ret_code += '__setattr__:function(attr,value){this[attr]=value}'
     ret_code += '}'
     var ret_node = new $Node('expression')
