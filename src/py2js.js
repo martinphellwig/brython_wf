@@ -1018,9 +1018,13 @@ function $ImportCtx(context){
     context.tree.push(this)
     this.expect = 'id'
     this.to_js = function(){
+        var scope = $get_scope(this)
         var res = '$mods=$import_list(['+$to_js(this.tree)+']);'
         for(var i=0;i<this.tree.length;i++){
-            res += 'var '+this.tree[i].alias+'=$mods['+i+'];'
+            if(scope!==null && ['def','class'].indexOf(scope.ntype)>-1){
+                res += 'var '
+            }
+            res += this.tree[i].alias+'=$mods['+i+'];'
         }
         return res 
     }
