@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="iso-8859-1">
+<title>brython interactive mode</title>
+<script type="text/javascript" src="../../src/brython_builtins.js"></script>
+<script type="text/javascript" src="../../src/py2js.js"></script>
+<script type="text/javascript" src="../../src/py_utils.js"></script>
+<script type="text/javascript" src="../../src/py_classes.js"></script>
+<script type="text/javascript" src="../../src/py_import.js"></script>
+<script type="text/javascript" src="../../src/py_list.js"></script>
+<script type="text/javascript" src="../../src/py_string.js"></script>
+<script type="text/javascript" src="../../src/py_dom.js"></script>
+<script type="text/javascript" src="../../src/py_ajax.js"></script>
+<style>
+div,
+textarea {
+    width:50%;
+    height:100%;
+}
+.codeArea {
+  overflow: auto;
+  background-color: #000000;
+  color: #ffffff;
+  font-family: Consolas, Menlo, Monaco, 'Lucida Console', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace, serif;
+  font-size: 14px;
+}
+</style>
+</head>
+<body onload="brython(1)"><!-- remove the 1 to leave debug mode -->
+<textarea id="code" class="codeArea" rows=20></textarea>
+<div id="content"></div>
+
+<script type="text/python">
+import sys
+import traceback
+
+def write(data):
+    doc['code'].value += data
+
+sys.stdout.write = sys.stderr.write = lambda data:doc['code'].value += data
+
+def cursorToEnd(*args):
+    pos = len(doc['code'].value)
+    doc['code'].setSelectionRange(pos,pos)
+
+def myKeyPress(event):
+    if event.keyCode == 8:
+        src = doc['code'].value
+        lstart = src.rfind('\n')
+        if (lstart==-1 and len(src)<5) \
+            or (len(src)-lstart<6):
+                event.preventDefault()
+                event.stopPropagation()
+    if event.keyCode == 13:    # return
+        src = doc['code'].value
+        currentLine = src[src.rfind('>>>')+4:].lstrip()
+        doc['code'].value+='\n'
+        try:
+            _ = eval(currentLine)
+            if _ is not None:
+                print(_)
+        except:
+            traceback.print_exc()
+        doc['code'].value += '>>> '
+        event.preventDefault()
+
+doc['code'].onkeypress = myKeyPress
+doc['code'].onclick = cursorToEnd
+doc['code'].value = ">>> "
+cursorToEnd()
+doc['code'].focus()
+
+</script>
+</body>
+</html>
