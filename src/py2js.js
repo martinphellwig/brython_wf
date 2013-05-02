@@ -1150,6 +1150,7 @@ function $ListOrTupleCtx(context,real){
             for(var i=1;i<this.intervals.length;i++){
                 var txt = src.substring(this.intervals[i-1],this.intervals[i]).replace(qesc,'\\"')
                 txt = txt.replace(/\n/g,' ')
+                txt = txt.replace(/\\/g,'\\\\')
                 res += '"'+txt+'"'
                 if(i<this.intervals.length-1){res+=','}
             }
