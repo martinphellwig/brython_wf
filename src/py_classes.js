@@ -548,7 +548,13 @@ $FloatClass.prototype.toString = function(){
 $FloatClass.prototype.__class__ = float
 
 $FloatClass.prototype.__bool__ = function(){return bool(this.value)}
-    
+
+$FloatClass.prototype.__eq__ = function(other){
+    if(isinstance(other,int)){return this.valueOf()==other.valueOf()}
+    else if(isinstance(other,float)){return this.valueOf()==other.value}
+    else{return this.valueOf()===other}
+}
+
 $FloatClass.prototype.__floordiv__ = function(other){
     if(isinstance(other,int)){
         if(other===0){throw ZeroDivisionError('division by zero')}
@@ -569,6 +575,8 @@ $FloatClass.prototype.__getattr__ = function(attr){
 $FloatClass.prototype.__hash__=float.__hash__;
 
 $FloatClass.prototype.__in__ = function(item){return item.__contains__(this)}
+
+$FloatClass.prototype.__ne__ = function(other){return !this.__eq__(other)}
 
 $FloatClass.prototype.__not_in__ = function(item){return !(item.__contains__(this))}
 
@@ -623,7 +631,7 @@ var $comp_func = function(other){
     }
 }
 $comp_func += '' // source code
-var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le','==':'eq','!=':'ne'}
+var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
 for($op in $comps){
     eval("$FloatClass.prototype.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
@@ -735,6 +743,12 @@ int.toString = int.__str__ = function(){return "<class 'int'>"}
 
 Number.prototype.__class__ = int
 
+Number.prototype.__eq__ = function(other){
+    if(isinstance(other,int)){return this.valueOf()==other.valueOf()}
+    else if(isinstance(other,float)){return this.valueOf()==other.value}
+    else{return this.valueOf()===other}
+}
+
 Number.prototype.__floordiv__ = function(other){
     if(isinstance(other,int)){
         if(other==0){throw ZeroDivisionError('division by zero')}
@@ -777,6 +791,8 @@ Number.prototype.__mul__ = function(other){
         return res
     }else{$UnsupportedOpType("*",int,other)}
 }
+
+Number.prototype.__ne__ = function(other){return !this.__eq__(other)}
 
 Number.prototype.__not_in__ = function(item){
     res = item.__getattr__('__contains__')(this)
@@ -836,7 +852,7 @@ var $comp_func = function(other){
         "unorderable types: "+str(this.__class__)+'() > '+str(other.__class__)+"()")}
 }
 $comp_func += '' // source code
-var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le','==':'eq','!=':'ne'}
+var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
 for($op in $comps){
     eval("Number.prototype.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
@@ -1559,8 +1575,7 @@ function $NoneClass() {
     this.__bool__ = function(){return False}
     this.__eq__ = function(other){return other===None}
     this.__getattr__ = function(attr){
-        console.log('get None attr '+attr)
-        if(this[attr]!==undefined){console.log('return '+this[attr]);return this[attr]}
+        if(this[attr]!==undefined){return this[attr]}
         else{throw AttributeError("'NoneType' object has no attribute '"+attr+"'")}
     }
     this.__hash__ = function(){return 0}
