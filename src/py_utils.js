@@ -555,6 +555,7 @@ function $last(item){
 function pyobject2jsobject(obj) {
     if(isinstance(obj,dict)){
         var temp = new Object()
+        temp.__class__ = 'dict'
         for(var i=0;i<obj.__len__();i++){temp[obj.$keys[i]]=obj.$values[i]}
         return temp
     }
@@ -563,13 +564,18 @@ function pyobject2jsobject(obj) {
     return obj
 }
 
-//window.IDBDatabase.prototype._createObjectStore=window.IDBDatabase.prototype.createObjectStore
-//window.IDBDatabase.prototype.createObjectStore=function(name, keyPath, autoIncrement) {
-//   var _options= new Object();
-//   if (keyPath !== '') _options.keyPath=keyPath;
-//   if (autoIncrement) _options.autoIncrement=true;
-//   return window.IDBDatabase.prototype._createObjectStore.apply(this, [name, _options])
-//}
+function jsobject2pyobject(obj) {
+    if(obj.__class__ === 'dict'){
+       var d = dict()
+       for(var attr in obj){
+          if (attr !== '__class__') d.__setitem__(attr, obj[attr])
+       }
+       return d
+    }
+
+    // giving up, just return original object
+    return obj
+}
 
 window.IDBObjectStore.prototype._put=window.IDBObjectStore.prototype.put
 window.IDBObjectStore.prototype.put=function(obj, key) {
@@ -581,4 +587,12 @@ window.IDBObjectStore.prototype._add=window.IDBObjectStore.prototype.add
 window.IDBObjectStore.prototype.add=function(obj, key) {
    var myobj=pyobject2jsobject(obj);
    return window.IDBObjectStore.prototype._add.apply(this, [myobj, key]);
+}
+
+
+window.IDBRequest.prototype.pyresult=function() {
+   console.log(this.result);
+   var _r=jsobject2pyobject(this.result);
+   console.log(_r)
+   return _r
 }
