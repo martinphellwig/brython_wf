@@ -2768,6 +2768,7 @@ function brython(options){
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
     document.$debug = 0
     if(options===undefined){options={'debug':0}}
+    if(typeof options==='number'){options={'debug':options}}
     if (options.debug == 1 || options.debug == 2) {
        document.$debug = options.debug
     }
@@ -2822,14 +2823,13 @@ function brython(options){
                 if(document.$debug===2){console.log(js)}
                 eval(js)
             }catch(err){
-                console.log(err)
                 if(err.py_error===undefined){err = RuntimeError(err+'')}
                 var trace = err.__name__+': '+err.message
                 if(err.__name__=='SyntaxError'||err.__name__==='IndentationError'){
                     trace += err.info
                 }
-                if(document.$stderr!==undefined){document.$stderr.__getattr__('write')(trace)}
-                else{err.message += err.info}
+                document.$stderr.__getattr__('write')(trace)
+                err.message += err.info
                 throw err
             }
         }else{ // get path of brython.js
