@@ -571,6 +571,7 @@ function pyobject2jsobject(obj) {
 }
 
 function jsobject2pyobject(obj) {
+    if(obj === undefined) return None
     if(obj.__class__ === 'dict'){
        var d = dict()
        for(var attr in obj){
@@ -595,10 +596,7 @@ window.IDBObjectStore.prototype.add=function(obj, key) {
    return window.IDBObjectStore.prototype._add.apply(this, [myobj, key]);
 }
 
-
 window.IDBRequest.prototype.pyresult=function() {
-   console.log(this.result);
-   var _r=jsobject2pyobject(this.result);
-   console.log(_r)
-   return _r
+   return jsobject2pyobject(this.result);
 }
+
