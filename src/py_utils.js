@@ -373,6 +373,12 @@ function $class_constructor(class_name,factory,parents){
             obj.__str__ = function(){return "<"+class_name+" object>"}
             obj.__str__.__name__ = "<bound method __str__ of "+class_name+" object>"
         }
+        try{$resolve_attr(obj,factory,'__repr__')}
+        catch(err){
+            $pop_exc()
+            obj.__repr__ = function(){return "<"+class_name+" object>"}
+            obj.__repr__.__name__ = "<bound method __repr__ of "+class_name+" object>"
+        }
         obj.toString = obj.__str__
 
         // __eq__ defaults to identity
