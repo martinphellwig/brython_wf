@@ -604,7 +604,7 @@ function $DefCtx(context){
         var ret_node = new $Node('expression')
         var catch_node = new $Node('expression')
         var js = 'catch(err'+$loop_num+')'
-        js += '{if(err'+$loop_num+'.py_error!==undefined){throw err'+$loop_num+'}'
+        js += '{if(err'+$loop_num+'.py_error!==undefined){$report(err'+$loop_num+')}'
         js += 'else{throw RuntimeError(err'+$loop_num+'.message)}}'
         new $NodeJSCtx(catch_node,js)
         node.children = []
