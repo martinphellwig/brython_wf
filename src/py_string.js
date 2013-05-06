@@ -348,28 +348,29 @@ str.center = function(self,width,fillchar){
     if(width<=self.length){return self}
     else{
         var pad = parseInt((width-self.length)/2)
-        res = ''
-        for(var i=0;i<pad;i++){res+=fillchar}
-        res += self
-        for(var i=0;i<pad;i++){res+=fillchar}
+        var res = Array(pad+1).join(fillchar) // is this statement faster than the for loop below?
+        //for(var i=0;i<pad;i++){res+=fillchar}
+        res = res + self + res
         if(res.length<width){res += fillchar}
         return res
     }
 }
+
 str.count = function(self,elt){
     if(!(typeof elt==="string")){throw TypeError(
         "Can't convert '"+str(elt.__class__)+"' object to str implicitly")}
-    var res = 0
-    for(var i=0;i<self.length-elt.length+1;i++){
-        if(self.substr(i,elt.length)===elt){res++}
+    //needs to be non overlapping occurrences of substring in string.
+    var n=0, pos=0
+    while(true){
+        pos=self.indexOf(elt,pos)
+        if(pos>=0){ n++; pos+=elt.length} else break;
     }
-    return res
+    return n
 }
 
 str.encode = function(self) {
   throw NotImplementedError("function encode not implemented yet");
 }
-
 
 str.endswith = function(self){
     // Return True if the string ends with the specified suffix, otherwise 
@@ -447,7 +448,9 @@ str.isalpha = function(self) {
 }
 
 str.isdecimal = function(self) {
-  throw NotImplementedError("function isdecimal not implemented yet");
+  // this is not 100% correct
+  var pat=/^[0-9]+$/;
+  return pat.test(self)
 }
 
 str.isdigit = function(self) {
@@ -480,7 +483,9 @@ str.isnumeric = function(self) {
 }
 
 str.isprintable = function(self) {
-  throw NotImplementedError("function isprintable not implemented yet");
+  // inspired by http://www.codingforums.com/archive/index.php/t-17925.html
+  var re=/[^ -~]/;
+  return !re.test(self);
 }
 
 str.isspace = function(self) {
@@ -489,7 +494,8 @@ str.isspace = function(self) {
 }
 
 str.istitle = function(self) {
-  throw NotImplementedError("function istitle not implemented yet");
+  var pat=/^([A-Z][a-z]+(\s[A-Z][a-z]+)$/i;
+  return pat.test(self)
 }
 
 str.isupper = function(self) {
@@ -514,10 +520,9 @@ str.join = function(self,iterable){
 }
 
 str.ljust = function(self, width, fillchar) {
-  //if (width <= self.length) return self
-  //if (fillchar === undefined) { fillchar=' '}
-  
-  throw NotImplementedError("function ljust not implemented yet");
+  if (width <= self.length) return self
+  if (fillchar === undefined) { fillchar=' '}
+  return self + Array(width - self.length + 1).join(fillchar)
 }
 
 str.lower = function(self){return self.toLowerCase()}
@@ -531,11 +536,17 @@ str.lstrip = function(self,x){
 }
 
 str.maketrans = function(self) {
-  throw NotImplementedError("function isalpha not implemented yet");
+  throw NotImplementedError("function maketrans not implemented yet");
 }
 
-str.partition = function(self) {
-  throw NotImplementedError("function isalpha not implemented yet");
+str.partition = function(self,sep) {
+  if (sep === undefined) {
+     throw Error("sep argument is required");
+     return
+  }
+  var i=self.indexOf(sep)
+  if (i== -1) { return $tuple([self, '', ''])}
+  return $tuple([self.substring(0,i), sep, self.substring(i+sep.length)])
 }
 
 function $re_escape(str)
@@ -604,11 +615,41 @@ str.rjust = function(self) {
 }
 
 str.rpartition = function(self) {
-  throw NotImplementedError("function rpartition not implemented yet");
+  if (sep === undefined) {
+     throw Error("sep argument is required");
+     return
+  }
+  var i=self.lastindexOf(sep)
+  if (i== -1) { return $tuple(['', '', self])}
+  return $tuple([self.substring(0,i), sep, self.substring(i+sep.length)])
 }
 
 str.rsplit = function(self) {
-  throw NotImplementedError("function rsplit not implemented yet");
+    var args = []
+    for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+    var $ns=$MakeArgs("str.split",args,[],{},'args','kw')
+    var sep=None,maxsplit=-1
+    if($ns['args'].length>=1){sep=$ns['args'][0]}
+    if($ns['args'].length==2){maxsplit=$ns['args'][1]}
+    maxsplit = $ns['kw'].get('maxsplit',maxsplit)
+
+    var array=str.split(self) 
+
+    if (array.length <= maxsplit) {
+       return array
+    }
+
+    var s=[], j=1
+    for (var i=0; i < maxsplit - array.length; i++) {
+        if (i < maxsplit - array.length) {
+           if (i > 0) { s[0]+=sep}
+           s[0]+=array[i]
+        } else {
+           s[j]=array[i]
+           j+=1
+        }
+    }
+    return $tuple(s)
 }
 
 str.rstrip = function(self,x){
@@ -707,21 +748,53 @@ str.strip = function(self,x){
 }
 
 str.swapcase = function(self) {
-  throw NotImplementedError("function swapcase not implemented yet");
+    //inspired by http://www.geekpedia.com/code69_Swap-string-case-using-JavaScript.html
+    return self.replace(/([a-z])|([A-Z])/g, function($0,$1,$2)
+        { return ($1) ? $0.toUpperCase() : $0.toLowerCase()
+    })
 }
 
 str.title = function(self) {
-  throw NotImplementedError("function title not implemented yet");
+    //inspired from http://stackoverflow.com/questions/196972/convert-string-to-title-case-with-javascript
+    return self.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 
-str.translate = function(self) {
-  throw NotImplementedError("function translate not implemented yet");
+str.translate = function() {
+    $ns=$MakeArgs("str.translate",arguments,['self','table'],
+        {'deletechars':null},null,null)
+    var table = $ns['table']
+    var self = $ns['self']
+    var d = $ns['deletechars']
+
+    if (isinstance(table, str) && table.length !== 255) {
+       throw Error("table variable must be a string of size 255")
+    }
+ 
+    if (d !== undefined) {
+       var re = new RegExp(d)
+       self=self.replace(re, '')
+    }
+
+    if (table !== None) {
+       for (var i=0; i<self.length; i++) {
+           self[i] = table.charCodeAt(self.charCodeAt(i));
+       }
+    }
+
+    return self
 }
 
 str.upper = function(self){return self.toUpperCase()}
 
-str.zfill = function(self) {
-  throw NotImplementedError("function isalpha not implemented yet");
+str.zfill = function(self, width) {
+  if (width === undefined || width <= self.length) {
+     return self
+  }
+  if (!self.isnumeric()) {
+     return self
+  }
+
+  return Array(width - self.length +1).join('0');
 }
 
 // set String.prototype attributes
@@ -755,4 +828,3 @@ for(var attr in str){
 
 return str
 }()
-

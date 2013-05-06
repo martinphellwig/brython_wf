@@ -2,6 +2,12 @@ x = "zer"
 assert x.capitalize() == "Zer"
 assert str.capitalize(x) == "Zer"
 
+assert "center".center(30) == '            center            '
+y="center"
+assert y.center(30) == '            center            '
+assert str.center(y,30) == '            center            '
+
+
 x = "azert$t y t"
 assert x.count('t')==3
 assert str.count(x,'t')==3
