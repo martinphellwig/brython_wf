@@ -494,7 +494,7 @@ str.isspace = function(self) {
 }
 
 str.istitle = function(self) {
-  var pat=/^([A-Z][a-z]+(\s[A-Z][a-z]+)$/i;
+  var pat=/^([A-Z][a-z]+)(\s[A-Z][a-z]+)$/i;
   return pat.test(self)
 }
 
