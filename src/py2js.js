@@ -1148,9 +1148,10 @@ function $ListOrTupleCtx(context,real){
             res += '},'
             var qesc = new RegExp('"',"g") // to escape double quotes in arguments
             for(var i=1;i<this.intervals.length;i++){
-                var txt = src.substring(this.intervals[i-1],this.intervals[i]).replace(qesc,'\\"')
+                var txt = src.substring(this.intervals[i-1],this.intervals[i])
                 txt = txt.replace(/\n/g,' ')
                 txt = txt.replace(/\\/g,'\\\\')
+                txt = txt.replace(qesc,'\\"')
                 res += '"'+txt+'"'
                 if(i<this.intervals.length-1){res+=','}
             }
