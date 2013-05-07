@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130507-230725
+// version 1.1.20130507-233141
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -24,7 +24,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130507-230725"]
+__BRYTHON__.version_info=[1,1,"20130507-233141"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -5618,8 +5618,11 @@ src=$xmlhttp.responseText
 $xmlhttp.open('GET',elt.src,false)
 $xmlhttp.send()
 __BRYTHON__.$py_module_path['__main__']=elt.src 
-if(!(__BRYTHON__.path.indexOf(elt.src)> -1)){
-__BRYTHON__.path.push(elt.src)
+var src_elts=elt.src.split('/')
+src_elts.pop()
+var src_path=src_elts.join('/')
+if(__BRYTHON__.path.indexOf(src_path)==-1){
+__BRYTHON__.path.push(src_path)
 }
 }else{
 var src=(elt.innerHTML || elt.textContent)

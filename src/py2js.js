@@ -2839,8 +2839,11 @@ function brython(options){
                 $xmlhttp.open('GET',elt.src,false)
                 $xmlhttp.send()
                 __BRYTHON__.$py_module_path['__main__']=elt.src 
-                if (!(__BRYTHON__.path.indexOf(elt.src) > -1)) {
-                   __BRYTHON__.path.push(elt.src)
+                var src_elts = elt.src.split('/')
+                src_elts.pop()
+                var src_path = src_elts.join('/')
+                if (__BRYTHON__.path.indexOf(src_path) == -1) {
+                   __BRYTHON__.path.push(src_path)
                 }
             }else{
                 var src = (elt.innerHTML || elt.textContent)
