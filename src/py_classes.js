@@ -288,6 +288,8 @@ dict.__in__ = function(self,item){return item.__contains__(self)}
 
 dict.__item__ = function(self,i){return self.$keys[i]}
 
+dict.__iter__ = function(self){return new $iterator_getitem(self.$keys)}
+
 dict.__len__ = function(self) {return self.$keys.length}
 
 dict.__ne__ = function(self,other){return !dict.__eq__(self,other)}
@@ -362,11 +364,11 @@ dict.get = function(self,key,_default){
 }
 
 dict.items = function(self){
-    return new $iterator(zip(self.$keys,self.$values),"dict_items")
+    return new $dict_iterator(zip(self.$keys,self.$values),"dict_items")
 }
 
 dict.keys = function(self){
-    return new $iterator(self.$keys,"dict keys")
+    return new $dict_iterator(self.$keys,"dict keys")
 }
 
 dict.pop = function(self,key,_default){
@@ -417,7 +419,7 @@ dict.update = function(self){
 }
 
 dict.values = function(self){
-    return new $iterator(self.$values,"dict values")
+    return new $dict_iterator(self.$values,"dict values")
 }
 
 $DictClass.prototype.__class__ = dict
@@ -451,6 +453,19 @@ $DictClass.prototype.__getattr__ = function(attr){
         })(attr)
     res.__str__ = function(){return "<built-in method "+attr+" of dict object>"}
     return res
+}
+
+function $dict_iterator(obj,info){
+    this.__getattr__ = function(attr){
+        var res = this[attr]
+        if(res===undefined){throw AttributeError(
+            "'"+info+"' object has no attribute '"+attr+"'")}
+        else{return res}
+    }
+    this.__len__ = function(){return obj.__len__()}
+    this.__item__ = function(i){return obj.__item__(i)}
+    this.__class__ = new $class(this,info)
+    this.toString = function(){return info+'('+obj.toString()+')'}
 }
 
 function dir(obj){
@@ -896,24 +911,21 @@ function isinstance(obj,arg){
 //issubclass() (built in function)
 
 function iter(obj){
-    if('__item__' in obj){
-        obj.__counter__= 0 // reset iteration counter
-        return obj
-    }
+    if(obj.__iter__!==undefined){return obj.__iter__()}
+    else if(obj.__getitem__!==undefined){return new $iterator_getitem(obj)}
     throw TypeError("'"+str(obj.__class__)+"' object is not iterable")
 }
 
-function $iterator(obj,info){
+function $iterator_getitem(obj){
+    this.counter = -1
     this.__getattr__ = function(attr){
-        var res = this[attr]
-        if(res===undefined){throw AttributeError(
-            "'"+info+"' object has no attribute '"+attr+"'")}
-        else{return res}
+        if(attr==='__next__'){return $bind(this[attr],this)}
     }
-    this.__len__ = function(){return obj.__len__()}
-    this.__item__ = function(i){return obj.__item__(i)}
-    this.__class__ = new $class(this,info)
-    this.toString = function(){return info+'('+obj.toString()+')'}
+    this.__next__ = function(){
+        this.counter++
+        if(this.counter<obj.__len__()){return obj.__getitem__(this.counter)}
+        else{throw StopIteration("")}
+    }
 }
 
 function len(obj){
@@ -1006,13 +1018,8 @@ function min(){
 }
 
 function next(obj){
-    if('__item__' in obj){
-        if(obj.__counter__===undefined){obj.__counter__=0}
-        var res = obj.__item__(obj.__counter__)
-        if(res!==undefined){obj.__counter__++;return res}
-        throw StopIteration('')
-    }
-    throw TypeError("'"+str(obj.__class__)+"' object is not iterable")
+    if(obj.__next__!==undefined){return obj.__next__()}
+    throw TypeError("'"+str(obj.__class__)+"' object is not an iterator")
 }
 
 function $not(obj){return !bool(obj)}
@@ -1271,6 +1278,8 @@ set.__gt__ = function(self,other){
 set.__hash__ = function(self) {throw TypeError("unhashable type: 'set'");}
 
 set.__in__ = function(self,item){return item.__contains__(self)}
+
+set.__iter__ = function(self){return new $iterator_getitem(self.items)}
 
 set.__le__ = function(self,other){
     for(var i=0;i<self.items.length;i++){

@@ -181,17 +181,6 @@ list.__ne__ = function(self,other){return !self.__eq__(other)}
 
 list.__new__ = function(){return []}
 
-list.__next__ = function(self){
-    if(self.iter===null){self.iter=0}
-    if(self.iter<self.valueOf().length){
-        self.iter++
-        return self.valueOf()[self.iter-1]
-    } else {
-        self.iter = null
-        throw StopIteration('')
-    }
-}
-
 list.__not_in__ = function(self,item){return !list.__in__(self,item)}
 
 list.__repr__ = function(self){
