@@ -38,7 +38,7 @@ var $augmented_assigns = {
 }
 
 function $_SyntaxError(context,msg,indent){
-    console.log(msg)
+    //console.log(msg)
     var ctx_node = context
     while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
     var tree_node = ctx_node.node
@@ -1934,6 +1934,24 @@ function $transition(context,token){
                 else{break}
             }
             if(repl===null){
+                if(op1.type==='op' 
+                    && ['<','<=','==','!=','is','>=','>'].indexOf(op1.op)>-1
+                    && ['<','<=','==','!=','is','>=','>'].indexOf(op)>-1){
+                    // chained comparisions such as 1 <= 3 < 5
+                    // replace by (c1 op1 c2) and (c2 op ...)
+                    op1.parent.tree.pop()
+                    var and_expr = new $OpCtx(op1,'and')
+                    var c2 = op1.tree[1] // right operand of op1
+                    // clone c2
+                    var c2_clone = new Object()
+                    for(var attr in c2){c2_clone[attr]=c2[attr]}
+                    c2_clone.parent = and_expr
+                    // add fake element to and_expr : it will be removed
+                    // when new_op is created at the next line
+                    and_expr.tree.push('xxx')
+                    var new_op = new $OpCtx(c2_clone,op)
+                    return new $AbstractExprCtx(new_op,false)
+                }
                 context.parent.tree.pop()
                 var expr = new $ExprCtx(op_parent,'operand',context.with_commas)
                 expr.expect = ','
