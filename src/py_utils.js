@@ -133,12 +133,22 @@ function $generator(func){
         func.apply(this,arguments)
     
         var obj = new Object()
+        obj.$iter = -1
         obj.__class__ = $generator
+        obj.__getattr__ = function(attr){return obj[attr]}
         obj.__len__ = function(){return func.$iter.__len__()}
         obj.__item__ = function(rank){return func.$iter.__item__(rank)}
-        return obj
+        obj.__iter__ = function(){return obj}
+        obj.__next__ = function(){
+            obj.$iter++
+            if(obj.$iter<obj.__len__()){return obj.__item__(obj.$iter)}
+            else{throw StopIteration("")}
+        }
+        obj.__repr__ = function(){return "<generator object>"}
+        obj.__str__ = function(){return "<generator object>"}
+        return iter(obj)
     }
-    res.__str__ = function(){return "<function "+res.__name__+">"}
+    res.__repr__ = function(){return "<function "+func.__name__+">"}
     return res
 }
 
