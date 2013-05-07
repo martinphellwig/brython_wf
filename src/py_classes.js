@@ -353,7 +353,7 @@ dict.copy = function(self){
 }
 
 dict.get = function(self,key,_default){
-    try{var res = dict.__getitem__(self,key);console.log(res);return res}
+    try{return dict.__getitem__(self,key)}
     catch(err){
         $pop_exc()
         if(_default!==undefined){return _default}

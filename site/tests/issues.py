@@ -151,4 +151,8 @@ assert 3.0**2 == 9.0
 assert 3**2.0 == 9.0
 assert 3.0**2.0 == 9.0
 
+# issue 55
+assert 1 <= 3 <= 5
+assert not 1 <= (3+3) <= 5
+
 print('passed all tests')
