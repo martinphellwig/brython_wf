@@ -280,17 +280,6 @@ str.__ne__ = function(self,other){return other!==self.valueOf()}
 
 str.__new__ = function(){return ''}
 
-str.__next__ = function(self){
-    if(self.iter==null){self.iter==0}
-    if(self.iter<self.value.length){
-        self.iter++
-        return str(self.value.charAt(self.iter-1))
-    } else {
-        self.iter = null
-        throw StopIteration()
-    }
-}
-
 str.__not_in__ = function(self,item){return !str.__in__(self,item)}
 
 str.__repr__ = function(self){
