@@ -1513,8 +1513,9 @@ tuple.__new__ = function(){return tuple()}
 tuple.__str__ = function(){return "<class 'tuple'>"}
 tuple.toString = tuple.__str__
 
-//type() (built in function)
 function type(obj) {
+  if (obj['__class__'] !== undefined) {return obj['__class__']}
+
   throw NotImplementedError('type not implemented yet')
 }
 
