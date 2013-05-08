@@ -100,7 +100,8 @@ function bin(obj) {
 function bool(obj){ // return true or false
     if(obj===null){return False}
     else if(obj===undefined){return False}
-    else if(isinstance(obj,dict)){return obj.keys.length>0}
+    else if(obj.__bool__ !== undefined) { return obj.__bool__()}
+    //else if(isinstance(obj,dict)){return obj.keys.length>0}
     else if(isinstance(obj,tuple)){return obj.length>0}
     else if(typeof obj==="boolean"){return obj}
     else if(typeof obj==="number" || typeof obj==="string"){
@@ -229,6 +230,8 @@ dict.__add__ = function(self,other){
     var msg = "unsupported operand types for +:'dict' and "
     throw TypeError(msg+"'"+(str(other.__class__) || typeof other)+"'")
 }
+
+dict.__bool__ = function (self) {return self.$keys.length>0}
 
 dict.__class__ = $type
 
@@ -466,6 +469,7 @@ function $dict_iterator(obj,info){
     this.__item__ = function(i){return obj.__item__(i)}
     this.__class__ = new $class(this,info)
     this.toString = function(){return info+'('+obj.toString()+')'}
+    this.__str__= this.toString
 }
 
 function dir(obj){
@@ -477,10 +481,10 @@ function dir(obj){
 
 //divmod() (built in function)
 function divmod(x,y) {
-   if (isinstance(x,float) || isinstance(y,float)) {
+    if(isinstance(x,float) || isinstance(y,float)) {
       return (float(Math.floor(a/b)), a % b) 
-   }
-   return (int(Math.floor(x/y)), a % b)
+    }
+    return (int(Math.floor(x/y)), a % b)
 }
 
 function enumerate(iterator){
@@ -520,6 +524,7 @@ function float(value){
     throw ValueError("Could not convert to float(): '"+str(value)+"'")
 }
 
+float.__bool__ = function(){return bool(this.value)}
 float.__class__ = $type
 float.__name__ = 'float'
 float.__new__ = function(){return new $FloatClass(0.0)}
@@ -751,11 +756,14 @@ function int(value){
         "Invalid literal for int() with base 10: '"+str(value)+"'"+value.__class__)
     }
 }
+
+int.__bool__ = function(){if (value === 0) {return False} else {return True}}
 int.__class__ = $type
 int.__name__ = 'int'
 int.__new__ = function(){return 0}
 int.toString = int.__str__ = function(){return "<class 'int'>"}
 
+Number.prototype.__bool__ = function(){return bool(this.valueOf())}
 Number.prototype.__class__ = int
 
 Number.prototype.__eq__ = function(other){
@@ -925,6 +933,9 @@ function $iterator_getitem(obj){
         this.counter++
         if(this.counter<obj.__len__()){return obj.__getitem__(this.counter)}
         else{throw StopIteration("")}
+    }
+    if (obj.__class__ !== undefined) {
+       this.__class__=obj.__class__
     }
 }
 
@@ -1494,6 +1505,7 @@ function $tuple(arg){return arg} // used for parenthesed expressions
 function tuple(){
     var obj = list.apply(null,arguments)
     obj.__class__ = tuple
+    obj.__bool__ = function(){return obj.length>0}
 
     obj.__hash__ = function () {
       // http://nullege.com/codes/show/src%40p%40y%40pypy-HEAD%40pypy%40rlib%40test%40test_objectmodel.py/145/pypy.rlib.objectmodel._hash_float/python
@@ -1514,7 +1526,7 @@ tuple.__str__ = function(){return "<class 'tuple'>"}
 tuple.toString = tuple.__str__
 
 function type(obj) {
-  if (obj['__class__'] !== undefined) {return obj['__class__']}
+  if (obj.__class__ !== undefined) {return obj.__class__}
 
   throw NotImplementedError('type not implemented yet')
 }
