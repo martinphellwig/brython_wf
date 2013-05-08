@@ -463,10 +463,11 @@ function $dict_iterator(obj,info){
         var res = this[attr]
         if(res===undefined){throw AttributeError(
             "'"+info+"' object has no attribute '"+attr+"'")}
-        else{return res}
+        else{return $bind(this[attr],this)}
     }
     this.__len__ = function(){return obj.__len__()}
     this.__item__ = function(i){return obj.__item__(i)}
+    this.__iter__ = function(){return new $iterator_getitem(obj)}
     this.__class__ = new $class(this,info)
     this.toString = function(){return info+'('+obj.toString()+')'}
     this.__str__= this.toString
