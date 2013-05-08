@@ -1962,6 +1962,14 @@ function $transition(context,token){
                     var new_op = new $OpCtx(c2_clone,op)
                     return new $AbstractExprCtx(new_op,false)
                 }
+                if(['and','or'].indexOf(op)>-1){
+                    while(context.parent.type==='not'||
+                        (context.parent.type==='expr'&&context.parent.parent.type==='not')){
+                        // 'and' and 'or' have higher precedence than 'not'
+                        context = context.parent
+                        op_parent = context.parent
+                    }
+                }
                 context.parent.tree.pop()
                 var expr = new $ExprCtx(op_parent,'operand',context.with_commas)
                 expr.expect = ','
