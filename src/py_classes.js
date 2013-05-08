@@ -1036,7 +1036,8 @@ function next(obj){
 
 function $not(obj){return !bool(obj)}
 
-function $ObjectClass(){
+function $ObjectClass(cls){
+    if (cls !== undefined) {this=cls}
     this.__class__ = "<class 'object'>"
 }
 $ObjectClass.prototype.__getattr__ = function(attr){
@@ -1049,9 +1050,14 @@ $ObjectClass.prototype.__setattr__ = function(attr,value){this[attr]=value}
 function object(){
     return new $ObjectClass()
 }
+object.__new__ = function(cls){return new $ObjectClass(cls)}
 object.__class__ = $type
 object.__name__ = 'object'
 object.toString = object.__str__ = function() { return "<class 'object'>" }
+object.__getattr__ = function(attr){
+    if(attr in this){return this[attr]}
+    else{throw AttributeError("object has no attribute '"+attr+"'")}
+}
 object.__hash__ = function () { 
     __BRYTHON__.$py_next_hash+=1; 
     return __BRYTHON__.$py_next_hash;
