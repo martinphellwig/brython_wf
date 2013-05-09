@@ -1037,7 +1037,7 @@ function next(obj){
 function $not(obj){return !bool(obj)}
 
 function $ObjectClass(cls){
-    if (cls !== undefined) {this=cls}
+    //if (cls !== undefined) {this=cls}
     this.__class__ = "<class 'object'>"
 }
 $ObjectClass.prototype.__getattr__ = function(attr){
