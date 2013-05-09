@@ -101,13 +101,10 @@ function bool(obj){ // return true or false
     if(obj===null){return False}
     else if(obj===undefined){return False}
     else if(obj.__bool__ !== undefined) { return obj.__bool__()}
-    //else if(isinstance(obj,dict)){return obj.keys.length>0}
-    else if(isinstance(obj,tuple)){return obj.length>0}
     else if(typeof obj==="boolean"){return obj}
     else if(typeof obj==="number" || typeof obj==="string"){
         if(obj){return true}else{return false}
-    }else if('__bool__' in obj){return obj.__bool__()}
-    else if('__len__' in obj){return obj.__len__()>0}
+    }else if('__len__' in obj){return obj.__len__()>0}
     return true
 }
 bool.__class__ = $type
@@ -764,7 +761,8 @@ int.__name__ = 'int'
 int.__new__ = function(){return 0}
 int.toString = int.__str__ = function(){return "<class 'int'>"}
 
-Number.prototype.__bool__ = function(){return bool(this.valueOf())}
+Number.prototype.__bool__ = function(){return new Boolean(this.valueOf())}
+
 Number.prototype.__class__ = int
 
 Number.prototype.__eq__ = function(other){
