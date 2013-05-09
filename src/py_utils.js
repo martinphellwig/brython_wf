@@ -593,19 +593,22 @@ function jsobject2pyobject(obj) {
     return obj
 }
 
-window.IDBObjectStore.prototype._put=window.IDBObjectStore.prototype.put
-window.IDBObjectStore.prototype.put=function(obj, key) {
-   var myobj=pyobject2jsobject(obj);
-   return window.IDBObjectStore.prototype._put.apply(this, [myobj, key]);
+if (window.IDBObjectStore !== undefined) {
+    window.IDBObjectStore.prototype._put=window.IDBObjectStore.prototype.put
+    window.IDBObjectStore.prototype.put=function(obj, key) {
+       var myobj=pyobject2jsobject(obj);
+       return window.IDBObjectStore.prototype._put.apply(this, [myobj, key]);
+    }
+    
+    window.IDBObjectStore.prototype._add=window.IDBObjectStore.prototype.add
+    window.IDBObjectStore.prototype.add=function(obj, key) {
+       var myobj=pyobject2jsobject(obj);
+       return window.IDBObjectStore.prototype._add.apply(this, [myobj, key]);
+    }
 }
 
-window.IDBObjectStore.prototype._add=window.IDBObjectStore.prototype.add
-window.IDBObjectStore.prototype.add=function(obj, key) {
-   var myobj=pyobject2jsobject(obj);
-   return window.IDBObjectStore.prototype._add.apply(this, [myobj, key]);
+if (window.IDBRequest !== undefined) {
+    window.IDBRequest.prototype.pyresult=function() {
+       return jsobject2pyobject(this.result);
+    }
 }
-
-window.IDBRequest.prototype.pyresult=function() {
-   return jsobject2pyobject(this.result);
-}
-
