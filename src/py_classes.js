@@ -100,11 +100,11 @@ function bin(obj) {
 function bool(obj){ // return true or false
     if(obj===null){return False}
     else if(obj===undefined){return False}
-    else if(obj.__bool__ !== undefined) { return obj.__bool__()}
     else if(typeof obj==="boolean"){return obj}
     else if(typeof obj==="number" || typeof obj==="string"){
         if(obj){return true}else{return false}
-    }else if('__len__' in obj){return obj.__len__()>0}
+    }else if(obj.__bool__ !== undefined) { return obj.__bool__()}
+    else if('__len__' in obj){return obj.__len__()>0}
     return true
 }
 bool.__class__ = $type
