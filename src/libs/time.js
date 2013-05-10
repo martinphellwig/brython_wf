@@ -10,6 +10,13 @@ $module =  {
 
     set_timeout : function(func,interval){window.setTimeout(func,interval)},
 
+    localtime : function(secs){ 
+       var d=new Date();
+       if (secs === undefined || secs === None) {return d.getTime()}
+       return $list(d.getFullYear(), d.getMonth()+1, d.getDate(), d.getHours(),
+                    d.getMinutes(), d.getSeconds(), d.getDay(), 0)
+       //fixme  (last value is 0 which is the number of days in this year..)
+    },
     time : function(){return (new Date()).getTime()},
     
     strftime : function(format,arg){
