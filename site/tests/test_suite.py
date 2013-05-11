@@ -28,6 +28,19 @@ assert a==166
 a=0B10100110
 assert a==166
 
+# bitwise operators
+assert ~3 == -4
+x=3
+assert ~x == -4
+assert  ~1 & ~10 | 8 == -4
+assert 2<<16 == 131072
+assert 131072 >> 16 == 2
+
+# __neg__
+assert -x == -3
+y = 2.1
+assert -y == -2.1
+
 #not sure how to convert this to assert (raise)?
 try:
   print(n)
