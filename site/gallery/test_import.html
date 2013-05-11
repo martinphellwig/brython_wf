@@ -8,6 +8,7 @@
 <body onLoad="brython(1)">
 
 <script type="text/python">
+import sys
 import datetime
 import sidebar
 from html import P
@@ -19,6 +20,7 @@ menu_items = [('The Brython site','http://www.brython.info'),
 doc <= sidebar.menu('Brython',menu_items)
 doc <= P()+str(datetime.date.today())
 doc <= P()+string.ascii_letters
+doc <= P('sys.path : '+str(sys.path))
 </script>
 </body>
 </html>
