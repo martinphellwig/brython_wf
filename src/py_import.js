@@ -126,7 +126,10 @@ function $import_py_module(module,alias,names,path,module_contents) {
         var ctx = node.get_ctx().tree[0]
         if(ctx.type==='def'||ctx.type==='class'){
             if(mod_names.indexOf(ctx.name)===-1){mod_names.push(ctx.name)}
-            
+        }else if(ctx.type==='from') {
+            for (var j=0; j< ctx.names.length; j++) {
+              if(mod_names.indexOf(ctx.names[j])===-1){mod_names.push(ctx.names[j])}
+            }
         }else if(ctx.type==='assign'){
             var left = ctx.tree[0]
             if(left.type==='expr'&&left.tree[0].type==='id'&&left.tree[0].tree.length===0){
