@@ -2825,11 +2825,33 @@ function brython(options){
     if (isinstance(options.pythonpath, list)) {
        __BRYTHON__.path = options.pythonpath
     }
-
     if (!(__BRYTHON__.path.indexOf(script_path) > -1)) {
        __BRYTHON__.path.push(script_path)
     }
+    // get path of brython.js or py2js to determine brython_path
+    // it will be used for imports
 
+    for(var $i=0;$i<elts.length;$i++){
+        var elt = elts[$i]
+        var br_scripts = ['brython.js','py2js.js']
+        for(var j=0;j<br_scripts.length;j++){
+            var bs = br_scripts[j]
+            if(elt.src.substr(elt.src.length-bs.length)==bs){
+                if(elt.src.length===bs.length ||
+                    elt.src.charAt(elt.src.length-bs.length-1)=='/'){
+                        var path = elt.src.substr(0,elt.src.length-bs.length)
+                        __BRYTHON__.brython_path = path
+                        if (!(__BRYTHON__.path.indexOf(path+'Lib')> -1)) {
+                           __BRYTHON__.path.push(path+'Lib')
+                        }
+                        break
+                }
+            }
+        }
+    }    
+
+    // get all scripts with type = text/python and run them
+    
     for(var $i=0;$i<elts.length;$i++){
         var elt = elts[$i]
         if(elt.type=="text/python"||elt.type==="text/python3"){
@@ -2854,7 +2876,9 @@ function brython(options){
                 src_elts.pop()
                 var src_path = src_elts.join('/')
                 if (__BRYTHON__.path.indexOf(src_path) == -1) {
-                   __BRYTHON__.path.push(src_path)
+                    // insert in first position : folder /Lib with built-in modules
+                    // should be the last used when importing scripts
+                    __BRYTHON__.path.splice(0,0,src_path)
                 }
             }else{
                 var src = (elt.innerHTML || elt.textContent)
@@ -2874,22 +2898,6 @@ function brython(options){
                 document.$stderr.__getattr__('write')(trace)
                 err.message += err.info
                 throw err
-            }
-        }else{ // get path of brython.js
-            var br_scripts = ['brython.js','py_list.js','py_loader.js']
-            for(var j=0;j<br_scripts.length;j++){
-                var bs = br_scripts[j]
-                if(elt.src.substr(elt.src.length-bs.length)==bs){
-                    if(elt.src.length===bs.length ||
-                        elt.src.charAt(elt.src.length-bs.length-1)=='/'){
-                            var path = elt.src.substr(0,elt.src.length-bs.length)
-                            __BRYTHON__.brython_path = path
-                            if (!(__BRYTHON__.path.indexOf(path+'Lib')> -1)) {
-                               __BRYTHON__.path.push(path+'Lib')
-                            }
-                            break
-                    }
-                }
             }
         }
     }
