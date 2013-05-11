@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130511-101649
+// version 1.1.20130511-110847
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -24,7 +24,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130511-101649"]
+__BRYTHON__.version_info=[1,1,"20130511-110847"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -5644,6 +5644,24 @@ __BRYTHON__.path.push(script_path)
 }
 for(var $i=0;$i<elts.length;$i++){
 var elt=elts[$i]
+var br_scripts=['brython.js','py2js.js']
+for(var j=0;j<br_scripts.length;j++){
+var bs=br_scripts[j]
+if(elt.src.substr(elt.src.length-bs.length)==bs){
+if(elt.src.length===bs.length ||
+elt.src.charAt(elt.src.length-bs.length-1)=='/'){
+var path=elt.src.substr(0,elt.src.length-bs.length)
+__BRYTHON__.brython_path=path
+if(!(__BRYTHON__.path.indexOf(path+'Lib')> -1)){
+__BRYTHON__.path.push(path+'Lib')
+}
+break
+}
+}
+}
+}
+for(var $i=0;$i<elts.length;$i++){
+var elt=elts[$i]
 if(elt.type=="text/python"||elt.type==="text/python3"){
 if(elt.src!==''){
 if(window.XMLHttpRequest){
@@ -5664,7 +5682,7 @@ var src_elts=elt.src.split('/')
 src_elts.pop()
 var src_path=src_elts.join('/')
 if(__BRYTHON__.path.indexOf(src_path)==-1){
-__BRYTHON__.path.push(src_path)
+__BRYTHON__.path.splice(__BRYTHON__.path.length-1,0,src_path)
 }
 }else{
 var src=(elt.innerHTML || elt.textContent)
@@ -5684,22 +5702,6 @@ trace +=err.info
 document.$stderr.__getattr__('write')(trace)
 err.message +=err.info
 throw err
-}
-}else{
-var br_scripts=['brython.js','py_list.js','py_loader.js']
-for(var j=0;j<br_scripts.length;j++){
-var bs=br_scripts[j]
-if(elt.src.substr(elt.src.length-bs.length)==bs){
-if(elt.src.length===bs.length ||
-elt.src.charAt(elt.src.length-bs.length-1)=='/'){
-var path=elt.src.substr(0,elt.src.length-bs.length)
-__BRYTHON__.brython_path=path
-if(!(__BRYTHON__.path.indexOf(path+'Lib')> -1)){
-__BRYTHON__.path.push(path+'Lib')
-}
-break
-}
-}
 }
 }
 }
