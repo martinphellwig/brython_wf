@@ -59,16 +59,19 @@ def is_(a, b):
     "Same as a is b."
     return a is b
 
-# brython does not like
+# brython does not like  (causes syntax error)
 #def is_not(a, b):
 #    "Same as a is not b."
 #    return a is not b
 
-def abs(a):
-    "Same as abs(a)."
-    #return _bi.abs(a)
-    return abs(a)
+#recursion error or just comment out and add code below function
+#def abs(a):
+#    "Same as abs(a)."
+#    #return _bi.abs(a)
+#    return abs(a)
 __abs__ = abs
+abs=abs
+
 
 def add(a, b):
     "Same as a + b."
@@ -213,7 +216,7 @@ class attrgetter:
         if any(not isinstance(attr, str) for attr in self._attrs):
             raise TypeError('attribute name must be a string')
 
-    #@staticmethod    brython doesn't like
+    @staticmethod
     def _resolve_attr(obj, attr):
         for name in attr.split('.'):
             #obj = _bi.getattr(obj, name)
