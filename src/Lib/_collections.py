@@ -400,7 +400,14 @@ class defaultdict(dict):
             default_factory = None
         self.default_factory = default_factory
         super(defaultdict, self).__init__(*args, **kwds)
- 
+    
+    #fixme..  had to add this function to get defaultdict working with brython correctly
+    def __getitem__(self, key):
+        if self.__contains__(key):  
+           return dict.__getitem__(self,key)
+    
+        return self.__missing__(key)
+
     def __missing__(self, key):
         # from defaultdict docs
         if self.default_factory is None: 
