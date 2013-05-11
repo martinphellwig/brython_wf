@@ -2,10 +2,10 @@ var $operators = {
     "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
     "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
     "+=":"iadd","-=":"isub","*=":"imul","/=":"itruediv",
-    "%=":"imod","&=":"iand","|=":"ior",
-    "^=":"ipow","+":"add","-":"sub","*":"mul",
-    "/":"truediv","%":"mod","&":"and","|":"or",
-    "^":"pow","<":"lt",">":"gt",
+    "%=":"imod","&=":"iand","|=":"ior","^=":"ixor","**=":"ipow",
+    "+":"add","-":"sub","*":"mul",
+    "/":"truediv","%":"mod","&":"and","|":"or","~":"invert",
+    "^":"xor","<":"lt",">":"gt",
     "<=":"le",">=":"ge","==":"eq","!=":"ne",
     "or":"or","and":"and", "in":"in", //"not":"not",
     "is":"is","not_in":"not_in","is_not":"is_not" // fake
@@ -38,7 +38,7 @@ var $augmented_assigns = {
 }
 
 function $_SyntaxError(context,msg,indent){
-    //console.log(msg)
+    console.log('syntax error '+msg)
     var ctx_node = context
     while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
     var tree_node = ctx_node.node
@@ -50,7 +50,7 @@ function $_SyntaxError(context,msg,indent){
 }
 
 var $first_op_letter = {}
-for(op in $operators){$first_op_letter[op.charAt(0)]=0}
+for($op in $operators){$first_op_letter[$op.charAt(0)]=0}
 
 function $Node(type){
     this.type = type
@@ -1651,23 +1651,15 @@ function $transition(context,token){
             }
         }else if(token==='lambda'){return new $LambdaCtx(new $ExprCtx(context,'lambda',commas))}
         else if(token==='op'){
-            if('+-'.search(arguments[2])>-1){ // unary + or -
-                return new $UnaryCtx(context,arguments[2])
+            if('+-~'.search(arguments[2])>-1){ // unary + or -, bitwise ~
+                return new $UnaryCtx(new $ExprCtx(context,'unary',false),arguments[2])
             }else{$_SyntaxError(context,'token '+token+' after '+context)}
         }else if(token==='='){$_SyntaxError(context,token)}
         else{return $transition(context.parent,token,arguments[2])}
 
     }else if(context.type==='assert'){
     
-        if($expr_starters.indexOf(token)>-1&&context.expect===undefined){
-            context.expect = 'cond'
-            return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
-        }else if(token===',' && context.expect==='cond'){
-            context.expect = 'arg'
-            return context
-        }else if($expr_starters.indexOf(token)>-1 && context.expect==='arg'){
-            return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
-        }else if(token==='eol' && context.expect){
+        if(token==='eol'){
             return $transition(context.parent,token)
         }else{$_SyntaxError(context,token)}
         
@@ -1693,7 +1685,7 @@ function $transition(context,token){
         }else if(token===')'){context.end=$pos;return context.parent}
         else if(token==='op'){
             var op=arguments[2]
-            if(op==='-'){return new $UnaryCtx(context,'-')}
+            if(op==='-'||op==='~'){return new $UnaryCtx(new $ExprCtx(context,'unary',false),op)}
             else if(op==='+'){return context}
             else if(op==='*'){return new $StarArgCtx(context)}
             else if(op==='**'){return new $DoubleStarArgCtx(context)}
@@ -2248,7 +2240,7 @@ function $transition(context,token){
         if($expr_starters.indexOf(token)>-1){
             var expr = new $AbstractExprCtx(context,true)
             return $transition(expr,token,arguments[2])
-        }else if(token==="op" && '+-'.search(arguments[2])>-1){
+        }else if(token==="op" && '+-~'.search(arguments[2])>-1){
             var expr = new $AbstractExprCtx(context,true)
             return $transition(expr,token,arguments[2])
         }else if(token==='class'){return new $ClassCtx(context)}
@@ -2260,7 +2252,7 @@ function $transition(context,token){
             return new $SingleKwCtx(context,token)
         }else if(token==='try'){return new $TryCtx(context)}
         else if(token==='except'){return new $ExceptCtx(context)}
-        else if(token==='assert'){return new $AssertCtx(context)}
+        else if(token==='assert'){return new $AbstractExprCtx(new $AssertCtx(context),'assert',true)}
         else if(token==='from'){return new $FromCtx(context)}
         else if(token==='import'){return new $ImportCtx(context)}
         else if(token==='global'){return new $GlobalCtx(context)}
@@ -2297,7 +2289,7 @@ function $transition(context,token){
     
         if($expr_starters.indexOf(token)>-1){
             return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
-        }else if(token==='op' && '+-'.search(arguments[2])>-1){
+        }else if(token==='op' && '+-~'.search(arguments[2])>-1){
             return new $UnaryCtx(context,arguments[2])
         }else{return $transition(context.parent,token)}
 
@@ -2380,19 +2372,30 @@ function $transition(context,token){
     }else if(context.type==='unary'){
 
         if(['int','float'].indexOf(token)>-1){
-            context.parent.tree.pop()
+            // replace by real value of integer or float
+            // parent of context is a $ExprCtx
+            // grand-parent is a $AbstractExprCtx
+            // we remove the $ExprCtx and trigger a transition 
+            // from the $AbstractExpCtx with an integer or float
+            // of the correct value
+            context.parent.parent.tree.pop()
             var value = arguments[2]
             if(context.op==='-'){value=-value}
-            return $transition(context.parent,token,value)
+            if(context.op==='~'){value=~value}
+            return $transition(context.parent.parent,token,value)
         }else if(token==='id'){
-            // replace by -1*x, or remove
+            // replace by x.__neg__(), x.__invert__ or x
             context.parent.tree.pop()
-            if(context.op==='-'){
-                var int_expr = new $IntCtx(context.parent,-1)
-                return $transition(new $OpCtx(int_expr,'*'),token,arguments[2])
-            }else{
-                return $transition(context.parent,token,arguments[2])
+            var expr = new $ExprCtx(context.parent,'id',false)
+            new $IdCtx(expr,arguments[2]) // create id
+            if(context.op !== '+'){
+                var repl = new $AttrCtx(expr)
+                if(context.op==='-'){repl.name='__neg__'}
+                else{repl.name='__invert__'}
+                // method is called with no argument
+                var call = new $CallCtx(expr)
             }
+            return context.parent
         }else if(token==="op" && '+-'.search(arguments[2])>-1){
             var op = arguments[2]
             if(context.op===op){context.op='+'}else{context.op='-'}

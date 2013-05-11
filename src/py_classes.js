@@ -586,7 +586,11 @@ $FloatClass.prototype.__floordiv__ = function(other){
 }
 
 $FloatClass.prototype.__getattr__ = function(attr){
-    if(this[attr]!==undefined){return this[attr]}
+    if(attr==='__class__'){return float}
+    if(this[attr]!==undefined){
+        if(typeof this[attr]==='function'){return $bind(this[attr],this)}
+        else{return this[attr]}
+    }
     else{throw AttributeError("'float' object has no attribute '"+attr+"'")}
 }
 
@@ -595,6 +599,8 @@ $FloatClass.prototype.__hash__=float.__hash__;
 $FloatClass.prototype.__in__ = function(item){return item.__contains__(this)}
 
 $FloatClass.prototype.__ne__ = function(other){return !this.__eq__(other)}
+
+$FloatClass.prototype.__neg__ = function(other){return -this.value}
 
 $FloatClass.prototype.__not_in__ = function(item){return !(item.__contains__(this))}
 
@@ -761,6 +767,8 @@ int.__name__ = 'int'
 int.__new__ = function(){return 0}
 int.toString = int.__str__ = function(){return "<class 'int'>"}
 
+Number.prototype.__and__ = function(other){return this & other} // bitwise AND
+
 Number.prototype.__bool__ = function(){return new Boolean(this.valueOf())}
 
 Number.prototype.__class__ = int
@@ -782,7 +790,11 @@ Number.prototype.__floordiv__ = function(other){
 }
 
 Number.prototype.__getattr__ = function(attr){
-    if(this[attr]!==undefined){return this[attr]}
+    if(attr==='__class__'){return int}
+    if(this[attr]!==undefined){
+        if(typeof this[attr]==='function'){return $bind(this[attr],this)}
+        else{return this[attr]}
+    }
     throw AttributeError("'int' object has no attribute '"+attr+"'")
 }
 
@@ -791,6 +803,10 @@ Number.prototype.__hash__ = function(){return this.valueOf()}
 Number.prototype.__in__ = function(item){return item.__contains__(this)}
 
 Number.prototype.__int__ = function(){return this}
+
+Number.prototype.__invert__ = function(){return ~this}
+
+Number.prototype.__lshift__ = function(other){return this << other} // bitwise left shift
 
 Number.prototype.__mul__ = function(other){
     var val = this.valueOf()
@@ -816,10 +832,14 @@ Number.prototype.__mul__ = function(other){
 
 Number.prototype.__ne__ = function(other){return !this.__eq__(other)}
 
+Number.prototype.__neg__ = function(){return -this}
+
 Number.prototype.__not_in__ = function(item){
     res = item.__getattr__('__contains__')(this)
     return !res
 }
+
+Number.prototype.__or__ = function(other){return this | other} // bitwise OR
 
 Number.prototype.__pow__ = function(other){
     if(isinstance(other, int)) {return int(Math.pow(this.valueOf(),other.valueOf()))}
@@ -828,6 +848,8 @@ Number.prototype.__pow__ = function(other){
 }
 
 Number.prototype.__repr__ = function(){return this.toString()}
+
+Number.prototype.__rshift__ = function(other){return this >> other} // bitwise right shift
 
 Number.prototype.__setattr__ = function(attr,value){throw AttributeError(
     "'int' object has no attribute "+attr+"'")}
@@ -843,6 +865,8 @@ Number.prototype.__truediv__ = function(other){
         else{return float(this/other.value)}
     }else{$UnsupportedOpType("//","int",other.__class__)}
 }
+
+Number.prototype.__xor__ = function(other){return this ^ other} // bitwise XOR
 
 // operations
 var $op_func = function(other){
@@ -1324,21 +1348,6 @@ set.__or__ = function(self,other){
     return res
 }
 
-set.__pow__ = function(self,other){
-    // Return a new set with elements in either the set or other but not both
-    var res = set()
-    for(var i=0;i<self.items.length;i++){
-        if(!other.__contains__(self.items[i])){
-            res.add(self.items[i])
-        }
-    }
-    for(var i=0;i<other.items.length;i++){
-        if(!self.__contains__(other.items[i])){
-            res.add(other.items[i])
-        }
-    }
-    return res
-}
 set.__repr__ = function(self){
     if(self===undefined){return "<class 'set'>"}
     var res = "{"
@@ -1356,6 +1365,22 @@ set.__sub__ = function(self,other){
     var res = set()
     for(var i=0;i<self.items.length;i++){
         if(!other.__contains__(self.items[i])){res.items.push(self.items[i])}
+    }
+    return res
+}
+
+set.__xor__ = function(self,other){
+    // Return a new set with elements in either the set or other but not both
+    var res = set()
+    for(var i=0;i<self.items.length;i++){
+        if(!other.__contains__(self.items[i])){
+            res.add(self.items[i])
+        }
+    }
+    for(var i=0;i<other.items.length;i++){
+        if(!self.__contains__(other.items[i])){
+            res.add(other.items[i])
+        }
     }
     return res
 }
