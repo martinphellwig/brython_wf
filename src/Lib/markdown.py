@@ -17,8 +17,9 @@ class CodeBlock:
         self.lines = [line]
     
     def to_html(self):
-        res = '<p><pre class="marked"><code>'
-        res += escape('\n'.join(self.lines))+'</code></pre><p>\n'
+        res = escape('\n'.join(self.lines))
+        res = unmark(res)
+        res = '<pre class="marked">%s</pre>\n' %res
         return res,[]
 
 class Marked:
@@ -101,57 +102,13 @@ def escape(czone,*args):
     czone = czone.replace('>','&gt;')
     return czone
 
+def unmark(code_zone,*args):
+    # convert _ to &#95; inside inline code
+    code_zone = code_zone.replace('_','&#95;')
+    return code_zone
+
 def apply_markdown(src):
     scripts = []
-    # replace \` by &#96;
-    src = re.sub(r'\\\`','&#96;',src)
-
-    # escape < > & in inline code
-    code_pattern = r'\`(\S.*?\S)\`'
-    src = re.sub(code_pattern,escape,src)
-    
-    # inline links
-    link_pattern1 = r'\[(.+?)\]\s?\((.+?)\)'
-    src = re.sub(link_pattern1,r'<a href="\2">\1</a>',src)
-
-    # reference links
-    link_pattern2 = r'\[(.+?)\]\s?\[(.*?)\]'
-    while True:
-        mo = re.search(link_pattern2,src)
-        if mo is None:break
-        text,key = mo.groups()
-        print(text,key)
-        if not key:key=text # implicit link name
-        if key.lower() not in refs:
-            raise KeyError('unknow reference %s' %key)
-        url = refs[key.lower()]
-        repl = '<a href="'+url.href+'"'
-        if url.alt:
-            repl += ' title="'+url.alt+'"'
-        repl += '>%s</a>' %text
-        src = re.sub(link_pattern2,repl,src,count=1)
-
-    # emphasis
-
-    # replace \* by &#42;
-    src = re.sub(r'\\\*','&#42;',src)
-    # replace \_ by &#95;
-    src = re.sub(r'\\\_','&#95;',src)
-
-    strong_patterns = [r'\*\*(\w.*?\w)\*\*',r'__(\w.*?\w)__']
-    for strong_pattern in strong_patterns:
-        src = re.sub(strong_pattern,r'<strong>\1</strong>',src)
-
-    em_patterns = [r'\*(\S.*?\S)\*',r'\_(\S.*?\S)\_']
-    for em_pattern in em_patterns:
-        src = re.sub(em_pattern,r'<em>\1</em>',src)
-
-    # inline code
-    # replace \` by &#96;
-    src = re.sub(r'\\\`','&#96;',src)
-
-    code_pattern = r'\`(\S.*?\S)\`'
-    src = re.sub(code_pattern,r'<code>\1</code>',src)
 
     # blockquotes
     lines = src.split('\n')
@@ -192,6 +149,61 @@ def apply_markdown(src):
             i += 1
         if nb==0:break
         lines = src.splitlines()
+
+    # replace \` by &#96;
+    src = re.sub(r'\\\`','&#96;',src)
+
+    # escape < > & in inline code
+    code_pattern = r'\`(\S.*?\S)\`'
+    src = re.sub(code_pattern,escape,src)
+    # also convert _
+    src = re.sub(code_pattern,unmark,src)    
+    
+    # inline links
+    link_pattern1 = r'\[(.+?)\]\s?\((.+?)\)'
+    src = re.sub(link_pattern1,r'<a href="\2">\1</a>',src)
+
+    # reference links
+    link_pattern2 = r'\[(.+?)\]\s?\[(.*?)\]'
+    while True:
+        mo = re.search(link_pattern2,src)
+        if mo is None:break
+        text,key = mo.groups()
+        print(text,key)
+        if not key:key=text # implicit link name
+        if key.lower() not in refs:
+            raise KeyError('unknow reference %s' %key)
+        url = refs[key.lower()]
+        repl = '<a href="'+url.href+'"'
+        if url.alt:
+            repl += ' title="'+url.alt+'"'
+        repl += '>%s</a>' %text
+        src = re.sub(link_pattern2,repl,src,count=1)
+
+    # emphasis
+
+    # replace \* by &#42;
+    src = re.sub(r'\\\*','&#42;',src)
+    # replace \_ by &#95;
+    src = re.sub(r'\\\_','&#95;',src)
+    # _ and * surrounded by spaces are not markup
+    src = re.sub(r' _ ',' &#95; ',src)
+    src = re.sub(r' \* ',' &#42; ',src)
+
+    strong_patterns = [r'\*\*(.*?)\*\*',r'__(.*?)__']
+    for strong_pattern in strong_patterns:
+        src = re.sub(strong_pattern,r'<strong>\1</strong>',src)
+
+    em_patterns = [r'\*(.*?)\*',r'\_(.*?)\_']
+    for em_pattern in em_patterns:
+        src = re.sub(em_pattern,r'<em>\1</em>',src)
+
+    # inline code
+    # replace \` by &#96;
+    src = re.sub(r'\\\`','&#96;',src)
+
+    code_pattern = r'\`(.*?)\`'
+    src = re.sub(code_pattern,r'<code>\1</code>',src)
 
     # unordered lists
     lines = src.split('\n')
