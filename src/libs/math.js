@@ -162,7 +162,7 @@ $module = {
     modf:function(x) {
        var x1=float_check(x);
        var i=float(Math.floor(x1));
-       return new Array(i, float(x1-i));
+       return $list([i, float(x1-i)]);
     },
     pi : float(Math.PI),
     pow: function(x,y) {return Math.pow(float_check(x),float_check(y))},
