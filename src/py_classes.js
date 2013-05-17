@@ -480,9 +480,9 @@ function dir(obj){
 //divmod() (built in function)
 function divmod(x,y) {
     if(isinstance(x,float) || isinstance(y,float)) {
-      return (float(Math.floor(a/b)), a % b) 
+      return [float(Math.floor(x/y)), x % y] 
     }
-    return (int(Math.floor(x/y)), a % b)
+    return [int(Math.floor(x/y)), x % y]
 }
 
 function enumerate(iterator){
@@ -1059,9 +1059,14 @@ function next(obj){
 function $not(obj){return !bool(obj)}
 
 function $ObjectClass(cls){
-    //if (cls !== undefined) {this=cls}
     this.__class__ = "<class 'object'>"
+    if (cls !== undefined) {
+      for (attr in cls) {
+         this[attr]=cls[attr]
+      }
+    }
 }
+
 $ObjectClass.prototype.__getattr__ = function(attr){
     if(attr in this){return this[attr]}
     else{throw AttributeError("object has no attribute '"+attr+"'")}

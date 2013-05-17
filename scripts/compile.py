@@ -46,8 +46,8 @@ def compile_file(root, file):
 
 #fixme, todo: modify to os.walk once scope issue is fixed..
 #for _root, _dirs, _files in os.walk('./src'):
-_files=['errno.py', 'local_storage.py', 'keyword.py', 'os.py',
-        'sys.py', 'traceback.py', 'string.py', 're.py', 'dis.py', 'pydom.py']
+_files=['errno.py', 'local_storage.py', 'keyword.py', 'os.py', 'datetime.py',
+        'sys.py', 'traceback.py', 'string.py', 'dis.py', 'pydom.py']
 _files.append('collections.py')
 
 _root="../src/Lib"
