@@ -4,6 +4,14 @@ import random
 import dis
 import traceback
 
+#doctype html 5 causes issues with setting height of the container
+#so python to the rescue! :)
+import pydom
+_height=doc.documentElement.clientHeight
+_s=pydom.Selector('#container')
+#set height of container to 66% of screen
+_s.get().height('%spx' % int(_height*0.66))
+
 _rand=random.random()
 has_ace = True
 try:
