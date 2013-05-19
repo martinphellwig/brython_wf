@@ -6,26 +6,61 @@
 <meta name="author" content="Pierre Quentel">
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
 <script src="../src/brython.js"></script>
+<script type="text/python3">
+def change_lang(sel):
+    new_lang = sel.options[sel.selectedIndex].value
+    doc.location.href = 'index_%s.html' %new_lang
+</script>
 <title>Brython</title>
-<link rel="stylesheet" href="brython.css">
+<link rel="stylesheet" href="doc/doc_brython.css">
 </head>
 <body onload="brython()">
-<center>
 <table id="banner" cellpadding=0 cellspacing=0>
 <tr>
-<td><a class="banner" href="index.html">Inicio</a></td>
+<td class="logo"><a href="index_es.html"><img class="logo" src="brython_white.png"></img></a></td>
 <td><a class="banner" href="tests/console_es.html">Consola</a></td>
-<td><a class="banner" href="gallery/gallery_es.html">Galería</a></td>
-<td><a class="banner" href="doc/es/index.html">Documentación</a>
+<td><a class="banner" href="gallery/gallery_es.html">Galer&iacute;a</a></td>
+<td><a class="banner" href="doc/es/index.html">Documentaci&oacute;n</a>
 <td><a class="banner" href="https://bitbucket.org/olemis/brython/downloads" target="_blank">Descargas</a></td>
-<td><a class="banner" href="https://bitbucket.org/olemis/brython/src" target="_blank">Desarrollo</a></td>
+<td><a class="banner" href="https://bitbucket.org/olemis/brython/src" target="_blank">Desarollo</a></td>
 <td><a class="banner" href="groups_es.html" target="_blank">Grupos</a></td>
+
 </tr>
 </table>
-</center>
-<div style="text-align:center">
-<img src="brython.png"></img><br><b>browser python</b>
-</div>
+
+<table style="width:80%;margin-left:10%;">
+<tr>
+<td>
+<H1 style="font-size:300%;">Brython</H1>
+<H2>Una implementación de Python para la programación web del lado del cliente</H2>
+</td>
+<td valign="top">
+<select class="language" onchange="change_lang(this)">
+<option value="en">English
+<option value="es" selected>Espa&ntilde;ol
+<option value="fr">Fran&ccedil;ais
+</select>
+</td>
+</tr>
+</table>
+
+<table style="width:80%;margin-left:10%">
+<tr>
+<td style="width:60%;font-size:16px;">
+Muy cierto que has visto relojes de este tipo en demos de HTML5
+<p>
+Pero, mira el código fuente de esta página...
+<p>No hay lineas de Javascript, es puro código Python dentro de un script de tipo "text/python"
+<p>Brython es diseñado para remplazar a JavaScript como lenguaje de scripting para páginas web. Por lo tanto, es una implementación de Python 3 (que se puede probar en la <a href="/tests/console_es.html">consola</a>), adaptada a un entorno HTML5, es decir, con una interfaz con los objetos y eventos DOM
+<p>Una <a href="/gallery/gallery_es.html">galería</a> presenta algunas maquetas de lo que se puede hacer, de la creación de elementos, a ejemplos de arrastrar y soltar a navegación 3D
+</td>
+<td style="padding-left:5%;">
+<canvas width="250" height="250" id="clock">
+<i>El navegador no soporta HTML5 canvas<br>o el Javascript es apagado
+<br><div id="navig_zone"></div></i>
+</canvas>
+</td>
+</table>
 
 <script type="text/python">
 import time
@@ -126,18 +161,6 @@ else:
     doc['navig_zone'].html = "On Internet Explorer 9 or more, use a Standard rendering engine"
 </script>
 
-<p>
-<div style="text-align:center;padding-left:15%;padding-right:15%;">
-Muy cierto que has visto relojes de este tipo en demos de HTML5
-<p><canvas width="250" height="250" id="clock">
-<i>El navegador no soporta HTML5 canvas<br>o el Javascript es apagado
-<br><div id="navig_zone"></div></i>
-</canvas>
-<p>
-Pero, mira el código fuente de esta página...
-<p>No hay lineas de Javascript, es puro código Python dentro de un script de tipo "text/python"
-<p>Brython es diseñado para remplazar a JavaScript como lenguaje de scripting para páginas web. Por lo tanto, es una implementación de Python 3 (que se puede probar en la <a href="/tests/console_es.html">consola</a>), adaptada a un entorno HTML5, es decir, con una interfaz con los objetos y eventos DOM
-<p>Una <a href="/gallery/gallery_es.html">galería</a> presenta algunas maquetas de lo que se puede hacer, de la creación de elementos, a ejemplos de arrastrar y soltar a navegación 3D
-</div>
+
 </body>
 </html>

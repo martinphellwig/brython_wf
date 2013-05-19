@@ -64,7 +64,7 @@ Translation of the Python syntax into Javascript code
 
 <tr>
 <td>`a and b`</td>
-<td>`$test\_expr($test\_item(a)&&$test\_item(b))`
+<td>`$test_expr($test_item(a)&&$test_item(b))`
 <td>we are keeping the Javascript && operator so as to not evaluate b if a is false
 <br>_$test\_item_ returns a Javascript boolean (true or false)  and stores the resulting value in a global variable ; _$test\_expr_ returns this global variable</td>
 </td>
@@ -201,29 +201,6 @@ are added before all `except` clauses, translated as `else if` when an exception
 <tr>
 <th>Javascript</th>
 <th>Python</th>
-<th>Comment</th>
-</tr>
-
-
-<tr>
-<td>`document`</td>
-<td>`doc`
-<td>&nbsp;</td>
-</td>
-</tr>
-
-<tr>
-<td>`document.getElementById(elt_id)`</td>
-<td>`doc[elt_id]`
-<td>&nbsp;</td>
-</td>
-</tr>
-
-<tr>
-<td>`document.getElementsByTagName('A')`</td>
-<td>`doc[A]`
-<td>returns a Python list</td>
-</td>
 </tr>
 
 <tr>
@@ -231,7 +208,6 @@ are added before all `except` clauses, translated as `else if` when an exception
 <td>
     import time
     time.set_interval(func,millisec)
-<td>&nbsp;</td>
 </td>
 </tr>
 
@@ -240,7 +216,6 @@ are added before all `except` clauses, translated as `else if` when an exception
 <td>
     import time
     time.clear_interval(interval_id)
-<td>&nbsp;</td>
 </td>
 </tr>
 
@@ -249,11 +224,8 @@ are added before all `except` clauses, translated as `else if` when an exception
 <td>
     import time
     time.set_timeout(func,millisec)
-<td>&nbsp;</td>
 </td>
 </tr>
-
-
 
 </table>
 
