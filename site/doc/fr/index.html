@@ -3,88 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Brython documentation</title>
-<style type="text/css">
-body,td {font-family:arial,verdana;
-font-size:13px;
-margin:0px;
-
-}
-a.navig:link,a.navig:visited { 
-    text-decoration: none;
-    color:#1767B7;
-}
-
-a.banner:link,a.banner:visited
-{
-    display:block;
-    font-size:16px;
-    color:#FFFFFF;
-    line-height:30px; /*hauteur de l'image de fond*/
-    background-color:#1767B7;
-    padding:10px;
-    text-align:center;
-    text-decoration:none;
-}
-a.banner:hover,a.banner:active
-{
- background-color:#2070C0;
- color:white;
-}
-#banner{
-    width:100%;
-    padding-bottom:15px;
-}
-#console{
-    color:#FFF;
-    background-color:#000;
-    font-weight:bold;
-}
-#content {
-    padding-left:5%;
-    padding-right:15%;
-    
-}
-a.glink{
-    text-decoration:underline;
-    background-color: #FFF;
-    color: #000;
-}
-img.logo {
-    height: 28px;
-    padding:0px;
-}
-td.logo {
-    padding-left:20px;
-    background-color:#1767B7;
-    width:15%;
-}
-td.top_menu{
-    width:10%;
-}
-td.language{
-    background-color:#1767B7;
-    text-align:right;
-}
-select.language{
-    border-width:0px;
-    font-size:14px;
-    color:#FFFFFF;
-    line-height:30px; /*hauteur de l'image de fond*/
-    background-color:#1767B7;
-    padding:10px;
-}
-li {
-    margin-bottom: 3px;
-}
-pre.marked {
-    padding: 6px;
-    display:inline-block;
-    color: #339;
-}
-code {
-    color: #339;
-}
-</style>
+<link rel="stylesheet" href="../doc_brython.css">
 
 <script src="/src/brython.js"></script>
 <script type="text/python">
@@ -115,7 +34,7 @@ class Loader:
 def load(url,target):
     Loader(url+'?foo=%s' %time.time()).load(target)
     return False
-    
+
 </script>
 </head>
 <body onLoad="brython(1);load('intro.md','content')">
@@ -128,7 +47,8 @@ def load(url,target):
 <td><a class="banner" href="index.html">Documentation</a>
 <td><a class="banner" href="https://bitbucket.org/olemis/brython/downloads" target="_blank">Téléchargement</a></td>
 <td><a class="banner" href="https://bitbucket.org/olemis/brython/src" target="_blank">Développement</a></td>
-<td><a class="banner" href="../../groups_fr.html" target="_blank">Groupes</a></td></tr>
+<td><a class="banner" href="../../groups_fr.html" target="_blank">Groupes</a></td>
+
 </tr>
 </table>
 

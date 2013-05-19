@@ -6,8 +6,15 @@
 <meta name="author" content="Pierre Quentel">
 <meta http-equiv="content-type" content="text/html;charset=iso-8859-1">
 <script src="../src/brython.js"></script>
+
+<script type="text/python3">
+def change_lang(sel):
+    new_lang = sel.options[sel.selectedIndex].value
+    doc.location.href = 'index_%s.html' %new_lang
+
+</script>
 <title>Brython</title>
-<link rel="stylesheet" href="brython.css">
+<link rel="stylesheet" href="doc/doc_brython.css">
 </head>
 <!--  
 options:
@@ -19,22 +26,56 @@ options:
   pythonpath: a list of additional urls/paths to search for modules
 -->
 <body onload="brython({debug:1, cache:'none'})">
-<center>
+
 <table id="banner" cellpadding=0 cellspacing=0>
 <tr>
-<td><a class="banner" href="index.html">Home</a></td>
+<td class="logo"><a href="index_en.html"><img class="logo" src="brython_white.png"></img></a></td>
 <td><a class="banner" href="tests/console_en.html">Console</a></td>
 <td><a class="banner" href="gallery/gallery_en.html">Gallery</a></td>
-<td><a class="banner" href="doc/en/index.html">Documentation</a>
+<td><a class="banner" href="doc/en/index.html">Documentation</a></td>
 <td><a class="banner" href="https://bitbucket.org/olemis/brython/downloads" target="_blank">Download</a></td>
 <td><a class="banner" href="https://bitbucket.org/olemis/brython/src" target="_blank">Development</a></td>
 <td><a class="banner" href="groups_en.html" target="_blank">Groups</a></td>
 </tr>
 </table>
-</center>
-<div style="text-align:center">
-<img src="brython.png"></img><br><b>browser python</b>
-</div>
+
+<table style="width:80%;margin-left:10%">
+<tr>
+<td>
+<H1 style="font-size:300%;">Brython</H1>
+<H2>A Python 3 implementation for client-side web programming</H2>
+</td>
+<td valign="top">
+<select class="language" onchange="change_lang(this)">
+<option value="en" selected>English
+<option value="es">Espa&ntilde;ol
+<option value="fr">Fran&ccedil;ais
+</select>
+</td>
+</tr>
+</table>
+
+<table style="width:80%;margin-left:10%">
+<tr>
+<td style="width:60%;font-size:16px;">
+Without a doubt, you've seen a clock like this in demos of HTML5
+<p>
+However, right click and view the source of this page...
+<p>It is not Javascript code! Intead, you will find Python code in a script of type "text/python"
+<p>Brython is designed to replace Javascript as the scripting language for the Web. As such, it is a Python 3 implementation (you can take it for a test drive through a web <a href="/tests/console_en.html">console</a>), adapted to the HTML5 environment, that is to say with an interface to the DOM objects and events
+<p>The <a href="gallery/gallery_en.html">gallery</a> highlights a few of the possibilities, from creating simple document elements to drag and drop and 3D navigation
+</td>
+
+<td style="padding-left:5%;">
+<canvas width="250" height="250" id="clock">
+<i>sorry, Brython can't make the demo work on your browser ; <br>check if Javascript is turned on
+<br><div id="navig_zone"></div></i>
+</canvas>
+</td>
+
+</tr>
+
+</table>
 
 <script type="text/python">
 import time
@@ -135,18 +176,5 @@ else:
     doc['navig_zone'].html = "On Internet Explorer 9 or more, use a Standard rendering engine"
 </script>
 
-<p>
-<div style="text-align:center;padding-left:15%;padding-right:15%;">
-Without a doubt, you've seen a clock like this in demos of HTML5
-<p><canvas width="250" height="250" id="clock">
-<i>sorry, Brython can't make the demo work on your browser ; <br>check if Javascript is turned on
-<br><div id="navig_zone"></div></i>
-</canvas>
-<p>
-However, right click and view the source of this page...
-<p>It is not Javascript code! Intead, you will find Python code in a script of type "text/python"
-<p>Brython is designed to replace Javascript as the scripting language for the Web. As such, it is a Python 3 implementation (you can take it for a test drive through a web <a href="/tests/console_en.html">console</a>), adapted to the HTML5 environment, that is to say with an interface to the DOM objects and events
-<p>The <a href="gallery/gallery_en.html">gallery</a> highlights a few of the possibilities, from creating simple document elements to drag and drop and 3D navigation
-</div>
 </body>
 </html>
