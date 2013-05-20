@@ -359,7 +359,7 @@ dict.get = function(self,key,_default){
     catch(err){
         $pop_exc()
         if(_default!==undefined){return _default}
-        else{throw KeyError(key)}
+        else{return None}
     }
 }
 
