@@ -340,6 +340,11 @@ DOMNode.prototype.__add__ = function(other){
 
 DOMNode.prototype.__class__ = DOMObject
 
+DOMNode.prototype.__contains__ = function(key){
+    try{this.__getitem__(key);return True}
+    catch(err){return False}
+}
+
 DOMNode.prototype.__delitem__ = function(key){
     if(this.nodeType===9){ // document : remove by id
         var res = document.getElementById(key)
@@ -660,6 +665,33 @@ DOMNode.prototype.set_value = function(value){this.value = value.toString()}
 
 doc = $DOMNode(document)
 
+doc.headers = function(){
+    var req = new XMLHttpRequest();
+    req.open('GET', document.location, false);
+    req.send(null);
+    var headers = req.getAllResponseHeaders();
+    headers = headers.split('\r\n')
+    var res = dict()
+    for(var i=0;i<headers.length;i++){
+        var header = headers[i]
+        if(header.strip().length==0){continue}
+        var pos = header.search(':')
+        res.__setitem__(header.substr(0,pos),header.substr(pos+1).lstrip())
+    }
+    return res;
+}
+
+// return query string as a dictionary
+doc.query = function(){
+    var res = dict()
+    var qs = location.search.substr(1).split('&')
+    for(var i=0;i<qs.length;i++){
+        var pos = qs[i].search('=')
+        elts = [qs[i].substr(0,pos),qs[i].substr(pos+1)]
+        res.__setitem__(decodeURIComponent(elts[0]),decodeURIComponent(elts[1]))
+    }
+    return res
+}
 
 // class used for tag sums
 function $TagSumClass(){
