@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
 <meta name="description" content="Brython">
 <meta name="keywords" content="Python,Brython">
 <meta name="author" content="Pierre Quentel">
-<meta charset="iso-8859-1">
-<link rel="stylesheet" href="../doc/doc_brython.css">
-<script src="../../src/brython.js"></script>
-
+<meta http-equiv="content-type" content="text/html;charset=iso-8859-1">
 <title>Brython</title>
+<link rel="stylesheet" href="doc/doc_brython.css">
+<script src="../src/brython.js"></script>
+
 <script type="text/python3">
 from html import *
 
@@ -29,7 +29,6 @@ else:
         pass
 
 # upper menu
-
 trans_menu = {
     'menu_console':{'en':'Console','es':'Consola','fr':'Console'},
     'menu_gallery':{'en':'Gallery','es':'Galería','fr':'Galerie'},
@@ -39,16 +38,17 @@ trans_menu = {
     'menu_groups':{'en':'Groups','es':'Grupos','fr':'Groupes'}
 }
 
-links = {'home':'../index.html',
-    'console':'../tests/console.html',
-    'gallery':'gallery_%s.html',
-    'doc':'../doc/%s/index.html',
+links = {'home':'index.html',
+    'console':'tests/console.html',
+    'gallery':'gallery/gallery_%s.html',
+    'doc':'doc/%s/index.html',
     'download':'https://bitbucket.org/olemis/brython/downloads',
     'dev':'https://bitbucket.org/olemis/brython/src',
-    'groups':'../groups.html'
+    'groups':'groups.html'
 }
 
 banner = doc['banner_row']
+
 for item in ['home','console','gallery','doc','download','dev','groups']:
     href = links[item]
     if item in ['doc','gallery']:
@@ -57,7 +57,7 @@ for item in ['home','console','gallery','doc','download','dev','groups']:
         # add lang to href
         href += '?lang=%s' %language
     if item == 'home':
-        link = A(IMG(src="../brython_white.png",Class="logo"),href=href)
+        link = A(IMG(src="brython_white.png",Class="logo"),href=href)
         cell = TD(link,Class="logo")
     else:
         link = A(trans_menu['menu_%s'%item][language],href=href,Class="banner")
@@ -66,10 +66,18 @@ for item in ['home','console','gallery','doc','download','dev','groups']:
         link.target = "_blank"        
     banner <= cell
 
+# other translations
+
+trans = {
+    'groups':{'en':'Groups','es':'Grupos','fr':'Groupes'}
+}
+
+for key in trans:
+    if key in doc:
+        doc[key].html = trans[key][language]
 
 </script>
 </head>
-
 <body onload="brython(1)">
 
 <table id="banner" cellpadding=0 cellspacing=0>
@@ -78,29 +86,12 @@ for item in ['home','console','gallery','doc','download','dev','groups']:
 </table>
 
 <div style="text-align:center">
+<H2 id="groups">Groups</H2>
 
-<h2>Galerie</h2>
-<p><a class="glink" target="_blank" href="hello.html">Hello world !</a>
-<br><a target="_blank" href="ajax.html">ajax</a>
-<br><a target="_blank" href="sort_table.html">tri de table</a>
-<br><a target="_blank" href="test_select.html">select et options</a>
-<br><a target="_blank" href="test_import.html">import</a>
-<br>
-<br><a target="_blank" href="svg_pie_chart.html">camembert SVG</a>
-<br><a target="_blank" href="geoloc.html">geolocalisation</a> par François Dion
-<br><a target="_blank" href="geo.html">geolocalisation version iPhone</a> by François Dion
-<br><a target="_blank" href="ruskey.html">clavier russe</a> par François Dion
-<br><a target="_blank" href="test_websql.html">WebSQL</a> par Morven Sun
-<br><a target="_blank" href="kanban.html">simulateur Kanban</a> par Pedro Rodriguez
-
-<p><i>les exemples suivants nécessitent HTML5</i>
-<br><a target="_blank" href="clock.html">horloge analogique</a>
-<br><a target="_blank" href="europe.html">glisser-déposer</a>
-<br><a target="_blank" href="test_sheet.html">stockage local</a>
-<br><a target="_blank" href="canvas_plot.html">Python plot sur le web</a> par Kiko Correoso
-<br><a target="_blank" href="3Dwalker.html">animation 3D</a>
-
-
+<p><a href="https://groups.google.com/forum/?fromgroups=#!forum/brython" target="_blank">Group (English)</a></td>
+<br><a href="https://groups.google.com/forum/?fromgroups=#!forum/brython-fr" target="_blank">Groupe (français)</a></td>
+<br><a href="https://groups.google.com/forum/?fromgroups=#!forum/brython-es" target="_blank">Grupo (español)</a></td>
+<br><a href="https://groups.google.com/forum/?fromgroups=#!forum/brython-pt" target="_blank">Grupo (português)</a></td>
 </div>
 </body>
 </html>
