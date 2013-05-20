@@ -46,6 +46,8 @@ a.glink{
 img.logo {
     height: 28px;
     padding:0px;
+    border-width:0px;
+    width:auto;
 }
 td.logo {
     padding-left:20px;
