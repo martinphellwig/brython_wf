@@ -1,9 +1,10 @@
 // brython.js www.brython.info
-// version 1.1.20130511-204957
+// version 1.1.20130520-113138
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
+__BRYTHON__.language=window.navigator.userLanguage || window.navigator.language
 __BRYTHON__.date=function(){
 if(arguments.length===0){return JSObject(new Date())}
 else if(arguments.length===1){return JSObject(new Date(arguments[0]))}
@@ -24,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130511-204957"]
+__BRYTHON__.version_info=[1,1,"20130520-113138"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -827,7 +828,7 @@ try{return dict.__getitem__(self,key)}
 catch(err){
 $pop_exc()
 if(_default!==undefined){return _default}
-else{throw KeyError(key)}
+else{return None}
 }
 }
 dict.items=function(self){
@@ -932,9 +933,9 @@ return res
 }
 function divmod(x,y){
 if(isinstance(x,float)|| isinstance(y,float)){
-return(float(Math.floor(a/b)), a % b)
+return[float(Math.floor(x/y)), x % y]
 }
-return(int(Math.floor(x/y)), a % b)
+return[int(Math.floor(x/y)), x % y]
 }
 function enumerate(iterator){
 var res=[]
@@ -1409,6 +1410,11 @@ throw TypeError("'"+str(obj.__class__)+"' object is not an iterator")
 function $not(obj){return !bool(obj)}
 function $ObjectClass(cls){
 this.__class__="<class 'object'>"
+if(cls !==undefined){
+for(attr in cls){
+this[attr]=cls[attr]
+}
+}
 }
 $ObjectClass.prototype.__getattr__=function(attr){
 if(attr in this){return this[attr]}
@@ -5630,40 +5636,41 @@ document.$debug=options.debug
 __BRYTHON__.$options=options
 __BRYTHON__.exception_stack=[]
 __BRYTHON__.scope={}
-var elts=document.getElementsByTagName("script")
-var href=window.location.href
-var href_elts=href.split('/')
-href_elts.pop()
-var script_path=href_elts.join('/')
+var $elts=document.getElementsByTagName("script")
+var $href=window.location.href
+var $href_elts=$href.split('/')
+$href_elts.pop()
+var $script_path=$href_elts.join('/')
 __BRYTHON__.path=[]
 if(isinstance(options.pythonpath, list)){
 __BRYTHON__.path=options.pythonpath
 }
-if(!(__BRYTHON__.path.indexOf(script_path)> -1)){
-__BRYTHON__.path.push(script_path)
+if(!(__BRYTHON__.path.indexOf($script_path)> -1)){
+__BRYTHON__.path.push($script_path)
 }
-for(var $i=0;$i<elts.length;$i++){
-var elt=elts[$i]
-var br_scripts=['brython.js','py2js.js']
-for(var j=0;j<br_scripts.length;j++){
-var bs=br_scripts[j]
-if(elt.src.substr(elt.src.length-bs.length)==bs){
-if(elt.src.length===bs.length ||
-elt.src.charAt(elt.src.length-bs.length-1)=='/'){
-var path=elt.src.substr(0,elt.src.length-bs.length)
-__BRYTHON__.brython_path=path
-if(!(__BRYTHON__.path.indexOf(path+'Lib')> -1)){
-__BRYTHON__.path.push(path+'Lib')
+for(var $i=0;$i<$elts.length;$i++){
+var $elt=$elts[$i]
+var $br_scripts=['brython.js','py2js.js']
+for(var j=0;j<$br_scripts.length;j++){
+var $bs=$br_scripts[j]
+if($elt.src.substr($elt.src.length-$bs.length)==$bs){
+if($elt.src.length===$bs.length ||
+$elt.src.charAt($elt.src.length-$bs.length-1)=='/'){
+var $path=$elt.src.substr(0,$elt.src.length-$bs.length)
+__BRYTHON__.brython_path=$path
+if(!(__BRYTHON__.path.indexOf($path+'Lib')> -1)){
+__BRYTHON__.path.push($path+'Lib')
 }
 break
 }
 }
 }
 }
-for(var $i=0;$i<elts.length;$i++){
-var elt=elts[$i]
-if(elt.type=="text/python"||elt.type==="text/python3"){
-if(elt.src!==''){
+for(var $i=0;$i<$elts.length;$i++){
+var $elt=$elts[$i]
+if($elt.type=="text/python"||$elt.type==="text/python3"){
+var $src=null
+if($elt.src!==''){
 if(window.XMLHttpRequest){
 var $xmlhttp=new XMLHttpRequest()
 }else{
@@ -5672,36 +5679,36 @@ var $xmlhttp=new ActiveXObject("Microsoft.XMLHTTP")
 $xmlhttp.onreadystatechange=function(){
 var state=this.readyState
 if(state===4){
-src=$xmlhttp.responseText
+$src=$xmlhttp.responseText
 }
 }
-$xmlhttp.open('GET',elt.src,false)
+$xmlhttp.open('GET',$elt.src,false)
 $xmlhttp.send()
-__BRYTHON__.$py_module_path['__main__']=elt.src 
-var src_elts=elt.src.split('/')
-src_elts.pop()
-var src_path=src_elts.join('/')
-if(__BRYTHON__.path.indexOf(src_path)==-1){
-__BRYTHON__.path.splice(0,0,src_path)
+__BRYTHON__.$py_module_path['__main__']=$elt.src 
+var $src_elts=$elt.src.split('/')
+$src_elts.pop()
+var $src_path=$src_elts.join('/')
+if(__BRYTHON__.path.indexOf($src_path)==-1){
+__BRYTHON__.path.splice(0,0,$src_path)
 }
 }else{
-var src=(elt.innerHTML || elt.textContent)
+var $src=($elt.innerHTML || $elt.textContent)
 __BRYTHON__.$py_module_path['__main__']='.' 
 }
 try{
-var root=__BRYTHON__.py2js(src,'__main__')
-var js=root.to_js()
-if(document.$debug===2){console.log(js)}
-eval(js)
-}catch(err){
-if(err.py_error===undefined){err=RuntimeError(err+'')}
-var trace=err.__name__+': '+err.message
-if(err.__name__=='SyntaxError'||err.__name__==='IndentationError'){
-trace +=err.info
+var $root=__BRYTHON__.py2js($src,'__main__')
+var $js=$root.to_js()
+if(document.$debug===2){console.log($js)}
+eval($js)
+}catch($err){
+if($err.py_error===undefined){$err=RuntimeError($err+'')}
+var $trace=$err.__name__+': '+$err.message
+if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
+$trace +=$err.info
 }
-document.$stderr.__getattr__('write')(trace)
-err.message +=err.info
-throw err
+document.$stderr.__getattr__('write')($trace)
+$err.message +=$err.info
+throw $err
 }
 }
 }
@@ -6056,6 +6063,10 @@ res.children.push(document.createTextNode(str(other)))
 return res
 }
 DOMNode.prototype.__class__=DOMObject
+DOMNode.prototype.__contains__=function(key){
+try{this.__getitem__(key);return True}
+catch(err){return False}
+}
 DOMNode.prototype.__delitem__=function(key){
 if(this.nodeType===9){
 var res=document.getElementById(key)
@@ -6333,6 +6344,31 @@ this.textContent=str(value)
 }
 DOMNode.prototype.set_value=function(value){this.value=value.toString()}
 doc=$DOMNode(document)
+doc.headers=function(){
+var req=new XMLHttpRequest()
+req.open('GET', document.location, false)
+req.send(null)
+var headers=req.getAllResponseHeaders()
+headers=headers.split('\r\n')
+var res=dict()
+for(var i=0;i<headers.length;i++){
+var header=headers[i]
+if(header.strip().length==0){continue}
+var pos=header.search(':')
+res.__setitem__(header.substr(0,pos),header.substr(pos+1).lstrip())
+}
+return res
+}
+doc.query=function(){
+var res=dict()
+var qs=location.search.substr(1).split('&')
+for(var i=0;i<qs.length;i++){
+var pos=qs[i].search('=')
+elts=[qs[i].substr(0,pos),qs[i].substr(pos+1)]
+res.__setitem__(decodeURIComponent(elts[0]),decodeURIComponent(elts[1]))
+}
+return res
+}
 function $TagSumClass(){
 this.__class__=$TagSum
 this.children=[]
