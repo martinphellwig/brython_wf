@@ -2815,47 +2815,48 @@ function brython(options){
     __BRYTHON__.$options=options
     __BRYTHON__.exception_stack = []
     __BRYTHON__.scope = {}
-    var elts = document.getElementsByTagName("script")
-    var href = window.location.href
-    var href_elts = href.split('/')
-    href_elts.pop()
-    var script_path = href_elts.join('/')
+    var $elts = document.getElementsByTagName("script")
+    var $href = window.location.href
+    var $href_elts = $href.split('/')
+    $href_elts.pop()
+    var $script_path = $href_elts.join('/')
 
     __BRYTHON__.path = []
     if (isinstance(options.pythonpath, list)) {
        __BRYTHON__.path = options.pythonpath
     }
-    if (!(__BRYTHON__.path.indexOf(script_path) > -1)) {
-       __BRYTHON__.path.push(script_path)
+    if (!(__BRYTHON__.path.indexOf($script_path) > -1)) {
+       __BRYTHON__.path.push($script_path)
     }
     // get path of brython.js or py2js to determine brython_path
     // it will be used for imports
 
-    for(var $i=0;$i<elts.length;$i++){
-        var elt = elts[$i]
-        var br_scripts = ['brython.js','py2js.js']
-        for(var j=0;j<br_scripts.length;j++){
-            var bs = br_scripts[j]
-            if(elt.src.substr(elt.src.length-bs.length)==bs){
-                if(elt.src.length===bs.length ||
-                    elt.src.charAt(elt.src.length-bs.length-1)=='/'){
-                        var path = elt.src.substr(0,elt.src.length-bs.length)
-                        __BRYTHON__.brython_path = path
-                        if (!(__BRYTHON__.path.indexOf(path+'Lib')> -1)) {
-                           __BRYTHON__.path.push(path+'Lib')
+    for(var $i=0;$i<$elts.length;$i++){
+        var $elt = $elts[$i]
+        var $br_scripts = ['brython.js','py2js.js']
+        for(var j=0;j<$br_scripts.length;j++){
+            var $bs = $br_scripts[j]
+            if($elt.src.substr($elt.src.length-$bs.length)==$bs){
+                if($elt.src.length===$bs.length ||
+                    $elt.src.charAt($elt.src.length-$bs.length-1)=='/'){
+                        var $path = $elt.src.substr(0,$elt.src.length-$bs.length)
+                        __BRYTHON__.brython_path = $path
+                        if (!(__BRYTHON__.path.indexOf($path+'Lib')> -1)) {
+                           __BRYTHON__.path.push($path+'Lib')
                         }
                         break
                 }
             }
         }
-    }    
+    }
 
     // get all scripts with type = text/python and run them
     
-    for(var $i=0;$i<elts.length;$i++){
-        var elt = elts[$i]
-        if(elt.type=="text/python"||elt.type==="text/python3"){
-            if(elt.src!==''){ 
+    for(var $i=0;$i<$elts.length;$i++){
+        var $elt = $elts[$i]
+        if($elt.type=="text/python"||$elt.type==="text/python3"){
+            var $src = null
+            if($elt.src!==''){ 
                 // format <script type="text/python" src="python_script.py">
                 // get source code by an Ajax call
                 if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -2864,40 +2865,40 @@ function brython(options){
                     var $xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
                 }
                 $xmlhttp.onreadystatechange = function(){
-                        var state = this.readyState
-                        if(state===4){
-                            src = $xmlhttp.responseText
-                        }
+                    var state = this.readyState
+                    if(state===4){
+                        $src = $xmlhttp.responseText
                     }
-                $xmlhttp.open('GET',elt.src,false)
+                }
+                $xmlhttp.open('GET',$elt.src,false)
                 $xmlhttp.send()
-                __BRYTHON__.$py_module_path['__main__']=elt.src 
-                var src_elts = elt.src.split('/')
-                src_elts.pop()
-                var src_path = src_elts.join('/')
-                if (__BRYTHON__.path.indexOf(src_path) == -1) {
+                __BRYTHON__.$py_module_path['__main__']=$elt.src 
+                var $src_elts = $elt.src.split('/')
+                $src_elts.pop()
+                var $src_path = $src_elts.join('/')
+                if (__BRYTHON__.path.indexOf($src_path) == -1) {
                     // insert in first position : folder /Lib with built-in modules
                     // should be the last used when importing scripts
-                    __BRYTHON__.path.splice(0,0,src_path)
+                    __BRYTHON__.path.splice(0,0,$src_path)
                 }
             }else{
-                var src = (elt.innerHTML || elt.textContent)
+                var $src = ($elt.innerHTML || $elt.textContent)
                 __BRYTHON__.$py_module_path['__main__']='.' 
             }
             try{
-                var root = __BRYTHON__.py2js(src,'__main__')
-                var js = root.to_js()
-                if(document.$debug===2){console.log(js)}
-                eval(js)
-            }catch(err){
-                if(err.py_error===undefined){err = RuntimeError(err+'')}
-                var trace = err.__name__+': '+err.message
-                if(err.__name__=='SyntaxError'||err.__name__==='IndentationError'){
-                    trace += err.info
+                var $root = __BRYTHON__.py2js($src,'__main__')
+                var $js = $root.to_js()
+                if(document.$debug===2){console.log($js)}
+                eval($js)
+            }catch($err){
+                if($err.py_error===undefined){$err = RuntimeError($err+'')}
+                var $trace = $err.__name__+': '+$err.message
+                if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
+                    $trace += $err.info
                 }
-                document.$stderr.__getattr__('write')(trace)
-                err.message += err.info
-                throw err
+                document.$stderr.__getattr__('write')($trace)
+                $err.message += $err.info
+                throw $err
             }
         }
     }
