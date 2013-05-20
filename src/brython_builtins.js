@@ -1,6 +1,11 @@
 // global object with brython built-ins
 __BRYTHON__ = new Object()
 __BRYTHON__.__getattr__ = function(attr){return this[attr]}
+
+// system language ( _not_ the one set in browser settings)
+// cf http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
+__BRYTHON__.language = window.navigator.userLanguage || window.navigator.language
+
 __BRYTHON__.date = function(){
     if(arguments.length===0){return JSObject(new Date())}
     else if(arguments.length===1){return JSObject(new Date(arguments[0]))}
@@ -24,5 +29,5 @@ if (__BRYTHON__.has_indexedDB) {
 
 __BRYTHON__.re = function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json = typeof(JSON)!=="undefined"
-__BRYTHON__.version_info = [1,1,"20130511-204957"]
+__BRYTHON__.version_info = [1,1,"20130520-113138"]
 __BRYTHON__.path = [] // path for .py modules

@@ -1,5 +1,5 @@
 // global object with brython built-ins
-$version_info = [1,1,"20130511-204957"]
+$version_info = [1,1,"20130520-113138"]
 
 if(typeof Storage!==undefined){
     var $src = localStorage.getItem('brython')
