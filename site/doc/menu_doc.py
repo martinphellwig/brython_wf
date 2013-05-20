@@ -1,21 +1,4 @@
 from html import *
-# detect language
-language = "en" # default
-has_req = False
-lang = doc.query().get("lang")
-
-if lang and lang in ["en","fr","es"]:
-    has_req = True
-    language = lang
-else:
-    import locale
-    try:
-        lang,enc = locale.getdefaultlocale()
-        lang = lang[:2]
-        if lang in ["en","fr","es"]:
-            language = lang
-    except:
-        pass
 
 # upper menu
 
@@ -43,7 +26,7 @@ for key in ['home','console','gallery','doc','download','dev','groups']:
     href = links[key]
     if key in ['gallery']:
         href = href %language
-    if has_req and key not in ['download','dev']:
+    if key not in ['download','dev']:
         # add lang to href
         href += '?lang=%s' %language
     if key == 'home':
