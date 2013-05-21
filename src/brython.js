@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130520-113138
+// version 1.1.20130521-222304
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130520-113138"]
+__BRYTHON__.version_info=[1,1,"20130521-222304"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -6360,13 +6360,49 @@ res.__setitem__(header.substr(0,pos),header.substr(pos+1).lstrip())
 return res
 }
 doc.query=function(){
-var res=dict()
+var res=new Object()
+res._keys=[]
+res._values=new Object()
 var qs=location.search.substr(1).split('&')
 for(var i=0;i<qs.length;i++){
 var pos=qs[i].search('=')
-elts=[qs[i].substr(0,pos),qs[i].substr(pos+1)]
-res.__setitem__(decodeURIComponent(elts[0]),decodeURIComponent(elts[1]))
+var elts=[qs[i].substr(0,pos),qs[i].substr(pos+1)]
+var key=decodeURIComponent(elts[0])
+var value=decodeURIComponent(elts[1])
+if(res._keys.indexOf(key)>-1){res._values[key].push(value)}
+else{res._values[key]=[value]}
 }
+res.__contains__=function(key){
+return res._keys.indexOf(key)>-1
+}
+res.__getitem__=function(key){
+var result=res._values[key]
+if(result===undefined){throw KeyError(key)}
+else if(result.length==1){return result[0]}
+return result
+}
+res.getfirst=function(key,_default){
+var result=res._values[key]
+if(result===undefined){
+if(_default===undefined){return None}
+return _default
+}
+return result[0]
+}
+res.getlist=function(key){
+var result=res._values[key]
+if(result===undefined){return[]}
+return result
+}
+res.getvalue=function(key,_default){
+try{return res.__getitem__(key)}
+catch(err){
+$pop_exc()
+if(_default===undefined){return None}
+else{return _default}
+}
+}
+res.keys=function(){return res._keys}
 return res
 }
 function $TagSumClass(){

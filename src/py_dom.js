@@ -681,15 +681,56 @@ doc.headers = function(){
     return res;
 }
 
-// return query string as a dictionary
+// return query string as an object with methods to access keys and values
+// same interface as cgi.FieldStorage, with getvalue / getlist / getfirst
 doc.query = function(){
-    var res = dict()
+    var res = new Object()
+    res._keys = []
+    res._values = new Object()
     var qs = location.search.substr(1).split('&')
     for(var i=0;i<qs.length;i++){
         var pos = qs[i].search('=')
-        elts = [qs[i].substr(0,pos),qs[i].substr(pos+1)]
-        res.__setitem__(decodeURIComponent(elts[0]),decodeURIComponent(elts[1]))
+        var elts = [qs[i].substr(0,pos),qs[i].substr(pos+1)]
+        var key = decodeURIComponent(elts[0])
+        var value = decodeURIComponent(elts[1])
+        if(res._keys.indexOf(key)>-1){res._values[key].push(value)}
+        else{res._values[key] = [value]}
     }
+    res.__contains__ = function(key){
+        return res._keys.indexOf(key)>-1
+    }
+    res.__getitem__ = function(key){
+        // returns a single value or a list of values 
+        // associated with key, or raise KeyError
+        var result = res._values[key]
+        if(result===undefined){throw KeyError(key)}
+        else if(result.length==1){return result[0]}
+        return result
+    }
+    res.getfirst = function(key,_default){
+        // returns the first value associated with key
+        var result = res._values[key]
+        if(result===undefined){
+            if(_default===undefined){return None}
+            return _default
+        }
+        return result[0]
+    }
+    res.getlist = function(key){
+        // always return a list
+        var result = res._values[key]
+        if(result===undefined){return []}
+        return result
+    }
+    res.getvalue = function(key,_default){
+        try{return res.__getitem__(key)}
+        catch(err){
+            $pop_exc()
+            if(_default===undefined){return None}
+            else{return _default}
+        }
+    }
+    res.keys = function(){return res._keys}
     return res
 }
 
