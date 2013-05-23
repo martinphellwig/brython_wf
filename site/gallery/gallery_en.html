@@ -21,9 +21,10 @@ if lang and lang in ["en","fr","es"]:
     has_req = True
     language = lang
 else:
-    import sys
+    import locale
     try:
-        lang = sys.language[:2]
+        lang,enc = locale.getdefaultlocale()
+        lang = lang[:2]
         if lang in ["en","fr","es"]:
             language = lang
     except:
