@@ -22,13 +22,22 @@ links = {'home':'../../index.html',
 
 _banner = doc['banner_row']
 
+# The variable "language" is set in the calling page : "en" for 
+# doc/en/index.html, etc
+# It is used for the translation in the calling page
+#
+# "lang" is the language received in the query string, or None
+# It is used to append a query string to menu links
+lang = doc.query().getvalue('lang',None)
+
 for key in ['home','console','gallery','doc','download','dev','groups']:
     href = links[key]
     if key in ['gallery']:
-        href = href %language
-    if key not in ['download','dev']:
+        if lang:href = href %lang
+        else:href = href %language
+    if lang and key not in ['download','dev']:
         # add lang to href
-        href += '?lang=%s' %language
+        href += '?lang=%s' %lang
     if key == 'home':
         link = A(IMG(src="../../brython_white.png",Class="logo"),href=href)
         cell = TD(link,Class="logo")
@@ -36,5 +45,5 @@ for key in ['home','console','gallery','doc','download','dev','groups']:
         link = A(trans_menu['menu_%s'%key][language],href=href,Class="banner")
         cell = TD(link)
     if key in ['download','dev']:
-        link.target = "_blank"        
+        link.target = "_blank"      
     _banner <= cell
