@@ -9,3 +9,5 @@ There are two types of importable modules :
 - built-in modules written in Python, located in folder __Lib__ : _dis, errno, itertools, keyword, local\_storage, os, pydom, pyindexedDB, string, sys, traceback_
 
 - user-defined Python modules will be imported from the same directory in which the calling script is situated
+
+Modules must be encoded in utf-8 ; the encoding declaration at the beginning of a module is ignored
