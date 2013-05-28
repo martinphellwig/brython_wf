@@ -479,10 +479,15 @@ function dir(obj){
 
 //divmod() (built in function)
 function divmod(x,y) {
-    if(isinstance(x,float) || isinstance(y,float)) {
-      return [float(Math.floor(x/y)), x % y] 
-    }
-    return [int(Math.floor(x/y)), x % y]
+    if (x < 0) {
+       var x2=(Number(y)+Number(x))%y;
+       if (abs(x) <= y) {
+          return [int(Math.floor(x/y)), x2]
+       } 
+       return [int(Math.ceil(x/y)), x2]
+    } 
+
+    return [int(Math.floor(x/y)), x%y]
 }
 
 function enumerate(iterator){
