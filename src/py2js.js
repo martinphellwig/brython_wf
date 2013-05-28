@@ -2006,7 +2006,7 @@ function $transition(context,token){
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='from'){
-    
+
         if(token==='id' && context.expect==='module'){
             context.module = arguments[2]
             context.expect = 'import'
@@ -2833,7 +2833,7 @@ function brython(options){
 
     for(var $i=0;$i<$elts.length;$i++){
         var $elt = $elts[$i]
-        var $br_scripts = ['brython.js','py2js.js']
+        var $br_scripts = ['brython.js','py2js.js', 'py_loader.js']
         for(var j=0;j<$br_scripts.length;j++){
             var $bs = $br_scripts[j]
             if($elt.src.substr($elt.src.length-$bs.length)==$bs){

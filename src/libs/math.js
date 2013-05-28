@@ -1,3 +1,4 @@
+
 var float_check=function(x) {
     if (isinstance(x, float)) return x.value;
     return x;
@@ -161,8 +162,13 @@ $module = {
     log10: function(x) {return Math.log(float_check(x))/Math.LN10},
     modf:function(x) {
        var x1=float_check(x);
-       var i=float(x1-Math.floor(x1));
-       return [i, float(x1-i)];
+       if (x1 > 0) {
+          var i=float(x1-Math.floor(x1));
+          return [i, float(x1-i)]
+       }
+
+       var i=float(x1-Math.ceil(x1));
+       return [i, float(Math.ceil(x1))]
     },
     pi : float(Math.PI),
     pow: function(x,y) {return Math.pow(float_check(x),float_check(y))},
