@@ -306,7 +306,9 @@ function $AssignCtx(context){
                     if(locals.indexOf(left.to_js())===-1){
                         locals.push(left.to_js())
                     }
-                    return 'var '+left.to_js()+'='+right.to_js()
+                    var res = 'var '+left.to_js()+'='
+                    res += '$locals["'+left.to_js()+'"]='+right.to_js()
+                    return res
                 }
             }else if(scope.ntype==='class'){
                 // assignment in a class : creates a class attribute
@@ -380,6 +382,12 @@ function $CallCtx(context){
             var module = ctx_node.node.module
             arg = this.tree[0].to_js()
             return 'eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
+        }
+        else if(this.func!==undefined && this.func.value ==='locals'){
+            var scope = $get_scope(this)
+            if(scope !== null && scope.ntype==='def'){
+                return 'locals("'+scope.context.tree[0].id+'")'
+            }
         }
         if(this.tree.length>0){
             return this.func.to_js()+'.__call__('+$to_js(this.tree)+')'
@@ -587,7 +595,10 @@ function $DefCtx(context){
         var js = 'for($var in $ns){eval("var "+$var+"=$ns[$var]")}'
         var new_node2 = new $Node('expression')
         new $NodeJSCtx(new_node2,js)
-        node.children.splice(0,0,new_node1,new_node2)
+        var js = 'var $locals = __BRYTHON__.scope["'+this.id+'"].__dict__=$ns'
+        var new_node3 = new $Node('expression')
+        new $NodeJSCtx(new_node3,js)
+        node.children.splice(0,0,new_node1,new_node2,new_node3)
 
         // wrap function body in a try/catch
         var def_func_node = new $Node('expression')
@@ -628,6 +639,10 @@ function $DefCtx(context){
             js += '=$class.'+this.name+'.__name__'
         }
         js += '="'+this.name+'"'
+        if(scope !==null && scope.ntype==='def'){
+            // add to $locals
+            js += ';$locals["'+this.name+'"]='+this.name
+        }
         var name_decl = new $Node('expression')
         new $NodeJSCtx(name_decl,js)
         node.parent.children.splice(rank+offset,0,name_decl)
@@ -1034,7 +1049,11 @@ function $ImportCtx(context){
             if(scope!==null && ['def','class'].indexOf(scope.ntype)>-1){
                 res += 'var '
             }
-            res += this.tree[i].alias+'=$mods['+i+'];'
+            res += this.tree[i].alias
+            if(scope!==null && scope.ntype == 'def'){
+                res += '=$locals["'+this.tree[i].alias+'"]'
+            }            
+            res += '=$mods['+i+'];'
         }
         return res 
     }
@@ -2833,7 +2852,7 @@ function brython(options){
 
     for(var $i=0;$i<$elts.length;$i++){
         var $elt = $elts[$i]
-        var $br_scripts = ['brython.js','py2js.js', 'py_loader.js']
+        var $br_scripts = ['brython.js','py2js.js','py_loader.js']
         for(var j=0;j<$br_scripts.length;j++){
             var $bs = $br_scripts[j]
             if($elt.src.substr($elt.src.length-$bs.length)==$bs){

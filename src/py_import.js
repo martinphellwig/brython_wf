@@ -69,6 +69,7 @@ function $import_js_module(module,alias,names,filepath,module_contents){
     }
     // add class and __str__
     $module.__class__ = $type
+    $module.__repr__ = function(){return "<module '"+module+"' from "+filepath+" >"}
     $module.__str__ = function(){return "<module '"+module+"' from "+filepath+" >"}
     $module.__file__ = filepath
    
@@ -161,6 +162,7 @@ function $import_py_module(module,alias,names,path,module_contents) {
         eval(js)
         // add class and __str__
         $module.__class__ = $type
+        $module.__repr__ = function(){return "<module '"+module+"' from "+path+" >"}
         $module.__str__ = function(){return "<module '"+module+"' from "+path+" >"}
         $module.__file__ = path
         return $module

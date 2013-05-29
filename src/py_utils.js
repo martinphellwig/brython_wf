@@ -513,6 +513,7 @@ Function.prototype.__eq__ = function(other){
     return other+''===this+''
 }
 Function.prototype.__class__ = Function
+Function.prototype.__repr__ = function(){return "<function "+this.__name__+">"}
 Function.prototype.__str__ = function(){return "<function "+this.__name__+">"}
 
 Array.prototype.match = function(other){
