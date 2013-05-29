@@ -1717,3 +1717,10 @@ var $errors = ['AssertionError','AttributeError','EOFError','FloatingPointError'
     'SystemError','SystemExit','TypeError','UnboundLocalError','ValueError',
     'ZeroDivisionError','IOError']
 for(var $i=0;$i<$errors.length;$i++){$make_exc($errors[$i])}
+
+//do the same for warnings.. :)
+var $warnings = ['Warning', 'DeprecationWarning', 'PendingDeprecationWarning',
+                 'RuntimeWarning', 'SyntaxWarning', 'UserWarning',
+                 'FutureWarning', 'ImportWarning', 'UnicodeWarning',
+                 'BytesWarning', 'ResourceWarning']
+for(var $i=0;$i<$warnings.length;$i++){$make_exc($warnings[$i])}

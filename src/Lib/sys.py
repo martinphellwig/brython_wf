@@ -16,3 +16,22 @@ byteorder='little'
 maxsize=9007199254740992   #largest integer..
 
 platform="brython"
+warnoptions=[]
+
+class flag_class:
+  def __init__(self):
+      self.debug=0
+      self.inspect=0
+      self.interactive=0
+      self.optimize=0
+      self.dont_write_bytecode=0
+      self.no_user_site=0
+      self.no_site=0
+      self.ignore_environment=0
+      self.verbose=0
+      self.bytes_warning=0
+      self.quiet=0
+      self.hash_randomization=1
+
+flags=flag_class()
+
