@@ -978,11 +978,12 @@ function len(obj){
 
 // list built in function is defined in py_list
 
-function locals(obj){
+function locals(obj_id){
     // used for locals() ; the translation engine adds the argument obj,
     // a dictionary mapping local variable names to their values
     var res = dict()
-    for(var name in obj){res.__setitem__(name,obj[name])}
+    var scope = __BRYTHON__.scope[obj_id].__dict__
+    for(var name in scope){res.__setitem__(name,scope[name])}
     return res
 }
 
@@ -1594,6 +1595,11 @@ function zip(){
 True = true
 False = false
 
+Boolean.prototype.__add__ = function(other){
+    if(this.valueOf()) return other + 1;
+    return other;
+}
+
 Boolean.prototype.__class__ = bool
 
 Boolean.prototype.__eq__ = function(other){
@@ -1615,10 +1621,7 @@ Boolean.prototype.__mul__ = function(other){
     return 0;
 }
 
-Boolean.prototype.__add__ = function(other){
-    if(this.valueOf()) return other + 1;
-    return other;
-}
+Boolean.prototype.__ne__ = function(other){return !this.__eq__(other)}
 
 Boolean.prototype.toString = function(){
     if(this.valueOf()) return "True"
