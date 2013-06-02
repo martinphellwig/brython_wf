@@ -68,6 +68,9 @@ for key in ['home','console','gallery','doc','download','dev','groups']:
 
 doc["content"].html = doc["content_%s" %language].html
 
+if has_req:
+    doc["c_%s" %lang].href += "?lang=%s" %lang
+    
 def change_lang(sel):
     new_lang = sel.options[sel.selectedIndex].value
     doc.location.href = 'index.html?lang=%s' %new_lang
@@ -118,7 +121,7 @@ Without a doubt, you've seen a clock like this in demos of HTML5
 <p>
 However, right click and view the source of this page...
 <p>It is not Javascript code! Intead, you will find Python code in a script of type "text/python"
-<p>Brython is designed to replace Javascript as the scripting language for the Web. As such, it is a Python 3 implementation (you can take it for a test drive through a web <a href="/tests/console.html?lang=en">console</a>), adapted to the HTML5 environment, that is to say with an interface to the DOM objects and events
+<p>Brython is designed to replace Javascript as the scripting language for the Web. As such, it is a Python 3 implementation (you can take it for a test drive through a web <a href="tests/console.html" id="c_en">console</a>), adapted to the HTML5 environment, that is to say with an interface to the DOM objects and events
 <p>The <a href="gallery/gallery_en.html">gallery</a> highlights a few of the possibilities, from creating simple document elements to drag and drop and 3D navigation
 </td>
 
@@ -159,7 +162,7 @@ Des horloges comme celle-ci, vous en avez sans doute déjà vu dans des démos d'HT
 <p>
 Maintenant, regardez le code source de cette page...
 <p>Vous ne verrez pas une ligne de Javascript, mais à la place, du code Python dans un script de type "text/python"
-<p>Brython a pour objectif de remplacer Javascript comme langage de script des pages Web. Il s'agit donc d'une implémentation de Python 3 (que vous pouvez tester sur la <a href="/tests/console.html?lang=fr">console</a>), adaptée à l'environnement HTML5, c'est-à-dire dotée d'une interface avec les objets et les événements DOM
+<p>Brython a pour objectif de remplacer Javascript comme langage de script des pages Web. Il s'agit donc d'une implémentation de Python 3 (que vous pouvez tester sur la <a href="tests/console.html" id="c_fr">console</a>), adaptée à l'environnement HTML5, c'est-à-dire dotée d'une interface avec les objets et les événements DOM
 <p>Une <a href="gallery/gallery_fr.html">galerie</a> présente quelques démos de ce qu'il est possible de faire, depuis la création d'éléments simples jusqu'au glisser-déposer ou la navigation 3D
 </td>
 
@@ -198,7 +201,7 @@ Muy cierto que has visto relojes de este tipo en demos de HTML5
 <p>
 Pero, mira el código fuente de esta página...
 <p>No hay lineas de Javascript, es puro código Python dentro de un script de tipo "text/python"
-<p>Brython es diseñado para remplazar a JavaScript como lenguaje de scripting para páginas web. Por lo tanto, es una implementación de Python 3 (que se puede probar en la <a href="/tests/console.html?lang=es">consola</a>), adaptada a un entorno HTML5, es decir, con una interfaz con los objetos y eventos DOM
+<p>Brython es diseñado para remplazar a JavaScript como lenguaje de scripting para páginas web. Por lo tanto, es una implementación de Python 3 (que se puede probar en la <a href="tests/console.html" id="c_es">consola</a>), adaptada a un entorno HTML5, es decir, con una interfaz con los objetos y eventos DOM
 <p>Una <a href="/gallery/gallery_es.html">galería</a> presenta algunas maquetas de lo que se puede hacer, de la creación de elementos, a ejemplos de arrastrar y soltar a navegación 3D
 </td>
 <td style="padding-left:5%;">
