@@ -354,7 +354,7 @@ function $class_constructor(class_name,factory,parents){
         obj.__class__ = f
         // set attributes
         for(var attr in factory){
-            if(attr=='__getattr__'){continue}
+            //if(attr=='__getattr__'){continue}
             if(attr=='__class__'){return f}
             else if(typeof factory[attr]==="function"){
                 var func = factory[attr]
@@ -374,8 +374,14 @@ function $class_constructor(class_name,factory,parents){
                 })(attr)
             }else{obj[attr] = factory[attr]}
         }
-        obj.__getattr__ = function(attr){return $resolve_attr(obj,factory,attr)}
-        obj.__setattr__ = function(attr,value){obj[attr]=value}
+        if(factory['__getattr__']==undefined){
+            obj.__getattr__ = function(attr){return $resolve_attr(obj,factory,attr)}
+        }
+        obj.__getattr__.__name__ = "<bound method __getattr__ of "+class_name+" object>"
+        if(factory['__setattr__']==undefined){
+            obj.__setattr__ = function(attr,value){obj[attr]=value}
+        }
+        obj.__setattr__.__name__ = "<bound method __setattr__ of "+class_name+" object>"
         try{$resolve_attr(obj,factory,'__str__')}
         catch(err){
             $pop_exc()

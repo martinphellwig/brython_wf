@@ -74,4 +74,11 @@ x.gety = gety
 
 assert x.gety is gety
 
+# bug 61
+class A:
+    def __getattr__(self, x):
+        return 2
+
+assert A().y == 2
+
 print('passed all tests..')
