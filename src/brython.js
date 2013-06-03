@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130521-222304
+// version 1.1.20130603-210555
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130521-222304"]
+__BRYTHON__.version_info=[1,1,"20130603-210555"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -468,6 +468,7 @@ if(typeof other !=='function'){return False}
 return other+''===this+''
 }
 Function.prototype.__class__=Function
+Function.prototype.__repr__=function(){return "<function "+this.__name__+">"}
 Function.prototype.__str__=function(){return "<function "+this.__name__+">"}
 Array.prototype.match=function(other){
 var $i=0
@@ -932,10 +933,14 @@ res.sort()
 return res
 }
 function divmod(x,y){
-if(isinstance(x,float)|| isinstance(y,float)){
-return[float(Math.floor(x/y)), x % y]
+if(x < 0){
+var x2=(Number(y)+Number(x))%y
+if(abs(x)<=y){
+return[int(Math.floor(x/y)), x2]
 }
-return[int(Math.floor(x/y)), x % y]
+return[int(Math.ceil(x/y)), x2]
+}
+return[int(Math.floor(x/y)), x%y]
 }
 function enumerate(iterator){
 var res=[]
@@ -1334,9 +1339,10 @@ catch(err){
 throw TypeError("object of type '"+obj.__class__.__name__+"' has no len()")}
 }
 }
-function locals(obj){
+function locals(obj_id){
 var res=dict()
-for(var name in obj){res.__setitem__(name,obj[name])}
+var scope=__BRYTHON__.scope[obj_id].__dict__
+for(var name in scope){res.__setitem__(name,scope[name])}
 return res
 }
 function map(){
@@ -1840,6 +1846,10 @@ rank++
 }
 True=true
 False=false
+Boolean.prototype.__add__=function(other){
+if(this.valueOf())return other + 1
+return other
+}
 Boolean.prototype.__class__=bool
 Boolean.prototype.__eq__=function(other){
 if(this.valueOf()){return !!other}else{return !other}
@@ -1856,10 +1866,7 @@ Boolean.prototype.__mul__=function(other){
 if(this.valueOf())return other
 return 0
 }
-Boolean.prototype.__add__=function(other){
-if(this.valueOf())return other + 1
-return other
-}
+Boolean.prototype.__ne__=function(other){return !this.__eq__(other)}
 Boolean.prototype.toString=function(){
 if(this.valueOf())return "True"
 return "False"
@@ -1945,6 +1952,11 @@ var $errors=['AssertionError','AttributeError','EOFError','FloatingPointError',
 'SystemError','SystemExit','TypeError','UnboundLocalError','ValueError',
 'ZeroDivisionError','IOError']
 for(var $i=0;$i<$errors.length;$i++){$make_exc($errors[$i])}
+var $warnings=['Warning', 'DeprecationWarning', 'PendingDeprecationWarning',
+'RuntimeWarning', 'SyntaxWarning', 'UserWarning',
+'FutureWarning', 'ImportWarning', 'UnicodeWarning',
+'BytesWarning', 'ResourceWarning']
+for(var $i=0;$i<$warnings.length;$i++){$make_exc($warnings[$i])}
 list=function(){
 function $list(){
 var args=new Array()
@@ -3035,6 +3047,7 @@ if(eval('$module')===undefined){
 throw ImportError("name '$module' is not defined in module")
 }
 $module.__class__=$type
+$module.__repr__=function(){return "<module '"+module+"' from "+filepath+" >"}
 $module.__str__=function(){return "<module '"+module+"' from "+filepath+" >"}
 $module.__file__=filepath
 return $module
@@ -3108,6 +3121,7 @@ try{
 var js=root.to_js()
 eval(js)
 $module.__class__=$type
+$module.__repr__=function(){return "<module '"+module+"' from "+path+" >"}
 $module.__str__=function(){return "<module '"+module+"' from "+path+" >"}
 $module.__file__=path
 return $module
@@ -3453,7 +3467,9 @@ var locals=__BRYTHON__.scope[scope_id].locals
 if(locals.indexOf(left.to_js())===-1){
 locals.push(left.to_js())
 }
-return 'var '+left.to_js()+'='+right.to_js()
+var res='var '+left.to_js()+'='
+res +='$locals["'+left.to_js()+'"]='+right.to_js()
+return res
 }
 }else if(scope.ntype==='class'){
 var attr=left.to_js()
@@ -3516,6 +3532,12 @@ while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
 arg=this.tree[0].to_js()
 return 'eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
+}
+else if(this.func!==undefined && this.func.value==='locals'){
+var scope=$get_scope(this)
+if(scope !==null && scope.ntype==='def'){
+return 'locals("'+scope.C.tree[0].id+'")'
+}
 }
 if(this.tree.length>0){
 return this.func.to_js()+'.__call__('+$to_js(this.tree)+')'
@@ -3703,7 +3725,10 @@ new $NodeJSCtx(new_node1,js)
 var js='for($var in $ns){eval("var "+$var+"=$ns[$var]")}'
 var new_node2=new $Node('expression')
 new $NodeJSCtx(new_node2,js)
-node.children.splice(0,0,new_node1,new_node2)
+var js='var $locals = __BRYTHON__.scope["'+this.id+'"].__dict__=$ns'
+var new_node3=new $Node('expression')
+new $NodeJSCtx(new_node3,js)
+node.children.splice(0,0,new_node1,new_node2,new_node3)
 var def_func_node=new $Node('expression')
 new $NodeJSCtx(def_func_node,'return function()')
 var try_node=new $Node('expression')
@@ -3734,6 +3759,9 @@ if(scope !==null && scope.ntype==='class'){
 js +='=$class.'+this.name+'.__name__'
 }
 js +='="'+this.name+'"'
+if(scope !==null && scope.ntype==='def'){
+js +=';$locals["'+this.name+'"]='+this.name
+}
 var name_decl=new $Node('expression')
 new $NodeJSCtx(name_decl,js)
 node.parent.children.splice(rank+offset,0,name_decl)
@@ -4100,7 +4128,11 @@ for(var i=0;i<this.tree.length;i++){
 if(scope!==null &&['def','class'].indexOf(scope.ntype)>-1){
 res +='var '
 }
-res +=this.tree[i].alias+'=$mods['+i+'];'
+res +=this.tree[i].alias
+if(scope!==null && scope.ntype=='def'){
+res +='=$locals["'+this.tree[i].alias+'"]'
+}
+res +='=$mods['+i+'];'
 }
 return res 
 }
@@ -4548,7 +4580,7 @@ var new_op=new $OpCtx(C,op.substr(0,op.length-1))
 assign.tree.push(new_op)
 C.parent.tree.pop()
 C.parent.tree.push(assign)
-return new_op
+return new $AbstractExprCtx(new_op,false)
 }
 function $comp_env(C,attr,src){
 var ids=$get_ids(src)
@@ -5650,7 +5682,7 @@ __BRYTHON__.path.push($script_path)
 }
 for(var $i=0;$i<$elts.length;$i++){
 var $elt=$elts[$i]
-var $br_scripts=['brython.js','py2js.js']
+var $br_scripts=['brython.js','py2js.js','py_loader.js']
 for(var j=0;j<$br_scripts.length;j++){
 var $bs=$br_scripts[j]
 if($elt.src.substr($elt.src.length-$bs.length)==$bs){
