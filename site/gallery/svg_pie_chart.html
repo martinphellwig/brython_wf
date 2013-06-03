@@ -88,8 +88,9 @@ def hide_legend():
 
 def change(rank,offset):
     x = int(cells[int(rank)].text)
-    cells[int(rank)].text = x+int(offset)
-    pie_chart()
+    if x+int(offset)>=0:
+        cells[int(rank)].text = x+int(offset)
+        pie_chart()
 
 nb_cols = 2
 nb_lines = 5
