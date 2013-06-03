@@ -1550,7 +1550,7 @@ function $augmented_assign(context,op){
     assign.tree.push(new_op)
     context.parent.tree.pop()
     context.parent.tree.push(assign)
-    return new_op
+    return new $AbstractExprCtx(new_op,false)
 }
 
 function $comp_env(context,attr,src){
