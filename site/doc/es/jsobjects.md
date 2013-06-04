@@ -15,3 +15,36 @@ Por ejemplo :
 >    <script type="text/python">
 >    doc['result'].value = JSObject(circle).surface(10)
 >    </script>
+
+En la siguiente porci&oacute;n de c&oacute;digo tenemos un ejemplo m&aacute;s completo de c&oacute;mo podr&iacute;as usar la popular librer&iacute;a jQuery :
+
+    <html>
+    <head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+    </script>
+    <script src="../../src/brython.js"></script>
+    </head>
+    
+    <script type="text/python">
+      def toggle_color(element):
+          _divs=doc.get(tag="div")
+          for _div in _divs:
+              if _div.style.color != "blue":
+                 _div.style.color = "blue"
+              else:
+                 _div.style.color = "red"
+    
+      _jQuery=JSObject($("body"))
+      _jQuery.click(toggle_color)
+    
+    </script>
+    
+    <body onload="brython()">
+      <div>Click here</div>
+      <div>to iterate through</div>
+      <div>these divs.</div>
+    <script>
+    </script>
+     
+    </body>
+    </html>
