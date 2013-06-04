@@ -473,9 +473,9 @@ DOMNode.prototype.__setattr__ = function(attr,value){
     }else{
         attr = attr.replace('_','-')
         if(this['set_'+attr]!==undefined){return this['set_'+attr](value)}
-        if(this[attr]!==undefined){this[attr]=value;return}
+        if(this[attr]!==undefined){this[attr]=value}
         var res = this.getAttribute(attr)
-        if(res!==undefined&&res!==null){console.log('in dom setAttribute '+res);this.setAttribute(attr,value)}
+        if(res!==undefined&&res!==null){this.setAttribute(attr,value)}
         else{this[attr]=value}
     }
 }
