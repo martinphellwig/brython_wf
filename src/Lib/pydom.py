@@ -126,6 +126,9 @@ class NodeCollection:
       _ns=NodeCollectionSelector(selector, self)
       self._nodes+=_ns.get()
 
+  def addBack(self):
+      pass
+
   def addClass(self, classname):
       for _node in self._nodes:
           _node.addClass(classname)
@@ -138,9 +141,24 @@ class NodeCollection:
       for _node in self._nodes:
           _node.append(content)
 
+  def appendTo(self):
+      pass
+
+  def attr(self, property, value=None):
+      pass
+
   def before(self, content):
       for _node in self._nodes:
           _node.before(content)
+
+  def bind(self, handler, event):
+      pass
+
+  def blur(self, handler=None):
+      pass
+
+  def change(self, handler=None):
+      pass
 
   def children(self, selector=None):
       _c=NodeCollection()
@@ -154,6 +172,9 @@ class NodeCollection:
       #selector is not None
       _ns=NodeCollectionSelector(selector, _c)
       return _ns.get()
+
+  def click(self, handler=None):
+      pass
 
   def clone(self):
       return NodeCollection([_node.clone() for _node in self._nodes])
@@ -169,6 +190,12 @@ class NodeCollection:
 
       return _c
 
+  def contains(self, text):
+      pass
+
+  def contents(self):
+      pass
+
   def css(self, property, value=None):
       if value is None and not isinstance(property, dict):
          return self._nodes[0].css(property)
@@ -179,14 +206,51 @@ class NodeCollection:
       else:
          for _node in self._nodes:
              _node.css(property, value)
-      
+
+  def data(self):
+      pass
+
+  def dblclick(self, handler=None):
+      pass
+
+  def detach(self):
+      pass
+
+  def each(self, func):
+      for _node in self._nodes:
+          func(_node)
+
   def empty(self):
       for _node in self._nodes:
           _node.empty()
 
+  def eq(self, index):
+      if index < len(self._nodes):
+         return NodeCollections(self._nodes[index])
+
+      return NodeCollections()
+
+  def error(self, handler=None):
+      pass
+
+  def fadeIn(self):
+      pass
+
+  def fadeOut(self):
+      pass
+
+  def fadeTo(self):
+      pass
+
+  def fadeToggle(self):
+      pass
+
   def filter(self, selector):
       _ns=NodeCollectionSelector(selector, self)
       return _ns.get()
+
+  def find(self):
+      pass
 
   def first(self):
       if len(self._nodes) == 0:
@@ -194,12 +258,27 @@ class NodeCollection:
 
       return NodeCollection([self._nodes[0]])
 
+  def focus(self, handler=None):
+      pass
+
+  def focusin(self, handler=None):
+      pass
+
+  def focusout(self, handler=None):
+      pass
+
   def get(self, index=None):
       if index is None:
          return [_node for _node in self._nodes]
 
       return self._nodes[index]
 
+  def gt(self, index):
+      return NodeCollection([self._nodes[index:])
+
+  def has(self, selector):
+      pass
+  
   def hasClass(self, name):
       for _node in self._nodes:
           if _node.hasClass(name):
@@ -218,6 +297,9 @@ class NodeCollection:
       for _node in self._nodes:
           _node.set_style({'display': 'none'})
 
+  def hover(self, handler=None):
+      pass
+
   def html(self, content=None):
       if content is None:
          return self._nodes[0].get_html()
@@ -225,17 +307,105 @@ class NodeCollection:
       for _node in self._nodes:
           _node.set_html(content)
 
+  def innerHeight(self):
+      pass
+
+  def innerWidth(self):
+      pass
+
+  def insertAfter(self, target):
+      pass
+
+  def insertBefore(self, target):
+      pass
+
+  def is(self, selector):
+      pass
+
+  def keydown(self, handler=None):
+      pass
+
+  def keypress(self, handler=None):
+      pass
+
+  def keyup(self, handler=None):
+      pass
+
   def last(self):
       return self._nodes[-1]
+
+  @property
+  def length(self):
+      return len(self._nodes)
+
+  def mousedown(self, handler=None):
+      pass
+
+  def mouseenter(self, handler=None):
+      pass
+
+  def mouseleave(self, handler=None):
+      pass
+
+  def mousemove(self, handler=None):
+      pass
+
+  def mouseout(self, handler=None):
+      pass
+
+  def mouseover(self, handler=None):
+      pass
+
+  def mouseup(self, handler=None):
+      pass
+
+  def next(self):
+      pass
+
+  def nextAll(self):
+      pass
+
+  def nextUtil(self):
+      pass
+
+  def off(self, handler):
+      pass
+
+  def offset(self):
+      pass
+
+  def offsetParent(self):
+      pass
+
+  def on(self, handler):
+      pass
+
+  def outerHeight(self):
+      pass
+
+  def outerWidth(self):
+      pass
 
   def parent(self):
       _p=NodeCollection()
       for _node in self._nodes:
           _p.append(_node.get_parent())
 
+  def parents(self, selector=None):
+      pass
+
+  def parentsUntil(self, selector=None):
+      pass
+
+  def position(self):
+      pass
+
   def prepend(self, content):
       for _node in self._nodes:
           _node.prepend(content)
+
+  def prependTo(self, target):
+      pass
 
   def prev(self):
       _p1=NodeCollection()
@@ -249,21 +419,81 @@ class NodeCollection:
 
       return _p1
 
+  def prevAll(self, selector=None):
+      pass
+
+  def prevUntil(self, selector=None):
+      pass
+
+  def prop(self, property, value=None):
+      pass
+
+  def ready(self, func):
+      pass
+
   def remove(self):
       for _node in self._nodes:
           _node.get_parent().removeChild(_node) 
+
+  def removeAttr(self, attr):
+      pass
 
   def removeClass(self, name):
       for _node in self._nodes:
           _node.removeClass(name)
 
+  def removeProp(self, property):
+      pass
+
+  def replaceAll(self):
+      pass
+
   def replaceWith(self, content):
       for _node in self._nodes:
           _node.get_parent().replaceWith(content, _node)
 
+  def resize(self, handler=None):
+      pass
+
+  def scroll(self, handler=None):
+      pass
+
+  def scrollLeft(self, value=None):
+      pass
+
+  def scrollTop(self, value=None):
+      pass
+
+  def select(self, handler=None):
+      pass
+
   def show(self):
       for _node in self._nodes:
           _node.set_style({'display': 'block'})
+
+  def siblings(self, selector=None):
+      pass
+
+  def size(self):
+      pass
+
+  def slice(self, index1=None, index2=None):
+      if index1 is None and index2 is None:
+         return NodeCollection()
+
+      return NodeCollection(self._nodes[index1:index2])
+
+  def slideDown(self):
+      pass
+
+  def slideToggle(self):
+      pass
+
+  def slideUp(self):
+      pass
+
+  def submit(self, handler=None):
+      pass
 
   def text(self, content=None):
       if content is None:
@@ -293,6 +523,26 @@ class NodeCollection:
           else:
              _node.set_style({'display': 'none'})
 
+  def toggleClass(self):
+      pass
+
+  def toList(self):
+      return self._nodes
+
+  toArray=toList   #for jQuery compatibility
+
+  def trigger(self, event_type):
+      pass
+
+  def triggerHandler(self, event_type):
+      pass
+
+  def unbind(self, handler):
+      pass
+
+  def unload(self, handler):
+      pass
+
   def unwrap(self):
       for _node in self._nodes:
           _parent=_node.get_parent()
@@ -301,12 +551,24 @@ class NodeCollection:
 
           _parent.remove()
 
+  def val(self, value=None):
+      pass
+
   def width(self, width=None):
       if width is None:
          return self._nodes[0].css('width')
 
       for _node in self._nodes:
           _node.set_style({'width': width})
+
+  def wrap(self):
+      pass
+
+  def wrapAll(self):
+      pass
+
+  def wrapInner(self):
+      pass
 
 def byId(id):
     _result=doc.get(id=id)
