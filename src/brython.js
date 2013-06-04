@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130603-210555
+// version 1.1.20130604-085135
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130603-210555"]
+__BRYTHON__.version_info=[1,1,"20130604-085135"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -340,7 +340,6 @@ fact=fact.parents[0]
 }
 obj.__class__=f
 for(var attr in factory){
-if(attr=='__getattr__'){continue}
 if(attr=='__class__'){return f}
 else if(typeof factory[attr]==="function"){
 var func=factory[attr]
@@ -360,8 +359,14 @@ return res
 })(attr)
 }else{obj[attr]=factory[attr]}
 }
+if(factory['__getattr__']==undefined){
 obj.__getattr__=function(attr){return $resolve_attr(obj,factory,attr)}
+}
+obj.__getattr__.__name__="<bound method __getattr__ of "+class_name+" object>"
+if(factory['__setattr__']==undefined){
 obj.__setattr__=function(attr,value){obj[attr]=value}
+}
+obj.__setattr__.__name__="<bound method __setattr__ of "+class_name+" object>"
 try{$resolve_attr(obj,factory,'__str__')}
 catch(err){
 $pop_exc()
@@ -6214,9 +6219,9 @@ this.attachEvent(attr,callback)
 }else{
 attr=attr.replace('_','-')
 if(this['set_'+attr]!==undefined){return this['set_'+attr](value)}
-if(this[attr]!==undefined){this[attr]=value;return}
+if(this[attr]!==undefined){this[attr]=value}
 var res=this.getAttribute(attr)
-if(res!==undefined&&res!==null){console.log('in dom setAttribute '+res);this.setAttribute(attr,value)}
+if(res!==undefined&&res!==null){this.setAttribute(attr,value)}
 else{this[attr]=value}
 }
 }
