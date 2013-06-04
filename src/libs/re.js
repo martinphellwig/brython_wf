@@ -26,8 +26,26 @@ $module = {
         var jsmatch = string.match(jsp)
         if(jsmatch===null){return None}
         var mo = new Object()
-        mo.groups = function(){return jsmatch.slice(1)}
+        mo.group = function(){
+            var res = []
+            for(var i=0;i<arguments.length;i++){
+                if(jsmatch[arguments[i]]===undefined){res.push(None)}
+                else{res.push(jsmatch[arguments[i]])}
+            }
+            if(arguments.length===1){return res[0]}
+            return res
+        },
+        mo.groups = function(_default){
+            if(_default===undefined){_default=None}
+            var res = []
+            for(var i=1;i<jsmatch.length;i++){
+                if(jsmatch[i]===undefined){res.push(_default)}
+                else{res.push(jsmatch[i])}
+            }
+            return res
+        }
         mo.start = function(){return jsmatch.index}
+        mo.string = string
         return JSObject(mo)
     },
     sub : function(pattern,repl,string){
@@ -48,5 +66,13 @@ $module = {
     }
 }
 
+$module.match = function(){
+    // match is like search but pattern must start with ^
+    pattern = arguments[0]
+    if(pattern.charAt(0)!=='^'){pattern = '^'+pattern}
+    var args = [pattern]
+    for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+    return $module.search.apply(null,args)
+}
 $module.__class__ = $module // defined in $py_utils
 $module.__str__ = function(){return "<module 're'>"}
