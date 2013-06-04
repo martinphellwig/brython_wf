@@ -2,7 +2,7 @@ import
 ------
 The import is performed by Ajax calls
 
-There are two types of importable modules :
+There are three types of importable modules :
 
 - modules written in Javascript, located in folder __libs__ of the distribution : _datetime, hashlib, html, json, math, random, svg, sys_ (of which only some of the attributes and methods are implemented)
 
