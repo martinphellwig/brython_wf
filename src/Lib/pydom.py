@@ -274,7 +274,7 @@ class NodeCollection:
       return self._nodes[index]
 
   def gt(self, index):
-      return NodeCollection([self._nodes[index:])
+      return NodeCollection([self._nodes[index:]])
 
   def has(self, selector):
       pass
@@ -319,8 +319,8 @@ class NodeCollection:
   def insertBefore(self, target):
       pass
 
-  def is(self, selector):
-      pass
+  #def is(self, selector):
+  #    pass
 
   def keydown(self, handler=None):
       pass

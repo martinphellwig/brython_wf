@@ -772,6 +772,30 @@ int.__name__ = 'int'
 int.__new__ = function(){return 0}
 int.toString = int.__str__ = function(){return "<class 'int'>"}
 
+int.__getattr__ = function(attr){
+    if(attr==='__class__'){return int}
+    if(this[attr]!==undefined){
+        if(typeof this[attr]==='function'){return $bind(this[attr],this)}
+        else{return this[attr]}
+    }
+    else{throw AttributeError("'int' object has no attribute '"+attr+"'")}
+}
+
+
+// Pierre, this probably isn't correct, but may work for now.
+// do we need to create a $IntClass, like what we did for Float?
+int.from_bytes = function(x, byteorder) {
+  var len = x.length
+  var num = x.charCodeAt(len - 1);
+  if (type.signed && (num >= 128)) {
+    num = num - 256;
+  }
+  for (var i = (len - 2); i >= 0; i--) {
+    num = 256 * num + x.charCodeAt(i);
+  }
+  return num;
+}
+
 Number.prototype.__and__ = function(other){return this & other} // bitwise AND
 
 Number.prototype.__bool__ = function(){return new Boolean(this.valueOf())}

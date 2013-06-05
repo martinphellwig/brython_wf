@@ -11,6 +11,7 @@ __all__ = ['deque', 'defaultdict', 'namedtuple', 'UserDict', 'UserList',
 
 # fixme brython.. there is an issue with _abcoll
 #from _abcoll import *
+#from _abcoll import Set
 #from _abcoll import MutableMapping
 #import _abcoll
 #__all__ += _abcoll.__all__
@@ -26,6 +27,12 @@ import heapq as _heapq
 from itertools import repeat as _repeat, chain as _chain, starmap as _starmap
 #fixme brython 
 #from reprlib import recursive_repr as _recursive_repr
+
+class Set(set):
+    pass
+
+class Sequence(list):
+    pass
 
 def _proxy(obj):
     return obj
@@ -918,3 +925,4 @@ class Counter(dict):
 #        return self.__class__(self.data.translate(*args))
 #    def upper(self): return self.__class__(self.data.upper())
 #    def zfill(self, width): return self.__class__(self.data.zfill(width))
+
