@@ -1,4 +1,4 @@
-import random
+import _os
 
 name="brython"
 
@@ -21,7 +21,7 @@ def getloadavg():
 def urandom(length):
     _c=[]
     for _i in range(length):
-        _c.append(chr(random.randint(0,255)))
+        _c.append(chr(_os.randint(0,255)))
         
     return ''.join(_c)
 
