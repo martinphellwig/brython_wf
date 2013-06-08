@@ -29,6 +29,7 @@ class Loader:
             mk,scripts = markdown.mark(req.text)
             doc[self.target].html = mk
             for script in scripts:
+                print('script',script)
                 exec(script)
 
 def load(url,target):
@@ -67,6 +68,14 @@ language = "en"
 <a class="navig" href="#" onClick="load('dev_env.md','content')">Installing the development environment</a>
 <br><a class="navig" href="#" onClick="load('test.md','content')">Testing and debugging</a>
 <br><a class="navig" href="#" onClick="load('deploy.md','content')">Deploying an application</a></div>
+
+<h4>Cookbook</h4>
+<div style="padding-left:10px;">
+<a class="navig" href="#" onClick="load('cookbook/hello_world.md','content')">Hello world !</a>
+<br><a class="navig" href="#" onClick="load('cookbook/insert_text.md','content')">Insert text in a document</a>
+<br><a class="navig" href="#" onClick="load('cookbook/basic_markup.md','content')">HTML markup (bold,italic...)</a></div>
+
+
 <h4>Implementation notes</h4>
 <div style="padding-left:10px;">
 <a class="navig" href="#" onClick="load('modele.md','content')">Compiling and running</a>
