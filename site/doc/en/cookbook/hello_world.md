@@ -1,0 +1,19 @@
+Problem
+-------
+
+Make the browser display "Hello world !"
+
+
+Solution
+--------
+
+    <html>
+    <head>
+    <script src="brython.js"></script>
+    </head>
+    <body onload="brython()">
+    <script type="text/python">
+    doc <= "Hello world !"
+    </script>
+    </body>
+    </html>

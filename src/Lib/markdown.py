@@ -161,7 +161,10 @@ def apply_markdown(src):
     
     # inline links
     link_pattern1 = r'\[(.+?)\]\s?\((.+?)\)'
-    src = re.sub(link_pattern1,r'<a href="\2">\1</a>',src)
+    def repl(mo,g1,g2,*args):
+        g2 = re.sub('_','&#95;',g2)
+        return '<a href="%s">%s</a>' %(g2,g1)
+    src = re.sub(link_pattern1,repl,src)
 
     # reference links
     link_pattern2 = r'\[(.+?)\]\s?\[(.*?)\]'
