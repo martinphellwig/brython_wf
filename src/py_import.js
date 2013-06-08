@@ -130,7 +130,9 @@ function $import_py_module(module,alias,names,path,module_contents) {
         }else if(ctx.type==='from') {
             for (var j=0; j< ctx.names.length; j++) {
                 var name=ctx.names[j];
-                if (ctx.aliases[name] !== undefined) {
+                if (name === '*') {
+                   // just pass, we don't want to include '*'
+                } else if (ctx.aliases[name] !== undefined) {
                    if (mod_names.indexOf(ctx.aliases[name])===-1){
                       mod_names.push(ctx.aliases[name])
                    }

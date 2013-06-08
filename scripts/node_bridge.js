@@ -14,6 +14,7 @@ var fs = require('fs');
 
 document={};
 window={};
+window.navigator={}
 document.$py_src = {}
 document.$debug = 0
 
@@ -80,7 +81,18 @@ $compile_python=function(module_contents,module) {
             if(mod_names.indexOf(ctx.name)===-1){mod_names.push(ctx.name)}
         } else if(ctx.type==='from') {
             for (var j=0; j< ctx.names.length; j++) {
-                if(mod_names.indexOf(ctx.names[j])===-1){mod_names.push(ctx.names[j])}
+                var name=ctx.names[j];
+                if (name === '*') {
+                   // just pass, we don't want to include '*'
+                } else if (ctx.aliases[name] !== undefined) {
+                   if (mod_names.indexOf(ctx.aliases[name])===-1){
+                      mod_names.push(ctx.aliases[name])
+                   }
+                } else {
+                   if (mod_names.indexOf(ctx.names[j])===-1){
+                     mod_names.push(ctx.names[j])
+                   }
+                }
             }
         }else if(ctx.type==='assign'){
             var left = ctx.tree[0]
