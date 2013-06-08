@@ -48,7 +48,8 @@ def compile_file(root, file):
 #for _root, _dirs, _files in os.walk('./src'):
 _files=['errno.py', 'local_storage.py', 'keyword.py', 'os.py', 'datetime.py',
         'sys.py', 'traceback.py', 'string.py', 'dis.py', 'pydom.py']
-_files.append('collections.py')
+_files+=['_random.py', 'random.py', 'heapq.py', 'collections.py']
+#_files+=['_sre.py', 're.py', 'sre_compile.py', 'sre_constants.py']
 
 _root="../src/Lib"
 for _file in _files:
