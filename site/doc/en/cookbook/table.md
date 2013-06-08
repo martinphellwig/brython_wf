@@ -60,7 +60,7 @@ We can build a table from a list of lists :
 <td style="width:50%;">
 
     lines = [ ['Morrissey','vocals'],
-        ['Johhny Marr','guitar'],
+        ['Johnny Marr','guitar'],
         ['Mike Joyce','the drums'],
         ['Andy Rourke','the bass guitar']
         ]
