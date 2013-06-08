@@ -79,7 +79,7 @@ def mark(src):
                 else:
                     section.lines.append(line)
         elif isinstance(section,CodeBlock):
-            if line.startswith('    '):
+            if line.startswith('    ') or not line.strip():
                 section.lines.append(line[4:])
             else:
                 sections.append(section)
@@ -96,18 +96,30 @@ def mark(src):
         scripts += _scripts
     return res,scripts
 
-def escape(czone,*args):
+def escape(czone):
     czone = czone.replace('&','&amp;')
     czone = czone.replace('<','&lt;')
     czone = czone.replace('>','&gt;')
     return czone
 
-def unmark(code_zone,*args):
+def s_escape(mo):
+    # used in re.sub
+    czone = mo.string[mo.start():mo.end()]
+    return escape(czone)
+
+def unmark(code_zone):
     # convert _ to &#95; inside inline code
     code_zone = code_zone.replace('_','&#95;')
     return code_zone
 
+def s_unmark(mo):
+    # convert _ to &#95; inside inline code
+    code_zone = mo.string[mo.start():mo.end()]
+    code_zone = code_zone.replace('_','&#95;')
+    return code_zone
+
 def apply_markdown(src):
+
     scripts = []
 
     # blockquotes
@@ -155,13 +167,14 @@ def apply_markdown(src):
 
     # escape < > & in inline code
     code_pattern = r'\`(\S.*?\S)\`'
-    src = re.sub(code_pattern,escape,src)
+    src = re.sub(code_pattern,s_escape,src)
     # also convert _
-    src = re.sub(code_pattern,unmark,src)    
+    src = re.sub(code_pattern,s_unmark,src)    
     
     # inline links
     link_pattern1 = r'\[(.+?)\]\s?\((.+?)\)'
-    def repl(mo,g1,g2,*args):
+    def repl(mo):
+        g1,g2 = mo.groups()
         g2 = re.sub('_','&#95;',g2)
         return '<a href="%s">%s</a>' %(g2,g1)
     src = re.sub(link_pattern1,repl,src)
@@ -285,7 +298,7 @@ def apply_markdown(src):
             '<H%s>%s</H%s>\n' %(level,mo.groups()[1],level),
             line,count=1)
 
-    src = '\n'.join(lines)
-        
-    src = re.sub('\n\n+','\n<p>',src)
+    src = '\n'.join(lines)      
+    src = re.sub('\n\n+','\n<p>',src)+'\n'
+
     return src,scripts
