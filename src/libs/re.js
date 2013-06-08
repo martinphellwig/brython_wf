@@ -34,7 +34,7 @@ $module = {
             }
             if(arguments.length===1){return res[0]}
             return res
-        },
+        }
         mo.groups = function(_default){
             if(_default===undefined){_default=None}
             var res = []
@@ -59,10 +59,38 @@ $module = {
         if(typeof repl==="string"){
             // backreferences are \1, \2... in Python but $1,$2... in Javascript
             repl = repl.replace(/\\(\d+)/g,'$$$1')
+        }else if(typeof repl==="function"){
+            // the argument passed to the Python function is the match object
+            // the arguments passed to the Javascript function are :
+            // - the matched substring
+            // - the matched groups
+            // - the offset of the matched substring inside the string
+            // - the string being examined
+            var $repl1 = function(){
+                var mo = Object()
+                mo.string = arguments[arguments.length-1]
+                var start = arguments[arguments.length-2]
+                var end = start + arguments[0].length
+                mo.start = function(){return start}
+                mo.end = function(){return end}
+                groups = []
+                for(var i=1;i<arguments.length-2;i++){groups.push(arguments[i])}
+                mo.groups = function(_default){
+                    if(_default===undefined){_default=None}
+                    var res = []
+                    for(var i=0;i<groups.length;i++){
+                        if(groups[i]===undefined){res.push(_default)}
+                        else{res.push(groups[i])}
+                    }
+                    return res
+                }
+                return repl(JSObject(mo))
+            }
         }
         if(count==0){flags+='g'}
         var jsp = new RegExp(pattern,flags)
-        return string.replace(jsp,repl)
+        if(typeof repl==='function'){return string.replace(jsp,$repl1)}
+        else{return string.replace(jsp,repl)}
     }
 }
 

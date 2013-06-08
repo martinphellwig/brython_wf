@@ -72,8 +72,6 @@ li {
     margin-bottom: 3px;
 }
 pre.marked {
-    padding: 6px;
-    display:inline-block;
     color: #339;
 }
 code {
