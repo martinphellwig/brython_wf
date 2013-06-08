@@ -1,7 +1,7 @@
 Problem
 -------
 
-Make the browser display "Hello world !" in a DIV element
+Display content in a element of the web page
 
 
 Solution
@@ -18,7 +18,7 @@ Solution
     <body onload="brython()">
     
     <script type="text/python">
-    doc['zone'] <= "Additional content"
+    doc['zone'] <= "blah "
     </script>
     
     </body>
@@ -33,7 +33,7 @@ Solution
 
 <script type="text/python3">
 def fill_zone():
-    doc["zone"] <= "Additional content"
+    doc["zone"] <= "blah "
 </script>
 
 `doc["zone"]` is the element in the web page with the id "zone" (here, the colored table cell)
