@@ -3,6 +3,15 @@ $module =  {
     __getattr__ : function(attr){return this[attr]},
 
     clear_interval : function(int_id){window.clearInterval(int_id)},
+
+    ctime: function(timestamp){
+       if (timestamp === undefined) {
+          timestamp=new Date().getTime();
+       }
+       var d=new Date(0);  
+       d.setUTCSeconds(timestamp);
+       return d.toUTCString();
+    },
     
     set_interval : function(func,interval){
         return int(window.setInterval(func,interval))
