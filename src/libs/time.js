@@ -6,7 +6,7 @@ $module =  {
 
     ctime: function(timestamp){
        if (timestamp === undefined) {
-          timestamp=new Date().getTime();
+          timestamp=int(new Date().getTime()/1000);
        }
        var d=new Date(0);  
        d.setUTCSeconds(timestamp);
