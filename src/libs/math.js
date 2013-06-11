@@ -186,3 +186,11 @@ $module = {
 
 $module.__class__ = $module // defined in $py_utils
 $module.__str__ = function(){return "<module 'math'>"}
+for(var $attr in $module){
+    if(typeof $module[$attr]==='function'){
+        $module[$attr].__repr__=(function(func){
+            return function(){return '<built-in function '+func+'>'}})($attr)
+        $module[$attr].__str__=(function(func){
+            return function(){return '<built-in function '+func+'>'}})($attr)
+    }
+}

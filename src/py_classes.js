@@ -702,6 +702,13 @@ function getattr(obj,attr,_default){
 }
 
 //globals() (built in function)
+function globals(module){
+    // the translation engine adds the argument mdoule
+    var res = dict()
+    var scope = __BRYTHON__.scope[module].__dict__
+    for(var name in scope){res.__setitem__(name,scope[name])}
+    return res
+}
 
 function hasattr(obj,attr){
     try{getattr(obj,attr);return True}
@@ -1005,6 +1012,10 @@ function len(obj){
 function locals(obj_id){
     // used for locals() ; the translation engine adds the argument obj,
     // a dictionary mapping local variable names to their values
+    if(__BRYTHON__.scope[obj_id]===undefined){
+        var module=document.$line_info[1]
+        return globals(module)
+    }
     var res = dict()
     var scope = __BRYTHON__.scope[obj_id].__dict__
     for(var name in scope){res.__setitem__(name,scope[name])}
