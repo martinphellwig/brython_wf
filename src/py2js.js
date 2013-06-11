@@ -293,8 +293,11 @@ function $AssignCtx(context){
                 return res
             }
             var scope = $get_scope(this)
-            if(scope===null){
-                return left.to_js()+'='+right.to_js()
+            if(scope.ntype==="module"){
+                var res = left.to_js()
+                res += '=__BRYTHON__.scope["'+scope.module+'"]'
+                res += '.__dict__["'+left.to_js()+'"]='+right.to_js()
+                return res
             }else if(scope.ntype==='def'){
                 // assignment in a function : depends if variable is local
                 // or global
@@ -382,12 +385,16 @@ function $CallCtx(context){
             var module = ctx_node.node.module
             arg = this.tree[0].to_js()
             return 'eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
-        }
-        else if(this.func!==undefined && this.func.value ==='locals'){
+        }else if(this.func!==undefined && this.func.value ==='locals'){
             var scope = $get_scope(this)
             if(scope !== null && scope.ntype==='def'){
                 return 'locals("'+scope.context.tree[0].id+'")'
             }
+        }else if(this.func!==undefined && this.func.value ==='globals'){
+            var ctx_node = this
+            while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
+            var module = ctx_node.node.module
+            return 'globals("'+module+'")'
         }
         if(this.tree.length>0){
             return this.func.to_js()+'.__call__('+$to_js(this.tree)+')'
@@ -420,7 +427,7 @@ function $ClassCtx(context){
 
         // class constructor
         var scope = $get_scope(this)
-        if(scope===null||scope.ntype!=='class'){
+        if(scope.ntype==="module"||scope.ntype!=='class'){
             js = 'var '+this.name
         }else{
             js = 'var '+this.name+' = $class.'+this.name
@@ -434,7 +441,7 @@ function $ClassCtx(context){
         new $NodeJSCtx(cl_cons,js)
         node.parent.insert(rank+2,cl_cons)
         // add declaration of class at window level
-        if(scope===null && this.parent.node.module==='__main__'){
+        if(scope.ntype==="module" && this.parent.node.module==='__main__'){
             js = 'window.'+this.name+'='+this.name
             var w_decl = new $Node('expression')
             new $NodeJSCtx(w_decl,js)
@@ -649,7 +656,7 @@ function $DefCtx(context){
         offset++
 
         // add declaration of function at window level
-        if(scope===null && node.module==='__main__'){
+        if(scope.ntype==="module" && node.module==='__main__'){
             js = 'window.'+this.name+'='+this.name
             new_node1 = new $Node('expression')
             new $NodeJSCtx(new_node1,js)
@@ -687,7 +694,7 @@ function $DefCtx(context){
         var scope = $get_scope(this)
         var name = this.name
         if(this.type==='generator'){name='$'+name}
-        if(scope===null || scope.ntype!=='class'){
+        if(scope.ntype==="module" || scope.ntype!=='class'){
             res = name+'= (function ('
         }else{
             res = 'var '+name+' = $class.'+name+'= (function ('
@@ -1019,7 +1026,7 @@ function $IdCtx(context,value,minus){
         if(['locals','globals'].indexOf(this.value)>-1){
             if(this.parent.type==='call'){
                 var scope = $get_scope(this)
-                if(scope===null){new $StringCtx(this.parent,'"__main__"')}
+                if(scope.ntype==="module"){new $StringCtx(this.parent,'"__main__"')}
                 else{
                     var locals = scope.context.tree[0].locals
                     var res = '{'
@@ -1585,10 +1592,12 @@ function $get_scope(context){
         if(['def','class'].indexOf(ntype)>-1){
             scope = tree_node.parent
             scope.ntype = ntype
-            break
+            return scope
         }
         tree_node = tree_node.parent
     }
+    scope = tree_node.parent // module
+    scope.ntype = "module"
     return scope
 }
 
@@ -2436,6 +2445,7 @@ __BRYTHON__.py2js = function(src,module){
     if(src.charAt(src.length-1)!="\n"){src+='\n'}
     if(module===undefined){module='__main__'}
     __BRYTHON__.scope[module] = {}
+    __BRYTHON__.scope[module].__dict__ = {}
 
     document.$py_src[module]=src
     var root = $tokenize(src,module)
@@ -2500,6 +2510,7 @@ function $tokenize(src,module){
 
     var context = null
     var root = new $Node('module')
+    root.module = module
     root.indent = -1
     var new_node = new $Node('expression')
     current = root
