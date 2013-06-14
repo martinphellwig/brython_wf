@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130611-092246
+// version 1.1.20130614-091528
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130611-092246"]
+__BRYTHON__.version_info=[1,1,"20130614-091528"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -6065,9 +6065,44 @@ return parent.options.namedItem(name)
 this.get_remove=function(arg){parent.options.remove(arg)}
 this.toString=this.__str__
 }
+function JSConstructor(obj){
+return new $JSConstructor(obj)
+}
+JSConstructor.__class__=$type
+JSConstructor.__str__=function(){return "<class 'JSConstructor'>"}
+JSConstructor.toString=JSConstructor.__str__
+function $JSConstructor(js){
+this.js=js
+this.__class__=JSConstructor
+this.__str__=function(){return "<object 'JSConstructor' wraps "+this.js+">"}
+this.toString=this.__str__
+}
+function $applyToConstructor(constructor, argArray){
+var args=[null].concat(argArray)
+var factoryFunction=constructor.bind.apply(constructor, args)
+return new factoryFunction()
+}
+$JSConstructor.prototype.__call__=function(){
+var args=[]
+for(var i=0;i<arguments.length;i++){
+var arg=arguments[i]
+if(isinstance(arg,[JSObject,JSConstructor])){
+args.push(arg.js)
+}
+else if(isinstance(arg,dict)){
+var obj=new Object()
+for(var j=0;j<arg.$keys.length;j++){
+obj[arg.$keys[j]]=arg.$values[j]
+}
+args.push(obj)
+}else{args.push(arg)}
+}
+var res=$applyToConstructor(this.js,args)
+return JSObject(res)
+}
 function JSObject(obj){
 if(obj===null){return new $JSObject(obj)}
-if(obj.__class__!==undefined){return obj}
+if(obj.__class__!==undefined &&(typeof obj!=='function')){return obj}
 return new $JSObject(obj)
 }
 JSObject.__class__=$type
@@ -6093,12 +6128,13 @@ if(this.js.length!==undefined){return this.js.length}
 else{throw AttributeError,this+' has no attribute __len__'}
 }
 $JSObject.prototype.__getattr__=function(attr){
+if(attr==='__class__'){return JSObject}
 if(this['get_'+attr]!==undefined){
 return this['get_'+attr]
 }else if(this.js[attr]!==undefined){
 var obj=this.js,obj_attr=this.js[attr]
 if(typeof this.js[attr]=='function'){
-return function(){
+var res=function(){
 var args=[]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 var res=obj_attr.apply(obj,args)
@@ -6106,13 +6142,16 @@ if(typeof res=='object'){return JSObject(res)}
 else if(res===undefined){return None}
 else{return $JS2Py(res)}
 }
+res.__repr__=function(){return '<function '+attr+'>'}
+res.__str__=function(){return '<function '+attr+'>'}
+return res
 }else if(obj===window && attr==='location'){
 return $Location()
 }else{
 return $JS2Py(this.js[attr])
 }
 }else{
-throw AttributeError("no attribute "+attr)
+throw AttributeError("no attribute "+attr+' for '+this)
 }
 }
 $JSObject.prototype.__setattr__=function(attr,value){

@@ -235,9 +235,54 @@ function $OptionsClass(parent){
     
 }
 
+// transforms a Javascript constructor into a Python function
+// that returns instances of the constructor, converted to Python objects
+function JSConstructor(obj){
+    return new $JSConstructor(obj)
+}
+JSConstructor.__class__ = $type
+JSConstructor.__str__ = function(){return "<class 'JSConstructor'>"}
+JSConstructor.toString = JSConstructor.__str__
+
+function $JSConstructor(js){
+    this.js = js
+    this.__class__ = JSConstructor
+    this.__str__ = function(){return "<object 'JSConstructor' wraps "+this.js+">"}
+    this.toString = this.__str__
+}
+
+function $applyToConstructor(constructor, argArray) {
+    var args = [null].concat(argArray);
+    var factoryFunction = constructor.bind.apply(constructor, args);
+    return new factoryFunction();
+}
+
+$JSConstructor.prototype.__call__ = function(){
+    // this.js is a constructor
+    // it takes Javascript arguments so we must convert
+    // those passed to the Python function
+    var args = []
+    for(var i=0;i<arguments.length;i++){
+        var arg = arguments[i]
+        if(isinstance(arg,[JSObject,JSConstructor])){
+            args.push(arg.js)
+        }
+        else if(isinstance(arg,dict)){
+            var obj = new Object()
+            for(var j=0;j<arg.$keys.length;j++){
+                obj[arg.$keys[j]]=arg.$values[j]
+            }
+            args.push(obj)
+        }else{args.push(arg)}
+    }
+    var res = $applyToConstructor(this.js,args)
+    // res is a Javascript object
+    return JSObject(res)
+}
+
 function JSObject(obj){
     if(obj===null){return new $JSObject(obj)}
-    if(obj.__class__!==undefined){return obj}
+    if(obj.__class__!==undefined && (typeof obj!=='function')){return obj}
     return new $JSObject(obj)
 }
 JSObject.__class__ = $type
@@ -269,12 +314,13 @@ $JSObject.prototype.__len__ = function(){
 }
 
 $JSObject.prototype.__getattr__ = function(attr){
+    if(attr==='__class__'){return JSObject}
     if(this['get_'+attr]!==undefined){
       return this['get_'+attr]
     }else if(this.js[attr] !== undefined){
         var obj = this.js,obj_attr = this.js[attr]
         if(typeof this.js[attr]=='function'){
-            return function(){
+            var res = function(){
                 var args = []
                 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
                 var res = obj_attr.apply(obj,args)
@@ -282,6 +328,9 @@ $JSObject.prototype.__getattr__ = function(attr){
                 else if(res===undefined){return None}
                 else{return $JS2Py(res)}
             }
+            res.__repr__ = function(){return '<function '+attr+'>'}
+            res.__str__ = function(){return '<function '+attr+'>'}
+            return res
         }else if(obj===window && attr==='location'){
             // special lookup because of Firefox bug 
             // https://bugzilla.mozilla.org/show_bug.cgi?id=814622
@@ -290,7 +339,7 @@ $JSObject.prototype.__getattr__ = function(attr){
             return $JS2Py(this.js[attr])
         }
     }else{
-        throw AttributeError("no attribute "+attr)
+        throw AttributeError("no attribute "+attr+' for '+this)
     }
 }
 
