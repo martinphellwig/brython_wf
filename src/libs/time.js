@@ -12,6 +12,10 @@ $module =  {
        d.setUTCSeconds(timestamp);
        return d.toUTCString();
     },
+
+    perf_counter: function() {
+        return new Date().getTime()/1000;
+    },
     
     set_interval : function(func,interval){
         return int(window.setInterval(func,interval))
