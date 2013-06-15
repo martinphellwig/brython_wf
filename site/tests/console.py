@@ -88,7 +88,7 @@ def run():
         traceback.print_exc()
     output = doc["console"].value
 
-    print('<completed in %s ms>' %(time.perf_counter()-t0)*1000)
+    print('<completed in %6.2f ms>' % ((time.perf_counter()-t0)*1000.0))
 
 # load a Python script
 def on_complete(req):

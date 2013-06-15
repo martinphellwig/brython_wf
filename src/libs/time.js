@@ -14,7 +14,7 @@ $module =  {
     },
 
     perf_counter: function() {
-        return new Date().getTime()/1000;
+        return float((new Date()).getTime()/1000.0);
     },
     
     set_interval : function(func,interval){
