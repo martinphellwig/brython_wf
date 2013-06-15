@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130615-103041
+// version 1.1.20130615-180512
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130615-103041"]
+__BRYTHON__.version_info=[1,1,"20130615-180512"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -4634,6 +4634,7 @@ return offset
 function $augmented_assign(C,op){
 var assign=new $AssignCtx(C)
 var new_op=new $OpCtx(C,op.substr(0,op.length-1))
+new_op.parent=assign
 assign.tree.push(new_op)
 C.parent.tree.pop()
 C.parent.tree.push(assign)
@@ -4983,23 +4984,10 @@ var op_parent=C.parent,op=arguments[2]
 var op1=C.parent,repl=null
 while(true){
 if(op1.type==='expr'){op1=op1.parent}
-else if(op1.type==='op'&&$op_weight[op1.op]>$op_weight[op]){repl=op1;op1=op1.parent}
+else if(op1.type==='op'&&$op_weight[op1.op]>=$op_weight[op]){repl=op1;op1=op1.parent}
 else{break}
 }
 if(repl===null){
-if(op1.type==='op' 
-&&['<','<=','==','!=','is','>=','>'].indexOf(op1.op)>-1
-&&['<','<=','==','!=','is','>=','>'].indexOf(op)>-1){
-op1.parent.tree.pop()
-var and_expr=new $OpCtx(op1,'and')
-var c2=op1.tree[1]
-var c2_clone=new Object()
-for(var attr in c2){c2_clone[attr]=c2[attr]}
-c2_clone.parent=and_expr
-and_expr.tree.push('xxx')
-var new_op=new $OpCtx(c2_clone,op)
-return new $AbstractExprCtx(new_op,false)
-}
 if(['and','or'].indexOf(op)>-1){
 while(C.parent.type==='not'||
 (C.parent.type==='expr'&&C.parent.parent.type==='not')){
@@ -5012,6 +5000,19 @@ var expr=new $ExprCtx(op_parent,'operand',C.with_commas)
 expr.expect=','
 C.parent=expr
 var new_op=new $OpCtx(C,op)
+return new $AbstractExprCtx(new_op,false)
+}
+if(repl.type==='op'
+&&['<','<=','==','!=','is','>=','>'].indexOf(repl.op)>-1
+&&['<','<=','==','!=','is','>=','>'].indexOf(op)>-1){
+repl.parent.tree.pop()
+var and_expr=new $OpCtx(repl,'and')
+var c2=repl.tree[1]
+var c2_clone=new Object()
+for(var attr in c2){c2_clone[attr]=c2[attr]}
+c2_clone.parent=and_expr
+and_expr.tree.push('xxx')
+var new_op=new $OpCtx(c2_clone,op)
 return new $AbstractExprCtx(new_op,false)
 }
 repl.parent.tree.pop()
@@ -5144,10 +5145,13 @@ C.parent.parent !==undefined &&
 C.parent.parent.type==='call_arg'){
 return new $AbstractExprCtx(new $KwArgCtx(C.parent),false)
 }else{return $transition(C.parent,token,arguments[2])}
-}else if(token==='op'){return $transition(C.parent,token,arguments[2])}
-else if(['id','str','int','float'].indexOf(token)>-1){
+}else if(token==='op'){
+return $transition(C.parent,token,arguments[2])
+}else if(['id','str','int','float'].indexOf(token)>-1){
 $_SyntaxError(C,'token '+token+' after '+C)
-}else{return $transition(C.parent,token,arguments[2])}
+}else{
+return $transition(C.parent,token,arguments[2])
+}
 }else if(C.type==='import'){
 if(token==='id' && C.expect==='id'){
 new $ImportedModuleCtx(C,arguments[2])

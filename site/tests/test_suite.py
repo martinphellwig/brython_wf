@@ -4,10 +4,15 @@ assert (50-5*6)/4 == 5.0
 assert 8/5 == 1.6
 assert 7//3 == 2
 assert 7//-3 == -3
+assert 4-2-2 == 0
 
 width=20
 height=5*9
 assert width*height == 900
+
+x = 6
+x += 7+8
+assert x == 21
 
 x=y=z=0
 assert x==0
