@@ -946,7 +946,6 @@ function $FromCtx(context){
            //console.log(res)
         } else {
             var scope=$get_scope(this)
-            console.log('scope '+scope.ntype)
            res = '$mod=$import_list([["'+this.module+'","'+this.module+'"]])[0];'
         
            if(this.names[0]!=='*'){
@@ -1692,6 +1691,7 @@ function $arbo(ctx){
 function $transition(context,token){
     //console.log('arbo '+$arbo(context))
     //console.log('context '+context+' token '+token+' '+arguments[2])
+    //console.log('')
 
     if(context.type==='abstract_expr'){
     
@@ -2007,6 +2007,15 @@ function $transition(context,token){
                         // 'and' and 'or' have higher precedence than 'not'
                         context = context.parent
                         op_parent = context.parent
+                    }
+                }else{
+                    while(true){
+                        if(context.parent!==op1){
+                            context = context.parent
+                            op_parent = context.parent
+                        }else{
+                            break
+                        }
                     }
                 }
                 context.parent.tree.pop()
@@ -2453,15 +2462,18 @@ function $transition(context,token){
             return $transition(context.parent.parent,token,value)
         }else if(token==='id'){
             // replace by x.__neg__(), x.__invert__ or x
-            context.parent.tree.pop()
-            var expr = new $ExprCtx(context.parent,'id',false)
-            new $IdCtx(expr,arguments[2]) // create id
+            context.parent.parent.tree.pop()
+            var expr = new $ExprCtx(context.parent.parent,'call',false)
+            var expr1 = new $ExprCtx(expr,'id',false)
+            new $IdCtx(expr1,arguments[2]) // create id
             if(context.op !== '+'){
                 var repl = new $AttrCtx(expr)
                 if(context.op==='-'){repl.name='__neg__'}
                 else{repl.name='__invert__'}
                 // method is called with no argument
                 var call = new $CallCtx(expr)
+                // new context is the expression above the id
+                return expr1
             }
             return context.parent
         }else if(token==="op" && '+-'.search(arguments[2])>-1){
