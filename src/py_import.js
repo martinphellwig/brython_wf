@@ -118,43 +118,10 @@ function $import_py_module(module,alias,names,path,module_contents) {
     new $NodeJSCtx(mod_node,'$module=(function()')
     root.insert(0,mod_node)
     mod_node.children = body
-    // search for module-level names : functions, classes and variables
-    var mod_names = []
-    for(var i=0;i<mod_node.children.length;i++){
-        var node = mod_node.children[i]
-        // use function get_ctx() 
-        // because attribute 'context' is renamed by make_dist...
-        var ctx = node.get_ctx().tree[0]
-        if(ctx.type==='def'||ctx.type==='class'){
-            if(mod_names.indexOf(ctx.name)===-1){mod_names.push(ctx.name)}
-        }else if(ctx.type==='from') {
-            for (var j=0; j< ctx.names.length; j++) {
-                var name=ctx.names[j];
-                if (name === '*') {
-                   // just pass, we don't want to include '*'
-                } else if (ctx.aliases[name] !== undefined) {
-                   if (mod_names.indexOf(ctx.aliases[name])===-1){
-                      mod_names.push(ctx.aliases[name])
-                   }
-                } else {
-                   if (mod_names.indexOf(ctx.names[j])===-1){
-                     mod_names.push(ctx.names[j])
-                   }
-                }
-            }
-        }else if(ctx.type==='assign'){
-            var left = ctx.tree[0]
-            if(left.type==='expr'&&left.tree[0].type==='id'&&left.tree[0].tree.length===0){
-                var id_name = left.tree[0].value
-                if(mod_names.indexOf(id_name)===-1){mod_names.push(id_name)}
-            }
-        }
-    }
+
     // create the object that will be returned when the anonymous function is run
     var ret_code = 'return {'
-    for(var i=0;i<mod_names.length;i++){
-        ret_code += mod_names[i]+':'+mod_names[i]+','
-    }
+
     ret_code += '__getattr__:function(attr){if(this[attr]!==undefined){return this[attr]}'
     ret_code += 'else{throw AttributeError("module '+module+' has no attribute \''+'"+attr+"\'")}},'
     ret_code += '__setattr__:function(attr,value){this[attr]=value}'
@@ -171,6 +138,10 @@ function $import_py_module(module,alias,names,path,module_contents) {
     try{
         var js = root.to_js()
         eval(js)
+        // add names defined in the module as attributes of $module
+        for(var attr in __BRYTHON__.scope[module].__dict__){
+            $module[attr] = __BRYTHON__.scope[module].__dict__[attr]
+        }
         // add class and __str__
         $module.__class__ = $type
         $module.__repr__ = function(){return "<module '"+module+"' from "+path+" >"}

@@ -3,6 +3,8 @@
 <head>
 <meta charset="iso-8859-1">
 <script src="/src/brython.js"></script>
+<script src="/src/py_import.js"></script>
+<script src="/src/py2js.js"></script>
 
 </head>
 <body onLoad="brython(1)">
@@ -21,6 +23,9 @@ doc <= sidebar.menu('Brython',menu_items)
 doc <= P()+str(datetime.date.today())
 doc <= P()+string.ascii_letters
 doc <= P('sys.path : '+str(sys.path))
+
+doc <= P("imported by 'from html import A' : %s" %str(sidebar.A)[1:-1])
+doc <= P("imported by 'from os import *' : %s" %str(sidebar.urandom)[1:-1])
 </script>
 </body>
 </html>
