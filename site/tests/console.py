@@ -81,14 +81,14 @@ def run():
     if storage:
        storage["py_src"]=src
 
-    t0 = time.time()
+    t0 = time.perf_counter()
     try:
         exec(src)
     except Exception as exc:
         traceback.print_exc()
     output = doc["console"].value
 
-    print('<completed in %s ms>' %(time.time()-t0))
+    print('<completed in %s ms>' %(time.perf_counter()-t0)*1000)
 
 # load a Python script
 def on_complete(req):

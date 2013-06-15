@@ -177,3 +177,14 @@ for arc,wfunc in (dist1,dist1.add),(dist2,dist2.add),(dist3,dist3.write):
                 arcname=os.path.join(name,folder,path))
 
     arc.close()
+
+import sys
+sys.path.append("scripts")
+
+try:
+  import make_VFS
+except ImportError:
+  print("Cannot find make_VFS, so we won't make py_VFS.js")
+  sys.exit()
+
+make_VFS.process("src/py_VFS.js")

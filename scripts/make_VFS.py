@@ -17,13 +17,14 @@ if sys.version_info[0] >= 3:
    print("For the time being, because of byte issues in Bryton, please use python 2.x")
    sys.exit()
 
-_main_root=os.path.join(os.getcwd(), '../src')
+def process(filename):
+  print "generating filename"
+  _main_root=os.path.dirname(filename)
+  _vfs=open(filename, "w")
+  _vfs.write("__BRYTHON__.$py_VFS={\n")
 
-_vfs=open(os.path.join(_main_root, "py_VFS.js"), "w")
-_vfs.write("__BRYTHON__.$py_VFS={\n")
-
-_flag=False
-for _mydir in ("libs", "Lib"):
+  _flag=False
+  for _mydir in ("libs", "Lib"):
     for _root, _dir, _files in os.walk(os.path.join(_main_root, _mydir)):
         for _file in _files:
             if _file.endswith('.py'):
@@ -54,9 +55,9 @@ for _mydir in ("libs", "Lib"):
                _flag=True
                _vfs.write("'%s':'%s'" % (_vfs_filename, base64.b64encode(_data)))
 
-_vfs.write('\n}\n\n')
+  _vfs.write('\n}\n\n')
 
-_vfs.write("""
+  _vfs.write("""
 function readFromVFS(lib){
    //borrowed code from http://stackoverflow.com/questions/1119722/base-62-conversion-in-python
    if (window.atob === undefined) {
@@ -122,6 +123,10 @@ $import_via_VFS=function(module,alias,names){
   throw res
 }
 $import_funcs.unshift($import_via_VFS)
-""")
+  """)
 
-_vfs.close()
+  _vfs.close()
+
+if __name__ == '__main__':
+   _main_root=os.path.join(os.getcwd(), '../src')
+   process(os.path.join(_main_root, "py_VFS.js"))
