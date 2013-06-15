@@ -57,6 +57,7 @@ function $Tag(tagName,args){
 // are defined in py_dom.js
 
 function A(){return $Tag('A',arguments)}
+A.__name__='html.A'
 
 var $src = A+'' // source of function A
 // HTML4 tags
@@ -90,7 +91,7 @@ var obj = new Object()
 for($i=0;$i<$tags.length;$i++){
     $code = $src.replace(/A/gm,$tags[$i])
     eval("obj."+$tags[$i]+"="+$code)
-    eval("obj."+$tags[$i]+'.name="'+$tags[$i]+'"')
+    eval("obj."+$tags[$i]+'.__name__="html.'+$tags[$i]+'"')
 }
 obj.__getattr__ = function(attr){return this[attr]}
 return obj

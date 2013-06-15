@@ -1,5 +1,7 @@
 x=0
 from html import A,B,BR
+print('A',A)
+from os import *
 
 def menu(title,links):
     # links is a list of tuples (name,href)

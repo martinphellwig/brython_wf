@@ -446,6 +446,15 @@ function $ClassCtx(context){
             var w_decl = new $Node('expression')
             new $NodeJSCtx(w_decl,js)
             node.parent.insert(rank+3,w_decl)
+            rank++
+        }
+        // if class is defined at module level, add to module namespace
+        if(scope.ntype==='module'){
+            js = '__BRYTHON__.scope["'+scope.module+'"].__dict__["'
+            js += this.name+'"]='+this.name
+            var w_decl = new $Node('expression')
+            new $NodeJSCtx(w_decl,js)
+            node.parent.insert(rank+3,w_decl)            
         }
     }
     this.to_js = function(){
@@ -642,11 +651,11 @@ function $DefCtx(context){
         
         // add function name
         js = this.name+'.__name__'
-        if(scope !==null && scope.ntype==='class'){
+        if(scope.ntype==='class'){
             js += '=$class.'+this.name+'.__name__'
         }
         js += '="'+this.name+'"'
-        if(scope !==null && scope.ntype==='def'){
+        if(scope.ntype==='def'){
             // add to $locals
             js += ';$locals["'+this.name+'"]='+this.name
         }
@@ -661,6 +670,15 @@ function $DefCtx(context){
             new_node1 = new $Node('expression')
             new $NodeJSCtx(new_node1,js)
             node.parent.children.splice(rank+offset,0,new_node1)
+            offset++
+        }
+        // if function is defined at module level, add to module scope
+        if(scope.ntype==='module'){
+            js = '__BRYTHON__.scope["'+scope.module+'"].__dict__["'+this.name
+            js += '"]='+this.name
+            new_node = new $Node('expression')
+            new $NodeJSCtx(new_node,js)
+            node.parent.children.splice(rank+offset,0,new_node)            
         }
         this.transformed = true
     }
@@ -908,7 +926,11 @@ function $FromCtx(context){
     this.aliases = {}
     context.tree.push(this)
     this.expect = 'module'
-    this.toString = function(){return '(from) '+this.module+' (import) '+this.names + '(parent module)' + this.parent_module + '(as)' + this.aliases}
+    this.toString = function(){
+        var res = '(from) '+this.module+' (import) '+this.names 
+        res += '(parent module)' + this.parent_module + '(as)' + this.aliases
+        return res
+    }
     this.to_js = function(){
         var res; 
         if (this.parent_module!==undefined){
@@ -916,20 +938,34 @@ function $FromCtx(context){
            res+= "', ['" + this.names.join("','") + "']"
            res+=",'" + this.parent_module +"');"
            for(var i=0;i<this.names.length;i++){
-             res += this.parent_module+'.__setattr__("'+(this.aliases[this.names[i]]||this.names[i])+'",$mod.__getattr__("'+this.names[i]+'"));'
+             res += this.parent_module+'.__setattr__("'
+             res += (this.aliases[this.names[i]]||this.names[i])
+             res += '",$mod.__getattr__("'+this.names[i]+'"));'
            }
 
            //console.log(res)
         } else {
+            var scope=$get_scope(this)
+            console.log('scope '+scope.ntype)
            res = '$mod=$import_list([["'+this.module+'","'+this.module+'"]])[0];'
         
            if(this.names[0]!=='*'){
              for(var i=0;i<this.names.length;i++){
-              res += (this.aliases[this.names[i]]||this.names[i])+'=$mod.__getattr__("'+this.names[i]+'");'
+              res += (this.aliases[this.names[i]]||this.names[i])
+              if(scope.ntype==="module"){
+                  res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__["'
+                  res += this.aliases[this.names[i]]||this.names[i]
+                  res += '"]'
+              }
+              res += '=$mod.__getattr__("'+this.names[i]+'");'
              }
            }else{
              res +='for(var $attr in $mod){'
-             res +="if($attr.substr(0,1)!=='_'){eval('var '+$attr+'=$mod["+'"'+"'+$attr+'"+'"'+"]')}}"
+             res +="if($attr.substr(0,1)!=='_'){eval('var '+$attr+'"
+              if(scope.ntype==="module"){
+                  res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__[$attr]'
+              }
+             res += "=$mod["+'"'+"'+$attr+'"+'"'+"]')}}"
            }
         }
         return res
