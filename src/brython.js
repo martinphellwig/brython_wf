@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130615-180512
+// version 1.1.20130615-195824
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130615-180512"]
+__BRYTHON__.version_info=[1,1,"20130615-195824"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -4050,7 +4050,6 @@ res +='",$mod.__getattr__("'+this.names[i]+'"));'
 }
 }else{
 var scope=$get_scope(this)
-console.log('scope '+scope.ntype)
 res='$mod=$import_list([["'+this.module+'","'+this.module+'"]])[0];'
 if(this.names[0]!=='*'){
 for(var i=0;i<this.names.length;i++){
@@ -4994,6 +4993,15 @@ while(C.parent.type==='not'||
 C=C.parent
 op_parent=C.parent
 }
+}else{
+while(true){
+if(C.parent!==op1){
+C=C.parent
+op_parent=C.parent
+}else{
+break
+}
+}
 }
 C.parent.tree.pop()
 var expr=new $ExprCtx(op_parent,'operand',C.with_commas)
@@ -5363,14 +5371,16 @@ if(C.op==='-'){value=-value}
 if(C.op==='~'){value=~value}
 return $transition(C.parent.parent,token,value)
 }else if(token==='id'){
-C.parent.tree.pop()
-var expr=new $ExprCtx(C.parent,'id',false)
-new $IdCtx(expr,arguments[2])
+C.parent.parent.tree.pop()
+var expr=new $ExprCtx(C.parent.parent,'call',false)
+var expr1=new $ExprCtx(expr,'id',false)
+new $IdCtx(expr1,arguments[2])
 if(C.op !=='+'){
 var repl=new $AttrCtx(expr)
 if(C.op==='-'){repl.name='__neg__'}
 else{repl.name='__invert__'}
 var call=new $CallCtx(expr)
+return expr1
 }
 return C.parent
 }else if(token==="op" && '+-'.search(arguments[2])>-1){

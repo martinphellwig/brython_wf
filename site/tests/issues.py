@@ -155,4 +155,13 @@ assert 3.0**2.0 == 9.0
 assert 1 <= 3 <= 5
 assert not 1 <= (3+3) <= 5
 
+# issue 70
+class Dummy:
+    def __init__(self, foo):
+        self.foo = foo
+
+dummy = Dummy(3)
+
+assert -dummy.foo == -3
+
 print('passed all tests')
