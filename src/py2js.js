@@ -1590,6 +1590,7 @@ function $augmented_assign(context,op){
     // in "foo += bar" context = foo, op = +
     var assign = new $AssignCtx(context)
     var new_op = new $OpCtx(context,op.substr(0,op.length-1))
+    new_op.parent = assign
     assign.tree.push(new_op)
     context.parent.tree.pop()
     context.parent.tree.push(assign)
@@ -1996,28 +1997,10 @@ function $transition(context,token){
             var op1 = context.parent,repl=null
             while(true){
                 if(op1.type==='expr'){op1=op1.parent}
-                else if(op1.type==='op'&&$op_weight[op1.op]>$op_weight[op]){repl=op1;op1=op1.parent}
+                else if(op1.type==='op'&&$op_weight[op1.op]>=$op_weight[op]){repl=op1;op1=op1.parent}
                 else{break}
             }
             if(repl===null){
-                if(op1.type==='op' 
-                    && ['<','<=','==','!=','is','>=','>'].indexOf(op1.op)>-1
-                    && ['<','<=','==','!=','is','>=','>'].indexOf(op)>-1){
-                    // chained comparisions such as 1 <= 3 < 5
-                    // replace by (c1 op1 c2) and (c2 op ...)
-                    op1.parent.tree.pop()
-                    var and_expr = new $OpCtx(op1,'and')
-                    var c2 = op1.tree[1] // right operand of op1
-                    // clone c2
-                    var c2_clone = new Object()
-                    for(var attr in c2){c2_clone[attr]=c2[attr]}
-                    c2_clone.parent = and_expr
-                    // add fake element to and_expr : it will be removed
-                    // when new_op is created at the next line
-                    and_expr.tree.push('xxx')
-                    var new_op = new $OpCtx(c2_clone,op)
-                    return new $AbstractExprCtx(new_op,false)
-                }
                 if(['and','or'].indexOf(op)>-1){
                     while(context.parent.type==='not'||
                         (context.parent.type==='expr'&&context.parent.parent.type==='not')){
@@ -2032,6 +2015,24 @@ function $transition(context,token){
                 context.parent = expr
                 var new_op = new $OpCtx(context,op)
                 return new $AbstractExprCtx(new_op,false)
+            }
+            if(repl.type==='op'
+                && ['<','<=','==','!=','is','>=','>'].indexOf(repl.op)>-1
+                && ['<','<=','==','!=','is','>=','>'].indexOf(op)>-1){
+                    // chained comparisons such as 1 <= 3 < 5
+                    // replace by (c1 op1 c2) and (c2 op ...)
+                    repl.parent.tree.pop()
+                    var and_expr = new $OpCtx(repl,'and')
+                    var c2 = repl.tree[1] // right operand of op1
+                    // clone c2
+                    var c2_clone = new Object()
+                    for(var attr in c2){c2_clone[attr]=c2[attr]}
+                    c2_clone.parent = and_expr
+                    // add fake element to and_expr : it will be removed
+                    // when new_op is created at the next line
+                    and_expr.tree.push('xxx')
+                    var new_op = new $OpCtx(c2_clone,op)
+                    return new $AbstractExprCtx(new_op,false)
             }
             repl.parent.tree.pop()
             var expr = new $ExprCtx(repl.parent,'operand',false)
@@ -2184,10 +2185,13 @@ function $transition(context,token){
                 context.parent.parent.type ==='call_arg'){
                     return new $AbstractExprCtx(new $KwArgCtx(context.parent),false)
             }else{return $transition(context.parent,token,arguments[2])}             
-        }else if(token==='op'){return $transition(context.parent,token,arguments[2])}
-        else if(['id','str','int','float'].indexOf(token)>-1){
+        }else if(token==='op'){
+            return $transition(context.parent,token,arguments[2])
+        }else if(['id','str','int','float'].indexOf(token)>-1){
             $_SyntaxError(context,'token '+token+' after '+context)
-        }else{return $transition(context.parent,token,arguments[2])}
+        }else{
+            return $transition(context.parent,token,arguments[2])
+        }
 
     }else if(context.type==='import'){
     
