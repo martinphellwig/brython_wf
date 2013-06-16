@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130615-195824
+// version 1.1.20130616-113400
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130615-195824"]
+__BRYTHON__.version_info=[1,1,"20130616-113400"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -4224,6 +4224,15 @@ this.parent=C.parent
 this.tree=[C.tree[0]]
 C.parent.tree.pop()
 C.parent.tree.push(this)
+var value=this.tree[0].value
+var ctx=C
+while(ctx.parent!==undefined){
+if(['list_or_tuple','dict_or_set','call_arg','def','lambda'].indexOf(ctx.type)>-1){
+if(ctx.kwargs===undefined){ctx.kwargs=[value]}
+else if(ctx.kwargs.indexOf(value)===-1){ctx.kwargs.push(value)}
+}
+ctx=ctx.parent
+}
 this.to_js=function(){
 var key=this.tree[0].to_js()
 if(key.substr(0,2)=='$$'){key=key.substr(2)}
@@ -4294,6 +4303,7 @@ else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
 var src=this.get_src()
 var res='{'
 for(var i=0;i<this.vars.length;i++){
+if(this.kwargs&&this.kwargs.indexOf(this.vars[i])>-1){continue}
 if(this.locals.indexOf(this.vars[i])===-1){
 res +="'"+this.vars[i]+"':"+this.vars[i]
 if(i<this.vars.length-1){res+=','}
@@ -4668,6 +4678,18 @@ scope=tree_node.parent
 scope.ntype=ntype
 return scope
 }
+tree_node=tree_node.parent
+}
+scope=tree_node.parent 
+scope.ntype="module"
+return scope
+}
+function $get_module(C){
+var ctx_node=C.parent
+while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
+var tree_node=ctx_node.node
+var scope=null
+while(tree_node.parent.type!=='module'){
 tree_node=tree_node.parent
 }
 scope=tree_node.parent 

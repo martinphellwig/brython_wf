@@ -164,4 +164,10 @@ dummy = Dummy(3)
 
 assert -dummy.foo == -3
 
+# issue 71
+def rect(x,y,width, height):
+    pass
+
+assert [rect(x=0, y=0, width=10, height=10) for i in range(2)], 'error in list'
+
 print('passed all tests')
