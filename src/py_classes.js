@@ -788,6 +788,7 @@ int.__getattr__ = function(attr){
     else{throw AttributeError("'int' object has no attribute '"+attr+"'")}
 }
 
+int.__ior__ = function(other){return this | other} // bitwise OR
 
 // Pierre, this probably isn't correct, but may work for now.
 // do we need to create a $IntClass, like what we did for Float?
@@ -837,6 +838,7 @@ Number.prototype.__getattr__ = function(attr){
 Number.prototype.__hash__ = function(){return this.valueOf()}
 
 Number.prototype.__in__ = function(item){return item.__contains__(this)}
+Number.prototype.__ior__ = function(other){return this | other} // bitwise OR
 
 Number.prototype.__int__ = function(){return this}
 
@@ -1679,6 +1681,7 @@ function $NoneClass() {
         else{throw AttributeError("'NoneType' object has no attribute '"+attr+"'")}
     }
     this.__hash__ = function(){return 0}
+    this.__in__ = function(other) {return other.__contains__(this)}
     this.__ne__ = function(other){return other!==None}
     this.__repr__ = function(){return 'None'}
     this.__str__ = function(){return 'None'}
