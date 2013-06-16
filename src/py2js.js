@@ -1136,6 +1136,19 @@ function $KwArgCtx(context){
     // operation replaces left operand
     context.parent.tree.pop()
     context.parent.tree.push(this)
+
+    // put id in list of kwargs
+    // used to avoid passing the id as argument of a list comprehension
+    var value = this.tree[0].value
+    var ctx = context
+    while(ctx.parent!==undefined){
+        if(['list_or_tuple','dict_or_set','call_arg','def','lambda'].indexOf(ctx.type)>-1){
+            if(ctx.kwargs===undefined){ctx.kwargs=[value]}
+            else if(ctx.kwargs.indexOf(value)===-1){ctx.kwargs.push(value)}
+        }
+        ctx = ctx.parent
+    }
+
     this.to_js = function(){
         var key = this.tree[0].to_js()
         if(key.substr(0,2)=='$$'){key=key.substr(2)}
@@ -1211,12 +1224,15 @@ function $ListOrTupleCtx(context,real){
             var src = this.get_src()
             var res = '{'
             for(var i=0;i<this.vars.length;i++){
+                // ignore keyword arguments eg "x" in [foo(x=0) for z in Z]
+                if(this.kwargs&&this.kwargs.indexOf(this.vars[i])>-1){continue}
                 if(this.locals.indexOf(this.vars[i])===-1){
                     res += "'"+this.vars[i]+"':"+this.vars[i]
                     if(i<this.vars.length-1){res+=','}
                 }
             }
             res += '},'
+
             var qesc = new RegExp('"',"g") // to escape double quotes in arguments
             for(var i=1;i<this.intervals.length;i++){
                 var txt = src.substring(this.intervals[i-1],this.intervals[i])
@@ -1226,6 +1242,7 @@ function $ListOrTupleCtx(context,real){
                 res += '"'+txt+'"'
                 if(i<this.intervals.length-1){res+=','}
             }
+
             if(this.real==='list_comp'){return '$list_comp('+res+')'}
             else if(this.real==='dict_or_set_comp'){
                 if(this.expression.length===1){return '$gen_expr('+res+')'}
@@ -1370,7 +1387,6 @@ function $StringCtx(context,value){
     this.to_js = function(){
         return this.value.replace(/\n/g,' \\\n')+$to_js(this.tree,'')
     }
-
 }
 
 function $SubCtx(context){ // subscription or slicing
@@ -1630,6 +1646,19 @@ function $get_scope(context){
             scope.ntype = ntype
             return scope
         }
+        tree_node = tree_node.parent
+    }
+    scope = tree_node.parent // module
+    scope.ntype = "module"
+    return scope
+}
+
+function $get_module(context){
+    var ctx_node = context.parent
+    while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
+    var tree_node = ctx_node.node
+    var scope = null
+    while(tree_node.parent.type!=='module'){
         tree_node = tree_node.parent
     }
     scope = tree_node.parent // module
