@@ -18,7 +18,7 @@ if sys.version_info[0] >= 3:
    sys.exit()
 
 def process(filename):
-  print "generating filename"
+  print "generating %s" % filename
   _main_root=os.path.dirname(filename)
   _vfs=open(filename, "w")
   _vfs.write("__BRYTHON__.$py_VFS={\n")
