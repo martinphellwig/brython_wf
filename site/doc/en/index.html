@@ -32,7 +32,6 @@ class Loader:
             mk,scripts = markdown.mark(req.text)
             doc[self.target].html = mk
             for script in scripts:
-                print('exec in globals')
                 exec(script,globals())
 
 def load(url,target):
