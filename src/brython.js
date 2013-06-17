@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130617-115004
+// version 1.1.20130617-160901
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130617-115004"]
+__BRYTHON__.version_info=[1,1,"20130617-160901"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -148,7 +148,20 @@ return eval($res)
 function $generator(func){
 var res=function(){
 func.$iter=[]
+var save_stdout=document.$stdout
+var output={}
+document.$stdout=JSObject({
+write : function(data){
+var loop_num=func.$iter.length
+if(output[loop_num]===undefined){
+output[loop_num]=[data]
+}else{
+output[loop_num].push(data)
+}
+}
+})
 func.apply(this,arguments)
+document.$stdout=save_stdout
 var obj=new Object()
 obj.$iter=-1
 obj.__class__=$generator
@@ -158,7 +171,14 @@ obj.__item__=function(rank){return func.$iter.__item__(rank)}
 obj.__iter__=function(){return obj}
 obj.__next__=function(){
 obj.$iter++
-if(obj.$iter<obj.__len__()){return obj.__item__(obj.$iter)}
+if(obj.$iter<obj.__len__()){
+if(output[obj.$iter]!==undefined){
+for(var i=0;i<output[obj.$iter].length;i++){
+document.$stdout.write(output[obj.$iter][i])
+}
+}
+return obj.__item__(obj.$iter)
+}
 else{throw StopIteration("")}
 }
 obj.__repr__=function(){return "<generator object>"}
