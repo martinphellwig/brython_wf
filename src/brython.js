@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130616-113400
+// version 1.1.20130617-115004
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130616-113400"]
+__BRYTHON__.version_info=[1,1,"20130617-115004"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -1190,6 +1190,7 @@ else{return this[attr]}
 }
 else{throw AttributeError("'int' object has no attribute '"+attr+"'")}
 }
+int.__ior__=function(other){return this | other}
 int.from_bytes=function(x, byteorder){
 var len=x.length
 var num=x.charCodeAt(len - 1)
@@ -1228,6 +1229,7 @@ throw AttributeError("'int' object has no attribute '"+attr+"'")
 }
 Number.prototype.__hash__=function(){return this.valueOf()}
 Number.prototype.__in__=function(item){return item.__contains__(this)}
+Number.prototype.__ior__=function(other){return this | other}
 Number.prototype.__int__=function(){return this}
 Number.prototype.__invert__=function(){return ~this}
 Number.prototype.__lshift__=function(other){return this << other}
@@ -1919,6 +1921,7 @@ if(this[attr]!==undefined){return this[attr]}
 else{throw AttributeError("'NoneType' object has no attribute '"+attr+"'")}
 }
 this.__hash__=function(){return 0}
+this.__in__=function(other){return other.__contains__(this)}
 this.__ne__=function(other){return other!==None}
 this.__repr__=function(){return 'None'}
 this.__str__=function(){return 'None'}
@@ -3842,7 +3845,7 @@ var scope=$get_scope(this)
 var name=this.name
 if(this.type==='generator'){name='$'+name}
 if(scope.ntype==="module" || scope.ntype!=='class'){
-res=name+'= (function ('
+res='var '+name+'= (function ('
 }else{
 res='var '+name+' = $class.'+name+'= (function ('
 }
