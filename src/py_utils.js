@@ -128,9 +128,29 @@ function $dict_comp(){ // dictionary comprehension
 }
 
 function $generator(func){
+    // a cheap and buggy implementation of generators
+    // actually executes the function and stores the result of
+    // successive yields in a list
+    // calls to stdout.write() are captured and indexed by the iteration
+    // counter
     var res = function(){
         func.$iter = []
+        
+        // cheat ! capture all standard output
+        var save_stdout = document.$stdout
+        var output = {}
+        document.$stdout = JSObject({
+            write : function(data){
+                var loop_num = func.$iter.length
+                if(output[loop_num]===undefined){
+                    output[loop_num]=[data]
+                }else{
+                    output[loop_num].push(data)
+                }
+            }
+        })
         func.apply(this,arguments)
+        document.$stdout = save_stdout
     
         var obj = new Object()
         obj.$iter = -1
@@ -141,7 +161,14 @@ function $generator(func){
         obj.__iter__ = function(){return obj}
         obj.__next__ = function(){
             obj.$iter++
-            if(obj.$iter<obj.__len__()){return obj.__item__(obj.$iter)}
+            if(obj.$iter<obj.__len__()){
+                if(output[obj.$iter]!==undefined){
+                    for(var i=0;i<output[obj.$iter].length;i++){
+                        document.$stdout.write(output[obj.$iter][i])
+                    }
+                }
+                return obj.__item__(obj.$iter)
+            }
             else{throw StopIteration("")}
         }
         obj.__repr__ = function(){return "<generator object>"}
