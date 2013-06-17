@@ -713,7 +713,7 @@ function $DefCtx(context){
         var name = this.name
         if(this.type==='generator'){name='$'+name}
         if(scope.ntype==="module" || scope.ntype!=='class'){
-            res = name+'= (function ('
+            res = 'var '+name+'= (function ('
         }else{
             res = 'var '+name+' = $class.'+name+'= (function ('
         }
