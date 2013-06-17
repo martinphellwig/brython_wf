@@ -29,7 +29,7 @@ class Loader:
             mk,scripts = markdown.mark(req.text)
             doc[self.target].html = mk
             for script in scripts:
-                exec(script)
+                exec(script,globals())
 
 def load(url,target):
     Loader(url+'?foo=%s' %time.time()).load(target)
