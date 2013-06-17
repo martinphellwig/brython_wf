@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130617-160901
+// version 1.1.20130617-173742
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130617-160901"]
+__BRYTHON__.version_info=[1,1,"20130617-173742"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -3573,7 +3573,27 @@ var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
 arg=this.tree[0].to_js()
-return 'eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
+var ns=''
+if(this.tree.length>1){
+var arg2=this.tree[1]
+if(arg2.tree!==undefined&&arg2.tree.length>0){
+arg2=arg2.tree[0]
+}
+if(arg2.tree!==undefined&&arg2.tree.length>0){
+arg2=arg2.tree[0]
+}
+if(arg2.type==='call'){
+if(arg2.func.value==='globals'){
+ns='globals'
+}
+}
+}
+var res='eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
+if(ns==='globals'){
+res +=';for(var $attr in __BRYTHON__.scope["'+module+',exec"].__dict__)'
+res +='{window[$attr]=__BRYTHON__.scope["'+module+',exec"].__dict__[$attr]}'
+}
+return res
 }else if(this.func!==undefined && this.func.value==='locals'){
 var scope=$get_scope(this)
 if(scope !==null && scope.ntype==='def'){

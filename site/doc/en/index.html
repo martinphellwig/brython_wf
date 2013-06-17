@@ -6,6 +6,9 @@
 <link rel="stylesheet" href="../doc_brython.css">
 
 <script src="/src/brython.js"></script>
+<script src="/src/py2js.js"></script>
+<script src="/src/py_classes.js"></script>
+
 <script type="text/python3">
 import markdown
 import time
@@ -29,7 +32,8 @@ class Loader:
             mk,scripts = markdown.mark(req.text)
             doc[self.target].html = mk
             for script in scripts:
-                exec(script)
+                print('exec in globals')
+                exec(script,globals())
 
 def load(url,target):
     Loader(url+'?foo=%s' %time.time()).load(target)
@@ -41,7 +45,7 @@ language = "en"
 <script type="text/python3" src="../menu_doc.py"></script>
 
 </head>
-<body onLoad="brython(1);load('intro.md','content')">
+<body onLoad="brython(2);load('intro.md','content')">
 
 <table id="banner" cellpadding=0 cellspacing=0>
 <tr id="banner_row">
@@ -75,6 +79,7 @@ language = "en"
 <br><a class="navig" href="#" onClick="load('cookbook/basic_markup.md','content')">HTML markup (bold,italic...)</a>
 <br><a class="navig" href="#" onClick="load('cookbook/table.md','content')">HTML table</a>
 <br><a class="navig" href="#" onClick="load('cookbook/get_content.md','content')">Get the content of an element</a>
+<br><a class="navig" href="#" onClick="load('cookbook/read_file.md','content')">Read the content of a file</a>
 </div>
 
 <h4>Implementation notes</h4>
