@@ -90,6 +90,32 @@ assert 'fail slice string!'[5:-1] == 'slice string', 'Failure in string slicing'
 _s='   abc   '
 assert _s.rjust(15, 'b') == 'bbbbbb   abc   '
 
+# issue 23 : json
+import json
+original = [[1,1],{'1':1}]
+pyjson = str(original).replace("'",'"')
+jsoned=json.dumps(original)
+pythoned=json.loads(jsoned)
+assert original == pythoned, 'python %s is not json %s'%(original, pythoned)
+assert jsoned == pyjson, 'json %s is not python %s'%(jsoned, pyjson)
+
+x = """{
+    "menu": {
+        "id": "file",
+        "value": "File",
+        "popup": {
+            "menuitem": [
+                { "value": "New", "onclick": "CreateNewDoc()" },
+                { "value": "Open", "onclick": "OpenDoc()" },
+                { "value": "Close", "onclick": "CloseDoc()" }
+            ]
+        }
+    }
+}"""
+y = json.loads(x)
+assert y["menu"]["value"]=="File"
+assert y["menu"]["popup"]["menuitem"][1]["value"]=="Open"
+
 # issue 24
 import math
 eval_zero = eval('math.sin(0)')
