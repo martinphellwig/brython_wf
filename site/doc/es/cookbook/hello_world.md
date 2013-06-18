@@ -1,10 +1,10 @@
-Problem
+Problema
 -------
 
-Make the browser display "Hello world !"
+Hacer que el navegador muestre "Hola mundo !"
 
 
-Solution
+Solución
 --------
 
     <html>
@@ -14,10 +14,10 @@ Solution
     <body onload="brython()">
     
     <script type="text/python">
-    doc <= "Hello world !"
+    doc <= "Hola mundo !"
     </script>
     
     </body>
     </html>
 
-`doc` is a Python built-in word that represents the document (the content of the web page). It supports the operation `<=` meaning "add content". Here the content is a simple Python string
+`doc` es una palabra integrada en Brython que representa el documento (el documento de una página web). Hace uso de la operación `<=` que significa "añadir contenido". En este caso, el contenido es una simple cadena Python
