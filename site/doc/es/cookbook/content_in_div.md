@@ -1,7 +1,7 @@
 Problema
 --------
 
-Mostrar contenido en un elemento de la p&aacute;
+Mostrar contenido en un elemento de la p&aacute;gina
 
 
 Solución
