@@ -1,19 +1,19 @@
-Problem
--------
-
-Create an HTML table
-
-
-Solution
+Problema
 --------
 
-In this example and the following, we will only show the Python script ; the surrounding HTML code will remain the same as in the previous examples
+Crear una tabla HTML
 
-To create a table, we use the HTML tags : `TABLE` (the table),`TR` (a table row),`TH` (a header cell) and `TD` (a cell)
 
-The table is made of rows, each row is made of cells ; the first row is generally made of "header cells" describing the value in the matching column
+Solución
+--------
 
-Here is a simple example :
+En este ejemplo y en el siguiente solo vamos a mostrar el script Python ; el código HTML asociado es similar al mostrado en los ejemplos previos
+
+Para crear una tabla usamos las siguientes etiquetas HTML : `TABLE` (la tabla),`TR` (una fila de la tabla),`TH` (una celda cabecera) and `TD` (una celda)
+
+La tabla está hecha por filas, cada fila se compone de celdas ; la primera fila suele dedicarse a 'celdas cabecera' que describen el valor de la columna
+
+Aquí podéis ver un ejemplo simple :
 
 <table width="100%">
 <tr>
@@ -23,13 +23,13 @@ Here is a simple example :
     table = TABLE()
     row = TR() # create a row
     # add header cells
-    row <= TH("Country")
-    row <= TH("Capital city")
+    row <= TH("País")
+    row <= TH("Capital")
     table <= row # add the row to the table
     
     # add a row
     row = TR()
-    row <= TD("United States")+TD("Washington")
+    row <= TD("Estados Unidos")+TD("Washington")
     table <= row
     
     # erase initial content
@@ -40,7 +40,7 @@ Here is a simple example :
 
 <button onclick="fill_zone()">Test it</button>
 </td>
-<td id="zone" style="background-color:#FF7400;text-align:center;">Initial content<p>
+<td id="zone" style="background-color:#FF7400;text-align:center;">Contenido inicial<p>
 </td>
 </tr>
 </table>
@@ -51,18 +51,18 @@ def fill_zone():
     exec(src)
 </script>
 
-Note how the initial cell content was erased : simply by setting its attribute `text` to the empty string
+Fíjate que el contenido inicial de la celda se ha eliminado : simplemente asignando una cadena vacía al asu atributo `text`
 
-We can build a table from a list of lists :
+Podemos construir una tabla a partir de una lista de listas :
 
 <table width="100%">
 <tr>
 <td style="width:50%;">
 
-    lines = [ ['Morrissey','vocals'],
-        ['Johnny Marr','guitar'],
-        ['Mike Joyce','the drums'],
-        ['Andy Rourke','the bass guitar']
+    lines = [ ['Morrissey','vocalista'],
+        ['Johnny Marr','guitarrista'],
+        ['Mike Joyce','batería'],
+        ['Andy Rourke','bajista']
         ]
     t = TABLE()
     for line in lines:
@@ -70,9 +70,9 @@ We can build a table from a list of lists :
     doc['zone1'].text = ''
     doc['zone1']<= t
 
-<button onclick="build_table()">Test it</button>
+<button onclick="build_table()">Pruébalo</button>
 </td>
-<td id="zone1" style="background-color:#FF7400;text-align:center;">Initial content<p>
+<td id="zone1" style="background-color:#FF7400;text-align:center;">Contenido inicial<p>
 </td>
 </tr>
 </table>
