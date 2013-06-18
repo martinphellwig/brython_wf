@@ -1,9 +1,9 @@
-Problem
--------
-Get the content of an element of a web page
+Problema
+--------
+Obtener el contenido de un elemento de la p&aacute;gina
 
 
-Solution
+Solución
 --------
 
 <table width="100%">
@@ -13,20 +13,20 @@ Solution
     # doc['zone'] is the colored cell
     alert(doc['zone'].text)
 
-<button onclick="show_text()">Show text</button>
+<button onclick="show_text()">Mostrar texto</button>
 
     alert(doc['zone'].html)
 
-<br><button onclick="show_html()">Show html</button>
+<br><button onclick="show_html()">Mostrar html</button>
 
     # doc['entry'] is the input field
     alert(doc['entry'].value)
 
-<br><button onclick="show_value()">Show entry</button>
+<br><button onclick="show_value()">Mostrar texto introducido</button>
 </td>
 <td id="zone" style="background-color:#FF7400;text-align:center;">
-<B>Cell content</B><p>
-<INPUT id="entry" value="input field">
+<B>Contenido de la celda</B><p>
+<INPUT id="entry" value="campo de entrada">
 </td>
 </tr>
 </table>
@@ -44,10 +44,10 @@ def show_value():
 
 </script>    
 
-Each element in the page has an attribute `text`, a string with the text shown in the element
+Cada elemento en la página posee un atributo `text`, una cadena con el testo mostrado en el elemento
 
-It also has an attribute `html`, a string with the HTML code inside the element
+Además, posee un atributo `html`, una cadena con el código HTML dentro del elemento
 
-Input fields have an attribute `value`, a string with the current field value
+Los campos de entrada poseen un atributo `value`, una cadena con el valor actual del campo de entrada
 
-`alert()` is a built-in function that shows its argument in a popup window
+`alert()` es una función integrada de Brython que muestra su argumento en una ventana emergente (popup window)
