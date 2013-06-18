@@ -20,4 +20,4 @@ Solution
     </body>
     </html>
 
-`doc` is a Python built-in word that represents the document (the content of the web page). It supports the operation `<=` meaning "add content". Here the content is a simple Python string
+`doc` is a Brython built-in word that represents the document (the content of the web page). It supports the operation `<=` meaning "add content". Here the content is a simple Python string
