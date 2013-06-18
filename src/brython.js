@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130618-104555
+// version 1.1.20130618-174410
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130618-104555"]
+__BRYTHON__.version_info=[1,1,"20130618-174410"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -1059,6 +1059,11 @@ else{throw AttributeError("'float' object has no attribute '"+attr+"'")}
 }
 $FloatClass.prototype.__hash__=float.__hash__
 $FloatClass.prototype.__in__=function(item){return item.__contains__(this)}
+$FloatClass.prototype.__mod__=function(n){
+if(isinstance(n,int)){return((this.value%n)+n)%n}
+throw TypeError(
+"unsupported operand type(s) for -: "+this.value+" and '"+str(other.__class__)+"'")
+}
 $FloatClass.prototype.__ne__=function(other){return !this.__eq__(other)}
 $FloatClass.prototype.__neg__=function(other){return -this.value}
 $FloatClass.prototype.__not_in__=function(item){return !(item.__contains__(this))}
@@ -1087,7 +1092,7 @@ else{throw TypeError(
 }
 }
 $op_func +='' 
-var $ops={'+':'add','-':'sub','*':'mul','%':'mod'}
+var $ops={'+':'add','-':'sub','*':'mul'}
 for($op in $ops){
 eval('$FloatClass.prototype.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 }
@@ -1253,6 +1258,11 @@ Number.prototype.__ior__=function(other){return this | other}
 Number.prototype.__int__=function(){return this}
 Number.prototype.__invert__=function(){return ~this}
 Number.prototype.__lshift__=function(other){return this << other}
+Number.prototype.__mod__=function(n){
+if(isinstance(n,int)){return((this%n)+n)%n}
+throw TypeError(
+"unsupported operand type(s) for -: "+this.valueOf()+" and '"+str(other.__class__)+"'")
+}
 Number.prototype.__mul__=function(other){
 var val=this.valueOf()
 if(isinstance(other,int)){return this*other}
@@ -1312,11 +1322,11 @@ var bool_value=0
 if(other.valueOf())bool_value=1
 return this.valueOf()-bool_value}
 else{throw TypeError(
-"unsupported operand type(s) for -: "+this.value+" (float) and '"+str(other.__class__)+"'")
+"unsupported operand type(s) for -: "+this.valueOf()+" and '"+str(other.__class__)+"'")
 }
 }
 $op_func +='' 
-var $ops={'+':'add','-':'sub','%':'mod'}
+var $ops={'+':'add','-':'sub'}
 for($op in $ops){
 eval('Number.prototype.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 }

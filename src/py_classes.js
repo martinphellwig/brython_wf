@@ -603,6 +603,13 @@ $FloatClass.prototype.__hash__=float.__hash__;
 
 $FloatClass.prototype.__in__ = function(item){return item.__contains__(this)}
 
+$FloatClass.prototype.__mod__ = function(n) {
+    // can't use Javascript % because it works differently for negative numbers
+    if(isinstance(n,int)){return ((this.value%n)+n)%n}
+    throw TypeError(
+        "unsupported operand type(s) for -: "+this.value+" and '"+str(other.__class__)+"'")    
+}
+
 $FloatClass.prototype.__ne__ = function(other){return !this.__eq__(other)}
 
 $FloatClass.prototype.__neg__ = function(other){return -this.value}
@@ -638,7 +645,7 @@ var $op_func = function(other){
     }
 }
 $op_func += '' // source code
-var $ops = {'+':'add','-':'sub','*':'mul','%':'mod'}
+var $ops = {'+':'add','-':'sub','*':'mul'}
 for($op in $ops){
     eval('$FloatClass.prototype.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 }
@@ -838,6 +845,7 @@ Number.prototype.__getattr__ = function(attr){
 Number.prototype.__hash__ = function(){return this.valueOf()}
 
 Number.prototype.__in__ = function(item){return item.__contains__(this)}
+
 Number.prototype.__ior__ = function(other){return this | other} // bitwise OR
 
 Number.prototype.__int__ = function(){return this}
@@ -845,6 +853,13 @@ Number.prototype.__int__ = function(){return this}
 Number.prototype.__invert__ = function(){return ~this}
 
 Number.prototype.__lshift__ = function(other){return this << other} // bitwise left shift
+
+Number.prototype.__mod__ = function(n) {
+    // can't use Javascript % because it works differently for negative numbers
+    if(isinstance(n,int)){return ((this%n)+n)%n}
+    throw TypeError(
+        "unsupported operand type(s) for -: "+this.valueOf()+" and '"+str(other.__class__)+"'")    
+}
 
 Number.prototype.__mul__ = function(other){
     var val = this.valueOf()
@@ -919,11 +934,11 @@ var $op_func = function(other){
          if(other.valueOf()) bool_value=1;
          return this.valueOf()-bool_value}
     else{throw TypeError(
-        "unsupported operand type(s) for -: "+this.value+" (float) and '"+str(other.__class__)+"'")
+        "unsupported operand type(s) for -: "+this.valueOf()+" and '"+str(other.__class__)+"'")
     }
 }
 $op_func += '' // source code
-var $ops = {'+':'add','-':'sub','%':'mod'}
+var $ops = {'+':'add','-':'sub'}
 for($op in $ops){
     eval('Number.prototype.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 }
