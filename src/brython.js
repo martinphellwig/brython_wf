@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130617-173742
+// version 1.1.20130618-104555
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130617-173742"]
+__BRYTHON__.version_info=[1,1,"20130618-104555"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -5499,6 +5499,7 @@ var octal_pattern=new RegExp("^0[oO]([0-7]+)")
 var binary_pattern=new RegExp("^0[bB]([01]+)")
 var id_pattern=new RegExp("[\\$_a-zA-Z]\\w*")
 var qesc=new RegExp('"',"g")
+var sqesc=new RegExp("'","g")
 var C=null
 var root=new $Node('module')
 root.module=module
@@ -5590,12 +5591,25 @@ zone+=src.charAt(end);escaped=true;end+=1
 }
 }else if(src.charAt(end)==car){
 if(_type=="triple_string" && src.substr(end,3)!=car+car+car){
+zone +=src.charAt(end)
 end++
 }else{
 found=true
 $pos=pos
-var string=zone.substr(1).replace(qesc,'\\"')
-C=$transition(C,'str',zone+car)
+if(car==='"'){
+if(_type=="triple_string"){
+var string=zone.substr(1).replace(qesc,'\\\"')
+}else{
+var string=zone.substr(1).replace(qesc,'\"')
+}
+}else{
+if(_type=="triple_string"){
+var string=zone.substr(1).replace(sqesc,"\\\'")
+}else{
+var string=zone.substr(1).replace(sqesc,"\'")
+}
+}
+C=$transition(C,'str',car+string+car)
 pos=end+1
 if(_type=="triple_string"){pos=end+3}
 break
