@@ -137,6 +137,9 @@ function $import_py_module(module,alias,names,path,module_contents) {
     
     try{
         var js = root.to_js()
+        if (__BRYTHON__.$options.debug == 10) {
+           console.log(js);
+        }
         eval(js)
         // add names defined in the module as attributes of $module
         for(var attr in __BRYTHON__.scope[module].__dict__){

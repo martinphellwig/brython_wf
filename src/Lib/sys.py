@@ -14,6 +14,7 @@ builtin_module_names=['posix']
 
 byteorder='little'
 maxsize=9007199254740992   #largest integer..
+maxunicode=1114111
 
 platform="brython"
 warnoptions=[]
