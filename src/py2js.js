@@ -2608,7 +2608,8 @@ function $tokenize(src,module){
     var octal_pattern = new RegExp("^0[oO]([0-7]+)")
     var binary_pattern = new RegExp("^0[bB]([01]+)")
     var id_pattern = new RegExp("[\\$_a-zA-Z]\\w*")
-    var qesc = new RegExp('"',"g") // to escape double quotes in arguments
+    var qesc = new RegExp('"',"g") // escape double quotes
+    var sqesc = new RegExp("'","g") // escape single quotes    
 
     var context = null
     var root = new $Node('module')
@@ -2712,13 +2713,26 @@ function $tokenize(src,module){
                     }
                 } else if(src.charAt(end)==car){
                     if(_type=="triple_string" && src.substr(end,3)!=car+car+car){
+                        zone += src.charAt(end)
                         end++
                     } else {
                         found = true
                         // end of string
                         $pos = pos
-                        var string = zone.substr(1).replace(qesc,'\\"')
-                        context = $transition(context,'str',zone+car)
+                        if(car==='"'){
+                            if(_type=="triple_string"){
+                                var string = zone.substr(1).replace(qesc,'\\\"')
+                            }else{
+                                var string = zone.substr(1).replace(qesc,'\"')
+                            }
+                        }else{
+                            if(_type=="triple_string"){
+                                var string = zone.substr(1).replace(sqesc,"\\\'")
+                            }else{
+                                var string = zone.substr(1).replace(sqesc,"\'")
+                            }
+                        }
+                        context = $transition(context,'str',car+string+car)
                         pos = end+1
                         if(_type=="triple_string"){pos = end+3}
                         break
