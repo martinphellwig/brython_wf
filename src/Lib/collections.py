@@ -12,7 +12,7 @@ __all__ = ['deque', 'defaultdict', 'namedtuple', 'UserDict', 'UserList',
 # fixme brython.. there is an issue with _abcoll
 #from _abcoll import *
 #from _abcoll import Set
-#from _abcoll import MutableMapping
+from _abcoll import MutableMapping
 #import _abcoll
 #__all__ += _abcoll.__all__
 
@@ -183,11 +183,11 @@ class OrderedDict(dict):
         return size
 
     #fixme brython..  Issue with _abcoll, which contains MutableMapping
-    #update = __update = MutableMapping.update
-    #keys = MutableMapping.keys
-    #values = MutableMapping.values
-    #items = MutableMapping.items
-    #__ne__ = MutableMapping.__ne__
+    update = __update = MutableMapping.update
+    keys = MutableMapping.keys
+    values = MutableMapping.values
+    items = MutableMapping.items
+    __ne__ = MutableMapping.__ne__
 
     __marker = object()
 
