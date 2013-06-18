@@ -21,7 +21,8 @@ a.sort_link{margin-left:10px;text-decoration:none}
 
 <script id="ascript" type="text/python">
 def on_complete(req):
-    log(req.readyState)
+    print(req.readyState)
+    print('status',req.status)
     if req.status==200 or req.status==0:
         doc["result"].html = req.text
     else:
