@@ -1,10 +1,10 @@
-Problem
--------
+Problema
+--------
 
-Display content in a element of the web page
+Mostrar contenido en un elemento de la p&aacute;
 
 
-Solution
+Solución
 --------
 
 <table width="100%">
@@ -24,9 +24,9 @@ Solution
     </body>
     </html>
 
-<button onclick="fill_zone()">Test it</button>
+<button onclick="fill_zone()">Pruébalo</button>
 </td>
-<td id="zone" style="background-color:#FF7400;text-align:center;">Initial content<p>
+<td id="zone" style="background-color:#FF7400;text-align:center;">Contenido inicial<p>
 </td>
 </tr>
 </table>
@@ -36,5 +36,5 @@ def fill_zone():
     doc["zone"] <= "blah "
 </script>
 
-`doc["zone"]` is the element in the web page with the id "zone" (here, the colored table cell)
+`doc["zone"]` es el elemento en la p&aacute;gina web con el id "zone" (aqu$iacute;, la celda coloreada de la tabla)
 
