@@ -74,7 +74,9 @@ function $TimeDelta(args) {
    this.__class__ = $TimeDeltaClass
 
    this.__msecs__ = function() {
-       return this.us/1000 + this.secs*1000 + this.days*msecPerDay
+       _msecs=this.us/1000
+       _msecs=Math.round(_msecs*1000)/1000  //take care of rounding..
+       return _msecs + this.secs*1000 + this.days*msecPerDay
    }
 
    this.__add__ = function(other) {
