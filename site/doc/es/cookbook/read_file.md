@@ -7,7 +7,7 @@ Leer el contenido de un fichero
 Solución
 --------
 
-Usaremos la función integrada `ajax()` para cargar el contenido del fichero
+Usaremos la función integrada `ajax()` para leer el contenido de un fichero
 
 <table width="100%">
 <tr>
@@ -30,7 +30,7 @@ Usaremos la función integrada `ajax()` para cargar el contenido del fichero
 
     go('cookbook/file.txt?foo=%s' %time.time())
 
-<button onclick="get_file()">Test it</button>
+<button onclick="get_file()">Pruébalo</button>
 
 </td>
 <td style="background-color:#FF7400;text-align:center;">
@@ -46,9 +46,9 @@ def get_file():
 </script>
 
 
-Fíjate en la cadena de la consulta (query) con un valor aleatorio al final del nombre del fichero : es necesario para refrescar el resultado en el caso de que el fichero fuente haya sido modificado entre dos llamadas
+Fíjate en el valor aleatorio de la cadena de consulta (query) al final del nombre del fichero : Será necesario refrescar el resultado si el fichero fuente ha sido modificado entre dos llamdas diferentes
 
-El siguiente ejemplo añade un timeout para mostrar un mensaje en el caso de que, después de 4 segundos, no haya sido posible encontrar el fichero :
+El siguiente ejemplo añade un timeout para mostrar un mensaje en caso de que el fichero no haya sido encontrado después de 4 segundos :
 
     import time
 
@@ -59,7 +59,7 @@ El siguiente ejemplo añade un timeout para mostrar un mensaje en el caso de que
             doc["zone"].value = "error "+req.text
     
     def err_msg():
-        doc["zone"].text = "no se ha obtenido respuesta del servidor después de %s segundos" %timeout
+        doc["zone"].text = "El servidor no ha contestado después de %s segundos" %timeout
     
     timeout = 4
     
@@ -71,6 +71,3 @@ El siguiente ejemplo añade un timeout para mostrar un mensaje en el caso de que
         req.send()
 
     go('cookbook/file.txt?foo=%s' %time.time())
-
-
-
