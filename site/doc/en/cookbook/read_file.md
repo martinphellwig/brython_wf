@@ -14,12 +14,13 @@ We use the built-in function `ajax()` to load the file content
 <td style="width:40%;padding-right:10px;">
 
     import time
+    import html
 
     def on_complete(req):
         if req.status==200 or req.status==0:
-            doc["zone"].text = req.text
+            doc["zone"].value = req.text
         else:
-            doc["zone"].text = "error "+req.text
+            doc["zone"].value = "error "+req.text
     
     def go(url):
         req = ajax()
@@ -32,7 +33,8 @@ We use the built-in function `ajax()` to load the file content
 <button onclick="get_file()">Test it</button>
 
 </td>
-<td id="zone" style="background-color:#FF7400;text-align:center;">Initial content<p>
+<td style="background-color:#FF7400;text-align:center;">
+<textarea id="zone" rows=10 cols=40>Initial content</textarea>
 </td>
 </tr>
 </table>
