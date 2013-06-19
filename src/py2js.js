@@ -295,6 +295,7 @@ function $AssignCtx(context){
             var scope = $get_scope(this)
             if(scope.ntype==="module"){
                 var res = left.to_js()
+                if(scope.module!=='__main__'){res = 'var '+res}
                 res += '=__BRYTHON__.scope["'+scope.module+'"]'
                 res += '.__dict__["'+left.to_js()+'"]='+right.to_js()
                 return res
@@ -400,10 +401,11 @@ function $CallCtx(context){
                     }
                 }
             }
-            var res = 'eval(__BRYTHON__.py2js('+arg+',"'+module+',exec").to_js())'
+            var _name = module+',exec'+Math.random().toString(36).substr(2,8)
+            var res = 'eval(__BRYTHON__.py2js('+arg+',"'+name+'").to_js())'
             if(ns==='globals'){
-                res += ';for(var $attr in __BRYTHON__.scope["'+module+',exec"].__dict__)'
-                res += '{window[$attr]=__BRYTHON__.scope["'+module+',exec"].__dict__[$attr]}'
+                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
+                res += '{window[$attr]=__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
             }
             return res
         }else if(this.func!==undefined && this.func.value ==='locals'){
