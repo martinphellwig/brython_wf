@@ -1,13 +1,13 @@
-Problem
--------
+Problème
+--------
 
-Read the content of a file
+Lire le contenu d'un fichier
 
 
 Solution
 --------
 
-We use the built-in function `ajax()` to load the file content
+On utilise la fonction intégrée `ajax()` pour récupérer le contenu du fichier
 
 <table width="100%">
 <tr>
@@ -46,9 +46,9 @@ def get_file():
 </script>
 
 
-Note the query string with a random value at the end of the file name : it is required to refresh the result if the source file is changed between two calls
+Noter la chaine de requête (query string) avec une valeur aléatoire à la fin du nom de fichier : elle est nécessaire pour rafraichir le résultat si le fichier source a été modifié entre deux appels
 
-The next example adds a timeout function to print a message in case the file was not found after 4 seconds :
+L'exempe suivant ajoute une fonction de dépassement de délai qui affiche un message au cas où le fichier n'aurait pas été trouvé au bout de 4 secondes :
 
     import time
 
@@ -59,7 +59,7 @@ The next example adds a timeout function to print a message in case the file was
             doc["zone"].value = "error "+req.text
     
     def err_msg():
-        doc["zone"].text = "server didn't reply after %s seconds" %timeout
+        doc["zone"].text = "le serveur n'a pas répondu après %s secondes" %timeout
     
     timeout = 4
     
