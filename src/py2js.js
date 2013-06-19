@@ -478,33 +478,6 @@ function $ClassCtx(context){
             node.parent.insert(rank+3,w_decl)            
         }
     }
-
-    this.add_generator_declaration = function(){
-        // if generator, add line 'foo = $generator($foo)'
-        var scope = $get_scope(this)
-        var node = this.parent.node
-        if(this.type==='generator'){
-            var offset = 2
-            if(this.decorators !== undefined){offset++}
-            js = this.name
-            js = '$generator($'+this.name+')'
-            var gen_node = new $Node('expression')
-            var ctx = new $NodeCtx(gen_node)
-            var expr = new $ExprCtx(ctx,'id',false)
-            var name_ctx = new $IdCtx(expr,this.name)
-            var assign = new $AssignCtx(expr)
-            var expr1 = new $ExprCtx(assign,'id',false)
-            var js_ctx = new $NodeJSCtx(assign,js)
-            expr1.tree.push(js_ctx)
-            node.parent.insert(this.rank+offset,gen_node)        
-            if(scope !== null && scope.ntype==='class'){
-                var cl_node = new $Node('expression')
-                new $NodeJSCtx(cl_node,"$class."+this.name+'='+this.name)
-                node.parent.insert(this.rank+offset+1,cl_node)
-            }
-        }
-    }
-
     this.to_js = function(){
         return 'var $'+this.name+'=(function()'
     }
@@ -1604,12 +1577,9 @@ function $YieldCtx(context){ // subscription or slicing
         if(this.transformed!==undefined){return}
         var scope = $get_scope(node.context.tree[0])
         // change type of function to generator
-        console.log(scope);
         scope.context.tree[0].type = 'generator'
         this.transformed = true
         this.func_name = scope.context.tree[0].name
-        console.log(this.func_name);
-        console.log(scope.context.tree);
         scope.context.tree[0].add_generator_declaration()
     }
     this.to_js = function(){

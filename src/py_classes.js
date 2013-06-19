@@ -603,11 +603,20 @@ $FloatClass.prototype.__hash__=float.__hash__;
 
 $FloatClass.prototype.__in__ = function(item){return item.__contains__(this)}
 
-$FloatClass.prototype.__mod__ = function(n) {
+$FloatClass.prototype.__mod__ = function(other) {
     // can't use Javascript % because it works differently for negative numbers
-    if(isinstance(n,int)){return ((this.value%n)+n)%n}
-    throw TypeError(
-        "unsupported operand type(s) for -: "+this.value+" and '"+str(other.__class__)+"'")    
+    if(isinstance(other,int)){
+        return float((this.value%other+other)%other)
+    }
+    else if(isinstance(other,float)){
+        return float(((this.value%other.value)+other.value)%other.value)
+    }else if(isinstance(other,bool)){ 
+         var bool_value=0; 
+         if (other.valueOf()) bool_value=1;
+         return float((this.value%bool_value+bool_value)%bool_value)
+    }else{throw TypeError(
+        "unsupported operand type(s) for -: "+this.value+" (float) and '"+other.__class__+"'")
+    }
 }
 
 $FloatClass.prototype.__ne__ = function(other){return !this.__eq__(other)}
@@ -854,11 +863,20 @@ Number.prototype.__invert__ = function(){return ~this}
 
 Number.prototype.__lshift__ = function(other){return this << other} // bitwise left shift
 
-Number.prototype.__mod__ = function(n) {
+Number.prototype.__mod__ = function(other) {
     // can't use Javascript % because it works differently for negative numbers
-    if(isinstance(n,int)){return ((this%n)+n)%n}
-    throw TypeError(
-        "unsupported operand type(s) for -: "+this.valueOf()+" and '"+str(other.__class__)+"'")    
+    if(isinstance(other,int)){
+        return (this%other+other)%other
+    }
+    else if(isinstance(other,float)){
+        return ((this%other)+other)%other
+    }else if(isinstance(other,bool)){ 
+         var bool_value=0; 
+         if (other.valueOf()) bool_value=1;
+         return (this%bool_value+bool_value)%bool_value
+    }else{throw TypeError(
+        "unsupported operand type(s) for -: "+this+" (int) and '"+other.__class__+"'")
+    }    
 }
 
 Number.prototype.__mul__ = function(other){
