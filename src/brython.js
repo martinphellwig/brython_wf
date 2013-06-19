@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130619-172802
+// version 1.1.20130619-174100
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130619-172802"]
+__BRYTHON__.version_info=[1,1,"20130619-174100"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -3620,8 +3620,8 @@ ns='globals'
 }
 }
 }
-var _name=module+',exec'+Math.random().toString(36).substr(2,8)
-var res='eval(__BRYTHON__.py2js('+arg+',"'+name+'").to_js())'
+var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
+var res='eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js())'
 if(ns==='globals'){
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
 res +='{window[$attr]=__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'

@@ -401,8 +401,8 @@ function $CallCtx(context){
                     }
                 }
             }
-            var _name = module+',exec'+Math.random().toString(36).substr(2,8)
-            var res = 'eval(__BRYTHON__.py2js('+arg+',"'+name+'").to_js())'
+            var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
+            var res = 'eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js())'
             if(ns==='globals'){
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
                 res += '{window[$attr]=__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
