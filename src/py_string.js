@@ -581,7 +581,7 @@ str.rfind = function(self){
     var s = self.substring(start,end)
     var reversed = ''
     for(var i=s.length-1;i>=0;i--){reversed += s.charAt(i)}
-    var res = reversed.search(sub)
+    var res = reversed.search($re_escape(sub))
     if(res==-1){return -1}
     else{return start+s.length-1-res-sub.length+1}
 }
