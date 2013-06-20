@@ -205,11 +205,19 @@ function $JS2Py(src){
         if(src%1===0){return src}
         else{return float(src)}
     }
-    if(src.__class__!==undefined){return src}
+    if(src.__class__!==undefined){
+        return src
+    }
     if(typeof src=="object"){
-        if(src.constructor===Array){return src}
-        else if($isNode(src)){return $DOMNode(src)}
+        if($isNode(src)){return $DOMNode(src)}
         else if($isEvent(src)){return $DOMEvent(src)}
+        else if(src.constructor===Array||$isNodeList(src)){
+            var res = []
+            for(var i=0;i<src.length;i++){
+                res.push($JS2Py(src[i]))
+            }
+            return res
+        }
     }
     return JSObject(src)
 }
