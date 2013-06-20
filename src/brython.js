@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130619-174100
+// version 1.1.20130620-102646
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -25,7 +25,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130619-174100"]
+__BRYTHON__.version_info=[1,1,"20130620-102646"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -211,11 +211,19 @@ if(typeof src==='number'){
 if(src%1===0){return src}
 else{return float(src)}
 }
-if(src.__class__!==undefined){return src}
+if(src.__class__!==undefined){
+return src
+}
 if(typeof src=="object"){
-if(src.constructor===Array){return src}
-else if($isNode(src)){return $DOMNode(src)}
+if($isNode(src)){return $DOMNode(src)}
 else if($isEvent(src)){return $DOMEvent(src)}
+else if(src.constructor===Array||$isNodeList(src)){
+var res=[]
+for(var i=0;i<src.length;i++){
+res.push($JS2Py(src[i]))
+}
+return res
+}
 }
 return JSObject(src)
 }
@@ -6052,6 +6060,14 @@ if(obj[$DOMNodeAttrs[i]]===undefined){return false}
 }
 return true
 }
+function $isNodeList(nodes){
+var result=Object.prototype.toString.call(nodes)
+return(typeof nodes==='object'
+&& /^\[object(HTMLCollection|NodeList|Object)\]$/.test(result)
+&& nodes.hasOwnProperty('length')
+&&(nodes.length==0 ||(typeof nodes[0]==="object" && nodes[0].nodeType > 0))
+)
+}
 var $DOMEventAttrs_W3C=['NONE','CAPTURING_PHASE','AT_TARGET','BUBBLING_PHASE',
 'type','target','currentTarget','eventPhase','bubbles','cancelable','timeStamp',
 'stopPropagation','preventDefault','initEvent']
@@ -6355,6 +6371,8 @@ var args=[]
 for(var i=0;i<arguments.length;i++){
 if(isinstance(arguments[i],JSObject)){
 args.push(arguments[i].js)
+}else if(arguments[i]===None){
+args.push(null)
 }else{
 args.push(arguments[i])
 }
