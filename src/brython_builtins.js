@@ -1,6 +1,11 @@
 // global object with brython built-ins
 __BRYTHON__ = new Object()
 __BRYTHON__.__getattr__ = function(attr){return this[attr]}
+__BRYTHON__.__setattr__ = function(attr,value){
+    // limited to some attributes
+    if(['debug'].indexOf(attr)>-1){this[attr]=value}
+    else{throw AttributeError('__BRYTHON__ object has no attribute '+attr)}
+}
 
 // system language ( _not_ the one set in browser settings)
 // cf http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
@@ -29,5 +34,5 @@ if (__BRYTHON__.has_indexedDB) {
 
 __BRYTHON__.re = function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json = typeof(JSON)!=="undefined"
-__BRYTHON__.version_info = [1,1,"20130620-102646"]
+__BRYTHON__.version_info = [1,1,"20130620-174054"]
 __BRYTHON__.path = [] // path for .py modules

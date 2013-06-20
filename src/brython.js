@@ -1,9 +1,13 @@
 // brython.js www.brython.info
-// version 1.1.20130620-102646
+// version 1.1.20130620-174054
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
+__BRYTHON__.__setattr__=function(attr,value){
+if(['debug'].indexOf(attr)>-1){this[attr]=value}
+else{throw AttributeError('__BRYTHON__ object has no attribute '+attr)}
+}
 __BRYTHON__.language=window.navigator.userLanguage || window.navigator.language
 __BRYTHON__.date=function(){
 if(arguments.length===0){return JSObject(new Date())}
@@ -25,7 +29,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130620-102646"]
+__BRYTHON__.version_info=[1,1,"20130620-174054"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -2003,11 +2007,13 @@ None=new $NoneClass()
 Exception=function(msg){
 var err=Error()
 err.info=''
-if(document.$debug && msg.split('\n').length==1){
+if(__BRYTHON__.debug && msg.split('\n').length==1){
 var module=document.$line_info[1]
 var line_num=document.$line_info[0]
 var lines=document.$py_src[module].split('\n')
-err.info +="\nmodule '"+module+"' line "+line_num
+var lib_module=module
+if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
+err.info +="\nmodule '"+lib_module+"' line "+line_num
 err.info +='\n'+lines[line_num-1]
 }
 err.message=msg
@@ -2029,7 +2035,6 @@ else{
 var exc=Exception(js_exc.message)
 exc.__name__=js_exc.name
 }
-__BRYTHON__.exception_stack.push(exc)
 return exc
 }
 function $make_exc(name){
@@ -3629,10 +3634,16 @@ ns='globals'
 }
 }
 var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
-var res='eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js())'
+var res='(function(){try{return '
+res +='eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js())'
+res +='}catch(err){throw __BRYTHON__.exception(err)}'
+res +='})()'
 if(ns==='globals'){
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
 res +='{window[$attr]=__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
+}else{
+res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
+res +='{eval("var "+$attr+"=__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
 }
 return res
 }else if(this.func!==undefined && this.func.value==='locals'){
@@ -4711,7 +4722,7 @@ if(elt.type==='condition' && elt.token==='elif'){flag=false}
 else if(elt.type==='except'){flag=false}
 else if(elt.type==='single_kw'){flag=false}
 if(flag){
-js='document.$line_info=['+node.line_num+',"'+node.module+'"]'
+js='document.$line_info=['+node.line_num+',"'+node.module+'"];'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 node.parent.insert(rank,new_node)
@@ -5510,7 +5521,7 @@ __BRYTHON__.scope[module].__dict__={}
 document.$py_src[module]=src
 var root=$tokenize(src,module)
 root.transform()
-if(document.$debug>0){$add_line_num(root,null,module)}
+if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
 return root
 }
 __BRYTHON__.forbidden=['catch','Date','delete','default','document',
@@ -5854,12 +5865,9 @@ __BRYTHON__.$py_module_path={}
 __BRYTHON__.$py_module_alias={}
 __BRYTHON__.modules={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
-document.$debug=0
 if(options===undefined){options={'debug':0}}
 if(typeof options==='number'){options={'debug':options}}
-if(options.debug==1 || options.debug==2){
-document.$debug=options.debug
-}
+__BRYTHON__.debug=options.debug
 __BRYTHON__.$options=options
 __BRYTHON__.exception_stack=[]
 __BRYTHON__.scope={}
@@ -5925,7 +5933,7 @@ __BRYTHON__.$py_module_path['__main__']='.'
 try{
 var $root=__BRYTHON__.py2js($src,'__main__')
 var $js=$root.to_js()
-if(document.$debug===2){console.log($js)}
+if(__BRYTHON__.debug===2){console.log($js)}
 eval($js)
 }catch($err){
 if($err.py_error===undefined){$err=RuntimeError($err+'')}

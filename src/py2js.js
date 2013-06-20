@@ -402,10 +402,16 @@ function $CallCtx(context){
                 }
             }
             var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
-            var res = 'eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js())'
+            var res = '(function(){try{return '
+            res += 'eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js())'
+            res += '}catch(err){throw __BRYTHON__.exception(err)}'
+            res += '})()'
             if(ns==='globals'){
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
                 res += '{window[$attr]=__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
+            }else{
+                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
+                res += '{eval("var "+$attr+"=__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
             }
             return res
         }else if(this.func!==undefined && this.func.value ==='locals'){
@@ -1610,7 +1616,7 @@ function $add_line_num(node,rank){
         else if(elt.type==='except'){flag=false}
         else if(elt.type==='single_kw'){flag=false}
         if(flag){
-            js = 'document.$line_info=['+node.line_num+',"'+node.module+'"]'
+            js = 'document.$line_info=['+node.line_num+',"'+node.module+'"];'
             var new_node = new $Node('expression')
             new $NodeJSCtx(new_node,js)
             node.parent.insert(rank,new_node)
@@ -2554,7 +2560,7 @@ __BRYTHON__.py2js = function(src,module){
     document.$py_src[module]=src
     var root = $tokenize(src,module)
     root.transform()
-    if(document.$debug>0){$add_line_num(root,null,module)}
+    if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
     return root
 }
 
@@ -2954,12 +2960,12 @@ function brython(options){
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
-    document.$debug = 0
+
+    // debug level
     if(options===undefined){options={'debug':0}}
     if(typeof options==='number'){options={'debug':options}}
-    if (options.debug == 1 || options.debug == 2) {
-       document.$debug = options.debug
-    }
+    __BRYTHON__.debug = options.debug
+
     __BRYTHON__.$options=options
     __BRYTHON__.exception_stack = []
     __BRYTHON__.scope = {}
@@ -3036,7 +3042,7 @@ function brython(options){
             try{
                 var $root = __BRYTHON__.py2js($src,'__main__')
                 var $js = $root.to_js()
-                if(document.$debug===2){console.log($js)}
+                if(__BRYTHON__.debug===2){console.log($js)}
                 eval($js)
             }catch($err){
                 if($err.py_error===undefined){$err = RuntimeError($err+'')}
