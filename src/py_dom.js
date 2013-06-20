@@ -56,6 +56,17 @@ function $isNode(obj){
     return true
 }
 
+function $isNodeList(nodes) {
+    // copied from http://stackoverflow.com/questions/7238177/
+    // detect-htmlcollection-nodelist-in-javascript
+    var result = Object.prototype.toString.call(nodes);
+    return (typeof nodes === 'object'
+        && /^\[object (HTMLCollection|NodeList|Object)\]$/.test(result)
+        && nodes.hasOwnProperty('length')
+        && (nodes.length == 0 || (typeof nodes[0] === "object" && nodes[0].nodeType > 0))
+    )
+}
+
 var $DOMEventAttrs_W3C = ['NONE','CAPTURING_PHASE','AT_TARGET','BUBBLING_PHASE',
     'type','target','currentTarget','eventPhase','bubbles','cancelable','timeStamp',
     'stopPropagation','preventDefault','initEvent']
@@ -426,6 +437,8 @@ DOMNode.prototype.__getattr__ = function(attr){
                     for(var i=0;i<arguments.length;i++){
                         if(isinstance(arguments[i],JSObject)){
                             args.push(arguments[i].js)
+                        }else if(arguments[i]===None){
+                            args.push(null)
                         }else{
                             args.push(arguments[i])
                         }
