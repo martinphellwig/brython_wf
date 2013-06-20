@@ -1744,11 +1744,13 @@ Exception = function (msg){
     var err = Error()
     err.info = ''
 
-    if(document.$debug && msg.split('\n').length==1){
+    if(__BRYTHON__.debug && msg.split('\n').length==1){
         var module = document.$line_info[1]
         var line_num = document.$line_info[0]
         var lines = document.$py_src[module].split('\n')
-        err.info += "\nmodule '"+module+"' line "+line_num
+        var lib_module = module
+        if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
+        err.info += "\nmodule '"+lib_module+"' line "+line_num
         err.info += '\n'+lines[line_num-1]
         //msg += err.info
     }
@@ -1774,9 +1776,10 @@ __BRYTHON__.exception = function(js_exc){
         var exc = Exception(js_exc.message)
         exc.__name__= js_exc.name
     }
-    __BRYTHON__.exception_stack.push(exc)
+    // __BRYTHON__.exception_stack.push(exc)
     return exc
 }
+
 function $make_exc(name){
     var $exc = (Exception+'').replace(/Exception/g,name)
     eval(name+'='+$exc)
