@@ -402,16 +402,30 @@ function $CallCtx(context){
                 }
             }
             var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
-            var res = '(function(){try{return '
-            res += 'eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js())'
+            // replace by the result of an anonymous function with a try/except clause
+            var res = '(function(){try{'
+            // insert module namespace in the function
+            res += 'for(var $attr in __BRYTHON__.scope["'+module+'"].__dict__){'
+            res += 'eval("var "+$attr+"=__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]")'
+            res +='};'
+            // execute the Python code and return its result
+            // the namespace built inside the function will be in
+            // __BRYTHON__.scope[_name].__dict__
+            res += 'return eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js())'
             res += '}catch(err){throw __BRYTHON__.exception(err)}'
             res += '})()'
             if(ns==='globals'){
+                // copy the execution namespace in module and global namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{window[$attr]=__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
+                res += '{window[$attr]='
+                res += '__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
+                res += '__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
             }else{
+                // copy the execution namespace in module namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{eval("var "+$attr+"=__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
+                res += '{eval("var "+$attr+"='
+                res += '__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
+                res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
             }
             return res
         }else if(this.func!==undefined && this.func.value ==='locals'){

@@ -16,12 +16,12 @@ assert "a\nb".splitlines()==['a','b']
 assert "width : %d%%" % 100 == 'width : 100%'
 # issue 16
 x = { "Z" : 26, "A" : 1 }
-n = list(x.keys())
-n.sort()
-assert n[0]=='A'
-assert x[n[0]]==1
-assert n[1]=='Z'
-assert x[n[1]]==26
+xk = list(x.keys())
+xk.sort()
+assert xk[0]=='A'
+assert x[xk[0]]==1
+assert xk[1]=='Z'
+assert x[xk[1]]==26
 
 # issue 18
 
@@ -82,8 +82,8 @@ assert o.x == 1 # indirect setattr
 
 # issue 23
 l = [ "A", "B" ]
-n = [ i for i in l if i.startswith("A") ]
-assert n==['A']
+l1 = [ i for i in l if i.startswith("A") ]
+assert l1==['A']
 
 # issue 24
 l = [ 9, 8 ]
@@ -115,11 +115,11 @@ def instance_repr(o):
         s = o.__class__
     return s
 
-n = [ 1, 2, 3, 4 ]
-assert instance_repr(n)=="[ 1, 2, 3, 4 ]"
+n1 = [ 1, 2, 3, 4 ]
+assert instance_repr(n1)=="[ 1, 2, 3, 4 ]"
 
-n = [ "A", "B", "C", "D" ]
-assert instance_repr(n)=="[ A, B, C, D ]"
+n2 = [ "A", "B", "C", "D" ]
+assert instance_repr(n2)=="[ A, B, C, D ]"
 
 # issue 26
 x = True
