@@ -35,16 +35,23 @@ textarea {
 import sys
 import traceback
 
+# force debug level to 0, otherwise evaluation of document.line_num
+# produces unwanted result in the console
+__BRYTHON__.debug = 0
+
 def write(data):
     doc['code'].value += data
 
 sys.stdout.write = sys.stderr.write = lambda data:doc['code'].value += data
+
+status = "main" # or "block" if typing inside a block
 
 def cursorToEnd(*args):
     pos = len(doc['code'].value)
     doc['code'].setSelectionRange(pos,pos)
 
 def myKeyPress(event):
+    global status
     if event.keyCode == 8:
         src = doc['code'].value
         lstart = src.rfind('\n')
@@ -53,19 +60,48 @@ def myKeyPress(event):
                 event.preventDefault()
                 event.stopPropagation()
     if event.keyCode == 13:    # return
+        log('status %s' %status)
         src = doc['code'].value
-        currentLine = src[src.rfind('>>>')+4:].lstrip()
+        log(src)
+        if status == "main":
+            currentLine = src[src.rfind('>>>')+4:].lstrip()
+        else:
+            log(src[src.rfind('...'):])
+            currentLine = src[src.rfind('...')+4:].lstrip()
         doc['code'].value+='\n'
         log('line %s' %currentLine)
-        try:
-            _ = eval(currentLine)
-            log('line %s ok' %currentLine)
-            if _ is not None:
-                print(_)
-        except:
-            log('error')
-            traceback.print_exc()
-        doc['code'].value += '>>> '
+        if status == "main":
+            try:
+                _ = eval(currentLine,globals())
+                log('line %s ok' %currentLine)
+                if _ is not None:
+                    print(_)
+                doc['code'].value += '>>> '
+                status = "main"
+            except IndentationError:
+                doc['code'].value += '... '
+                status = "block"
+            except:
+                log('error')
+                traceback.print_exc()
+                doc['code'].value += '>>> '
+                status = "main"
+        elif currentLine == "": # end of block
+            block = src[src.rfind('>>>')+4:].splitlines()
+            block = [block[0]]+[b[4:] for b in block[1:]]
+            block_src = '\n'.join(block)
+            try:
+                _ = eval(block_src,globals())
+                if _ is not None:
+                    print(_)
+            except:
+                log('error')
+                traceback.print_exc()
+            doc['code'].value += '>>> '
+            status = "main"
+        else:
+            doc['code'].value += '... '        
+        cursorToEnd()
         event.preventDefault()
 
 doc['code'].onkeypress = myKeyPress
