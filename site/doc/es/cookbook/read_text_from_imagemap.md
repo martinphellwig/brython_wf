@@ -19,7 +19,7 @@ Usaremos el atributo `onmouseover` de la etiqueta HTML `area` y le pasaremos una
 
 </td>
 <td style="background-color:#FF7400;text-align:center;">
-<img src="cookbook/imagemap_example.png" width ="400" height ="400" alt="Happy Family" usemap="#familymap" />
+<img src="../images/imagemap_example.png" width ="400" height ="400" alt="Happy Family" usemap="#familymap" />
 
 <map name="familymap">
 <area shape="rect" coords="0,0,160,95" onmouseover="writetext('Avión volando a wonderland en un soleado día')" />
@@ -32,7 +32,7 @@ Usaremos el atributo `onmouseover` de la etiqueta HTML `area` y le pasaremos una
 
 <tr>
 <td></td>
-<td style="background-color:#ccccee;text-align:center;">
+<td style="background-color:#ccccee;">
 <div id="description"><blink><b>Mueve el ratón sobre los diferentes elementos de la imagen para ver una descripción.</b></blink></div>
 </td>
 </tr>

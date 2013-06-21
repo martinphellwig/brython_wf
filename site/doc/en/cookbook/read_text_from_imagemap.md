@@ -7,7 +7,7 @@ Show information when the mouse is over an area of the image
 Solution
 --------
 
-We will use the `onmouseover` atribute of the `area` HTML tag. A text will be shown on screen depending the position of the mouse :
+We will use the `onmouseover` atribute of the `area` HTML tag. A text will be shown on screen depending on the position of the mouse :
 
 <table width="100%">
 <tr>
@@ -19,7 +19,7 @@ We will use the `onmouseover` atribute of the `area` HTML tag. A text will be sh
 
 </td>
 <td style="background-color:#FF7400;text-align:center;">
-<img src="cookbook/imagemap_example.png" width ="400" height ="400" alt="Happy Family" usemap="#familymap" />
+<img src="../images/imagemap_example.png" width ="400" height ="400" alt="Happy Family" usemap="#familymap" />
 
 <map name="familymap">
 <area shape="rect" coords="0,0,160,95" onmouseover="writetext('This plane was flying to wonderland in a sunny day')" />
