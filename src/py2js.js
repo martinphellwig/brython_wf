@@ -1652,7 +1652,8 @@ function $augmented_assign(context,op){
     assign.tree.push(new_op)
     context.parent.tree.pop()
     context.parent.tree.push(assign)
-    return new $AbstractExprCtx(new_op,false)
+    var expr = new $ListOrTupleCtx(new_op,'tuple')
+    return expr //new $AbstractExprCtx(expr,false)
 }
 
 function $comp_env(context,attr,src){
