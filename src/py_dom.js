@@ -59,12 +59,16 @@ function $isNode(obj){
 function $isNodeList(nodes) {
     // copied from http://stackoverflow.com/questions/7238177/
     // detect-htmlcollection-nodelist-in-javascript
-    var result = Object.prototype.toString.call(nodes);
-    return (typeof nodes === 'object'
-        && /^\[object (HTMLCollection|NodeList|Object)\]$/.test(result)
-        && nodes.hasOwnProperty('length')
-        && (nodes.length == 0 || (typeof nodes[0] === "object" && nodes[0].nodeType > 0))
-    )
+    try{
+        var result = Object.prototype.toString.call(nodes);
+        return (typeof nodes === 'object'
+            && /^\[object (HTMLCollection|NodeList|Object)\]$/.test(result)
+            && nodes.hasOwnProperty('length')
+            && (nodes.length == 0 || (typeof nodes[0] === "object" && nodes[0].nodeType > 0))
+        )
+    }catch(err){
+        return false
+    }
 }
 
 var $DOMEventAttrs_W3C = ['NONE','CAPTURING_PHASE','AT_TARGET','BUBBLING_PHASE',
@@ -653,6 +657,10 @@ DOMNode.prototype.get_getContext = function(){ // for CANVAS tag
     return function(ctx){return new $JSObject(obj.getContext(ctx))}
 }
 
+DOMNode.get_getSelectionRange = function(){ // for TEXTAREA
+    if(this['getSelectionRange']!==undefined){return this.getSelectionRange.apply(null,arguments)}
+}
+
 DOMNode.prototype.get_parent = function(){
     if(this.parentElement){return $DOMNode(this.parentElement)}
     else{return None}
@@ -666,6 +674,16 @@ DOMNode.prototype.get_id = function(){
 DOMNode.prototype.get_class = function(){
     if(this.className !== undefined){return this.className}
     else{return None}
+}
+
+DOMNode.prototype.get_focus = function(){
+    return (function(obj){
+        return function(){
+            console.log('focus')
+            // focus() is not supported in IE
+            setTimeout(function() { obj.focus(); }, 10)
+        }
+    })(this)
 }
 
 DOMNode.prototype.get_tagName = function(){
@@ -700,6 +718,26 @@ DOMNode.prototype.get_reset = function(){ // for FORM
 
 DOMNode.prototype.get_style = function(){
     return new $JSObject(this.style)
+}
+
+DOMNode.prototype.get_setSelectionRange = function(){ // for TEXTAREA
+    if(this['setSelectionRange']!==undefined){
+        return (function(obj){
+            return function(){
+                return obj.setSelectionRange.apply(obj,arguments)
+            }})(this)
+    }else if (this['createTextRange']!==undefined) {
+        return (function(obj){
+            return function(start_pos,end_pos){
+                if(end_pos==undefined){end_pos=start_pos}
+		var range = obj.createTextRange();
+		range.collapse(true);
+		range.moveEnd('character', start_pos);
+		range.moveStart('character', end_pos);
+		range.select();
+            }
+	})(this)
+    }
 }
     
 DOMNode.prototype.set_style = function(style){ // style is a dict
