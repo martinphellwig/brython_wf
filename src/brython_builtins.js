@@ -20,7 +20,21 @@ __BRYTHON__.date = function(){
 }
 __BRYTHON__.has_local_storage = typeof(Storage)!=="undefined"
 if(__BRYTHON__.has_local_storage){
-    __BRYTHON__.local_storage = function(){return JSObject(localStorage)}
+    __BRYTHON__.local_storage = function(){
+        // for some weird reason, typeof localStorage.getItem is 'object'
+        // in IE8, not 'function' as in other browsers. So we have to
+        // return a specific object...
+        if(typeof localStorage.getItem==='function'){return JSObject(localStorage)}
+        else{
+            var res = new Object()
+            res.__getattr__ = function(attr){return this[attr]}
+            res.__repr__ = function(){return "<object Storage>"}
+            res.__str__ = function(){return "<object Storage>"}
+            res.getItem = function(key){return localStorage.getItem(str(key))}
+            res.setItem = function(key,value){localStorage.setItem(str(key),str(value))}
+            return res
+        }
+    }
 }
 
 window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB
