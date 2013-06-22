@@ -2579,7 +2579,7 @@ __BRYTHON__.py2js = function(src,module){
     return root
 }
 
-__BRYTHON__.forbidden = ['catch','Date','delete','default','document',
+__BRYTHON__.forbidden = ['catch','Date','delete','default','document','history',
     'function','location','Math','new','RegExp','this','throw','var','super','window']
     /*
     ['case','debugger','default',
@@ -2639,7 +2639,7 @@ function $tokenize(src,module){
     root.module = module
     root.indent = -1
     var new_node = new $Node('expression')
-    current = root
+    var current = root
     var name = ""
     var _type = null
     var pos = 0
