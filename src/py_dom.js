@@ -426,7 +426,13 @@ DOMNode.prototype.__getattr__ = function(attr){
     if(this['get_'+attr]!==undefined){return this['get_'+attr]()}
     if(this.getAttribute!==undefined){
         var res = this.getAttribute(attr)
-        if(res!==undefined&&res!==null){return res}
+        // IE returns the properties of a DOMNode (eg parentElement)
+        // as "attribute", so we must check that this[attr] is not
+        // defined
+        if(res!==undefined&&res!==null&&this[attr]===undefined){
+            // now we're sure it's an attribute
+            return res
+        }
     }
     if(this[attr]!==undefined){
         var res = this[attr]
