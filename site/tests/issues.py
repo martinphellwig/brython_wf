@@ -196,4 +196,7 @@ def rect(x,y,width, height):
 
 assert [rect(x=0, y=0, width=10, height=10) for i in range(2)], 'error in list'
 
+# issue 75
+assert {0:42}[0] ==  42
+
 print('passed all tests')

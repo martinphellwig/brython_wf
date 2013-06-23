@@ -794,18 +794,6 @@ function $DelCtx(context){
     }
 }
 
-function $DictCtx(context){
-    // context is the first key
-    this.type = 'dict'
-    this.parent = context.parent
-    context.parent.tree.pop()
-    context.parent.tree.push(this)
-    context.name = 'dict_key'
-    this.tree = [context]
-    this.expect = ','
-    this.toString = function(){return 'dict '+this.tree}
-}
-
 function $DictOrSetCtx(context){
     // the real type (dist or set) is set inside $transition
     // as attribute 'real'
@@ -815,7 +803,7 @@ function $DictOrSetCtx(context){
     this.closed = false
     this.start = $pos
     this.toString = function(){
-        if(this.real==='dict'){return '(dict) {'+this.tree+'}'}
+        if(this.real==='dict'){return '(dict) {'+this.items+'}'}
         else if(this.real==='set'){return '(set) {'+this.tree+'}'}
         else{return '(dict_or_set) {'+this.tree+'}'}
     }
@@ -1941,7 +1929,7 @@ function $transition(context,token){
     }else if(context.type==='dict_or_set'){ 
 
         if(context.closed){
-            if(token==='['){return new $SubCtx(context)}
+            if(token==='['){return new $SubCtx(context.parent)}
             else if(token==='('){return new $CallArgCtx(new $CallCtx(context))}
             //else if(token==='.'){return new $AttrCtx(context)}
             else if(token==='op'){
