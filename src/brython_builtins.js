@@ -24,16 +24,19 @@ if(__BRYTHON__.has_local_storage){
         // for some weird reason, typeof localStorage.getItem is 'object'
         // in IE8, not 'function' as in other browsers. So we have to
         // return a specific object...
-        if(typeof localStorage.getItem==='function'){return JSObject(localStorage)}
-        else{
+        if(typeof localStorage.getItem==='function'){
+            var res = JSObject(localStorage)
+        }else{
             var res = new Object()
             res.__getattr__ = function(attr){return this[attr]}
-            res.__repr__ = function(){return "<object Storage>"}
-            res.__str__ = function(){return "<object Storage>"}
             res.getItem = function(key){return localStorage.getItem(str(key))}
             res.setItem = function(key,value){localStorage.setItem(str(key),str(value))}
             return res
         }
+        res.__repr__ = function(){return "<object Storage>"}
+        res.__str__ = function(){return "<object Storage>"}
+        res.__item__ = function(rank){return localStorage.key(rank)}
+        return res
     }
 }
 
