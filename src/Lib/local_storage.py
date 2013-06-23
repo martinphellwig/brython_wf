@@ -3,6 +3,7 @@
 class LocalStorage:
 
     def __init__(self):
+        log('init storage')
         if not __BRYTHON__.has_local_storage:
             raise NameError('local storage is not supported by the browser')
         self.store = __BRYTHON__.local_storage()
@@ -27,6 +28,15 @@ class LocalStorage:
            return True
 
         return False
+
+    def keys(self):
+        return list(self.store)
+
+    def values(self):
+        return [self.__getitem__(k) for k in self.keys()]
+
+    def items(self):
+        return zip(self.keys(),self.values())
 
 storage = LocalStorage()
 

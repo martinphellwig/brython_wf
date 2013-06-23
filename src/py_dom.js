@@ -301,6 +301,7 @@ function JSObject(obj){
     return new $JSObject(obj)
 }
 JSObject.__class__ = $type
+JSObject.__repr__ = function(){return "<class 'JSObject'>"}
 JSObject.__str__ = function(){return "<class 'JSObject'>"}
 JSObject.toString = JSObject.__str__
 
@@ -319,13 +320,13 @@ $JSObject.prototype.__getitem__ = function(rank){
 }
 
 $JSObject.prototype.__item__ = function(rank){ // for iterator protocol
-    if(this.js.item!==undefined){return this.js.item(rank)}
-    else{throw AttributeError,this+' has no attribute __item__'}
+    try{return JSObject(this.js[rank])}
+    catch(err){console.log(err);throw AttributeError(this+' has no attribute __item__')}
 }
 
 $JSObject.prototype.__len__ = function(){
     if(this.js.length!==undefined){return this.js.length}
-    else{throw AttributeError,this+' has no attribute __len__'}
+    else{throw AttributeError(this+' has no attribute __len__')}
 }
 
 $JSObject.prototype.__getattr__ = function(attr){
@@ -730,13 +731,13 @@ DOMNode.prototype.get_setSelectionRange = function(){ // for TEXTAREA
         return (function(obj){
             return function(start_pos,end_pos){
                 if(end_pos==undefined){end_pos=start_pos}
-		var range = obj.createTextRange();
-		range.collapse(true);
-		range.moveEnd('character', start_pos);
-		range.moveStart('character', end_pos);
-		range.select();
+        var range = obj.createTextRange();
+        range.collapse(true);
+        range.moveEnd('character', start_pos);
+        range.moveStart('character', end_pos);
+        range.select();
             }
-	})(this)
+    })(this)
     }
 }
     
