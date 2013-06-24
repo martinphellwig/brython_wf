@@ -674,7 +674,7 @@ function $DefCtx(context){
         var ret_node = new $Node('expression')
         var catch_node = new $Node('expression')
         var js = 'catch(err'+$loop_num+')'
-        js += '{if(err'+$loop_num+'.py_error!==undefined){$report(err'+$loop_num+')}'
+        js += '{if(err'+$loop_num+'.py_error!==undefined){throw err'+$loop_num+'}'
         js += 'else{throw RuntimeError(err'+$loop_num+'.message)}}'
         new $NodeJSCtx(catch_node,js)
         node.children = []
@@ -1374,7 +1374,9 @@ function $RaiseCtx(context){
         if(this.tree.length===0){return '$raise()'}
         var exc = this.tree[0]
         if(exc.type==='id'){return 'throw '+exc.value+'("")'}
-        else{return 'throw '+$to_js(this.tree)}
+        else if(exc.type==='expr' && exc.tree[0].type==='id'){
+            return 'throw '+exc.tree[0].value+'("")'
+        }else{return 'throw '+$to_js(this.tree)}
     }
 }
 
