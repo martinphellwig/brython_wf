@@ -443,13 +443,17 @@ function $class_constructor(class_name,factory,parents){
         }
         
         if(!obj.$initialized){
-            try{
-                var init_func = $resolve_attr(obj,factory,'__init__')
+            var init_func = null
+            try{init_func = $resolve_attr(obj,factory,'__init__')}
+            catch(err){$pop_exc()}
+            if(init_func!==null){
                 var args = [obj]
-                for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+                for(var i=0;i<arguments.length;i++){
+                    args.push(arguments[i])
+                }
                 init_func.apply(null,arguments)
-                obj.$initialized
-            }catch(err){$pop_exc()}
+                obj.$initialized = true
+            }
         }
         return obj
     }
