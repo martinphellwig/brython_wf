@@ -294,7 +294,7 @@ dict.__len__ = function(self) {return self.$keys.length}
 
 dict.__ne__ = function(self,other){return !dict.__eq__(self,other)}
 
-dict.__new__ = function(arg){return dict(arg)}
+//dict.__new__ = function(arg){return dict(arg)}
 
 dict.__next__ = function(self){
     if(self.iter==null){self.iter==0}
