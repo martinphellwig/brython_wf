@@ -252,6 +252,16 @@ function $AssignCtx(context){
             var new_node = new $Node('expression')
             new $NodeJSCtx(new_node,'$right='+right.to_js())
             var new_nodes = [new_node]
+            var test_node = new $Node('expression')
+            var js = 'if($right.__len__()>'+left_items.length
+            js += '){throw ValueError("too many values to unpack '
+            js += '(expected '+left_items.length+')")}'
+            js += 'else if($right.__len__()<'+left_items.length
+            js += '){throw ValueError("need more than "+$right.__len__()'
+            js += '+" value"+($right.__len__()>1 ? "s" : "")+" to unpack")}'
+            new $NodeJSCtx(test_node,js)
+                
+            new_nodes.push(test_node)
             for(var i=0;i<left_items.length;i++){
                 var new_node = new $Node('expression')
                 var context = new $NodeCtx(new_node) // create ordinary node
