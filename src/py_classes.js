@@ -294,7 +294,7 @@ dict.__len__ = function(self) {return self.$keys.length}
 
 dict.__ne__ = function(self,other){return !dict.__eq__(self,other)}
 
-dict.__new__ = function(){return dict()}
+dict.__new__ = function(arg){return dict(arg)}
 
 dict.__next__ = function(self){
     if(self.iter==null){self.iter==0}
@@ -530,7 +530,7 @@ function float(value){
 float.__bool__ = function(){return bool(this.value)}
 float.__class__ = $type
 float.__name__ = 'float'
-float.__new__ = function(){return new $FloatClass(0.0)}
+float.__new__ = function(arg){return float(arg)}
 float.toString = float.__str__ = function(){return "<class 'float'>"}
 
 float.__hash__ = function() {
@@ -792,7 +792,7 @@ function int(value){
 int.__bool__ = function(){if (value === 0) {return False} else {return True}}
 int.__class__ = $type
 int.__name__ = 'int'
-int.__new__ = function(){return 0}
+int.__new__ = function(arg){return int(arg)}
 int.toString = int.__str__ = function(){return "<class 'int'>"}
 
 int.__getattr__ = function(attr){
@@ -1317,7 +1317,7 @@ function set(){
 }
 set.__class__ = $type
 set.__name__ = 'set'
-set.__new__ = function(){return set()}
+set.__new__ = function(arg){return set(arg)}
 
 function $SetClass(){
     var x = null;
@@ -1632,7 +1632,7 @@ function tuple(){
 }
 tuple.__class__ = $type
 tuple.__name__ = 'tuple'
-tuple.__new__ = function(){return tuple()}
+tuple.__new__ = function(arg){return tuple(arg)}
 tuple.__str__ = function(){return "<class 'tuple'>"}
 tuple.toString = tuple.__str__
 
