@@ -43,6 +43,18 @@ class bar(foo):
     pass
 assert str(bar())=='[]'
 
+# subclass method of native JS object (issue #75)
+class myint(int):
+    def __add__(self, x):
+        raise NotImplementedError
+x = myint(42)
+assert x==42
+assert x-8==34 # instance supports method __sub__
+try:
+    print(x+10)
+except NotImplementedError:
+    pass
+    
 # __call__
 
 class StaticCall():

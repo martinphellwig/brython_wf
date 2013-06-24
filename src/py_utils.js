@@ -363,13 +363,15 @@ function $class_constructor(class_name,factory,parents){
     // function can have additional arguments : the parent classes
     var parent_classes = []
     if(parents!==undefined){
-        if(isinstance(parents,tuple)){
-            for(var i=0;i<parents.length;i++){
-                if(parents[i]!==object){ // don't heritate from "object"
-                    parent_classes.push(parents[i])
-                }
+        if(!isinstance(parents,tuple)){parents=[parents]}
+        for(var i=0;i<parents.length;i++){
+            if(parents[i]!==object){ // don't heritate from "object"
+                if(parents[i]===int){parents[i]=$NativeWrapper['int']}
+                else if(parents[i]===str){parents[i]=$NativeWrapper['str']}
+                else if(parents[i]===list){parents[i]=$NativeWrapper['list']}
+                parent_classes.push(parents[i])
             }
-        }else if(parents!==object){parent_classes=[parents]}
+        }
     }
     factory.parents = parent_classes
     factory.__name__ = class_name
@@ -386,6 +388,7 @@ function $class_constructor(class_name,factory,parents){
             }
             fact = fact.parents[0]
         }
+
         obj.__class__ = f
         // set attributes
         for(var attr in factory){
@@ -469,6 +472,42 @@ function $class_constructor(class_name,factory,parents){
         factory[attr]=value;f[attr]=value
     }
     return f
+}
+
+$NativeWrapper = {
+    'int':{__new__ : function(arg){return new $IntWrapper(arg)}},
+    'str':{__new__ : function(arg){
+                if(arg===undefined){arg=''}
+                return new $BuiltinWrapper(str,arg)
+                }
+            },
+    'list':{__new__ : function(arg){
+                if(arg===undefined){arg=[]}
+                return new $BuiltinWrapper(list,arg)
+                }
+            }
+}
+
+function $IntWrapper(arg){
+    for(var attr in Number.prototype){
+        this[attr] = (function(attr){
+            return function(){
+                return Number.prototype[attr].apply(arg,arguments)
+            }
+        })(attr)
+    }
+}
+function $BuiltinWrapper(builtin,arg){
+    var value = builtin(arg)
+    for(var attr in builtin){
+        this[attr] = (function(value,attr){
+            return function(){
+                args = [value]
+                for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+                return builtin[attr].apply(value,args)
+            }
+        })(value,attr)
+    }
 }
 
 // escaping double quotes
