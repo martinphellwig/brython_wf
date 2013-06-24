@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130624-182502
+// version 1.1.20130624-184725
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130624-182502"]
+__BRYTHON__.version_info=[1,1,"20130624-184725"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -443,7 +443,6 @@ var args=[obj]
 for(var i=0;i<arguments.length;i++){
 args.push(arguments[i])
 }
-console.log('init__')
 init_func.apply(null,arguments)
 obj.$initialized=true
 }
@@ -853,9 +852,8 @@ return False
 return True
 }
 dict.__getattr__=function(attr){
-console.log('dict attr '+attr+' '+this[attr])
 if(this[attr]!==undefined){return this[attr]}
-else{console.log('throw!!!');throw AttributeError("'dict' object has no attribute '"+attr+"'")}
+else{throw AttributeError("'dict' object has no attribute '"+attr+"'")}
 }
 dict.__getitem__=function(self,arg){
 for(var i=0;i<self.$keys.length;i++){
@@ -3555,6 +3553,15 @@ $loop_num++
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,'$right='+right.to_js())
 var new_nodes=[new_node]
+var test_node=new $Node('expression')
+var js='if($right.__len__()>'+left_items.length
+js +='){throw ValueError("too many values to unpack '
+js +='(expected '+left_items.length+')")}'
+js +='else if($right.__len__()<'+left_items.length
+js +='){throw ValueError("need more than "+$right.__len__()'
+js +='+" value"+($right.__len__()>1 ? "s" : "")+" to unpack")}'
+new $NodeJSCtx(test_node,js)
+new_nodes.push(test_node)
 for(var i=0;i<left_items.length;i++){
 var new_node=new $Node('expression')
 var C=new $NodeCtx(new_node)
@@ -3928,7 +3935,7 @@ def_func_node.add(try_node)
 var ret_node=new $Node('expression')
 var catch_node=new $Node('expression')
 var js='catch(err'+$loop_num+')'
-js +='{console.log(err'+$loop_num+');if(err'+$loop_num+'.py_error!==undefined){throw err'+$loop_num+'}'
+js +='{if(err'+$loop_num+'.py_error!==undefined){throw err'+$loop_num+'}'
 js +='else{throw RuntimeError(err'+$loop_num+'.message)}}'
 new $NodeJSCtx(catch_node,js)
 node.children=[]
