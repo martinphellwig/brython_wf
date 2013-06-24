@@ -51,5 +51,5 @@ if (__BRYTHON__.has_indexedDB) {
 
 __BRYTHON__.re = function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json = typeof(JSON)!=="undefined"
-__BRYTHON__.version_info = [1,1,"20130622-222853"]
+__BRYTHON__.version_info = [1,1,"20130624-182502"]
 __BRYTHON__.path = [] // path for .py modules
