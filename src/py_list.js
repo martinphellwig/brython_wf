@@ -194,7 +194,10 @@ list.__repr__ = function(self){
         else{res += x.toString()}
         if(i<self.length-1){res += ','}
     }
-    if(self.__class__===tuple){return res+')'}
+    if(self.__class__===tuple){
+        if(self.length==1){res+=','}
+        return res+')'
+    }
     else{return res+']'}
 }
 
