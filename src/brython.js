@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130624-184725
+// version 1.1.20130625-152932
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130624-184725"]
+__BRYTHON__.version_info=[1,1,"20130625-152932"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -1424,17 +1424,6 @@ var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
 for($op in $comps){
 eval("Number.prototype.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
-var $notimplemented=function(other){
-throw TypeError(
-"unsupported operand types for OPERATOR: '"+str(this.__class__)+"' and '"+str(other.__class__)+"'")
-}
-$notimplemented +='' 
-for($op in $operators){
-var $opfunc='__'+$operators[$op]+'__'
-if(!($opfunc in Number.prototype)){
-eval('Number.prototype.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
-}
-}
 function isinstance(obj,arg){
 if(obj===null){return arg===None}
 if(obj===undefined){return false}
@@ -2729,14 +2718,12 @@ for($op in $comps){
 eval("str.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 var $notimplemented=function(self,other){
-throw TypeError(
-"unsupported operand types for OPERATOR: '"+str(self.__class__)+"' and '"+str(other.__class__)+"'")
+throw NotImplementedError("OPERATOR not implemented for class str")
 }
 $notimplemented +='' 
 for($op in $operators){
 var $opfunc='__'+$operators[$op]+'__'
 if(!($opfunc in str)){
-eval('str.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
 }
 }
 str.capitalize=function(self){
@@ -3352,7 +3339,8 @@ $weight++
 var $augmented_assigns={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
 "**=":"ipow","+=":"iadd","-=":"isub","*=":"imul","/=":"itruediv",
-"%=":"imod","^=":"ipow"
+"%=":"imod","^=":"ipow",
+"&=":"iand","|=":"ior","^=":"ixor"
 }
 function $_SyntaxError(C,msg,indent){
 console.log('syntax error '+msg)
@@ -3604,8 +3592,7 @@ var scope=$get_scope(this)
 if(scope.ntype==="module"){
 var res=left.to_js()
 if(scope.module!=='__main__'){res='var '+res}
-res +='=__BRYTHON__.scope["'+scope.module+'"]'
-res +='.__dict__["'+left.to_js()+'"]='+right.to_js()
+res +='=$globals["'+left.to_js()+'"]='+right.to_js()
 return res
 }else if(scope.ntype==='def'){
 if(scope.globals && scope.globals.indexOf(left.value)>-1){
@@ -3706,12 +3693,12 @@ res +='})()'
 if(ns==='globals'){
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
 res +='{window[$attr]='
-res +='__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
+res +='$globals[$attr]='
 res +='__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
 }else{
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
 res +='{eval("var "+$attr+"='
-res +='__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
+res +='$globals[$attr]='
 res +='__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
 }
 return res
@@ -3969,8 +3956,7 @@ node.parent.children.splice(rank+offset,0,new_node1)
 offset++
 }
 if(scope.ntype==='module'){
-js='__BRYTHON__.scope["'+scope.module+'"].__dict__["'+this.name
-js +='"]='+this.name
+js='$globals["'+this.name+'"]='+this.name
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 node.parent.children.splice(rank+offset,0,new_node)
@@ -4571,6 +4557,12 @@ return 'throw '+exc.tree[0].value+'("")'
 }else{return 'throw '+$to_js(this.tree)}
 }
 }
+function $RawJSCtx(C,js){
+C.tree.push(this)
+this.parent=C
+this.toString=function(){return '(js) '+js}
+this.to_js=function(){return js}
+}
 function $ReturnCtx(C){
 this.type='return'
 this.toString=function(){return 'return '+this.tree}
@@ -4797,14 +4789,49 @@ return offset
 }
 }
 function $augmented_assign(C,op){
+var func='__'+$operators[op]+'__'
+var ctx=C
+while(ctx.parent!==undefined){ctx=ctx.parent}
+var node=ctx.node
+var parent=node.parent
+for(var i=0;i<parent.children.length;i++){
+if(parent.children[i]===node){var rank=i;break}
+}
+var new_node=new $Node('expression')
+var new_ctx=new $NodeCtx(new_node)
+var new_expr=new $ExprCtx(new_ctx,'id',false)
+var _id=new $IdCtx(new_expr,'$temp')
 var assign=new $AssignCtx(C)
-var new_op=new $OpCtx(C,op.substr(0,op.length-1))
-new_op.parent=assign
-assign.tree.push(new_op)
-C.parent.tree.pop()
-C.parent.tree.push(assign)
-var expr=new $ListOrTupleCtx(new_op,'tuple')
-return expr 
+assign.tree[0]=_id
+_id.parent=assign
+var new_node=new $Node('expression')
+var js='if(!hasattr('+C.to_js()+',"'+func+'"))'
+new $NodeJSCtx(new_node,js)
+parent.insert(rank+1,new_node)
+var aa1=new $Node('expression')
+var ctx1=new $NodeCtx(aa1)
+var expr1=new $ExprCtx(ctx1,'clone',false)
+expr1.tree=C.tree
+for(var i=0;i<expr1.tree.length;i++){
+expr1.tree[i].parent=expr1
+}
+var assign1=new $AssignCtx(expr1)
+var new_op=new $OpCtx(expr1,op.substr(0,op.length-1))
+new_op.parent=assign1
+new $RawJSCtx(new_op,'$temp')
+assign1.tree.push(new_op)
+expr1.parent.tree.pop()
+expr1.parent.tree.push(assign1)
+new_node.add(aa1)
+var aa2=new $Node('expression')
+new $NodeJSCtx(aa2,'else')
+parent.insert(rank+2,aa2)
+var aa3=new $Node('expression')
+var js3=C.to_js()
+js3 +='.'+func+'($temp)'
+new $NodeJSCtx(aa3,js3)
+aa2.add(aa3)
+return new $AbstractExprCtx(assign)
 }
 function $comp_env(C,attr,src){
 var ids=$get_ids(src)
@@ -5583,6 +5610,10 @@ __BRYTHON__.scope[module].__dict__={}
 document.$py_src[module]=src
 var root=$tokenize(src,module)
 root.transform()
+js='var $globals = __BRYTHON__.scope["'+module+'"].__dict__'
+var new_node=new $Node('expression')
+new $NodeJSCtx(new_node,js)
+root.insert(0,new_node)
 if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
 return root
 }

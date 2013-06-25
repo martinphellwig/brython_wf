@@ -34,7 +34,8 @@ for (var $i=0;$i<$op_order.length;$i++){
 var $augmented_assigns = {
     "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
     "**=":"ipow","+=":"iadd","-=":"isub","*=":"imul","/=":"itruediv",
-    "%=":"imod","^=":"ipow"
+    "%=":"imod","^=":"ipow",
+    "&=":"iand","|=":"ior","^=":"ixor"
 }
 
 function $_SyntaxError(context,msg,indent){
@@ -1388,6 +1389,13 @@ function $RaiseCtx(context){
     }
 }
 
+function $RawJSCtx(context,js){
+    context.tree.push(this)
+    this.parent = context
+    this.toString = function(){return '(js) '+js}
+    this.to_js = function(){return js}
+}
+
 function $ReturnCtx(context){ // subscription or slicing
     this.type = 'return'
     this.toString = function(){return 'return '+this.tree}
@@ -1644,14 +1652,71 @@ function $add_line_num(node,rank){
 
 function $augmented_assign(context,op){
     // in "foo += bar" context = foo, op = +
+    // replace foo += bar by :
+    // $temp = bar
+    // if(!hasattr(foo,"__iadd__")){
+    //     foo = foo.__add__(bar)
+    // }else{
+    //     foo.__iadd__(bar)
+    // }
+    
+    var func = '__'+$operators[op]+'__'
+    var ctx = context
+    while(ctx.parent!==undefined){ctx=ctx.parent}
+    var node = ctx.node
+    var parent = node.parent
+    for(var i=0;i<parent.children.length;i++){
+        if(parent.children[i]===node){var rank = i;break}
+    }
+
+    // replace current node by "$temp = <placeholder>"
+    // at the end of $aumented_assign, control will be
+    // passed to the <placeholder> expression
+    var new_node = new $Node('expression')
+    var new_ctx = new $NodeCtx(new_node)
+    var new_expr = new $ExprCtx(new_ctx,'id',false)
+    var _id = new $IdCtx(new_expr,'$temp')
     var assign = new $AssignCtx(context)
-    var new_op = new $OpCtx(context,op.substr(0,op.length-1))
-    new_op.parent = assign
-    assign.tree.push(new_op)
-    context.parent.tree.pop()
-    context.parent.tree.push(assign)
-    var expr = new $ListOrTupleCtx(new_op,'tuple')
-    return expr
+    assign.tree[0] = _id
+    _id.parent = assign
+
+    // insert node 'if(!hasattr(foo,"__iadd__"))
+    var new_node = new $Node('expression')
+    var js = 'if(!hasattr('+context.to_js()+',"'+func+'"))'
+    new $NodeJSCtx(new_node,js)
+    parent.insert(rank+1,new_node)
+
+    // create node for "foo = foo + bar"
+    var aa1 = new $Node('expression')
+    var ctx1 = new $NodeCtx(aa1)
+    var expr1 = new $ExprCtx(ctx1,'clone',false)
+    expr1.tree = context.tree
+    for(var i=0;i<expr1.tree.length;i++){
+        expr1.tree[i].parent = expr1
+    }
+    var assign1 = new $AssignCtx(expr1)
+    var new_op = new $OpCtx(expr1,op.substr(0,op.length-1))
+    new_op.parent = assign1
+    new $RawJSCtx(new_op,'$temp')
+    assign1.tree.push(new_op)
+    expr1.parent.tree.pop()
+    expr1.parent.tree.push(assign1)
+    new_node.add(aa1)
+    
+    // create node for "else"
+    var aa2 = new $Node('expression')
+    new $NodeJSCtx(aa2,'else')
+    parent.insert(rank+2,aa2)
+
+    // create node fo "foo.__iadd__(bar)    
+    var aa3 = new $Node('expression')
+    var js3 = context.to_js()
+    js3 += '.'+func+'($temp)'
+    new $NodeJSCtx(aa3,js3)
+    aa2.add(aa3)
+
+    // return control to right term of "$temp = ?"    
+    return new $AbstractExprCtx(assign)
 }
 
 function $comp_env(context,attr,src){

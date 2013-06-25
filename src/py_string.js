@@ -312,14 +312,13 @@ for($op in $comps){
 
 // unsupported operations
 var $notimplemented = function(self,other){
-    throw TypeError(
-        "unsupported operand types for OPERATOR: '"+str(self.__class__)+"' and '"+str(other.__class__)+"'")
+    throw NotImplementedError("OPERATOR not implemented for class str")
 }
 $notimplemented += '' // coerce to string
 for($op in $operators){
     var $opfunc = '__'+$operators[$op]+'__'
     if(!($opfunc in str)){
-        eval('str.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
+        //eval('str.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
     }
 }
 
