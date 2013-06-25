@@ -275,7 +275,11 @@ function $src_error(name,module,msg,pos) {
     }
     var line_num = pos2line[pos]
     var lines = src.split('\n')
-    info = "\nmodule '"+module+"' line "+line_num
+
+    var lib_module = module
+    if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
+
+    info = "\nmodule '"+lib_module+"' line "+line_num
     info += '\n'+lines[line_num-1]+'\n'
     var lpos = pos-line_pos[line_num]
     for(var i=0;i<lpos;i++){info+=' '}
