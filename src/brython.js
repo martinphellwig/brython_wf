@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130625-152932
+// version 1.1.20130625-220534
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130625-152932"]
+__BRYTHON__.version_info=[1,1,"20130625-220534"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -285,7 +285,9 @@ if(src.charAt(i)=='\n'){lnum+=1;line_pos[lnum]=i}
 }
 var line_num=pos2line[pos]
 var lines=src.split('\n')
-info="\nmodule '"+module+"' line "+line_num
+var lib_module=module
+if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
+info="\nmodule '"+lib_module+"' line "+line_num
 info +='\n'+lines[line_num-1]+'\n'
 var lpos=pos-line_pos[line_num]
 for(var i=0;i<lpos;i++){info+=' '}
@@ -1709,14 +1711,14 @@ this.__class__=set
 this.items=[]
 }
 $SetClass.prototype.toString=function(){
-var res="{"
+var res="set("
 for(var i=0;i<this.items.length;i++){
 var x=this.items[i]
 if(isinstance(x,str)){res +="'"+x+"'"}
 else{res +=x.toString()}
 if(i<this.items.length-1){res +=','}
 }
-return res+'}'
+return res+')'
 }
 set.__add__=function(self,other){
 return set(self.items.concat(other.items))
@@ -1794,6 +1796,7 @@ return res
 }
 set.__repr__=function(self){
 if(self===undefined){return "<class 'set'>"}
+if(self.items.length===0){return 'set()'}
 var res="{"
 for(var i=0;i<self.items.length;i++){
 res +=repr(self.items[i])
@@ -3592,7 +3595,10 @@ var scope=$get_scope(this)
 if(scope.ntype==="module"){
 var res=left.to_js()
 if(scope.module!=='__main__'){res='var '+res}
-res +='=$globals["'+left.to_js()+'"]='+right.to_js()
+if(left.to_js().charAt(0)!='$'){
+res +='=$globals["'+left.to_js()+'"]'
+}
+res +='='+right.to_js()
 return res
 }else if(scope.ntype==='def'){
 if(scope.globals && scope.globals.indexOf(left.value)>-1){
