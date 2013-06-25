@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130625-220534
+// version 1.1.20130625-221039
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130625-220534"]
+__BRYTHON__.version_info=[1,1,"20130625-221039"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -2272,7 +2272,10 @@ if(x.__repr__!==undefined){res+=x.__repr__()}
 else{res +=x.toString()}
 if(i<self.length-1){res +=','}
 }
-if(self.__class__===tuple){return res+')'}
+if(self.__class__===tuple){
+if(self.length==1){res+=','}
+return res+')'
+}
 else{return res+']'}
 }
 list.__setitem__=function(self,arg,value){
