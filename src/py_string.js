@@ -285,7 +285,10 @@ str.__not_in__ = function(self,item){return !str.__in__(self,item)}
 str.__repr__ = function(self){
     if(self===undefined){return "<class 'str'>"}
     var qesc = new RegExp("'","g") // to escape single quote
-    return "'"+self.replace(qesc,"\\'")+"'"
+    var res = self.replace(/\n/g,'\\\\n')
+    res = "'"+res.replace(qesc,"\\'")+"'"
+    console.log(res)
+    return res
 }
 
 str.__setattr__ = function(self,attr,value){setattr(self,attr,value)}

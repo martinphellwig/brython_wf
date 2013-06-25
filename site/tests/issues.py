@@ -199,6 +199,14 @@ assert [rect(x=0, y=0, width=10, height=10) for i in range(2)], 'error in list'
 # issue 75
 assert {0:42}[0] ==  42
 
+# issue 80
+def twice(n):
+    yield n
+    yield n
+f = twice(2)
+assert next(f) == 2
+assert next(f) == 2
+
 # issue #81
 class foo:
     def __init__(self,x):
