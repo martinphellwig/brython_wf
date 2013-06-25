@@ -307,7 +307,10 @@ function $AssignCtx(context){
             if(scope.ntype==="module"){
                 var res = left.to_js()
                 if(scope.module!=='__main__'){res = 'var '+res}
-                res += '=$globals["'+left.to_js()+'"]='+right.to_js()
+                if(left.to_js().charAt(0)!='$'){
+                    res += '=$globals["'+left.to_js()+'"]'
+                }
+                res += '='+right.to_js()
                 return res
             }else if(scope.ntype==='def'){
                 // assignment in a function : depends if variable is local
