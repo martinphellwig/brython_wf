@@ -306,8 +306,7 @@ function $AssignCtx(context){
             if(scope.ntype==="module"){
                 var res = left.to_js()
                 if(scope.module!=='__main__'){res = 'var '+res}
-                res += '=__BRYTHON__.scope["'+scope.module+'"]'
-                res += '.__dict__["'+left.to_js()+'"]='+right.to_js()
+                res += '=$globals["'+left.to_js()+'"]='+right.to_js()
                 return res
             }else if(scope.ntype==='def'){
                 // assignment in a function : depends if variable is local
@@ -428,13 +427,13 @@ function $CallCtx(context){
                 // copy the execution namespace in module and global namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
                 res += '{window[$attr]='
-                res += '__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
+                res += '$globals[$attr]='
                 res += '__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
             }else{
                 // copy the execution namespace in module namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
                 res += '{eval("var "+$attr+"='
-                res += '__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
+                res += '$globals[$attr]='
                 res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
             }
             return res
@@ -727,8 +726,7 @@ function $DefCtx(context){
         }
         // if function is defined at module level, add to module scope
         if(scope.ntype==='module'){
-            js = '__BRYTHON__.scope["'+scope.module+'"].__dict__["'+this.name
-            js += '"]='+this.name
+            js = '$globals["'+this.name+'"]='+this.name
             new_node = new $Node('expression')
             new $NodeJSCtx(new_node,js)
             node.parent.children.splice(rank+offset,0,new_node)            
@@ -1653,7 +1651,7 @@ function $augmented_assign(context,op){
     context.parent.tree.pop()
     context.parent.tree.push(assign)
     var expr = new $ListOrTupleCtx(new_op,'tuple')
-    return expr //new $AbstractExprCtx(expr,false)
+    return expr
 }
 
 function $comp_env(context,attr,src){
@@ -2575,6 +2573,11 @@ __BRYTHON__.py2js = function(src,module){
     document.$py_src[module]=src
     var root = $tokenize(src,module)
     root.transform()
+    // add variable $globals
+    js = 'var $globals = __BRYTHON__.scope["'+module+'"].__dict__'
+    var new_node = new $Node('expression')
+    new $NodeJSCtx(new_node,js)
+    root.insert(0,new_node)
     if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
     return root
 }
