@@ -974,19 +974,6 @@ for($op in $comps){
     eval("Number.prototype.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 
-// unsupported operations
-var $notimplemented = function(other){
-    throw TypeError(
-        "unsupported operand types for OPERATOR: '"+str(this.__class__)+"' and '"+str(other.__class__)+"'")
-}
-$notimplemented += '' // coerce to string
-for($op in $operators){
-    var $opfunc = '__'+$operators[$op]+'__'
-    if(!($opfunc in Number.prototype)){
-        eval('Number.prototype.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
-    }
-}
-
 function isinstance(obj,arg){
     if(obj===null){return arg===None}
     if(obj===undefined){return false}
