@@ -71,6 +71,21 @@ indispensable pour implémenter des opérations comme 2*"a"
 </tr>
 
 <tr>
+<td>
+    x += y
+<td>
+    $temp = y
+    if(!hasattr(x,"__iadd__")){
+        x=$globals["x"]=x.__add__($temp)
+    }
+    else{
+        x.__iadd__($temp)
+    }
+</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
 <td>`a and b`</td>
 <td>`$test_expr($test_item(a)&&$test_item(b))`
 <td>on conserve l'opérateur Javascript && pour ne pas évaluer b si a est faux
@@ -239,6 +254,7 @@ La classe elle-même est construite par la fonction _$class\_constructor_ défin
     class foo(A):
         def __init__(self,x):
             self.x = x
+</td>
 <td>
     var $foo=(function()
       var $class = new Object()
@@ -267,6 +283,7 @@ La classe elle-même est construite par la fonction _$class\_constructor_ défin
 <td>On voit que l'objet `$class` reçoit comme attribut la méthode `__init__()`
 
 La classe hérite d'une autre classe `A`, qu'on retrouve comme 3ème argument de l'appel à `$class_constructor`
+</td>
 </tr>
 
 
