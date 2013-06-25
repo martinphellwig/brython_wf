@@ -1315,14 +1315,14 @@ function $SetClass(){
 }
     
 $SetClass.prototype.toString = function(){
-    var res = "{"
+    var res = "set("
     for(var i=0;i<this.items.length;i++){
         var x = this.items[i]
         if(isinstance(x,str)){res += "'"+x+"'"} 
         else{res += x.toString()}
         if(i<this.items.length-1){res += ','}
     }
-    return res+'}'
+    return res+')'
 }
     
 set.__add__ = function(self,other){
@@ -1418,6 +1418,7 @@ set.__or__ = function(self,other){
 
 set.__repr__ = function(self){
     if(self===undefined){return "<class 'set'>"}
+    if(self.items.length===0){return 'set()'}
     var res = "{"
     for(var i=0;i<self.items.length;i++){
         res += repr(self.items[i])
