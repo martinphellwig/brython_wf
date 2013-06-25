@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130625-221039
+// version 1.1.20130625-223624
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130625-221039"]
+__BRYTHON__.version_info=[1,1,"20130625-223624"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -2703,7 +2703,10 @@ str.__not_in__=function(self,item){return !str.__in__(self,item)}
 str.__repr__=function(self){
 if(self===undefined){return "<class 'str'>"}
 var qesc=new RegExp("'","g")
-return "'"+self.replace(qesc,"\\'")+"'"
+var res=self.replace(/\n/g,'\\\\n')
+res="'"+res.replace(qesc,"\\'")+"'"
+console.log(res)
+return res
 }
 str.__setattr__=function(self,attr,value){setattr(self,attr,value)}
 self.__setitem__=function(self,attr,value){
@@ -4866,7 +4869,7 @@ var tree_node=ctx_node.node
 var scope=null
 while(tree_node.parent.type!=='module'){
 var ntype=tree_node.parent.C.tree[0].type
-if(['def','class'].indexOf(ntype)>-1){
+if(['def','class','generator'].indexOf(ntype)>-1){
 scope=tree_node.parent
 scope.ntype=ntype
 return scope

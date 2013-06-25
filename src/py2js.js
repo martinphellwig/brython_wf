@@ -1751,7 +1751,7 @@ function $get_scope(context){
     var scope = null
     while(tree_node.parent.type!=='module'){
         var ntype = tree_node.parent.context.tree[0].type
-        if(['def','class'].indexOf(ntype)>-1){
+        if(['def','class','generator'].indexOf(ntype)>-1){
             scope = tree_node.parent
             scope.ntype = ntype
             return scope
