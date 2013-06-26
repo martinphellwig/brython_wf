@@ -1417,13 +1417,19 @@ set.__or__ = function(self,other){
 }
 
 set.__repr__ = function(self){
+    var frozen = self.__class__===frozenset
     if(self===undefined){return "<class 'set'>"}
-    if(self.items.length===0){return 'set()'}
+    if(self.items.length===0){
+        if(frozen){return 'frozenset()'}
+        else{return 'set()'}
+    }
     var res = "{"
+    if(frozen){res = 'frozenset({'}
     for(var i=0;i<self.items.length;i++){
         res += repr(self.items[i])
         if(i<self.items.length-1){res += ','}
     }
+    if(frozen){return res+'})'}
     return res+'}'
 }
 
