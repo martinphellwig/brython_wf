@@ -2783,7 +2783,11 @@ function $tokenize(src,module){
             var end = null
             if(name.length>0 && name.toLowerCase()=="r"){
                 // raw string
-                raw = true;name=""
+                raw = true;name=''
+            }else if(name.length>0 && name.toLowerCase()=='u'){
+                // in string literals, '\U' and '\u' escapes in raw strings 
+                // are not treated specially.
+                name = ''
             }
             if(src.substr(pos,3)==car+car+car){_type="triple_string";end=pos+3}
             else{_type="string";end=pos+1}
