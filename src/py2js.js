@@ -2875,6 +2875,11 @@ function $tokenize(src,module){
         }
         // point
         if(car=="."){
+            if(pos<src.length-1 && '0123456789'.indexOf(src.charAt(pos+1))>-1){
+                // number starting with . : add a 0 before the point
+                src = src.substr(0,pos)+'0'+src.substr(pos)
+                continue
+            }
             $pos = pos
             context = $transition(context,'.')
             pos++;continue
