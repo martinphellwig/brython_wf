@@ -84,7 +84,7 @@ $tags = ['A', 'ABBR', 'ACRONYM', 'ADDRESS', 'APPLET',
 $tags = $tags.concat(['ARTICLE','ASIDE','FIGURE','FOOTER','HEADER','NAV',
     'SECTION','AUDIO','VIDEO','CANVAS','COMMAND','DATALIST',
     'DETAILS','OUTPUT','PROGRESS','HGROUP','MARK','METER','TIME',
-    'RP','RT','RUBY'])
+    'RP','RT','RUBY','SOURCE'])
 
 // create classes
 var obj = new Object()
