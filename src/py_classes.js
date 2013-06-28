@@ -779,13 +779,13 @@ function int(value){
     else if(isinstance(value,int)){return value}
     else if(value===True){return 1}
     else if(value===False){return 0}
-    else if(typeof value=="number" ||
-        (typeof value=="string" && parseInt(value)!=NaN)){
+    else if(typeof value=="number"){return parseInt(value)}
+    else if(typeof value=="string" && (new RegExp("\d+")).test(value)){
         return parseInt(value)
     }else if(isinstance(value,float)){
         return parseInt(value.value)
     }else{ throw ValueError(
-        "Invalid literal for int() with base 10: '"+str(value)+"'"+value.__class__)
+        "Invalid literal for int() with base 10: '"+str(value)+"'")
     }
 }
 
