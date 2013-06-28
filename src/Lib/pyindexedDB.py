@@ -26,17 +26,19 @@ class pyindexedDB:
            onupgradeneeded=None):
       self._version=version
       _result=self._indexedDB.open(name, version)
-
-      _onsuccess=EventListener([self._onsuccess, onsuccess])
-      _result.onsuccess=_onsuccess.fire
+      _success=EventListener([self._onsuccess, onsuccess])
+      _result.onsuccess=_success.fire
       _result.onupgradeneeded=onupgradeneeded
 
-      if onerror is None:
-         def onerror(e):
-             print("%s:%s" %  (e.type, e.result))
+      #if onerror is None:
+      def onerror(e):
+          print("onerror: %s:%s" %  (e.type, e.target.result))
+
+      def onblocked(e):
+          print("blocked: %s:%s" %  (e.type, e.result))
 
       _result.onerror=onerror
-      _result.onblocked=onerror
+      _result.onblocked=onblocked
 
   def transaction(self, entities, mode='read'):
       return Transaction(self._db.transaction(entities, mode))
