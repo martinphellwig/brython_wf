@@ -287,7 +287,7 @@ str.__repr__ = function(self){
     var qesc = new RegExp("'","g") // to escape single quote
     var res = self.replace(/\n/g,'\\\\n')
     res = "'"+res.replace(qesc,"\\'")+"'"
-    console.log(res)
+    //console.log(res)
     return res
 }
 
