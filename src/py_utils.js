@@ -308,6 +308,22 @@ function $IndentationError(module,msg,pos) {
 // function to remove internal exceptions from stack exposed to programs
 function $pop_exc(){__BRYTHON__.exception_stack.pop()}
 
+function $resolve_class_attr(cl,factory,attr){
+    if(attr==='__class__'){return cl.__class__}
+    if(__BRYTHON__.forbidden.indexOf(attr)!==-1){attr='$$'+attr}
+    if(factory[attr]!==undefined){
+        return factory[attr]
+    }
+    for(var i=0;i<factory.parents.length;i++){
+        try{
+            return $resolve_class_attr(cl,factory.parents[i],attr)
+        }catch(err){
+            void(0)
+        }
+    }
+    throw AttributeError("'"+factory.__name__+"' class has no attribute '"+attr+"'")
+}
+
 // resolve instance attribute from its class factory
 function $resolve_attr(obj,factory,attr){
     if(attr==='__class__'){return obj.__class__}
@@ -472,13 +488,13 @@ function $class_constructor(class_name,factory,parents){
                 })(attr)
         }
     }
-    f.__getattr__ = function(attr){
-        if(f[attr]!==undefined){return f[attr]}
-        return factory[attr]
+    f.__getattr__ = function(attr){ // class attribute
+        return $resolve_class_attr(f,factory,attr)
     }
     f.__setattr__ = function(attr,value){
         factory[attr]=value;f[attr]=value
     }
+    factory.$class = f
     return f
 }
 

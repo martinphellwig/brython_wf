@@ -142,15 +142,25 @@ function chr(i) {
 }
 
 //classmethod() (built in function)
-function $ClassMethodClass() {
+function $ClassMethodClass(func) {
+    this.func = func
     this.__class__ = "<class 'classmethod'>"
 }
 
 $ClassMethodClass.prototype.__hash__ = object.__hash__
-$ClassMethodClass.prototype.toString = $ClassMethodClass.prototype.__str__ = function() {return "<classmethod object at " + hex(this.__hash__()) + ">" }
+$ClassMethodClass.prototype.toString = $ClassMethodClass.prototype.__str__ = function() {
+    return "<classmethod object "+this.func.__name__+">" 
+}
 
-function classmethod(func) {
-    var c = new $ClassMethodClass()
+function classmethod(factory,func) {
+    // the first argument _class is added by py2js in $CallCtx
+    
+    var c = new $ClassMethodClass(func)
+    c.__call__ = function(){
+        var args = [factory.$class]
+        for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+        return func.apply(null,args)
+    }
     c.__get__ = function(instance, factory) { return func.__call__(instance) }; 
     c.__doc__ = doc || "";
     return c;
@@ -699,8 +709,6 @@ for($op in $operators){
 function frozenset(){
     var res = set.apply(null,arguments)
     res.__class__ = frozenset
-    var x = str(res)
-    res.__str__ = function(){return "frozenset("+x+")"}
     return res
 }
 frozenset.__class__ = $type
@@ -780,7 +788,7 @@ function int(value){
     else if(value===True){return 1}
     else if(value===False){return 0}
     else if(typeof value=="number"){return parseInt(value)}
-    else if(typeof value=="string" && (new RegExp("\d+")).test(value)){
+    else if(typeof value=="string" && (new RegExp(/\d+/)).test(value)){
         return parseInt(value)
     }else if(isinstance(value,float)){
         return parseInt(value.value)
@@ -1417,8 +1425,8 @@ set.__or__ = function(self,other){
 }
 
 set.__repr__ = function(self){
-    var frozen = self.__class__===frozenset
     if(self===undefined){return "<class 'set'>"}
+    frozen = self.__class__ === frozenset
     if(self.items.length===0){
         if(frozen){return 'frozenset()'}
         else{return 'set()'}

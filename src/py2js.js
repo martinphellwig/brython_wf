@@ -441,6 +441,8 @@ function $CallCtx(context){
                 res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
             }
             return res
+        }else if(this.func!==undefined && this.func.value === 'classmethod'){
+            return 'classmethod($class,'+$to_js(this.tree)+')'
         }else if(this.func!==undefined && this.func.value ==='locals'){
             var scope = $get_scope(this)
             if(scope !== null && scope.ntype==='def'){
