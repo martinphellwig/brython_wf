@@ -680,7 +680,6 @@ DOMNode.prototype.get_class = function(){
 DOMNode.prototype.get_focus = function(){
     return (function(obj){
         return function(){
-            console.log('focus')
             // focus() is not supported in IE
             setTimeout(function() { obj.focus(); }, 10)
         }
