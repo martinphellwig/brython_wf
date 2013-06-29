@@ -81,10 +81,12 @@ $tags = ['A', 'ABBR', 'ACRONYM', 'ADDRESS', 'APPLET',
             'META', 'PARAM']
 
 // HTML5 tags
-$tags = $tags.concat(['ARTICLE','ASIDE','FIGURE','FOOTER','HEADER','NAV',
-    'SECTION','AUDIO','VIDEO','CANVAS','COMMAND','DATALIST',
-    'DETAILS','OUTPUT','PROGRESS','HGROUP','MARK','METER','TIME',
-    'RP','RT','RUBY','SOURCE'])
+$tags = $tags.concat(['ARTICLE','ASIDE','AUDIO','BDI',
+    'CANVAS','COMMAND','DATALIST','DETAILS','DIALOG',
+    'EMBED','FIGCAPTION','FIGURE','FOOTER','HEADER',
+    'KEYGEN','MARK','METER','NAV','OUTPUT',
+    'PROGRESS','RP','RT','RUBY','SECTION','SOURCE',
+    'SUMMARY','TIME','TRACK','VIDEO','WBR'])
 
 // create classes
 var obj = new Object()
