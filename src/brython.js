@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130625-223624
+// version 1.1.20130629-102152
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130625-223624"]
+__BRYTHON__.version_info=[1,1,"20130629-102152"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -311,6 +311,21 @@ function $IndentationError(module,msg,pos){
 $src_error('IndentationError',module,msg,pos)
 }
 function $pop_exc(){__BRYTHON__.exception_stack.pop()}
+function $resolve_class_attr(cl,factory,attr){
+if(attr==='__class__'){return cl.__class__}
+if(__BRYTHON__.forbidden.indexOf(attr)!==-1){attr='$$'+attr}
+if(factory[attr]!==undefined){
+return factory[attr]
+}
+for(var i=0;i<factory.parents.length;i++){
+try{
+return $resolve_class_attr(cl,factory.parents[i],attr)
+}catch(err){
+void(0)
+}
+}
+throw AttributeError("'"+factory.__name__+"' class has no attribute '"+attr+"'")
+}
 function $resolve_attr(obj,factory,attr){
 if(attr==='__class__'){return obj.__class__}
 if(__BRYTHON__.forbidden.indexOf(attr)!==-1){attr='$$'+attr}
@@ -462,12 +477,12 @@ return function(){return "<function "+class_name+'.'+x+'>'}
 }
 }
 f.__getattr__=function(attr){
-if(f[attr]!==undefined){return f[attr]}
-return factory[attr]
+return $resolve_class_attr(f,factory,attr)
 }
 f.__setattr__=function(attr,value){
 factory[attr]=value;f[attr]=value
 }
+factory.$class=f
 return f
 }
 $NativeWrapper={
@@ -753,13 +768,21 @@ function chr(i){
 if(i < 0 || i > 1114111){Exception('ValueError', 'Outside valid range')}
 return String.fromCharCode(i)
 }
-function $ClassMethodClass(){
+function $ClassMethodClass(func){
+this.func=func
 this.__class__="<class 'classmethod'>"
 }
 $ClassMethodClass.prototype.__hash__=object.__hash__
-$ClassMethodClass.prototype.toString=$ClassMethodClass.prototype.__str__=function(){return "<classmethod object at " + hex(this.__hash__())+ ">" }
-function classmethod(func){
-var c=new $ClassMethodClass()
+$ClassMethodClass.prototype.toString=$ClassMethodClass.prototype.__str__=function(){
+return "<classmethod object "+this.func.__name__+">" 
+}
+function classmethod(factory,func){
+var c=new $ClassMethodClass(func)
+c.__call__=function(){
+var args=[factory.$class]
+for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+return func.apply(null,args)
+}
 c.__get__=function(instance, factory){return func.__call__(instance)};
 c.__doc__=doc || ""
 return c
@@ -1205,8 +1228,6 @@ eval('$FloatClass.prototype.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$
 function frozenset(){
 var res=set.apply(null,arguments)
 res.__class__=frozenset
-var x=str(res)
-res.__str__=function(){return "frozenset("+x+")"}
 return res
 }
 frozenset.__class__=$type
@@ -1269,13 +1290,13 @@ if(value===undefined){return 0}
 else if(isinstance(value,int)){return value}
 else if(value===True){return 1}
 else if(value===False){return 0}
-else if(typeof value=="number" ||
-(typeof value=="string" && parseInt(value)!=NaN)){
+else if(typeof value=="number"){return parseInt(value)}
+else if(typeof value=="string" &&(new RegExp(/\d+/)).test(value)){
 return parseInt(value)
 }else if(isinstance(value,float)){
 return parseInt(value.value)
 }else{throw ValueError(
-"Invalid literal for int() with base 10: '"+str(value)+"'"+value.__class__)
+"Invalid literal for int() with base 10: '"+str(value)+"'")
 }
 }
 int.__bool__=function(){if(value===0){return False}else{return True}}
@@ -1796,12 +1817,18 @@ return res
 }
 set.__repr__=function(self){
 if(self===undefined){return "<class 'set'>"}
-if(self.items.length===0){return 'set()'}
+frozen=self.__class__===frozenset
+if(self.items.length===0){
+if(frozen){return 'frozenset()'}
+else{return 'set()'}
+}
 var res="{"
+if(frozen){res='frozenset({'}
 for(var i=0;i<self.items.length;i++){
 res +=repr(self.items[i])
 if(i<self.items.length-1){res +=','}
 }
+if(frozen){return res+'})'}
 return res+'}'
 }
 set.__str__=set.__repr__
@@ -2705,7 +2732,6 @@ if(self===undefined){return "<class 'str'>"}
 var qesc=new RegExp("'","g")
 var res=self.replace(/\n/g,'\\\\n')
 res="'"+res.replace(qesc,"\\'")+"'"
-console.log(res)
 return res
 }
 str.__setattr__=function(self,attr,value){setattr(self,attr,value)}
@@ -3714,6 +3740,8 @@ res +='$globals[$attr]='
 res +='__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
 }
 return res
+}else if(this.func!==undefined && this.func.value==='classmethod'){
+return 'classmethod($class,'+$to_js(this.tree)+')'
 }else if(this.func!==undefined && this.func.value==='locals'){
 var scope=$get_scope(this)
 if(scope !==null && scope.ntype==='def'){
@@ -5725,7 +5753,9 @@ if(car=='"' || car=="'"){
 var raw=false
 var end=null
 if(name.length>0 && name.toLowerCase()=="r"){
-raw=true;name=""
+raw=true;name=''
+}else if(name.length>0 && name.toLowerCase()=='u'){
+name=''
 }
 if(src.substr(pos,3)==car+car+car){_type="triple_string";end=pos+3}
 else{_type="string";end=pos+1}
@@ -5809,6 +5839,10 @@ continue
 }
 }
 if(car=="."){
+if(pos<src.length-1 && '0123456789'.indexOf(src.charAt(pos+1))>-1){
+src=src.substr(0,pos)+'0'+src.substr(pos)
+continue
+}
 $pos=pos
 C=$transition(C,'.')
 pos++;continue
