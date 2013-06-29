@@ -22,16 +22,19 @@ textarea {
   overflow: auto;
   background-color: #000000;
   color: #ffffff;
-  font-family: Consolas, Menlo, Monaco, 'Lucida Console', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace, serif;
+  font-family: Consolas, Menlo, Monaco, 'Lucida Console', 'Liberation Mono', 
+      'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace, serif;
   font-size: 14px;
 }
 </style>
 </head>
 <body onload="brython(1)"><!-- remove the 1 to leave debug mode -->
+
 <textarea id="code" class="codeArea" rows=20></textarea>
+
 <div id="content"></div>
 
-<script type="text/python">
+<script type="text/python3">
 import sys
 import traceback
 
@@ -39,10 +42,13 @@ import traceback
 # produces unwanted result in the console
 __BRYTHON__.debug = 0
 
+history = []
+current = 0
+
 def write(data):
     doc['code'].value += data
 
-sys.stdout.write = sys.stderr.write = lambda data:doc['code'].value += data
+sys.stdout.write = sys.stderr.write = write
 
 status = "main" # or "block" if typing inside a block
 
@@ -50,30 +56,64 @@ def cursorToEnd(*args):
     pos = len(doc['code'].value)
     doc['code'].setSelectionRange(pos,pos)
 
+def get_col(area):
+    # returns the column num of cursor
+    sel = doc['code'].selectionStart
+    lines = doc['code'].value.split('\n')
+    for line in lines[:-1]:
+        sel -= len(line)+1
+    return sel
+
 def myKeyPress(event):
-    global status
-    if event.keyCode == 8:
+    global status,current
+
+    if event.keyCode == 8: # backspace
         src = doc['code'].value
         lstart = src.rfind('\n')
         if (lstart==-1 and len(src)<5) \
             or (len(src)-lstart<6):
                 event.preventDefault()
                 event.stopPropagation()
-    if event.keyCode == 13:    # return
-        log('status %s' %status)
+    elif event.keyCode == 37: # left arrow
+        sel = get_col(doc['code'])
+        if sel<5:
+            event.preventDefault()
+            event.stopPropagation()
+    elif event.keyCode == 36: # line start
+        pos = doc['code'].selectionStart
+        col = get_col(doc['code'])
+        doc['code'].setSelectionRange(pos-col+4,pos-col+4)
+        event.preventDefault()
+    elif event.keyCode == 38: # up
+        if current > 0:
+            pos = doc['code'].selectionStart
+            col = get_col(doc['code'])
+            # remove current line
+            doc['code'].value = doc['code'].value[:pos-col+4]
+            current -= 1
+            doc['code'].value += history[current]
+        event.preventDefault()
+    elif event.keyCode == 40: # down
+        if current < len(history)-1:
+            pos = doc['code'].selectionStart
+            col = get_col(doc['code'])
+            # remove current line
+            doc['code'].value = doc['code'].value[:pos-col+4]
+            current += 1
+            doc['code'].value += history[current]
+        event.preventDefault()
+    elif event.keyCode == 13:    # return
         src = doc['code'].value
-        log(src)
         if status == "main":
             currentLine = src[src.rfind('>>>')+4:].lstrip()
         else:
-            log(src[src.rfind('...'):])
             currentLine = src[src.rfind('...')+4:].lstrip()
         doc['code'].value+='\n'
-        log('line %s' %currentLine)
+        history.append(currentLine)
+        current += 1
         if status == "main":
             try:
                 _ = eval(currentLine,globals())
-                log('line %s ok' %currentLine)
                 if _ is not None:
                     print(_)
                 doc['code'].value += '>>> '
@@ -106,9 +146,12 @@ def myKeyPress(event):
 
 doc['code'].onkeypress = myKeyPress
 doc['code'].onclick = cursorToEnd
-doc['code'].value = ">>> "
-cursorToEnd()
+v = sys.version_info
+    
+doc['code'].value = "Brython %s.%s [%s] on %s %s\n>>> " %(v[0],v[1],v[2],
+    win.navigator.appName,win.navigator.appVersion)
 doc['code'].focus()
+cursorToEnd()
 
 </script>
 </body>
