@@ -424,7 +424,8 @@ function $CallCtx(context){
             // execute the Python code and return its result
             // the namespace built inside the function will be in
             // __BRYTHON__.scope[_name].__dict__
-            res += 'return eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js())'
+            res += 'var $res = eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js());'
+            res += 'if($res===undefined){return None};return $res'
             res += '}catch(err){throw __BRYTHON__.exception(err)}'
             res += '})()'
             if(ns==='globals'){
