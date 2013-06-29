@@ -70,8 +70,9 @@ def wallDistance(theta):
     lastHeight=0
 
     for i in range(samples):
-        theta+=pi/(3*samples)+2*pi
-        theta%=2*pi
+        # x = x+y is faster than x += y
+        theta=theta+pi/(3*samples)+2*pi
+        theta=theta+2*pi
 
         mapX = atX
         mapY = atY
@@ -84,7 +85,7 @@ def wallDistance(theta):
             distX = (mapX + 1 - x) * deltaX
         else:
             stepX = -1
-            deltaX *= -1
+            deltaX = -1*deltaX
             distX = (x - mapX) * (deltaX)  
 
         if deltaY>0:
@@ -92,12 +93,12 @@ def wallDistance(theta):
             distY = (mapY + 1 - y) * deltaY
         else:
             stepY = -1
-            deltaY *= -1
+            deltaY = -1 * deltaY
             distY = (y - mapY) * deltaY
 
         for j in range(20):
             if distX < distY:
-                mapX += stepX
+                mapX = mapX+stepX
                 if arena[mapX][mapY]:
                     if thisRow!=mapX or thisSide!=0:
                         if i>0:
@@ -110,9 +111,9 @@ def wallDistance(theta):
                         face.append(1+stepX)
                     lastHeight=distX
                     break
-                distX += deltaX
+                distX = distX+deltaX
             else:
-                mapY += stepY
+                mapY = mapY+stepY
                 if arena[mapX][mapY]:
                     if thisRow!=mapY or thisSide!=1:
                         if i>0:
@@ -125,7 +126,7 @@ def wallDistance(theta):
                         face.append(2+stepY)
                     lastHeight=distY
                     break
-                distY += deltaY
+                distY = distY+deltaY
     data.append(i)
     data.append(lastHeight)
     return data
