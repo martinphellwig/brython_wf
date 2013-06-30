@@ -384,9 +384,13 @@ function $class_constructor(class_name,factory,parents){
     var parent_classes = []
     if(parents!==undefined){
         if(!isinstance(parents,tuple)){parents=[parents]}
+        // all python 3 classes should implicitly inherit from object.
+        // see: http://docs.python.org/2/reference/datamodel.html#newstyle
+        if (parents.indexOf(object)==-1) { parents.push(object)}
         for(var i=0;i<parents.length;i++){
-          //  if(parents[i]!==object){ // don't heritate from "object"
-                if(parents[i]===int){parents[i]=$NativeWrapper['int']}
+           // if(parents[i]!==object){ // don't heritate from "object"
+                if(parents[i]===object){parents[i]=$NativeWrapper['object']}
+                else if(parents[i]===int){parents[i]=$NativeWrapper['int']}
                 else if(parents[i]===str){parents[i]=$NativeWrapper['str']}
                 else if(parents[i]===list){parents[i]=$NativeWrapper['list']}
                 parent_classes.push(parents[i])
@@ -508,6 +512,11 @@ $NativeWrapper = {
     'list':{__new__ : function(arg){
                 if(arg===undefined){arg=[]}
                 return new $BuiltinWrapper(list,arg)
+                }
+            },
+    'object':{__new__ : function(arg){
+                if(arg===undefined){arg=[]}
+                return new $BuiltinWrapper(object,arg)
                 }
             }
 }
