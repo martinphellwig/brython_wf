@@ -385,12 +385,12 @@ function $class_constructor(class_name,factory,parents){
     if(parents!==undefined){
         if(!isinstance(parents,tuple)){parents=[parents]}
         for(var i=0;i<parents.length;i++){
-            if(parents[i]!==object){ // don't heritate from "object"
+          //  if(parents[i]!==object){ // don't heritate from "object"
                 if(parents[i]===int){parents[i]=$NativeWrapper['int']}
                 else if(parents[i]===str){parents[i]=$NativeWrapper['str']}
                 else if(parents[i]===list){parents[i]=$NativeWrapper['list']}
                 parent_classes.push(parents[i])
-            }
+          //  }
         }
     }
     factory.parents = parent_classes
