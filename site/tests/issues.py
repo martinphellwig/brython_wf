@@ -220,4 +220,19 @@ X = foo(4)
 X |= 1
 assert X.x == 33
 
+
+#issue 101   - new style classes are the default
+class MyClass(object):
+  def __init__(self, s):
+      self.string=s
+
+class MyClass1:
+  def __init__(self, s):
+      self.string=s
+
+_m=MyClass("abc")
+_m1=MyClass1("abc")
+#assert dir(_m) == dir(_m1)    <===  fix me, these should be equal
+assert _m.string==_m1.string
+
 print('passed all tests')

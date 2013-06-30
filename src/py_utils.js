@@ -382,21 +382,22 @@ function $resolve_attr(obj,factory,attr){
 function $class_constructor(class_name,factory,parents){
     // function can have additional arguments : the parent classes
     var parent_classes = []
-    if(parents!==undefined){
-        if(!isinstance(parents,tuple)){parents=[parents]}
-        // all python 3 classes should implicitly inherit from object.
-        // see: http://docs.python.org/2/reference/datamodel.html#newstyle
-        if (parents.indexOf(object)==-1) { parents.push(object)}
-        for(var i=0;i<parents.length;i++){
-           // if(parents[i]!==object){ // don't heritate from "object"
-                if(parents[i]===object){parents[i]=$NativeWrapper['object']}
-                else if(parents[i]===int){parents[i]=$NativeWrapper['int']}
-                else if(parents[i]===str){parents[i]=$NativeWrapper['str']}
-                else if(parents[i]===list){parents[i]=$NativeWrapper['list']}
-                parent_classes.push(parents[i])
-          //  }
-        }
+    // all python 3 classes should implicitly inherit from object.
+    // see: http://docs.python.org/2/reference/datamodel.html#newstyle
+
+    if (parents === undefined) {parents=[object]}
+    else if(!isinstance(parents,tuple)){
+       parents=[parents]
+       if (parents.indexOf(object)==-1) {parents.unshift(object)}
     }
+    for(var i=0;i<parents.length;i++){
+       if(parents[i]===object){parents[i]=$NativeWrapper['object']}
+       else if(parents[i]===int){parents[i]=$NativeWrapper['int']}
+       else if(parents[i]===str){parents[i]=$NativeWrapper['str']}
+       else if(parents[i]===list){parents[i]=$NativeWrapper['list']}
+       parent_classes.push(parents[i])
+    }
+
     factory.parents = parent_classes
     factory.__name__ = class_name
     var f = function(){
