@@ -46,8 +46,10 @@ function $_SyntaxError(context,msg,indent){
     var module = tree_node.module
     var line_num = tree_node.line_num
     document.$line_info = [line_num,module]
-    if(indent===undefined){$SyntaxError(module,'invalid syntax',$pos)}
-    else{throw $IndentationError(module,msg,$pos)}
+    if(indent===undefined){
+        if(msg.constructor===Array){$SyntaxError(module,msg[0],$pos)}
+        $SyntaxError(module,'invalid syntax',$pos)
+    }else{throw $IndentationError(module,msg,$pos)}
 }
 
 var $first_op_letter = {}
@@ -1021,6 +1023,7 @@ function $FuncArgs(context){
     this.type = 'func_args'
     this.parent = context
     this.tree = []
+    this.names = []
     context.tree.push(this)
     this.toString = function(){return 'func args '+this.tree}
     this.expect = 'id'
@@ -1036,6 +1039,7 @@ function $FuncArgIdCtx(context,name){
     this.type = 'func_arg_id'
     this.name = name
     this.parent = context
+    this.parent.names.push(name)
     this.tree = []
     context.tree.push(this)
     // add to locals of function
@@ -1056,6 +1060,8 @@ function $FuncStarArgCtx(context,op){
     this.type = 'func_star_arg'
     this.op = op
     this.parent = context
+    if(op=='*'){context.has_star_arg=true}
+    else if(op=='**'){console.log('kwarg');context.has_kw_arg=true}
     context.tree.push(this)
     this.toString = function(){return '(func star arg '+this.op+') '+this.name}
 }
@@ -2278,7 +2284,8 @@ function $transition(context,token){
             return new $AbstractExprCtx(context,false)
         }else if(token===',' || token===')'){
             if(context.parent.has_default && context.tree.length==0){
-                throw Error('SyntaxError: non-default argument follows default argument')
+                $pos -= context.name.length
+                $_SyntaxError(context,['non-default argument follows default argument'])
             }else{
                 return $transition(context.parent,token)
             }
@@ -2288,9 +2295,12 @@ function $transition(context,token){
     
         if(token==='id' && context.expect==='id'){
             context.expect = ','
+            if(context.names.indexOf(arguments[2])>-1){
+                $_SyntaxError(context,['duplicate argument '+arguments[2]+' in function definition'])
+            }
             return new $FuncArgIdCtx(context,arguments[2])
         }else if(token===','){
-            if(context.has_kw_arg){throw Error('SyntaxError')}
+            if(context.has_kw_arg){$_SyntaxError(context,'duplicate kw arg')}
             else if(context.expect===','){
                 context.expect = 'id'
                 return context
@@ -2302,15 +2312,22 @@ function $transition(context,token){
         }else if(token==='op'){
             var op = arguments[2]
             context.expect = ','
-            if(op=='*'){return new $FuncStarArgCtx(context,'*')}
-            else if(op=='**'){return new $FuncStarArgCtx(context,'**')}
-            else{$_SyntaxError(context,'token '+op+' after '+context)}
+            if(op=='*'){
+                if(context.has_star_arg){$_SyntaxError(context,'duplicate star arg')}
+                return new $FuncStarArgCtx(context,'*')
+            }else if(op=='**'){
+                return new $FuncStarArgCtx(context,'**')
+            }else{$_SyntaxError(context,'token '+op+' after '+context)}
         }else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='func_star_arg'){
     
         if(token==='id' && context.name===undefined){
+            if(context.parent.names.indexOf(arguments[2])>-1){
+                $_SyntaxError(context,['duplicate argument '+arguments[2]+' in function definition'])
+            }
             context.name = arguments[2]
+            context.parent.names.push(arguments[2])
             return context.parent
         }else{$_SyntaxError(context,'token '+token+' after '+context)}
 
