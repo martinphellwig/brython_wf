@@ -105,9 +105,9 @@ def myKeyPress(event):
     elif event.keyCode == 13:    # return
         src = doc['code'].value
         if status == "main":
-            currentLine = src[src.rfind('>>>')+4:].lstrip()
+            currentLine = src[src.rfind('>>>')+4:]
         else:
-            currentLine = src[src.rfind('...')+4:].lstrip()
+            currentLine = src[src.rfind('...')+4:]
         doc['code'].value+='\n'
         history.append(currentLine)
         current += 1
@@ -122,7 +122,6 @@ def myKeyPress(event):
                 doc['code'].value += '... '
                 status = "block"
             except:
-                log('error')
                 traceback.print_exc()
                 doc['code'].value += '>>> '
                 status = "main"
@@ -135,7 +134,6 @@ def myKeyPress(event):
                 if _ is not None:
                     print(_)
             except:
-                log('error')
                 traceback.print_exc()
             doc['code'].value += '>>> '
             status = "main"
