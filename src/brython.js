@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130702-142501
+// version 1.1.20130702-151324
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130702-142501"]
+__BRYTHON__.version_info=[1,1,"20130702-151324"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -6480,6 +6480,12 @@ else{throw AttributeError(this+' has no attribute __len__')}
 $JSObject.prototype.__getattr__=function(attr){
 if(attr==='__class__'){return JSObject}
 if(this['get_'+attr]!==undefined){
+var res=this['get_'+attr]
+if(typeof res==='function'){
+return(function(obj){
+return function(){return obj['get_'+attr].apply(obj,arguments)}
+})(this)
+}
 return this['get_'+attr]
 }else if(this.js[attr]!==undefined){
 var obj=this.js,obj_attr=this.js[attr]
@@ -6510,6 +6516,11 @@ this.js[attr]=value.js
 }else{
 this.js[attr]=value
 }
+}
+$JSObject.prototype.get_to_dict=function(){
+var res=dict()
+for(var attr in this.js){res.__setitem__(attr,this.js[attr])}
+return res
 }
 function $Location(){
 var obj=new object()
