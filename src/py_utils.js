@@ -52,12 +52,12 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
                 eval('var '+$required[$i]+"=$PyVar")
                 $ns[$required[$i]]=$PyVar
                 $set_vars.push($required[$i])
+            } else if($other_args!=null){
+                eval('$ns["'+$other_args+'"].push($PyVar)')
             } else if($i<$required.length+$def_names.length) {
                 $var_name = $def_names[$i-$required.length]
                 $ns[$var_name]=$PyVar
                 $set_vars.push($var_name)
-            } else if($other_args!=null){
-                eval('$ns["'+$other_args+'"].push($PyVar)')
             } else {
                 msg = $fname+"() takes "+$required.length+' positional arguments '
                 msg += 'but more were given'
@@ -79,6 +79,7 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
         throw TypeError(msg)
     }
     if($other_kw!=null){$ns[$other_kw]=new $DictClass($dict_keys,$dict_values)}
+    if($other_args!=null){$ns[$other_args]=tuple($ns[$other_args])}
     return $ns
 }
 
