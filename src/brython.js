@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130701-091219
+// version 1.1.20130702-115843
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,10 +43,10 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130701-091219"]
+__BRYTHON__.version_info=[1,1,"20130702-115843"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
-var i=null,$PyVars={},$def_names=[],$ns={}
+var i=null,$set_vars=[],$def_names=[],$ns={}
 for(var k in $defaults){$def_names.push(k);$ns[k]=$defaults[k]}
 if($other_args !=null){$ns[$other_args]=[]}
 if($other_kw !=null){$dict_keys=[];$dict_values=[]}
@@ -70,14 +70,16 @@ $arg=upargs[$i]
 $PyVar=$JS2Py($arg)
 if(isinstance($arg,$Kw)){
 $PyVar=$arg.value
-if($arg.name in $PyVars){
+if($set_vars.indexOf($arg.name)>-1){
 throw new TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
 }else if($required.indexOf($arg.name)>-1){
 var ix=$required.indexOf($arg.name)
 eval('var '+$required[ix]+"=$PyVar")
 $ns[$required[ix]]=$PyVar
+$set_vars.push($required[ix])
 }else if($arg.name in $defaults){
 $ns[$arg.name]=$PyVar
+$set_vars.push($arg.name)
 }else if($other_kw!=null){
 $dict_keys.push($arg.name)
 $dict_values.push($PyVar)
@@ -89,8 +91,11 @@ if($arg.name in $defaults){delete $defaults[$arg.name]}
 if($i<$required.length){
 eval('var '+$required[$i]+"=$PyVar")
 $ns[$required[$i]]=$PyVar
+$set_vars.push($required[$i])
 }else if($i<$required.length+$def_names.length){
-$ns[$def_names[$i-$required.length]]=$PyVar
+$var_name=$def_names[$i-$required.length]
+$ns[$var_name]=$PyVar
+$set_vars.push($var_name)
 }else if($other_args!=null){
 eval('$ns["'+$other_args+'"].push($PyVar)')
 }else{
@@ -99,6 +104,18 @@ msg +='but more were given'
 throw TypeError(msg)
 }
 }
+}
+var missing=[]
+for(var i=0;i<$required.length;i++){
+if($set_vars.indexOf($required[i])==-1){missing.push($required[i])}
+}
+if(missing.length==1){
+throw TypeError($fname+" missing 1 positional argument: '"+missing[0]+"'")
+}else if(missing.length>1){
+var msg=$fname+" missing "+missing.length+" positional arguments: "
+for(var i=0;i<missing.length-1;i++){msg +="'"+missing[i]+"', "}
+msg +="and '"+missing.pop()+"'"
+throw TypeError(msg)
 }
 if($other_kw!=null){$ns[$other_kw]=new $DictClass($dict_keys,$dict_values)}
 return $ns
@@ -378,13 +395,10 @@ throw AttributeError("'"+factory.__name__+"' object has no attribute '"+attr+"'"
 }
 function $class_constructor(class_name,factory,parents){
 var parent_classes=[]
-if(parents===undefined){parents=[object]}
-else if(!isinstance(parents,tuple)){
-parents=[parents]
-if(parents.indexOf(object)==-1){parents.unshift(object)}
-}
+if(parents===undefined){parents=tuple()}
+if(!isinstance(parents,tuple)){parents=[parents]}
 for(var i=0;i<parents.length;i++){
-if(parents[i]===object){continue;parents[i]=$NativeWrapper['object']}
+if(parents[i]===object){continue}
 else if(parents[i]===int){parents[i]=$NativeWrapper['int']}
 else if(parents[i]===str){parents[i]=$NativeWrapper['str']}
 else if(parents[i]===list){parents[i]=$NativeWrapper['list']}
