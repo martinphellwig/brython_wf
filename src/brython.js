@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130702-151324
+// version 1.1.20130702-152805
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130702-151324"]
+__BRYTHON__.version_info=[1,1,"20130702-152805"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -847,8 +847,16 @@ this.$values=$values
 }
 function dict(){
 if(arguments.length==0){return new $DictClass([],[])}
-else if(arguments.length===1 && isinstance(arguments[0],dict)){
-return arguments[0]
+else if(arguments.length===1){
+var obj=arguments[0]
+if(isinstance(obj,dict)){return obj}
+else if(isinstance(obj,JSObject)){
+var res=new $DictClass([],[])
+for(var attr in obj.js){
+res.__setitem__(attr,obj.js[attr])
+}
+return res
+}
 }
 var $ns=$MakeArgs('dict',arguments,[],{},'args','kw')
 var args=$ns['args']
@@ -6516,11 +6524,6 @@ this.js[attr]=value.js
 }else{
 this.js[attr]=value
 }
-}
-$JSObject.prototype.get_to_dict=function(){
-var res=dict()
-for(var attr in this.js){res.__setitem__(attr,this.js[attr])}
-return res
 }
 function $Location(){
 var obj=new object()
