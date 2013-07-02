@@ -211,8 +211,17 @@ function $DictClass($keys,$values){
 
 function dict(){
     if(arguments.length==0){return new $DictClass([],[])}
-    else if(arguments.length===1 && isinstance(arguments[0],dict)){
-        return arguments[0]
+    else if(arguments.length===1){
+        var obj = arguments[0]
+        if(isinstance(obj,dict)){return obj}
+        else if(isinstance(obj,JSObject)){
+            // convert a JSObject into a Python dictionary
+            var res = new $DictClass([],[])
+            for(var attr in obj.js){
+                res.__setitem__(attr,obj.js[attr])
+            }
+            return res
+        }
     }
     var $ns=$MakeArgs('dict',arguments,[],{},'args','kw')
     var args = $ns['args']

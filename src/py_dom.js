@@ -373,13 +373,6 @@ $JSObject.prototype.__setattr__ = function(attr,value){
     }
 }
 
-$JSObject.prototype.get_to_dict = function(){
-    // transform into a Python dictionary
-    var res = dict()
-    for(var attr in this.js){res.__setitem__(attr,this.js[attr])}
-    return res
-}
-
 function $Location(){ // used because of Firefox bug #814622
     var obj = new object()
     for(var x in window.location){obj[x]=window.location[x]}
