@@ -3,19 +3,52 @@ Using Javascript objects
 
 We have to handle the transition period when Brython is going to coexist with Javascript ;-)
 
+### Arguments of callback functions
+
+The HTML code can attach callback functions to DOM events and pass them a number of parameters. The callback function will receive them transformed into types managed by Brython :
+
+<table border='1'>
+<tr><th>Argument type in function call</th><th>Argument received by the callback function</th></tr>
+<tr><td>DOM element</td><td>`DOMNode` instance</td></tr>
+<tr><td>DOM event</td><td>`DOMEvent` instance</td></tr>
+<tr><td>DOM nodes list</td><td>list of `DOMNode` instances</td></tr>
+<tr><td>`null, true, false`</td><td>`None, True, False`</td></tr>
+<tr><td>integer</td><td>`int` instance</td></tr>
+<tr><td>float</td><td>`float` instance</td></tr>
+<tr><td>string</td><td>`str` instance</td></tr>
+<tr><td>Javascript array</td><td>`list` instance</td></tr>
+<tr><td>Javascript object</td><td>`JSObject` instance</td></tr>
+</table>
+
+
+
+For instance, if the click event on a button triggers the execution of function foo :
+
+    <button onclick="foo(this,33,{'x':99})">Click</button>
+
+this function will have the signature
+
+    def foo(elt,value,obj):
+
+where _elt_ will be the `DOMNode` instance for the button element, _value_ will be the integer 33 and _obj_ will be an instance of the built-in class `JSObject`
+
+Instances of `JSObject` are used as ordinary Python objects ; here, the value of attribute "x" is `obj.x`. To convert them to Python dictionary, use the built-in function `dict()` : `dict(obj)['x']`
+
+### Objects in Javascript programs
+
 An HTML document can use Javascript scripts or libraries, and Python scripts or libraries. Brython can't use Javascript objects directly : for instance attribute lookup is done by the method _\_\_getattr\_\__, which doesn't exist for Javascript objects
 
-To be able to use them in a Python script, they must be explicitely transformed by the built-in function _JSObject_
+To be able to use them in a Python script, they must be explicitely transformed by the built-in function `JSObject()`
 
 For instance :
 
     <script type="text/javascript">
     circle = {surface:function(r){return 3.14*r*r}}
     </script>
+    
     <script type="text/python">
     doc['result'].value = JSObject(circle).surface(10)
     </script>
-
 
 Here is a more complete example of how you can use the popular library jQuery :
 
