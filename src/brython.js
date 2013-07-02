@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130629-141128
+// version 1.1.20130701-091219
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130629-141128"]
+__BRYTHON__.version_info=[1,1,"20130701-091219"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$PyVars={},$def_names=[],$ns={}
@@ -317,9 +317,9 @@ if(__BRYTHON__.forbidden.indexOf(attr)!==-1){attr='$$'+attr}
 if(factory[attr]!==undefined){
 return factory[attr]
 }
-for(var i=0;i<factory.parents.length;i++){
+for(var i=0;i<factory.$parents.length;i++){
 try{
-return $resolve_class_attr(cl,factory.parents[i],attr)
+return $resolve_class_attr(cl,factory.$parents[i],attr)
 }catch(err){
 void(0)
 }
@@ -366,9 +366,9 @@ if(res.__get__ !==undefined && typeof res.__get__==='function')
 res=res.__get__.apply(res,[obj, factory])
 return res
 }else{
-for(var i=0;i<factory.parents.length;i++){
+for(var i=0;i<factory.$parents.length;i++){
 try{
-return $resolve_attr(obj,factory.parents[i],attr)
+return $resolve_attr(obj,factory.$parents[i],attr)
 }catch(err){
 void(0)
 }
@@ -378,33 +378,35 @@ throw AttributeError("'"+factory.__name__+"' object has no attribute '"+attr+"'"
 }
 function $class_constructor(class_name,factory,parents){
 var parent_classes=[]
-if(parents!==undefined){
-if(!isinstance(parents,tuple)){parents=[parents]}
+if(parents===undefined){parents=[object]}
+else if(!isinstance(parents,tuple)){
+parents=[parents]
+if(parents.indexOf(object)==-1){parents.unshift(object)}
+}
 for(var i=0;i<parents.length;i++){
-if(parents[i]!==object){
-if(parents[i]===int){parents[i]=$NativeWrapper['int']}
+if(parents[i]===object){continue;parents[i]=$NativeWrapper['object']}
+else if(parents[i]===int){parents[i]=$NativeWrapper['int']}
 else if(parents[i]===str){parents[i]=$NativeWrapper['str']}
 else if(parents[i]===list){parents[i]=$NativeWrapper['list']}
 parent_classes.push(parents[i])
 }
-}
-}
-factory.parents=parent_classes
+factory.$parents=parent_classes
 factory.__name__=class_name
 var f=function(){
 var obj=new Object()
 obj.$initialized=false
 var fact=factory
-while(fact.parents!==undefined && fact.parents.length>0){
-if(fact.parents.length && 
-fact.parents[0].__new__!==undefined){
-var obj=fact.parents[0].__new__.apply(null,arguments)
+while(fact.$parents!==undefined && fact.$parents.length>0){
+if(fact.$parents.length && 
+fact.$parents[0].__new__!==undefined){
+var obj=fact.$parents[0].__new__.apply(null,arguments)
 break
 }
-fact=fact.parents[0]
+fact=fact.$parents[0]
 }
 obj.__class__=f
 for(var attr in factory){
+if(attr.charAt(0)==='$'){continue}
 if(attr=='__class__'){return f}
 else if(typeof factory[attr]==="function"){
 var func=factory[attr]
@@ -444,12 +446,20 @@ $pop_exc()
 obj.__repr__=function(){return "<"+class_name+" object>"}
 obj.__repr__.__name__="<bound method __repr__ of "+class_name+" object>"
 }
-obj.toString=obj.__str__
 try{$resolve_attr(obj,factory,'__eq__')}
 catch(err){
 $pop_exc()
 obj.__eq__=function(other){return obj===other}
 obj.__eq__.__name__="<bound method __eq__ of "+class_name+" object>"
+}
+try{$resolve_attr(obj,factory,'__hash__')}
+catch(err){
+$pop_exc()
+obj.__hash__=function(){
+__BRYTHON__.$py_next_hash+=1;
+return __BRYTHON__.$py_next_hash
+}
+obj.__hash__.__name__="<bound method __hash__ of "+class_name+" object>"
 }
 if(!obj.$initialized){
 var init_func=null
@@ -495,6 +505,11 @@ return new $BuiltinWrapper(str,arg)
 'list':{__new__ : function(arg){
 if(arg===undefined){arg=[]}
 return new $BuiltinWrapper(list,arg)
+}
+},
+'object':{__new__ : function(arg){
+if(arg===undefined){arg=[]}
+return new $BuiltinWrapper(object,arg)
 }
 }
 }
@@ -1043,7 +1058,7 @@ this.__str__=this.toString
 }
 function dir(obj){
 var res=[]
-for(var attr in obj){res.push(attr)}
+for(var attr in obj){if(attr.charAt(0)!=='$'){res.push(attr)}}
 res.sort()
 return res
 }
@@ -1594,7 +1609,9 @@ return new $ObjectClass()
 }
 object.__new__=function(cls){return new $ObjectClass(cls)}
 object.__class__=$type
+object.__eq__=function(other){return this===other}
 object.__name__='object'
+object.__ne__=function(other){return this!==other}
 object.toString=object.__str__=function(){return "<class 'object'>" }
 object.__getattr__=function(attr){
 if(attr in this){return this[attr]}
@@ -3385,8 +3402,10 @@ var tree_node=ctx_node.node
 var module=tree_node.module
 var line_num=tree_node.line_num
 document.$line_info=[line_num,module]
-if(indent===undefined){$SyntaxError(module,'invalid syntax',$pos)}
-else{throw $IndentationError(module,msg,$pos)}
+if(indent===undefined){
+if(msg.constructor===Array){$SyntaxError(module,msg[0],$pos)}
+$SyntaxError(module,'invalid syntax',$pos)
+}else{throw $IndentationError(module,msg,$pos)}
 }
 var $first_op_letter={}
 for($op in $operators){$first_op_letter[$op.charAt(0)]=0}
@@ -3725,7 +3744,8 @@ var res='(function(){try{'
 res +='for(var $attr in __BRYTHON__.scope["'+module+'"].__dict__){'
 res +='eval("var "+$attr+"=__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]")'
 res +='};'
-res +='return eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js())'
+res +='var $res = eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js());'
+res +='if($res===undefined){return None};return $res'
 res +='}catch(err){throw __BRYTHON__.exception(err)}'
 res +='})()'
 if(ns==='globals'){
@@ -4257,6 +4277,7 @@ function $FuncArgs(C){
 this.type='func_args'
 this.parent=C
 this.tree=[]
+this.names=[]
 C.tree.push(this)
 this.toString=function(){return 'func args '+this.tree}
 this.expect='id'
@@ -4269,6 +4290,7 @@ function $FuncArgIdCtx(C,name){
 this.type='func_arg_id'
 this.name=name
 this.parent=C
+this.parent.names.push(name)
 this.tree=[]
 C.tree.push(this)
 var ctx=C
@@ -4287,6 +4309,8 @@ function $FuncStarArgCtx(C,op){
 this.type='func_star_arg'
 this.op=op
 this.parent=C
+if(op=='*'){C.has_star_arg=true}
+else if(op=='**'){console.log('kwarg');C.has_kw_arg=true}
 C.tree.push(this)
 this.toString=function(){return '(func star arg '+this.op+') '+this.name}
 }
@@ -5350,7 +5374,8 @@ C.parent.has_default=true
 return new $AbstractExprCtx(C,false)
 }else if(token===',' || token===')'){
 if(C.parent.has_default && C.tree.length==0){
-throw Error('SyntaxError: non-default argument follows default argument')
+$pos -=C.name.length
+$_SyntaxError(C,['non-default argument follows default argument'])
 }else{
 return $transition(C.parent,token)
 }
@@ -5358,9 +5383,12 @@ return $transition(C.parent,token)
 }else if(C.type==='func_args'){
 if(token==='id' && C.expect==='id'){
 C.expect=','
+if(C.names.indexOf(arguments[2])>-1){
+$_SyntaxError(C,['duplicate argument '+arguments[2]+' in function definition'])
+}
 return new $FuncArgIdCtx(C,arguments[2])
 }else if(token===','){
-if(C.has_kw_arg){throw Error('SyntaxError')}
+if(C.has_kw_arg){$_SyntaxError(C,'duplicate kw arg')}
 else if(C.expect===','){
 C.expect='id'
 return C
@@ -5372,13 +5400,20 @@ else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(token==='op'){
 var op=arguments[2]
 C.expect=','
-if(op=='*'){return new $FuncStarArgCtx(C,'*')}
-else if(op=='**'){return new $FuncStarArgCtx(C,'**')}
-else{$_SyntaxError(C,'token '+op+' after '+C)}
+if(op=='*'){
+if(C.has_star_arg){$_SyntaxError(C,'duplicate star arg')}
+return new $FuncStarArgCtx(C,'*')
+}else if(op=='**'){
+return new $FuncStarArgCtx(C,'**')
+}else{$_SyntaxError(C,'token '+op+' after '+C)}
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='func_star_arg'){
 if(token==='id' && C.name===undefined){
+if(C.parent.names.indexOf(arguments[2])>-1){
+$_SyntaxError(C,['duplicate argument '+arguments[2]+' in function definition'])
+}
 C.name=arguments[2]
+C.parent.names.push(arguments[2])
 return C.parent
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='global'){
@@ -6732,7 +6767,6 @@ else{return None}
 DOMNode.prototype.get_focus=function(){
 return(function(obj){
 return function(){
-console.log('focus')
 setTimeout(function(){obj.focus();}, 10)
 }
 })(this)
