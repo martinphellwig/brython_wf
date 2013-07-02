@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130702-115843
+// version 1.1.20130702-142501
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130702-115843"]
+__BRYTHON__.version_info=[1,1,"20130702-142501"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -92,12 +92,12 @@ if($i<$required.length){
 eval('var '+$required[$i]+"=$PyVar")
 $ns[$required[$i]]=$PyVar
 $set_vars.push($required[$i])
+}else if($other_args!=null){
+eval('$ns["'+$other_args+'"].push($PyVar)')
 }else if($i<$required.length+$def_names.length){
 $var_name=$def_names[$i-$required.length]
 $ns[$var_name]=$PyVar
 $set_vars.push($var_name)
-}else if($other_args!=null){
-eval('$ns["'+$other_args+'"].push($PyVar)')
 }else{
 msg=$fname+"() takes "+$required.length+' positional arguments '
 msg +='but more were given'
@@ -118,6 +118,7 @@ msg +="and '"+missing.pop()+"'"
 throw TypeError(msg)
 }
 if($other_kw!=null){$ns[$other_kw]=new $DictClass($dict_keys,$dict_values)}
+if($other_args!=null){$ns[$other_args]=tuple($ns[$other_args])}
 return $ns
 }
 function $list_comp(){

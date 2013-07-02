@@ -220,7 +220,43 @@ X = foo(4)
 X |= 1
 assert X.x == 33
 
+# issue 85
 
+try:
+    exec("def foo(x, x, x=1, x=2):\n pass")
+    # -> does not raise SyntaxError
+    raise Exception('should have raised SyntaxError')
+except SyntaxError:
+    pass
+
+def foo(x, y, verbose=False):
+    pass
+
+try:
+    foo(1, 2, 3, verbose=True)
+    raise Exception('should have raised TypeError')
+except TypeError:
+    pass
+
+try:
+    foo(1, 2, 3, verbose=True, verbose=False)
+    raise Exception('should have raised TypeError')
+except TypeError:
+    pass
+
+# issue #86
+def foo(x, *args, verbose=False):
+    assert locals()=={'verbose':False,'x':1,'args':(2,)}
+
+foo(1, 2)
+
+# issue #87
+
+def foo(*args):
+    assert isinstance(args,tuple)
+
+foo(1,2)
+    
 #issue 101   - new style classes are the default
 class MyClass(object):
   def __init__(self, s):
