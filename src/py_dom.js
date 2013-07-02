@@ -332,7 +332,13 @@ $JSObject.prototype.__len__ = function(){
 $JSObject.prototype.__getattr__ = function(attr){
     if(attr==='__class__'){return JSObject}
     if(this['get_'+attr]!==undefined){
-      return this['get_'+attr]
+        var res = this['get_'+attr]
+        if(typeof res==='function'){
+            return (function(obj){
+                return function(){return obj['get_'+attr].apply(obj,arguments)}
+              })(this)
+        }
+        return this['get_'+attr]
     }else if(this.js[attr] !== undefined){
         var obj = this.js,obj_attr = this.js[attr]
         if(typeof this.js[attr]=='function'){
@@ -365,6 +371,13 @@ $JSObject.prototype.__setattr__ = function(attr,value){
     }else{
         this.js[attr]=value
     }
+}
+
+$JSObject.prototype.get_to_dict = function(){
+    // transform into a Python dictionary
+    var res = dict()
+    for(var attr in this.js){res.__setitem__(attr,this.js[attr])}
+    return res
 }
 
 function $Location(){ // used because of Firefox bug #814622
