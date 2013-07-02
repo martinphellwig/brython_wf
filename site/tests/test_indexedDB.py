@@ -19,7 +19,7 @@ def exists(event):
     if event.target.pyresult() is None:
        #handle cause of when get returns undefined if the key doesn't exist
        #in the db..
-       continue2()
+       continue2(event)
     else:
        print(event.result)
        #this shouldn't get called, output message if called
