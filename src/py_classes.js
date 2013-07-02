@@ -482,7 +482,7 @@ function $dict_iterator(obj,info){
 
 function dir(obj){
     var res = []
-    for(var attr in obj){res.push(attr)}
+    for(var attr in obj){if(attr.charAt(0)!=='$'){res.push(attr)}}
     res.sort()
     return res
 }
@@ -1150,7 +1150,9 @@ function object(){
 }
 object.__new__ = function(cls){return new $ObjectClass(cls)}
 object.__class__ = $type
+object.__eq__ = function(other){return this===other}
 object.__name__ = 'object'
+object.__ne__ = function(other){return this!==other}
 object.toString = object.__str__ = function() { return "<class 'object'>" }
 object.__getattr__ = function(attr){
     if(attr in this){return this[attr]}

@@ -314,9 +314,9 @@ function $resolve_class_attr(cl,factory,attr){
     if(factory[attr]!==undefined){
         return factory[attr]
     }
-    for(var i=0;i<factory.parents.length;i++){
+    for(var i=0;i<factory.$parents.length;i++){
         try{
-            return $resolve_class_attr(cl,factory.parents[i],attr)
+            return $resolve_class_attr(cl,factory.$parents[i],attr)
         }catch(err){
             void(0)
         }
@@ -367,9 +367,9 @@ function $resolve_attr(obj,factory,attr){
             res = res.__get__.apply(res, [obj, factory])
         return res
     }else{ // inheritance
-        for(var i=0;i<factory.parents.length;i++){
+        for(var i=0;i<factory.$parents.length;i++){
             try{
-                return $resolve_attr(obj,factory.parents[i],attr)
+                return $resolve_attr(obj,factory.$parents[i],attr)
             }catch(err){
                 void(0)
             }
@@ -384,40 +384,38 @@ function $class_constructor(class_name,factory,parents){
     var parent_classes = []
     // all python 3 classes should implicitly inherit from object.
     // see: http://docs.python.org/2/reference/datamodel.html#newstyle
-
-    if (parents === undefined) {parents=[object]}
-    else if(!isinstance(parents,tuple)){
-       parents=[parents]
-       if (parents.indexOf(object)==-1) {parents.unshift(object)}
-    }
+    // But for objects that inherit
+    if(parents===undefined){parents=tuple()}
+    if(!isinstance(parents,tuple)){parents=[parents]}
     for(var i=0;i<parents.length;i++){
-       if(parents[i]===object){parents[i]=$NativeWrapper['object']}
+       if(parents[i]===object){continue} // don't inherit from object
        else if(parents[i]===int){parents[i]=$NativeWrapper['int']}
        else if(parents[i]===str){parents[i]=$NativeWrapper['str']}
        else if(parents[i]===list){parents[i]=$NativeWrapper['list']}
        parent_classes.push(parents[i])
     }
 
-    factory.parents = parent_classes
+    factory.$parents = parent_classes
     factory.__name__ = class_name
     var f = function(){
         
         var obj=new Object()
         obj.$initialized=false
         var fact = factory
-        while(fact.parents!==undefined && fact.parents.length>0){
-            if(fact.parents.length && 
-               fact.parents[0].__new__!==undefined){
-                var obj = fact.parents[0].__new__.apply(null,arguments)
+        while(fact.$parents!==undefined && fact.$parents.length>0){
+            if(fact.$parents.length && 
+               fact.$parents[0].__new__!==undefined){
+                var obj = fact.$parents[0].__new__.apply(null,arguments)
                 break
             }
-            fact = fact.parents[0]
+            fact = fact.$parents[0]
         }
 
         obj.__class__ = f
         // set attributes
         for(var attr in factory){
             //if(attr=='__getattr__'){continue}
+            if(attr.charAt(0)==='$'){continue}
             if(attr=='__class__'){return f}
             else if(typeof factory[attr]==="function"){
                 var func = factory[attr]
@@ -457,7 +455,7 @@ function $class_constructor(class_name,factory,parents){
             obj.__repr__ = function(){return "<"+class_name+" object>"}
             obj.__repr__.__name__ = "<bound method __repr__ of "+class_name+" object>"
         }
-        obj.toString = obj.__str__
+        //obj.toString = obj.__str__
 
         // __eq__ defaults to identity
         try{$resolve_attr(obj,factory,'__eq__')}
@@ -465,6 +463,17 @@ function $class_constructor(class_name,factory,parents){
             $pop_exc()
             obj.__eq__ = function(other){return obj===other}
             obj.__eq__.__name__ = "<bound method __eq__ of "+class_name+" object>"
+        }
+
+        // __hash__ defaults to object.__hash__
+        try{$resolve_attr(obj,factory,'__hash__')}
+        catch(err){
+            $pop_exc()
+            obj.__hash__ = function(){    
+                __BRYTHON__.$py_next_hash+=1; 
+                return __BRYTHON__.$py_next_hash;
+            }
+            obj.__hash__.__name__ = "<bound method __hash__ of "+class_name+" object>"
         }
         
         if(!obj.$initialized){
