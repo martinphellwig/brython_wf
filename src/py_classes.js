@@ -797,7 +797,7 @@ function int(value){
     else if(value===True){return 1}
     else if(value===False){return 0}
     else if(typeof value=="number"){return parseInt(value)}
-    else if(typeof value=="string" && (new RegExp(/\d+/)).test(value)){
+    else if(typeof value=="string" && (new RegExp(/^\d+$/)).test(value)){
         return parseInt(value)
     }else if(isinstance(value,float)){
         return parseInt(value.value)
