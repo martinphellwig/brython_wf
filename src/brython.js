@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130702-152805
+// version 1.1.20130703-164739
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130702-152805"]
+__BRYTHON__.version_info=[1,1,"20130703-164739"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -1329,7 +1329,7 @@ else if(isinstance(value,int)){return value}
 else if(value===True){return 1}
 else if(value===False){return 0}
 else if(typeof value=="number"){return parseInt(value)}
-else if(typeof value=="string" &&(new RegExp(/\d+/)).test(value)){
+else if(typeof value=="string" &&(new RegExp(/^\d+$/)).test(value)){
 return parseInt(value)
 }else if(isinstance(value,float)){
 return parseInt(value.value)
