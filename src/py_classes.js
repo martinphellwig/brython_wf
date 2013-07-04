@@ -1767,7 +1767,7 @@ Exception = function (msg){
         err.info += '\n'+lines[line_num-1]
         //msg += err.info
     }
-    err.message = msg
+    err.message = msg + err.info
 
     err.args = tuple(msg.split('\n')[0])
     err.__str__ = function(){return msg}
@@ -1789,7 +1789,6 @@ __BRYTHON__.exception = function(js_exc){
         var exc = Exception(js_exc.message)
         exc.__name__= js_exc.name
     }
-    // __BRYTHON__.exception_stack.push(exc)
     return exc
 }
 

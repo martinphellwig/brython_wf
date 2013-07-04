@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130703-164739
+// version 1.1.20130704-231103
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130703-164739"]
+__BRYTHON__.version_info=[1,1,"20130704-231103"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -281,16 +281,6 @@ return function(){return func.apply(thisValue, arguments)}
 function $raise(){
 if(__BRYTHON__.exception_stack.length>0){throw $last(__BRYTHON__.exception_stack)}
 else{throw Error('Exception')}
-}
-function $report(err){
-if(err.py_error===undefined){err=RuntimeError(err+'')}
-var trace=err.__name__+': '+err.message
-if(err.__name__=='SyntaxError'||err.__name__==='IndentationError'){
-trace +=err.info
-}
-document.$stderr.__getattr__('write')(trace)
-err.message +=err.info
-throw err
 }
 function $src_error(name,module,msg,pos){
 var pos2line={}
@@ -2128,7 +2118,7 @@ if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
 err.info +="\nmodule '"+lib_module+"' line "+line_num
 err.info +='\n'+lines[line_num-1]
 }
-err.message=msg
+err.message=msg + err.info
 err.args=tuple(msg.split('\n')[0])
 err.__str__=function(){return msg}
 err.toString=err.__str__
@@ -4005,8 +3995,7 @@ def_func_node.add(try_node)
 var ret_node=new $Node('expression')
 var catch_node=new $Node('expression')
 var js='catch(err'+$loop_num+')'
-js +='{if(err'+$loop_num+'.py_error!==undefined){throw err'+$loop_num+'}'
-js +='else{throw RuntimeError(err'+$loop_num+'.message)}}'
+js +='{throw __BRYTHON__.exception(err'+$loop_num+')}'
 new $NodeJSCtx(catch_node,js)
 node.children=[]
 def_func_node.add(catch_node)
@@ -4333,7 +4322,7 @@ this.type='func_star_arg'
 this.op=op
 this.parent=C
 if(op=='*'){C.has_star_arg=true}
-else if(op=='**'){console.log('kwarg');C.has_kw_arg=true}
+else if(op=='**'){C.has_kw_arg=true}
 C.tree.push(this)
 this.toString=function(){return '(func star arg '+this.op+') '+this.name}
 }

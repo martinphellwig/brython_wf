@@ -692,8 +692,7 @@ function $DefCtx(context){
         var ret_node = new $Node('expression')
         var catch_node = new $Node('expression')
         var js = 'catch(err'+$loop_num+')'
-        js += '{if(err'+$loop_num+'.py_error!==undefined){throw err'+$loop_num+'}'
-        js += 'else{throw RuntimeError(err'+$loop_num+'.message)}}'
+        js += '{throw __BRYTHON__.exception(err'+$loop_num+')}'
         new $NodeJSCtx(catch_node,js)
         node.children = []
         def_func_node.add(catch_node)
@@ -1061,7 +1060,7 @@ function $FuncStarArgCtx(context,op){
     this.op = op
     this.parent = context
     if(op=='*'){context.has_star_arg=true}
-    else if(op=='**'){console.log('kwarg');context.has_kw_arg=true}
+    else if(op=='**'){context.has_kw_arg=true}
     context.tree.push(this)
     this.toString = function(){return '(func star arg '+this.op+') '+this.name}
 }

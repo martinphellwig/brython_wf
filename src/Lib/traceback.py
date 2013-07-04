@@ -4,5 +4,4 @@ def print_exc(file=sys.stderr):
     file.write(exc.__name__)
     if exc.message:
         file.write(': '+exc.message)
-    file.write(exc.info)
     file.write('\n')
