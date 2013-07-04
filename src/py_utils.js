@@ -271,17 +271,6 @@ function $raise(){
     else{throw Error('Exception')}
 }
 
-function $report(err){
-    if(err.py_error===undefined){err = RuntimeError(err+'')}
-    var trace = err.__name__+': '+err.message
-    if(err.__name__=='SyntaxError'||err.__name__==='IndentationError'){
-        trace += err.info
-    }
-    document.$stderr.__getattr__('write')(trace)
-    err.message += err.info
-    throw err
-}
-
 function $src_error(name,module,msg,pos) {
     // map position to line number
     var pos2line = {}
