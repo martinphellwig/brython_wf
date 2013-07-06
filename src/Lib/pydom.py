@@ -141,18 +141,33 @@ class NodeCollection:
       for _node in self._nodes:
           _node.append(content)
 
-  def appendTo(self):
-      pass
+  def appendTo(self, selector):
+      _s=Selector(selector)
+
+      for _node in _s.get():
+          _node.append(self._node[0].clone())
 
   def attr(self, property, value=None):
-      pass
+      if value is None:
+         return self._nodes[0][property]
+
+      for _node in self._nodes:
+          _node[property]=value
 
   def before(self, content):
       for _node in self._nodes:
           _node.before(content)
 
-  def bind(self, handler, event):
-      pass
+  def bind(self, event, handler):
+      if ' ' in event:
+         _events=' '.split(event)
+         for _event in _events:
+             for _node in self._nodes:
+                 _node['on%s' % event]=handler
+         return
+
+      for _node in self._nodes:
+          _node['on%s' % event]=handler
 
   def blur(self, handler=None):
       pass
@@ -537,8 +552,19 @@ class NodeCollection:
   def triggerHandler(self, event_type):
       pass
 
-  def unbind(self, handler):
-      pass
+
+  def unbind(self, event, handler):
+      if ' ' in event:
+         _events=' '.split(event)
+         for _event in _events:
+             for _node in self._nodes:
+                 print("fix me!")
+         return
+
+      for _node in self._nodes:
+          #look into how to detach an event
+          print("fix me")
+
 
   def unload(self, handler):
       pass
@@ -552,7 +578,11 @@ class NodeCollection:
           _parent.remove()
 
   def val(self, value=None):
-      pass
+      if value is None:
+         return self._nodes[0]['text']   #is text the best here?
+
+      for _node in self._nodes:
+          _node['text']=value
 
   def width(self, width=None):
       if width is None:
