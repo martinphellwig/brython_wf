@@ -541,6 +541,12 @@ DOMNode.prototype.__radd__ = function(other){ // add to a string
 
 DOMNode.prototype.__setattr__ = function(attr,value){
     if(attr.substr(0,2)=='on'){ // event
+        if (value == null) {
+           // remove all handlers from an event
+           var res = this.getAttribute(attr)
+           res=null
+        }
+
         // value is a function taking an event as argument
         if(window.addEventListener){
             var callback = function(ev){return value($DOMEvent(ev))}
@@ -558,7 +564,7 @@ DOMNode.prototype.__setattr__ = function(attr,value){
         else{this[attr]=value}
     }
 }
-    
+
 DOMNode.prototype.__setitem__ = function(key,value){
     this.childNodes[key]=value
 }
