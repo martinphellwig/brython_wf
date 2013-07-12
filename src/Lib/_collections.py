@@ -398,9 +398,11 @@ class defaultdict(dict):
                 raise TypeError("first argument must be callable")
         else:
             default_factory = None
+        self=dict.__new__(self) #, args, kwds)    
         self.default_factory = default_factory
-        super(defaultdict, self).__init__(*args, **kwds)
-    
+        self.update(args, kwds)
+        #super(defaultdict, self).__init__(*args, **kwds)
+
     #fixme..  had to add this function to get defaultdict working with brython correctly
     def __getitem__(self, key):
         if self.__contains__(key):  

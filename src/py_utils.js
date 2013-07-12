@@ -495,6 +495,17 @@ function $class_constructor(class_name,factory,parents){
                 }
                 init_func.apply(null,arguments)
                 obj.$initialized = true
+            } else {
+              try{init_func = $resolve_attr(obj,factory,'__new__')}
+              catch(err){$pop_exc()}
+              if(init_func!==null){
+                var args = [obj]
+                for(var i=0;i<arguments.length;i++){
+                    args.push(arguments[i])
+                }
+                init_func.apply(null,arguments)
+                obj.$initialized = true
+              }
             }
         }
         return obj
