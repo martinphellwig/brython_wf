@@ -707,6 +707,8 @@ var $notimplemented = function(other){
 }
 $notimplemented += '' // coerce to string
 for($op in $operators){
+    // use __add__ for __iadd__ etc, so don't define __iadd__ below
+    if($op === '+=' || $op === '-=' || $op === '*=' || $op === '/=') continue
     var $opfunc = '__'+$operators[$op]+'__'
     if(!($opfunc in $FloatClass.prototype)){
         eval('$FloatClass.prototype.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
