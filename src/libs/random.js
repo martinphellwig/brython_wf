@@ -2,6 +2,7 @@ $module = {
     __getattr__ : function(attr){return this[attr]},
     random:function(){return float(Math.random())},
     randint:function(a,b){return int(Math.floor(Math.random()*(b-a)+a))},
+    randrange:function(stop){return int(Math.floor(Math.random()*stop))},
     shuffle:function(x, rnd){
       if (x.length <= 1) { return x}
 
