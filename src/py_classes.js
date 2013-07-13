@@ -592,8 +592,8 @@ $FloatClass.prototype.__class__ = float
 $FloatClass.prototype.__bool__ = function(){return bool(this.value)}
 
 $FloatClass.prototype.__eq__ = function(other){
-    if(isinstance(other,int)){return this.valueOf()==other.valueOf()}
-    else if(isinstance(other,float)){return this.valueOf()==other.value}
+    if(isinstance(other,int)){return this.value==other}
+    else if(isinstance(other,float)){return this.value==other.value}
     else{return this.valueOf()===other}
 }
 
@@ -640,7 +640,7 @@ $FloatClass.prototype.__mod__ = function(other) {
 
 $FloatClass.prototype.__ne__ = function(other){return !this.__eq__(other)}
 
-$FloatClass.prototype.__neg__ = function(other){return -this.value}
+$FloatClass.prototype.__neg__ = function(other){return float(-this.value)}
 
 $FloatClass.prototype.__not_in__ = function(item){return !(item.__contains__(this))}
 

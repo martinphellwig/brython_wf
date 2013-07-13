@@ -19,14 +19,14 @@ $module = {
     acosh: function(x) { 
         if (isinf(x)) return float('inf');
         var y = float_check(x);
-        return Math.log(y + Math.sqrt(y*y-1));
+        return float(Math.log(y + Math.sqrt(y*y-1)));
     },
     asin: function(x) {return float(Math.asin(float_check(x)))},
     asinh: function(x) {
         if (isinf(x)) return float('inf');
         var y = float_check(x);
         
-        return Math.log(y + Math.sqrt(y*y+1))
+        return float(Math.log(y + Math.sqrt(y*y+1)))
     },
     atan: function(x) {
         if (isinf(x)) return float(Math.PI/2);
@@ -35,7 +35,7 @@ $module = {
     atanh: function(x) { 
        var y=float_check(x);
        if (y==0) return 0;
-       return 0.5 * Math.log((1/y+1)/(1/y-1));
+       return float(0.5 * Math.log((1/y+1)/(1/y-1)));
     },
     ceil: function(x) {
        var y=float_check(x);
@@ -45,13 +45,14 @@ $module = {
        $raise('ValueError', 'object is not a number and does not contain __ceil__')
     },
     copysign: function(x,y) {
-        var x1=float_check(x);
+        var x1=Math.abs(float_check(x));
         var y1=float_check(y); 
         var sign=y1?y1<0?-1:1:1
-        return Math.abs(x1) * sign 
+        if(isinstance(x,int)){return x1 * sign}
+        else{return float(x1 * sign)}
     },
     cos : function(x){return float(Math.cos(float_check(x)))},
-    degrees: function(x){return float_check(x) * 180/Math.PI},
+    degrees: function(x){return float(float_check(x) * 180/Math.PI)},
     e: float(Math.E),
     erf: function(x) {
         // inspired from 
@@ -131,11 +132,15 @@ $module = {
     hypot: function(x,y){
        var x1=float_check(x);
        var y1=float_check(y);
-       return Math.sqrt(x1*x1 + y1*y1)},
+       return float(Math.sqrt(x1*x1 + y1*y1))},
     isfinite:function(x) {return isFinite(float_check(x))},
     isinf:function(x) { return isinf(x);},
     isnan:function(x) {return isNaN(float_check(x))},
-    ldexp:function(x,i) {return float_check(x) * Math.pow(2,float_check(i))},
+    ldexp:function(x,i) {
+        var mul = Math.pow(2,float_check(i))
+        if(isinstance(x,int)){return x * mul}
+        else{return float(x.value*mul)}
+    },
     lgamma:function(x) {
          // see gamma function for sources
          var y=float_check(x);
@@ -150,16 +155,16 @@ $module = {
          d2 +=  1.208650973866179E-3 / (z+5);
          d2 += -5.395239384953E-6 / (z+6);
 
-         return Math.log(Math.abs(d1 * d2 * Math.pow(z+5.5,z+0.5) * Math.exp(-(z+5.5))));
+         return float(Math.log(Math.abs(d1 * d2 * Math.pow(z+5.5,z+0.5) * Math.exp(-(z+5.5)))));
     },
     log: function(x, base) {
          var x1=float_check(x);
-         if (base === undefined) return Math.log(x1);
-         return Math.log(x1)/Math.log(float_check(base));
+         if (base === undefined) return float(Math.log(x1));
+         return float(Math.log(x1)/Math.log(float_check(base)));
     },
-    log1p: function(x) {return Math.log(1.0 + float_check(x))},
-    log2: function(x) {return Math.log(float_check(x))/Math.LN2},
-    log10: function(x) {return Math.log(float_check(x))/Math.LN10},
+    log1p: function(x) {return float(Math.log(1.0 + float_check(x)))},
+    log2: function(x) {return float(Math.log(float_check(x))/Math.LN2)},
+    log10: function(x) {return float(Math.log(float_check(x))/Math.LN10)},
     modf:function(x) {
        var x1=float_check(x);
        if (x1 > 0) {
@@ -171,8 +176,11 @@ $module = {
        return [i, float(Math.ceil(x1))]
     },
     pi : float(Math.PI),
-    pow: function(x,y) {return Math.pow(float_check(x),float_check(y))},
-    radians: function(x){return float_check(x) * Math.PI/180},
+    pow: function(x,y) {
+        if(isinstance(x,int)){return Math.pow(x,float_check(y))}
+        else{return float(Math.pow(x.value,float_check(y)))}
+    },
+    radians: function(x){return float(float_check(x) * Math.PI/180)},
     sin : function(x){return float(Math.sin(float_check(x)))},
     sqrt : function(x){return float(Math.sqrt(float_check(x)))},
     trunc: function(x) {
