@@ -155,6 +155,28 @@ function $Clipboard(data){ // drag and drop dataTransfer
     }
 }
 
+function $EventsList(elt,evt,arg){
+    // handles a list of callback fuctions for the event evt of element elt
+    // method .remove(callback) removes the callback from the list, and 
+    // removes the event listener
+    this.elt = elt
+    this.evt = evt
+    if(isintance(arg,list)){this.callbacks = arg}
+    else{this.callbacks = [arg]}
+    this.remove = function(callback){
+        var found = false
+        for(var i=0;i<this.callbacks.length;i++){
+            if(this.callbacks[i]===callback){
+                found = true
+                this.callback.splice(i,1)
+                this.elt.removeEventListener(this.evt,callback,false)
+                break
+            }
+        }
+        if(!found){throw KeyError("not found")}
+    }
+}
+
 function $OpenFile(file,mode,encoding){
     this.reader = new FileReader()
     if(mode==='r'){this.reader.readAsText(file,encoding)}
@@ -541,19 +563,11 @@ DOMNode.prototype.__radd__ = function(other){ // add to a string
 
 DOMNode.prototype.__setattr__ = function(attr,value){
     if(attr.substr(0,2)=='on'){ // event
-        if (value == null) {
-           // remove all handlers from an event
-           var res = this.getAttribute(attr)
-           res=null
-        }
-
-        // value is a function taking an event as argument
-        if(window.addEventListener){
-            var callback = function(ev){return value($DOMEvent(ev))}
-            this.addEventListener(attr.substr(2),callback)
-        }else if(window.attachEvent){
-            var callback = function(ev){return value($DOMEvent(window.event))}
-            this.attachEvent(attr,callback)
+        if (!bool(value)) { // remove all callbacks attached to event
+            this.unbind(attr.substr(2))
+        }else{
+            // value is a function taking an event as argument
+            this.bind(attr.substr(2),value)
         }
     }else{
         attr = attr.replace('_','-')
@@ -567,6 +581,59 @@ DOMNode.prototype.__setattr__ = function(attr,value){
 
 DOMNode.prototype.__setitem__ = function(key,value){
     this.childNodes[key]=value
+}
+
+DOMNode.prototype.events = new Object()
+
+DOMNode.prototype.bind = function(event){
+    // bind functions to the event (event = "click", "mouseover" etc.)
+    for(var i=1;i<arguments.length;i++){
+        var func = arguments[i]
+        var callback = (function(f){
+            return function(ev){return f($DOMEvent(ev))}}
+        )(func)
+        if(window.addEventListener){
+            this.addEventListener(event,callback,false)
+        }else if(window.attachEvent){
+            this.attachEvent("on"+event,callback)
+        }
+        if(this.events[event]===undefined){this.events[event]=[[func,callback]]}
+        else{this.events[event].push([func,callback])}
+    }
+}
+
+DOMNode.prototype.get_children = function(){
+    var res = []
+    for(var i=0;i<this.childNodes.length;i++){
+        res.push($DOMNode(this.childNodes[i]))
+    }
+    return res
+}
+
+DOMNode.prototype.get_class = function(){
+    if(this.className !== undefined){return this.className}
+    else{return None}
+}
+
+DOMNode.prototype.get_clone = function(){
+    res = $DOMNode(this.cloneNode(true))
+    // copy events - may not work since there is no getEventListener()
+    for(var attr in this){ 
+        if(attr.substr(0,2)=='on' && this[attr]!==undefined){
+            res[attr]=this[attr]
+        }
+    }
+    var func = function(){return res}
+    return func
+}
+
+DOMNode.prototype.get_focus = function(){
+    return (function(obj){
+        return function(){
+            // focus() is not supported in IE
+            setTimeout(function() { obj.focus(); }, 10)
+        }
+    })(this)
 }
 
 DOMNode.prototype.get_get = function(){
@@ -646,23 +713,6 @@ DOMNode.prototype.get_get = function(){
     }
 }
 
-DOMNode.prototype.get_clone = function(){
-    res = $DOMNode(this.cloneNode(true))
-    // copy events - may not work since there is no getEventListener()
-    for(var attr in this){ 
-        if(attr.substr(0,2)=='on' && this[attr]!==undefined){
-            res[attr]=this[attr]
-        }
-    }
-    var func = function(){return res}
-    return func
-}
-
-DOMNode.prototype.get_remove = function(){
-    var obj = this
-    return function(child){obj.removeChild(child)}
-}
-
 DOMNode.prototype.get_getContext = function(){ // for CANVAS tag
     if(!('getContext' in this)){throw AttributeError(
         "object has no attribute 'getContext'")}
@@ -674,9 +724,8 @@ DOMNode.get_getSelectionRange = function(){ // for TEXTAREA
     if(this['getSelectionRange']!==undefined){return this.getSelectionRange.apply(null,arguments)}
 }
 
-DOMNode.prototype.get_parent = function(){
-    if(this.parentElement){return $DOMNode(this.parentElement)}
-    else{return None}
+DOMNode.prototype.get_left = function(){
+    return int($getPosition(this)["left"])
 }
 
 DOMNode.prototype.get_id = function(){
@@ -684,18 +733,18 @@ DOMNode.prototype.get_id = function(){
     else{return None}
 }
 
-DOMNode.prototype.get_class = function(){
-    if(this.className !== undefined){return this.className}
+DOMNode.prototype.get_options = function(){ // for SELECT tag
+    return new $OptionsClass(this)
+}
+
+DOMNode.prototype.get_parent = function(){
+    if(this.parentElement){return $DOMNode(this.parentElement)}
     else{return None}
 }
 
-DOMNode.prototype.get_focus = function(){
-    return (function(obj){
-        return function(){
-            // focus() is not supported in IE
-            setTimeout(function() { obj.focus(); }, 10)
-        }
-    })(this)
+DOMNode.prototype.get_remove = function(){
+    var obj = this
+    return function(child){obj.removeChild(child)}
 }
 
 DOMNode.prototype.get_tagName = function(){
@@ -703,24 +752,8 @@ DOMNode.prototype.get_tagName = function(){
     else{return None}
 }
 
-DOMNode.prototype.get_options = function(){ // for SELECT tag
-    return new $OptionsClass(this)
-}
-
-DOMNode.prototype.get_left = function(){
-    return int($getPosition(this)["left"])
-}
-
 DOMNode.prototype.get_top = function(){
     return int($getPosition(this)["top"])
-}
-
-DOMNode.prototype.get_children = function(){
-    var res = []
-    for(var i=0;i<this.childNodes.length;i++){
-        res.push($DOMNode(this.childNodes[i]))
-    }
-    return res
 }
 
 DOMNode.prototype.get_reset = function(){ // for FORM
@@ -780,6 +813,39 @@ DOMNode.prototype.set_text = function(value){
 
 DOMNode.prototype.set_value = function(value){this.value = value.toString()}
 
+DOMNode.prototype.unbind = function(event){
+    // unbind functions from the event (event = "click", "mouseover" etc.)
+    // if no function is specified, remove all callback functions
+    if(arguments.length===1){
+        for(var i=0;i<this.events[event].length;i++){
+            var callback = this.events[event][i][1]
+            if(window.removeEventListener){
+                this.removeEventListener(event,callback,false)
+            }else if(window.detachEvent){
+                this.detachEvent(event,callback,false)
+            }
+        }
+        this.events[event] = []
+        return
+    }
+    for(var i=1;i<arguments.length;i++){
+        var func = arguments[i], flag = false
+        for(var j=0;j<this.events[event].length;j++){
+            if(func===this.events[event][j][0]){
+                var callback = this.events[event][j][1]
+                if(window.removeEventListener){
+                    this.removeEventListener(event,callback,false)
+                }else if(window.detachEvent){
+                    this.detachEvent(event,callback,false)
+                }
+                this.events[event].splice(j,1)
+                flag = true
+                break
+            }
+            if(!flag){throw KeyError('missing callback for event '+event)}
+        }
+    }
+}
 
 doc = $DOMNode(document)
 
