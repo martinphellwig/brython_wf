@@ -615,7 +615,9 @@ function $DecoratorCtx(context){
             res += '$class.'+obj.name+'='
         }
         for(var i=0;i<decorators.length;i++){
-            res += $to_js(decorators[i])+'('
+            var dec = $to_js(decorators[i]);
+            res += dec+'('
+            if (dec == 'classmethod') { res+= '$class,'}
             tail +=')'
         }
         res += obj.name+tail
