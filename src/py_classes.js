@@ -154,7 +154,7 @@ $ClassMethodClass.prototype.toString = $ClassMethodClass.prototype.__str__ = fun
 
 function classmethod(factory,func) {
     // the first argument _class is added by py2js in $CallCtx
-    
+
     var c = new $ClassMethodClass(func)
     c.__call__ = function(){
         var args = [factory.$class]
