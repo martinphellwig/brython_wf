@@ -410,13 +410,16 @@ function $class_constructor(class_name,factory,parents){
         var obj=new Object()
         obj.$initialized=false
         var fact = factory
-        while(fact.$parents!==undefined && fact.$parents.length>0){
-            if(fact.$parents.length && 
-               fact.$parents[0].__new__!==undefined){
-                var obj = fact.$parents[0].__new__.apply(null,arguments)
-                break
-            }
-            fact = fact.$parents[0]
+        // if factory contains __new__ do not run parents __new__ auto.
+        if (fact.__new__ === undefined) {
+          while(fact.$parents!==undefined && fact.$parents.length>0){
+             if(fact.$parents.length && 
+                fact.$parents[0].__new__!==undefined){
+                 var obj = fact.$parents[0].__new__.apply(null,arguments)
+                 break
+             }
+             fact = fact.$parents[0]
+          }
         }
 
         obj.__class__ = f
@@ -499,10 +502,6 @@ function $class_constructor(class_name,factory,parents){
               try{init_func = $resolve_attr(obj,factory,'__new__')}
               catch(err){$pop_exc()}
               if(init_func!==null){
-                var args = [obj]
-                for(var i=0;i<arguments.length;i++){
-                    args.push(arguments[i])
-                }
                 init_func.apply(null,arguments)
                 obj.$initialized = true
               }
