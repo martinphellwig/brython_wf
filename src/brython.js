@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130716-214310
+// version 1.1.20130716-214944
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130716-214310"]
+__BRYTHON__.version_info=[1,1,"20130716-214944"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -6688,6 +6688,7 @@ throw ValueError("can't multiply "+this.__class__+"by "+other)
 }
 }
 DOMNode.prototype.__ne__=function(other){return !this.__eq__(other)}
+DOMNode.prototype.__not_in__=function(other){return !other.__contains__(this)}
 DOMNode.prototype.__radd__=function(other){
 var res=$TagSum()
 var txt=document.createTextNode(other)
