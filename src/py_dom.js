@@ -554,6 +554,8 @@ DOMNode.prototype.__mul__ = function(other){
 
 DOMNode.prototype.__ne__ = function(other){return !this.__eq__(other)}
 
+DOMNode.prototype.__not_in__ = function(other){return !other.__contains__(this)}
+
 DOMNode.prototype.__radd__ = function(other){ // add to a string
     var res = $TagSum()
     var txt = document.createTextNode(other)
