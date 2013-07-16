@@ -1138,6 +1138,17 @@ function next(obj){
     throw TypeError("'"+str(obj.__class__)+"' object is not an iterator")
 }
 
+NotImplemented = {
+    __class__ : {
+        __class__:$type,
+        __repr__:function(){return "<class 'NotImplementedType'>"},
+        __str__:function(){return "<class 'NotImplementedType'>"}
+    },
+    __getattr__:function(attr){return this[attr]},
+    __repr__:function(){return 'NotImplemented'},
+    __str__:function(){return 'NotImplemented'}
+}
+    
 function $not(obj){return !bool(obj)}
 
 function $ObjectClass(cls){

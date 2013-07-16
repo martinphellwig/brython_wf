@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130713-115620
+// version 1.1.20130716-214310
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130713-115620"]
+__BRYTHON__.version_info=[1,1,"20130716-214310"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -401,6 +401,7 @@ var f=function(){
 var obj=new Object()
 obj.$initialized=false
 var fact=factory
+if(fact.__new__===undefined){
 while(fact.$parents!==undefined && fact.$parents.length>0){
 if(fact.$parents.length && 
 fact.$parents[0].__new__!==undefined){
@@ -408,6 +409,7 @@ var obj=fact.$parents[0].__new__.apply(null,arguments)
 break
 }
 fact=fact.$parents[0]
+}
 }
 obj.__class__=f
 for(var attr in factory){
@@ -481,10 +483,6 @@ obj.$initialized=true
 try{init_func=$resolve_attr(obj,factory,'__new__')}
 catch(err){$pop_exc()}
 if(init_func!==null){
-var args=[obj]
-for(var i=0;i<arguments.length;i++){
-args.push(arguments[i])
-}
 init_func.apply(null,arguments)
 obj.$initialized=true
 }
@@ -1614,6 +1612,16 @@ return $extreme(args,'__lt__')
 function next(obj){
 if(obj.__next__!==undefined){return obj.__next__()}
 throw TypeError("'"+str(obj.__class__)+"' object is not an iterator")
+}
+NotImplemented={
+__class__ :{
+__class__:$type,
+__repr__:function(){return "<class 'NotImplementedType'>"},
+__str__:function(){return "<class 'NotImplementedType'>"}
+},
+__getattr__:function(attr){return this[attr]},
+__repr__:function(){return 'NotImplemented'},
+__str__:function(){return 'NotImplemented'}
 }
 function $not(obj){return !bool(obj)}
 function $ObjectClass(cls){
@@ -3940,7 +3948,9 @@ if(scope !==null && scope.ntype==='class'){
 res +='$class.'+obj.name+'='
 }
 for(var i=0;i<decorators.length;i++){
-res +=$to_js(decorators[i])+'('
+var dec=$to_js(decorators[i])
+res +=dec+'('
+if(dec=='classmethod'){res+='$class,'}
 tail +=')'
 }
 res +=obj.name+tail
