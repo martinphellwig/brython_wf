@@ -271,4 +271,16 @@ _m1=MyClass1("abc")
 #assert dir(_m) == dir(_m1)    <===  fix me, these should be equal
 assert _m.string==_m1.string
 
+#issue 114
+import random
+
+_a=random.randrange(10)
+assert 0 <= _a < 10
+
+_a=random.randrange(1,10)
+assert 1 <= _a < 10
+
+_a=random.randrange(1,10,2)
+assert _a in (1,3,5,7,9)
+
 print('passed all tests')
