@@ -314,7 +314,7 @@ function $AssignCtx(context){
                 }
                 res += '='+right.to_js()
                 return res
-            }else if(scope.ntype==='def'){
+            }else if(scope.ntype==='def'||scope.ntype==="generator"){
                 // assignment in a function : depends if variable is local
                 // or global
                 if(scope.globals && scope.globals.indexOf(left.value)>-1){

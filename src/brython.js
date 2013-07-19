@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130716-214944
+// version 1.1.20130719-092020
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130716-214944"]
+__BRYTHON__.version_info=[1,1,"20130719-092020"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -3685,7 +3685,7 @@ res +='=$globals["'+left.to_js()+'"]'
 }
 res +='='+right.to_js()
 return res
-}else if(scope.ntype==='def'){
+}else if(scope.ntype==='def'||scope.ntype==="generator"){
 if(scope.globals && scope.globals.indexOf(left.value)>-1){
 return left.to_js()+'='+right.to_js()
 }else{
