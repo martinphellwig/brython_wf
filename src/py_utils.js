@@ -176,7 +176,7 @@ function $generator(func){
         obj.__class__ = $generator
         obj.__getattr__ = function(attr){return obj[attr]}
         obj.__len__ = function(){return func.$iter.__len__()}
-        obj.__item__ = function(rank){return func.$iter.__item__(rank)}
+        obj.__item__ = function(rank){return obj.__next__()}
         obj.__iter__ = function(){return obj}
         obj.__next__ = function(){
             obj.$iter++
@@ -186,7 +186,7 @@ function $generator(func){
                         document.$stdout.write(output[obj.$iter][i])
                     }
                 }
-                return obj.__item__(obj.$iter)
+                return func.$iter[obj.$iter]
             }
             else{throw StopIteration("")}
         }
@@ -197,6 +197,9 @@ function $generator(func){
     res.__repr__ = function(){return "<function "+func.__name__+">"}
     return res
 }
+$generator.__repr__ = function(){return "<class 'generator'>"}
+$generator.__str__ = function(){return "<class 'generator'>"}
+$generator.__class__ = $type
 
 function $ternary(env,cond,expr1,expr2){
     for(var attr in env){eval('var '+attr+'=env["'+attr+'"]')}

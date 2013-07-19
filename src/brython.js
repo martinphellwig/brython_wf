@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130719-092020
+// version 1.1.20130719-101124
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130719-092020"]
+__BRYTHON__.version_info=[1,1,"20130719-101124"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -203,7 +203,7 @@ obj.$iter=-1
 obj.__class__=$generator
 obj.__getattr__=function(attr){return obj[attr]}
 obj.__len__=function(){return func.$iter.__len__()}
-obj.__item__=function(rank){return func.$iter.__item__(rank)}
+obj.__item__=function(rank){return obj.__next__()}
 obj.__iter__=function(){return obj}
 obj.__next__=function(){
 obj.$iter++
@@ -213,7 +213,7 @@ for(var i=0;i<output[obj.$iter].length;i++){
 document.$stdout.write(output[obj.$iter][i])
 }
 }
-return obj.__item__(obj.$iter)
+return func.$iter[obj.$iter]
 }
 else{throw StopIteration("")}
 }
@@ -224,6 +224,9 @@ return iter(obj)
 res.__repr__=function(){return "<function "+func.__name__+">"}
 return res
 }
+$generator.__repr__=function(){return "<class 'generator'>"}
+$generator.__str__=function(){return "<class 'generator'>"}
+$generator.__class__=$type
 function $ternary(env,cond,expr1,expr2){
 for(var attr in env){eval('var '+attr+'=env["'+attr+'"]')}
 var res='if ('+cond+'){\n'
