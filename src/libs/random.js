@@ -1,6 +1,12 @@
 $module = {
     __getattr__ : function(attr){return this[attr]},
-    random:function(){return float(Math.random())},
+    random:function(){
+      if(arguments.length > 0){
+        throw TypeError("random() takes no arguments ("+arguments.length+" given)")
+      } else {
+        return float(Math.random());
+      }
+    },
     randint:function(a,b){return int(Math.floor(Math.random()*(b-a)+a))},
     randrange:function(start,stop,step){
       if(step === undefined) {
