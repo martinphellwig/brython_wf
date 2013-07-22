@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130719-101124
+// version 1.1.20130722-095102
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130719-101124"]
+__BRYTHON__.version_info=[1,1,"20130722-095102"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -303,13 +303,14 @@ info +='\n'+lines[line_num-1]+'\n'
 var lpos=pos-line_pos[line_num]
 for(var i=0;i<lpos;i++){info+=' '}
 info +='^\n'
+console.log('syntax error info '+info)
 err=new Error()
 err.name=name
 err.__class__=Exception
 err.__name__=name
 err.__getattr__=function(attr){return err[attr]}
 err.__str__=function(){return msg}
-err.message=msg
+err.message=msg + info
 err.info=info
 err.py_error=true
 __BRYTHON__.exception_stack.push(err)
