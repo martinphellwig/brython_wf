@@ -1723,7 +1723,7 @@ function $augmented_assign(context,op){
 
     // create node fo "foo.__iadd__(bar)    
     var aa3 = new $Node('expression')
-    var js3 = context.to_js()
+    var js3 = context.to_js()+'='+context.to_js()
     js3 += '.'+func+'($temp)'
     new $NodeJSCtx(aa3,js3)
     aa2.add(aa3)

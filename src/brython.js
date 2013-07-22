@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130722-095102
+// version 1.1.20130722-100828
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130722-095102"]
+__BRYTHON__.version_info=[1,1,"20130722-100828"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -4930,7 +4930,7 @@ var aa2=new $Node('expression')
 new $NodeJSCtx(aa2,'else')
 parent.insert(rank+2,aa2)
 var aa3=new $Node('expression')
-var js3=C.to_js()
+var js3=C.to_js()+'='+C.to_js()
 js3 +='.'+func+'($temp)'
 new $NodeJSCtx(aa3,js3)
 aa2.add(aa3)
