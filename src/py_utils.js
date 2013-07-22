@@ -295,13 +295,14 @@ function $src_error(name,module,msg,pos) {
     var lpos = pos-line_pos[line_num]
     for(var i=0;i<lpos;i++){info+=' '}
     info += '^\n'
+    console.log('syntax error info '+info)
     err = new Error()
     err.name = name
     err.__class__ = Exception
     err.__name__ = name
     err.__getattr__ = function(attr){return err[attr]}
     err.__str__ = function(){return msg}
-    err.message = msg
+    err.message = msg + info
     err.info = info
     err.py_error = true
     __BRYTHON__.exception_stack.push(err)

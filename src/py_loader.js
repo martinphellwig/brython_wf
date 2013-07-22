@@ -1,5 +1,5 @@
 // global object with brython built-ins
-$version_info = [1,1,"20130719-101124"]
+$version_info = [1,1,"20130722-095102"]
 
 function script_loader(name, version) {
    var $src, $version, $brython_path;
