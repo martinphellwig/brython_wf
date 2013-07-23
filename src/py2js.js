@@ -2088,11 +2088,15 @@ function $transition(context,token){
 
                 }else{$_SyntaxError(context,'token '+token+' after '+context)}   
             }else if(context.expect==='id'){
-                if(token==='}'&&context.tree.length===0){ // empty dict
-                    context.items = []
+                if(token==='}'){
+                    if(context.tree.length==0){ // empty dict
+                        context.items = []
+                        context.real = 'dict'
+                    }else{ // trailing comma, eg {'a':1,'b':2,}
+                        context.items = context.tree
+                    }              
                     context.tree = []
                     context.closed = true
-                    context.real = 'dict'
                     return context
                 }else if($expr_starters.indexOf(token)>-1){
                     context.expect = ','

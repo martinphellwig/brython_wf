@@ -257,7 +257,14 @@ def foo(*args):
     assert isinstance(args,tuple)
 
 foo(1,2)
-    
+
+# issue 95 : trailing comma in dict or set literals
+a = {1,2,}
+assert a == {1,2}
+
+b = {'a':1,'b':2,}
+assert b == {'a':1,'b':2}
+
 #issue 101   - new style classes are the default
 class MyClass(object):
   def __init__(self, s):
