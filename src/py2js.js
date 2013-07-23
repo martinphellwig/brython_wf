@@ -331,8 +331,9 @@ function $AssignCtx(context){
                 }
             }else if(scope.ntype==='class'){
                 // assignment in a class : creates a class attribute
+                left.is_left = true // used in to_js() for ids
                 var attr = left.to_js()
-                return 'var '+attr+' = $class.'+attr+'='+right.to_js()
+                return '$class.'+attr+'='+right.to_js()
             }
         }
     }
@@ -612,7 +613,7 @@ function $DecoratorCtx(context){
         var res = obj.name+'=',tail=''
         var scope = $get_scope(this)
         if(scope !==null && scope.ntype==='class'){
-            res += '$class.'+obj.name+'='
+            res = '$class.'+obj.name+'='
         }
         for(var i=0;i<decorators.length;i++){
             var dec = $to_js(decorators[i]);
@@ -620,6 +621,7 @@ function $DecoratorCtx(context){
             if (dec == 'classmethod') { res+= '$class,'}
             tail +=')'
         }
+        res += (scope.ntype ==='class' ? '$class.' : '')
         res += obj.name+tail
         var decor_node = new $Node('expression')
         new $NodeJSCtx(decor_node,res)
@@ -714,7 +716,7 @@ function $DefCtx(context){
         // add function name
         js = this.name+'.__name__'
         if(scope.ntype==='class'){
-            js += '=$class.'+this.name+'.__name__'
+            js = '$class.'+this.name+'.__name__'
         }
         js += '="'+this.name+'"'
         if(scope.ntype==='def'){
@@ -747,11 +749,12 @@ function $DefCtx(context){
         // if generator, add line 'foo = $generator($foo)'
         var scope = $get_scope(this)
         var node = this.parent.node
-        if(this.type==='generator'){
+        if(this.type==='generator' && !this.declared){
             var offset = 2
             if(this.decorators !== undefined){offset++}
-            js = this.name
-            js = '$generator($'+this.name+')'
+            js = '$generator('
+            if(scope.ntype==='class'){js += '$class.'}
+            js += '$'+this.name+')'
             var gen_node = new $Node('expression')
             var ctx = new $NodeCtx(gen_node)
             var expr = new $ExprCtx(ctx,'id',false)
@@ -760,12 +763,8 @@ function $DefCtx(context){
             var expr1 = new $ExprCtx(assign,'id',false)
             var js_ctx = new $NodeJSCtx(assign,js)
             expr1.tree.push(js_ctx)
-            node.parent.insert(this.rank+offset,gen_node)        
-            if(scope !== null && scope.ntype==='class'){
-                var cl_node = new $Node('expression')
-                new $NodeJSCtx(cl_node,"$class."+this.name+'='+this.name)
-                node.parent.insert(this.rank+offset+1,cl_node)
-            }
+            node.parent.insert(this.rank+offset,gen_node) 
+            this.declared = true
         }
     }
 
@@ -776,7 +775,7 @@ function $DefCtx(context){
         if(scope.ntype==="module" || scope.ntype!=='class'){
             res = 'var '+name+'= (function ('
         }else{
-            res = 'var '+name+' = $class.'+name+'= (function ('
+            res = '$class.'+name+'= (function ('
         }
         for(var i=0;i<this.env.length;i++){
             res+=this.env[i]
@@ -889,9 +888,9 @@ function $ExprCtx(context,name,with_commas){
     this.tree = []
     context.tree.push(this)
     this.toString = function(){return '(expr '+with_commas+') '+this.tree}
-    this.to_js = function(){
+    this.to_js = function(arg){
         if(this.type==='list'){return '['+$to_js(this.tree)+']'}
-        else if(this.tree.length===1){return this.tree[0].to_js()}
+        else if(this.tree.length===1){return this.tree[0].to_js(arg)}
         else{return 'tuple('+$to_js(this.tree)+')'}
     }
 }
@@ -1108,7 +1107,7 @@ function $IdCtx(context,value,minus){
         }
         ctx = ctx.parent
     }
-    this.to_js = function(){
+    this.to_js = function(arg){
         var val = this.value
         if(['print','alert','eval','open'].indexOf(this.value)>-1){val = '$'+val}
         if(['locals','globals'].indexOf(this.value)>-1){
@@ -1125,6 +1124,23 @@ function $IdCtx(context,value,minus){
                     new $StringCtx(this.parent,res+'}')
                 }
             }
+        }
+        var scope = $get_scope(this)
+        if(scope.ntype==='class' && !this.is_left){
+            // ids used in a class body (not inside a method) are resolved
+            // in a specific way :
+            // - if the id matches a class attribute, and is not the target of
+            // an assignement, it is resolved as this class attribute
+            // - otherwise it is left as is
+            // example :
+            // ==========
+            // x = 0
+            // class foo:
+            //   y = 1
+            //   z = [x,y]
+            // ===========
+            var class_name = scope.context.tree[0].name
+            return '($class["'+val+'"] !==undefined ? $class["'+val+'"] : '+val+')'
         }
         return val+$to_js(this.tree,'')
     }
@@ -1624,7 +1640,13 @@ function $YieldCtx(context){ // subscription or slicing
         scope.context.tree[0].add_generator_declaration()
     }
     this.to_js = function(){
-        return '$'+this.func_name+'.$iter.push('+$to_js(this.tree)+')'
+        var scope = $get_scope(this)
+        var res = ''
+        if(scope.ntype==='generator'){
+            scope = $get_scope(scope.context.tree[0])
+            if(scope.ntype==='class'){res = '$class.'}
+        }
+        return res+'$'+this.func_name+'.$iter.push('+$to_js(this.tree)+')'
     }
 }
 

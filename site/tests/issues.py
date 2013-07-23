@@ -213,6 +213,7 @@ class foo:
         self.x = x
     def __ior__(self,z):
         self.x = 33
+        return self
     def __str__(self):
         return self.x
 
@@ -270,6 +271,13 @@ _m=MyClass("abc")
 _m1=MyClass1("abc")
 #assert dir(_m) == dir(_m1)    <===  fix me, these should be equal
 assert _m.string==_m1.string
+
+# issue 112
+x=0
+class foo:
+    y = 1
+    z = [x,y]
+assert foo().z == [0,1]
 
 #issue 114
 import random

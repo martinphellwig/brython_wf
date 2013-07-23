@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130722-100828
+// version 1.1.20130723-144548
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130722-100828"]
+__BRYTHON__.version_info=[1,1,"20130723-144548"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -387,6 +387,10 @@ void(0)
 }
 throw AttributeError("'"+factory.__name__+"' object has no attribute '"+attr+"'")
 }
+}
+function $resolve(_class,name,value){
+if(_class[name]!==undefined){return _class[name]}
+else{return value}
 }
 function $class_constructor(class_name,factory,parents){
 var parent_classes=[]
@@ -3703,8 +3707,9 @@ res +='$locals["'+left.to_js()+'"]='+right.to_js()
 return res
 }
 }else if(scope.ntype==='class'){
+left.is_left=true 
 var attr=left.to_js()
-return 'var '+attr+' = $class.'+attr+'='+right.to_js()
+return '$class.'+attr+'='+right.to_js()
 }
 }
 }
@@ -3949,7 +3954,7 @@ var callable=children[func_rank].C
 var res=obj.name+'=',tail=''
 var scope=$get_scope(this)
 if(scope !==null && scope.ntype==='class'){
-res +='$class.'+obj.name+'='
+res='$class.'+obj.name+'='
 }
 for(var i=0;i<decorators.length;i++){
 var dec=$to_js(decorators[i])
@@ -3957,6 +3962,7 @@ res +=dec+'('
 if(dec=='classmethod'){res+='$class,'}
 tail +=')'
 }
+res +=(scope.ntype==='class' ? '$class.' : '')
 res +=obj.name+tail
 var decor_node=new $Node('expression')
 new $NodeJSCtx(decor_node,res)
@@ -4037,7 +4043,7 @@ node.parent.insert(rank+1,ret_node)
 var offset=2
 js=this.name+'.__name__'
 if(scope.ntype==='class'){
-js +='=$class.'+this.name+'.__name__'
+js='$class.'+this.name+'.__name__'
 }
 js +='="'+this.name+'"'
 if(scope.ntype==='def'){
@@ -4065,11 +4071,12 @@ this.transformed=true
 this.add_generator_declaration=function(){
 var scope=$get_scope(this)
 var node=this.parent.node
-if(this.type==='generator'){
+if(this.type==='generator' && !this.declared){
 var offset=2
 if(this.decorators !==undefined){offset++}
-js=this.name
-js='$generator($'+this.name+')'
+js='$generator('
+if(scope.ntype==='class'){js +='$class.'}
+js +='$'+this.name+')'
 var gen_node=new $Node('expression')
 var ctx=new $NodeCtx(gen_node)
 var expr=new $ExprCtx(ctx,'id',false)
@@ -4079,11 +4086,7 @@ var expr1=new $ExprCtx(assign,'id',false)
 var js_ctx=new $NodeJSCtx(assign,js)
 expr1.tree.push(js_ctx)
 node.parent.insert(this.rank+offset,gen_node)
-if(scope !==null && scope.ntype==='class'){
-var cl_node=new $Node('expression')
-new $NodeJSCtx(cl_node,"$class."+this.name+'='+this.name)
-node.parent.insert(this.rank+offset+1,cl_node)
-}
+this.declared=true
 }
 }
 this.to_js=function(){
@@ -4093,7 +4096,7 @@ if(this.type==='generator'){name='$'+name}
 if(scope.ntype==="module" || scope.ntype!=='class'){
 res='var '+name+'= (function ('
 }else{
-res='var '+name+' = $class.'+name+'= (function ('
+res='$class.'+name+'= (function ('
 }
 for(var i=0;i<this.env.length;i++){
 res+=this.env[i]
@@ -4196,9 +4199,9 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.toString=function(){return '(expr '+with_commas+') '+this.tree}
-this.to_js=function(){
+this.to_js=function(arg){
 if(this.type==='list'){return '['+$to_js(this.tree)+']'}
-else if(this.tree.length===1){return this.tree[0].to_js()}
+else if(this.tree.length===1){return this.tree[0].to_js(arg)}
 else{return 'tuple('+$to_js(this.tree)+')'}
 }
 }
@@ -4392,7 +4395,7 @@ else{ctx.locals.push(value)}
 }
 ctx=ctx.parent
 }
-this.to_js=function(){
+this.to_js=function(arg){
 var val=this.value
 if(['print','alert','eval','open'].indexOf(this.value)>-1){val='$'+val}
 if(['locals','globals'].indexOf(this.value)>-1){
@@ -4409,6 +4412,11 @@ if(i<locals.length-1){res+=','}
 new $StringCtx(this.parent,res+'}')
 }
 }
+}
+var scope=$get_scope(this)
+if(scope.ntype==='class' && !this.is_left){
+var class_name=scope.C.tree[0].name
+return '($class["'+val+'"] !==undefined ? $class["'+val+'"] : '+val+')'
 }
 return val+$to_js(this.tree,'')
 }
@@ -4859,7 +4867,13 @@ this.func_name=scope.C.tree[0].name
 scope.C.tree[0].add_generator_declaration()
 }
 this.to_js=function(){
-return '$'+this.func_name+'.$iter.push('+$to_js(this.tree)+')'
+var scope=$get_scope(this)
+var res=''
+if(scope.ntype==='generator'){
+scope=$get_scope(scope.C.tree[0])
+if(scope.ntype==='class'){res='$class.'}
+}
+return res+'$'+this.func_name+'.$iter.push('+$to_js(this.tree)+')'
 }
 }
 var $loop_num=0
