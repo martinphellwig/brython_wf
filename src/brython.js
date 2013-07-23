@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130723-144548
+// version 1.1.20130723-171109
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130723-144548"]
+__BRYTHON__.version_info=[1,1,"20130723-171109"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -387,10 +387,6 @@ void(0)
 }
 throw AttributeError("'"+factory.__name__+"' object has no attribute '"+attr+"'")
 }
-}
-function $resolve(_class,name,value){
-if(_class[name]!==undefined){return _class[name]}
-else{return value}
 }
 function $class_constructor(class_name,factory,parents){
 var parent_classes=[]
@@ -5234,11 +5230,15 @@ var comp=new $ComprehensionCtx(lst)
 return new $TargetListCtx(new $CompForCtx(comp))
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.expect==='id'){
-if(token==='}'&&C.tree.length===0){
+if(token==='}'){
+if(C.tree.length==0){
 C.items=[]
+C.real='dict'
+}else{
+C.items=C.tree
+}
 C.tree=[]
 C.closed=true
-C.real='dict'
 return C
 }else if($expr_starters.indexOf(token)>-1){
 C.expect=','
