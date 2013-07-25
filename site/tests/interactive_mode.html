@@ -108,6 +108,10 @@ def myKeyPress(event):
             currentLine = src[src.rfind('>>>')+4:]
         else:
             currentLine = src[src.rfind('...')+4:]
+        if not currentLine.strip():
+            doc['code'].value += '\n>>> '
+            event.preventDefault()
+            return
         doc['code'].value+='\n'
         history.append(currentLine)
         current += 1
