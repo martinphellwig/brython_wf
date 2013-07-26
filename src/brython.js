@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130723-171109
+// version 1.1.20130726-154523
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130723-171109"]
+__BRYTHON__.version_info=[1,1,"20130726-154523"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -2039,6 +2039,16 @@ x=(1000003 * x)^ y & 0xFFFFFFFF
 }
 return x
 }
+obj.__gt__=function(other){
+if(isinstance(other, tuple)){
+for(var i=0;i < this.length;i++){
+if(other.length < i)return True
+if(this[i]> other[i])return True
+if(this[i]< other[i])return False
+}
+return False
+}
+}
 return obj
 }
 tuple.__class__=$type
@@ -3363,16 +3373,17 @@ continue
 function $import_list(modules){
 var res=[]
 for(var i=0;i<modules.length;i++){
-var module=modules[i][0]
+var module=modules[i][0],alias=modules[i][0]
+if(module.substr(0,2)=='$$'){module=module.substr(2)}
 var mod
 if(__BRYTHON__.modules[module]===undefined){
 __BRYTHON__.modules[module]={}
-mod=$import_single(modules[i][0],modules[i][1])
+mod=$import_single(module,alias)
 }else{
 mod=__BRYTHON__.modules[module]
 }
 res.push(mod)
-__BRYTHON__.$py_module_alias[modules[i][0]]=modules[i][1]
+__BRYTHON__.$py_module_alias[module]=alias
 }
 return res
 }
@@ -3433,7 +3444,6 @@ var $augmented_assigns={
 "&=":"iand","|=":"ior","^=":"ixor"
 }
 function $_SyntaxError(C,msg,indent){
-console.log('syntax error '+msg)
 var ctx_node=C
 while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
 var tree_node=ctx_node.node
@@ -3442,6 +3452,9 @@ var line_num=tree_node.line_num
 document.$line_info=[line_num,module]
 if(indent===undefined){
 if(msg.constructor===Array){$SyntaxError(module,msg[0],$pos)}
+if(msg==="Triple string end not found"){
+$SyntaxError(module,'invalid syntax : triple string end not found',$pos)
+}
 $SyntaxError(module,'invalid syntax',$pos)
 }else{throw $IndentationError(module,msg,$pos)}
 }
@@ -3776,6 +3789,8 @@ if(arg2.type==='call'){
 if(arg2.func.value==='globals'){
 ns='globals'
 }
+}else if(arg2.type==='id'){
+ns=arg2.value
 }
 }
 var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
@@ -3792,6 +3807,9 @@ res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
 res +='{window[$attr]='
 res +='$globals[$attr]='
 res +='__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
+}else if(ns !=''){
+res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
+res +='{'+ns+'.__setitem__($attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}' 
 }else{
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
 res +='{eval("var "+$attr+"='
@@ -3955,7 +3973,7 @@ res='$class.'+obj.name+'='
 for(var i=0;i<decorators.length;i++){
 var dec=$to_js(decorators[i])
 res +=dec+'('
-if(dec=='classmethod'){res+='$class,'}
+if(decorators[i][0].tree[0].value=='classmethod'){res+='$class,'}
 tail +=')'
 }
 res +=(scope.ntype==='class' ? '$class.' : '')
@@ -4437,7 +4455,7 @@ res +='=$locals["'+this.tree[i].alias+'"]'
 }
 res +='=$mods['+i+'];'
 }
-return res 
+return res+";''"
 }
 }
 function $ImportedModuleCtx(C,name){
@@ -4705,7 +4723,7 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.to_js=function(){
-return this.value.replace(/\n/g,' \\\n')+$to_js(this.tree,'')
+return this.value.replace(/\n/g,' \\n\\\n')+$to_js(this.tree,'')
 }
 }
 function $SubCtx(C){
@@ -5895,7 +5913,13 @@ if(src.charAt(end)=='\n'){lnum++}
 end++
 }
 }
-if(!found){$_SyntaxError(C,"String end not found")}
+if(!found){
+if(_type==="triple_string"){
+$_SyntaxError(C,"Triple string end not found")
+}else{
+$_SyntaxError(C,"String end not found")
+}
+}
 continue
 }
 if(name==""){
