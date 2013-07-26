@@ -81,7 +81,6 @@ def myKeyPress(event):
         elif status == "3string":
             currentLine = src[src.rfind('>>>')+4:]
             currentLine = currentLine.replace('\n... ','\n')
-            log(currentLine)
         else:
             currentLine = src[src.rfind('...')+4:]
         if status == 'main' and not currentLine.strip():
