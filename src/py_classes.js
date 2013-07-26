@@ -1653,7 +1653,18 @@ function tuple(){
       }
       return x
     }
-    
+
+    obj.__gt__ = function(other) {
+      if (isinstance(other, tuple)) {
+        for(var i=0; i < this.length; i++) {
+           if (other.length < i) return True
+           if (this[i] > other[i]) return True
+           if (this[i] < other[i]) return False
+        }
+        return False
+      }
+    }
+
     return obj
 }
 tuple.__class__ = $type

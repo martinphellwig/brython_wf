@@ -78,6 +78,9 @@ def myKeyPress(event):
         src = doc['code'].value
         if status == "main":
             currentLine = src[src.rfind('>>>')+4:]
+        elif status == "3string":
+            currentLine = src[src.rfind('>>>')+4:]
+            currentLine = currentLine.replace('\n... ','\n')
         else:
             currentLine = src[src.rfind('...')+4:]
         if status == 'main' and not currentLine.strip():
@@ -87,9 +90,9 @@ def myKeyPress(event):
         doc['code'].value+='\n'
         history.append(currentLine)
         current += 1
-        if status == "main":
+        if status == "main" or status == "3string":
             try:
-                _ = eval(currentLine,globals())
+                _ = exec(currentLine,globals())
                 if _ is not None:
                     print(_)
                 doc['code'].value += '>>> '
@@ -97,6 +100,14 @@ def myKeyPress(event):
             except IndentationError:
                 doc['code'].value += '... '
                 status = "block"
+            except SyntaxError as msg:
+                if str(msg) == 'invalid syntax : triple string end not found':
+                    doc['code'].value += '... '
+                    status = "3string"
+                else:
+                    traceback.print_exc()
+                    doc['code'].value += '>>> '
+                    status = "main"
             except:
                 traceback.print_exc()
                 doc['code'].value += '>>> '
@@ -106,7 +117,7 @@ def myKeyPress(event):
             block = [block[0]]+[b[4:] for b in block[1:]]
             block_src = '\n'.join(block)
             try:
-                _ = eval(block_src,globals())
+                _ = exec(block_src,globals())
                 if _ is not None:
                     print(_)
             except:

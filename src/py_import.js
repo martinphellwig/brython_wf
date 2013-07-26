@@ -179,17 +179,18 @@ function $import_single(name,alias,names){
 function $import_list(modules){ // list of objects with attributes name and alias
     var res = []
     for(var i=0;i<modules.length;i++){
-        var module = modules[i][0]
+        var module=modules[i][0],alias=modules[i][0]
+        if(module.substr(0,2)=='$$'){module=module.substr(2)}
         var mod;
         if(__BRYTHON__.modules[module]===undefined){
            __BRYTHON__.modules[module]={}  // this could be a recursive import, so lets set modules={}
-           mod = $import_single(modules[i][0],modules[i][1])
+           mod = $import_single(module,alias)
           // __BRYTHON__.modules[module]=mod  // not needed, done in import_single
         } else{
            mod=__BRYTHON__.modules[module]
         }
         res.push(mod)
-        __BRYTHON__.$py_module_alias[modules[i][0]]=modules[i][1]
+        __BRYTHON__.$py_module_alias[module]=alias
     }
     return res
 }
