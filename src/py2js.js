@@ -39,7 +39,7 @@ var $augmented_assigns = {
 }
 
 function $_SyntaxError(context,msg,indent){
-    console.log('syntax error '+msg)
+    //console.log('syntax error '+msg)
     var ctx_node = context
     while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
     var tree_node = ctx_node.node
@@ -48,6 +48,11 @@ function $_SyntaxError(context,msg,indent){
     document.$line_info = [line_num,module]
     if(indent===undefined){
         if(msg.constructor===Array){$SyntaxError(module,msg[0],$pos)}
+        if(msg==="Triple string end not found"){
+            // add an extra argument : used in interactive mode to
+            // prompt for the rest of the triple-quoted string
+            $SyntaxError(module,'invalid syntax : triple string end not found',$pos)
+        }
         $SyntaxError(module,'invalid syntax',$pos)
     }else{throw $IndentationError(module,msg,$pos)}
 }
@@ -415,6 +420,8 @@ function $CallCtx(context){
                         // exec in globals
                         ns = 'globals'
                     }
+                }else if(arg2.type==='id'){
+                    ns = arg2.value
                 }
             }
             var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
@@ -437,6 +444,10 @@ function $CallCtx(context){
                 res += '{window[$attr]='
                 res += '$globals[$attr]='
                 res += '__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
+            }else if(ns !=''){
+                // use specified namespace
+                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
+                res += '{'+ns+'.__setitem__($attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
             }else{
                 // copy the execution namespace in module namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
@@ -1166,7 +1177,9 @@ function $ImportCtx(context){
             }            
             res += '=$mods['+i+'];'
         }
-        return res 
+        // add a no-op statement so that exec('import foo') returns None
+        // (used in interactive console)
+        return res+";''"
     }
 }
 
@@ -1463,7 +1476,7 @@ function $StringCtx(context,value){
     this.tree = []
     context.tree.push(this)
     this.to_js = function(){
-        return this.value.replace(/\n/g,' \\\n')+$to_js(this.tree,'')
+        return this.value.replace(/\n/g,'\\n\\\n')+$to_js(this.tree,'')
     }
 }
 
@@ -2888,7 +2901,13 @@ function $tokenize(src,module){
                     end++
                 }
             }
-            if(!found){$_SyntaxError(context,"String end not found")}
+            if(!found){
+                if(_type==="triple_string"){
+                    $_SyntaxError(context,"Triple string end not found")
+                }else{
+                    $_SyntaxError(context,"String end not found")
+                }
+            }
             continue
         }
         // identifier ?
