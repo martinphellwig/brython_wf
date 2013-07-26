@@ -618,7 +618,7 @@ function $DecoratorCtx(context){
         for(var i=0;i<decorators.length;i++){
             var dec = $to_js(decorators[i]);
             res += dec+'('
-            if (dec == 'classmethod') { res+= '$class,'}
+            if (decorators[i][0].tree[0].value == 'classmethod') { res+= '$class,'}
             tail +=')'
         }
         res += (scope.ntype ==='class' ? '$class.' : '')
