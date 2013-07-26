@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130726-154523
+// version 1.1.20130726-155936
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130726-154523"]
+__BRYTHON__.version_info=[1,1,"20130726-155936"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -4455,7 +4455,7 @@ res +='=$locals["'+this.tree[i].alias+'"]'
 }
 res +='=$mods['+i+'];'
 }
-return res+";''"
+return res+";None"
 }
 }
 function $ImportedModuleCtx(C,name){
@@ -4723,7 +4723,7 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.to_js=function(){
-return this.value.replace(/\n/g,' \\n\\\n')+$to_js(this.tree,'')
+return this.value.replace(/\n/g,'\\n\\\n')+$to_js(this.tree,'')
 }
 }
 function $SubCtx(C){

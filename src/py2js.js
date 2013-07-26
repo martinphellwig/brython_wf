@@ -1177,9 +1177,9 @@ function $ImportCtx(context){
             }            
             res += '=$mods['+i+'];'
         }
-        // add a no-op statement so that exec('import foo') returns None
+        // add None so that exec('import foo') returns None
         // (used in interactive console)
-        return res+";''"
+        return res+";None"
     }
 }
 
