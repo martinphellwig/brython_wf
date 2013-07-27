@@ -3,12 +3,12 @@ from html import *
 # upper menu
 
 trans_menu = {
-    'menu_console':{'en':'Console','es':'Consola','fr':'Console'},
-    'menu_gallery':{'en':'Gallery','es':'Galería','fr':'Galerie'},
-    'menu_doc':{'en':'Documentation','es':'Documentación','fr':'Documentation'},
-    'menu_download':{'en':'Download','es':'Descargas','fr':'Téléchargement'},
-    'menu_dev':{'en':'Development','es':'Desarrollo','fr':'Développement'},
-    'menu_groups':{'en':'Groups','es':'Grupos','fr':'Groupes'}
+    'menu_console':{'en':'Console','es':'Consola','fr':'Console', 'pt':'Console'},
+    'menu_gallery':{'en':'Gallery','es':'Galería','fr':'Galerie', 'pt':'Galeria'},
+    'menu_doc':{'en':'Documentation','es':'Documentación','fr':'Documentation', 'pt':'Documentação'},
+    'menu_download':{'en':'Download','es':'Descargas','fr':'Téléchargement', 'pt':'Download'},
+    'menu_dev':{'en':'Development','es':'Desarrollo','fr':'Développement', 'pt':'Desenvolvimento'},
+    'menu_groups':{'en':'Groups','es':'Grupos','fr':'Groupes', 'pt':'Grupos'}
 }
 
 links = {'home':'../../index.html',
