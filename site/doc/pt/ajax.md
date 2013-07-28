@@ -9,8 +9,8 @@ diferente. Ela tem os seguintes métodos
   requisição (normalmente GET ou POST), _url_ é a url a chamar, _async_ é o  
   valor booleano que indica se a chamada é asíncrona ou não  
 - `set\_header(_nome, valor_)` : estabelece o _valor_ do _nome_ do cabeçalho  
-- `set\_timeout(_duração, função_)` : se a petição não retornar uma resposta  
-  durante a _duração_ em segundos, a petição será cancelada e a _função_ será  
+- `set\_timeout(_duração, função_)` : se a consulta não retornar uma resposta  
+  durante a _duração_ em segundos, a consulta será cancelada e a _função_ será  
   chamada. Esta função não pode ter argumentos  
 - `send()` : envia (inicia) a requisição  
 

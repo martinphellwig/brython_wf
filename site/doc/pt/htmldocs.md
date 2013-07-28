@@ -1,48 +1,46 @@
-Manejo de documentos HTML
--------------------------
+## Gestão de documentos HTML
 
-Una p&aacute;gina HTML se puede ver como un &aacute;rbol cuyo nodo ra&iacute;z se representa por la etiqueta `doc`. Los subsecuentes nodos tambi&eacute;n son objetos Python integrados (strings, integers ...) u objetos creados por las funciones correspondientes a sus etiquetas HTML.
+An HTML page is seen as a tree whose root node is represented by the tag `doc`. Subsequent nodes are either built-in Python objects (strings, integers ...) or objects created by the functions corresponding to their HTML tags
 
-Estas funciones se encuentran en el m&oacute;dulo integrado `html` que debe ser importado. El nombre de la etiqueta se escribe en letras may&uacute;sculas. De la misma forma que para cualquier m&oacute;dulo Python, puedes  
+These functions stand in the built-in module `html` that must be imported. The tag name is in uppercase letters. As for all Python modules, you can 
 
-- importar solo el nombre del m&oacute;dulo : `import html`, y despu&eacute;s referenciar las etiquetas mediante `html.DIV`
-- o importar los nombres requeridos por el programa : `from html import A,B,DIV`, o, solo en caso de que no haya conflictos de nombres : `from html import *`
+- either only import the module name : `import html`, then reference the tags by `html.DIV`
+- or import the names required in the programe : `from html import A,B,DIV`, or if there is no risk of naming conflicts : `from html import *`
 
-La sintaxis para crear un objeto (eg un hiperenlace) es :
-<code>A(<i>[content,[attributes]]</i>)</code>
+The syntax to create an object (eg a hyperlink) is :
+> `A(<i>[content,[attributes]]</i>)`
 
-> _content_ es el nodo hijo del objeto ; _attributes_ es una secuencia de palabras clave (keywords) correspondientes a los atributos de la etiqueta HTML. Estos atributos deben ser introducidos con sintaxis Javascript, no CSS: _backgroundColor_ en lugar de _background-color_
+> _content_ is the child node of the the object ; _attributes_ is a sequence of keywords corresponding to the attributes of the HTML tag
 
-Ejemplo :
+These attributes must be provided as Javascript syntax, not CSS: _backgroundColor_ instead of _background-color_
+</dl>
+Example :
 
 >    import html
 >    link1 = html.A('Brython', href='http://www.brython.info')
 >    link2 = html.A(html.B('Python'), href='http://www.python.org')
 
-Para el atributo _style_, el valor debe ser un diccionario :
+For the _style_ attribute, the value must be a dictionary :
 
 >    d = html.DIV('Brython', style={'height':100, 'width':200})
 
-Para evitar conflictos con las palabras clave de Python, atributos como _class_ o _id_ deben ser escritos con la primera letra en may&uacute;scula :
+To avoid conflicts with Python keywords, attributes such as _class_ or _id_ must be capitalized :
 
->    d = html.DIV('Brython',Id="zone", Class="container")
+>    d = html.DIV('Brython',Id="zone",Class="container")
 
-Tambi&eacute;n se puede crear un objeto sin argumentos y a&ntilde;adirlos a posteriori:
+You can also create an object without argument, then build it up:
 
-- Para a&ntilde;adir un nodo hijo hay que usar el operador __<=__
-- Para a&ntilde;adir atributos se usa la sintaxis cl&aacute;sica de Python : `object.attribute = value`
-
-Ejemplo :
-
+- to add a child node, use the <= operator
+- to add attributes, use the classic Python syntax : `object.attribute = value`
+Example :    
 >    link = A()
->    link <= B('connexion')
->    link.href = 'http://example.com'
+>    link <= B('connexion')    link.href = 'http://example.com'
 
-Tambi&eacute;n se pueden crear m&uacute;ltiples elementos al mismo nivel usando el signo m&aacute;s (+) :
+You can also create multiple elements at the same level by using the plus (+) sign :
 
 >    row = TR(TH('LastName') + TH('FirstName'))
 
-Aqu&iacute; se puede ver como crear caja de selecci&oacute;n a partir de una lista (mediante la combinaci&oacute;n de los operadores descritos y sintaxis Python) :
+Here is how to create a selection box from a list (by combining these operators and Python syntax) :
 
 >    items = ['one', 'two', 'three']
 >    sel = SELECT()
@@ -50,94 +48,53 @@ Aqu&iacute; se puede ver como crear caja de selecci&oacute;n a partir de una lis
 >        sel <= OPTION(elt, value = i)
 >    doc <= sel
 
-Es importante resaltar que la creaci&oacute;n de una instancia de una clase conlleva la creaci&oacute;n HTML a partir de un &uacute;nico objeto DOM. Si asignamos la instancia a una variable, no podr&aacute; ser usada en varios sitios. Por ejemplo, con este c&oacute;digo :
+It is important to note that the creation of an instance of a class involves creating HTML from a single DOM object. If we assign the instance to a variable, you can not use it in several places. For example, with this code :
 
 >    link = A('Python', href='http://www.python.org')
 >    doc <= 'Official Python Website: ' + link
->    doc <= P() + 'I repeat: the site is ' + link
+>    doc <= P( + 'I repeat: the site is ' + link
 
-El link solo se mostrar&aacute; en la segunda l&iacute;nea. Una soluci&oacute;n ser&iacute;a clonar el objeto original :
+the link will only show in the second line. One solution is to clone the original object :
 
 >    link = A('Python', href='http://www.python.org')
 >    doc <= 'Official Python Website: ' + link
 >    doc <= P() + 'I repeat: the site is ' + link.clone()
 
-Como regla general, los atributos de las instancias de clases HTML tienen el mismo nombre que los objetos DOM correspondientes. Por ejemplo, podemos obtener la opci&oacute;n seleccionada por el atributo _selectedIndex_ del objeto SELECT. Brython a&ntilde;ade algunas cosas que permiten que la manipulaci&oacute;n sea un poco m&aacute;s Pyth&oacute;nica
+As a rule of thumb, instances of classes HTML attributes have the same name as the corresponding DOM objects. It can for example retrieve the option selected by the `selectedIndex` attribute of the `SELECT` object. Brython adds a few things to make the manipulation a bit more Pythonic
 
-- Para buscar objetos por su identificador o su nombre de etiqueta puedes usar la siguiente sintaxis :
+- To search for objects by identifier or by their tag name, use the following syntax :
 
- - `doc[obj_id]`  devuelve el objeto a partir de su identificador o lanza una `KeyError`.
- - `doc[A]`  devuelve la lista de todos los objetos de tipo A (hiperenlace) presentes en el documento.
+ - `doc[obj_id]`  returns the object from its identifier, or throws a `KeyError`
+ - `doc[A]`  returns a list of all objects of type A (hyperlink) in the document
+ - the `get()` method can be used to search for elements :
 
- - El m&eacute;todo `get()` se puede usar para buscar elementos :
+  - `elt.get(name=N)` returns a list of all the elements within _elt_ whose attribute `name` is equal to `N`
+  - `elt.get(selector=S)` returns a list of all the elements within _elt_ that match the specified selector
 
-  - `elt.get(name=N)` devuelve una lista con todos los elementos dentro de _elt_ cuyo atributo `name` es igual a `N`
-  - `elt.get(selector=S)` devuelve una lista con todos los elementos dentro de _elt_ que coinciden con el selector especificado
 
-- El contenido de un nodo DOM puede ser le&iacute;do o modificado por los atributos _text_ o _html_, que corresponden a los objetos DOM _innerText_ (o _textContent_) y _innerHTML_, respectivamente.
+- the content of a DOM node can be read or modified by the _text_ or _html_ attributes, corresponding to _innerText_ (or _textContent_) and _innerHTML_ respectively for DOM objects
 
-- La colecci&oacute;n `options` asociada con el objeto SELECT tiene una interfaz de lista Python :
+- The `options` collection associated with a SELECT object has an interface of a Python list :
 
- - acceso a una opci&oacute;n por su &iacute;ndice : `option = elt.options[index]`
- - inserci&oacute;n de una opci&oacute;n en la posici&oacute;n del _index_ : `elt.options.insert(index,option)`
- - inserci&oacute;n de una opci&oacute;n al final de la lista : `elt.options.append(option)`
- - borrado de una opci&oacute;n : `del elt.options[index]`
+ - access to an option by its index : `option = elt.options[index]`
+ - insertion of an option at the _index_ position : `elt.options.insert(index,option)`
+ - insertion of an option at the end of the list : `elt.options.append(option)`
+ - deleting an option : `del elt.options[index]`
 
-- Es posible iterar sobre los hijos del objeto usando la sintaxis Python habitual :
+- it is possible to iterate the object's children using the typical Python syntax : 
 
 >    for child in dom_object:
->        (...)
+>       (...)
 
 ## Query string
 
-`doc` soporta la funci&oacute;n `query()`, que se llama sin ning&uacute;n argumento, que devuelve el contenido de la cadena pedida como un objeto con los siguientes atributos y m&eacute;todos :
+`doc` supports the function `query()`, called with no argument, that returns the content of the query string as an object with the following attributes and methods :
 
-- <code>doc.query()[<i>key</i>]</code> : devuelve el valor asociado con _`key`_. Si una clave tiene m&aacute;s de un valor (caso, por ejemplo, de etiquetas SELECT con el atributo MULTIPLE o para etiquetas `<INPUT type="checkbox">`), devuelve una lista de los valores. Se obtendr&aacute; un `KeyError` si no hay valor asociado con la clave
+- <code>doc.query()[<i>key</i>]</code> : returns the value associated with _`key`_. If a key has more than one value (which might be the case for SELECT tags with the attribute MULTIPLE set, or for `<INPUT type="checkbox">` tags), returns a list of the values. Raises `KeyError` if there is no value for the key
 
-- <code>doc.query().getfirst(<i>key[,default]</i>)</code> : devuelve el primer valor para _`key`_. Si no existe un valor asociado con la clave, devolver&aacute; _`default`_ si se le proporciona, en otros casos devolver&aacute; `None`
+- <code>doc.query().getfirst(<i>key[,default]</i>)</code> : returns the first value for _`key`_. If no value is associated with the key, returns _`default`_ if provided, else returns `None`
 
-- <code>doc.query().getlist(<i>key</i>)</code> : devuelve la lista de valores asociados con _`key`_ (devolver&aacute; una lista vacia en el caso de que no haya valor asociado a la clave)
+- <code>doc.query().getlist(<i>key</i>)</code> : returns the list of values associated with _`key`_ (the empty list if there is no value for the key)
 
-- <code>doc.query().getvalue(<i>key[,default]</i>)</code> : mismo comportamiento que `doc.query()[key]`, pero devuelve _`default`_ o `None` si no hay valor asociado a la clave
+- <code>doc.query().getvalue(<i>key[,default]</i>)</code> : same as `doc.query()[key]`, but returns _`default`_ or `None` if there is no value for the key
 
-
-Eventos
--------
-
-Para asociar una funci&oacute;n a un evento usamos la sintaxis 
-
->    element.onclick = callback
-
-La funci&oacute;n _callback_ toma un solo argumento, una instancia de la clase _DOMEvent_. M&aacute;s all&aacute; de los atributos DOM (los nombres pueden variar en funci&oacute;n del navegador), este objeto posee, en particular, los siguientes atributos :
-<p><table border=1>
-<tr><th>Tipo de evento</th><th>Atributos</th></tr>
-<tr><td>click o movimiento del rat&oacute;n</td><td>_x, y_ : posici&oacute;n del rat&oacute;n en relaci&oacute;n a la esquina superior izquierda de la ventana</td></tr>
-<tr><td>drag and drop (HTML5)</td><td>_datos_ : datos asociados con el movimiento</td></tr>
-</table>
-<p>Ejemplo :
-<table>
-<tr>
-<td>
-    <script type='text/python'>
-    def mouse_move(ev):
-        doc["trace"].value = '%s %s' %(ev.x,ev.y)
-    
-    doc["zone"].onmousemove = mouse_move
-    </script>
-    
-</td>
-<td>
-<script type='text/python'>
-def mouse_move(ev):
-    doc["trace"].value = '%s %s' %(ev.x,ev.y)
-
-doc["zone"].onmousemove = mouse_move
-</script>
-
-<input id="trace" value="">
-<br><textarea id="zone" rows=7 columns=30 style="background-color:gray">
-mueve el rat&oacute;n por encima de esta &aacute;rea</textarea>
-</pre>
-</td>
-</tr>
-</table>
