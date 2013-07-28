@@ -149,6 +149,10 @@ __BRYTHON__.scope = __BRYTHON__.scope || {}
 __BRYTHON__.modules = __BRYTHON__.modules || {}
 __BRYTHON__.compile_python=$compile_python
 
+__BRYTHON__.debug = 0
+__BRYTHON__.$options = {}
+__BRYTHON__.$options.debug = 0
+
 // other import algs don't work in node
 $import_funcs=[node_import]
 
