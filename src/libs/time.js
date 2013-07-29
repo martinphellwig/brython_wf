@@ -37,7 +37,7 @@ $module =  {
                     d.getMinutes(), d.getSeconds(), d.getDay(), 0, dst])
        //fixme  (second to last value is 0 which is the number of days in this year..)
     },
-    time : function(){return int((new Date()).getTime()/1000)},
+    time : function(){return (new Date().getTime())/1000},
     
     strftime : function(format,arg){
 
