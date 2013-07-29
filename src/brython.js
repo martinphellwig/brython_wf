@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130726-155936
+// version 1.1.20130729-113205
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,7 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130726-155936"]
+__BRYTHON__.version_info=[1,1,"20130729-113205"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -5751,8 +5751,10 @@ src=src.substr(1)
 }
 if(src.charAt(src.length-1)!="\n"){src+='\n'}
 if(module===undefined){module='__main__'}
+if(__BRYTHON__.scope[module]===undefined){
 __BRYTHON__.scope[module]={}
 __BRYTHON__.scope[module].__dict__={}
+}
 document.$py_src[module]=src
 var root=$tokenize(src,module)
 root.transform()
