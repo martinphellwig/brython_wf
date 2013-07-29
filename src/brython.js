@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130729-113205
+// version 1.1.20130729-144527
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,11 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130729-113205"]
+__BRYTHON__.has_websocket=(function(){
+try{var x=window.WebSocket;return x!==undefined}
+catch(err){return false}
+})()
+__BRYTHON__.version_info=[1,1,"20130729-144527"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -6383,7 +6387,10 @@ ev.__class__=DOMEvent
 ev.__getattr__=function(attr){
 if(attr=="x"){return $mouseCoords(ev).x}
 if(attr=="y"){return $mouseCoords(ev).y}
-if(attr=="data"){return new $Clipboard(ev.dataTransfer)}
+if(attr=="data"){
+if(ev.dataTransfer!==undefined){return new $Clipboard(ev.dataTransfer)}
+else{return ev['data']}
+}
 if(attr=="target"){
 if(ev.target===undefined){return $DOMNode(ev.srcElement)}
 else{return $DOMNode(ev.target)}
@@ -6392,6 +6399,7 @@ return $getattr(ev,attr)
 }
 if(ev.preventDefault===undefined){ev.preventDefault=function(){ev.returnValue=false}}
 if(ev.stopPropagation===undefined){ev.stopPropagation=function(){ev.cancelBubble=true}}
+ev.__repr__=function(){return '<DOMEvent object>'}
 ev.__str__=function(){return '<DOMEvent object>'}
 ev.toString=ev.__str__
 return ev
