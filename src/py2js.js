@@ -2695,9 +2695,10 @@ __BRYTHON__.py2js = function(src,module){
     }
     if(src.charAt(src.length-1)!="\n"){src+='\n'}
     if(module===undefined){module='__main__'}
-    __BRYTHON__.scope[module] = {}
-    __BRYTHON__.scope[module].__dict__ = {}
-
+    if(__BRYTHON__.scope[module]===undefined){
+        __BRYTHON__.scope[module] = {}
+        __BRYTHON__.scope[module].__dict__ = {}
+    }
     document.$py_src[module]=src
     var root = $tokenize(src,module)
     root.transform()
