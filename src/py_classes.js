@@ -1029,6 +1029,8 @@ function $iterator_getitem(obj){
     this.__getattr__ = function(attr){
         if(attr==='__next__'){return $bind(this[attr],this)}
     }
+    this.__item__ = function(rank){return obj[rank]}
+    this.__len__ = function(){return obj.length}
     this.__next__ = function(){
         this.counter++
         if(this.counter<obj.__len__()){return obj.__getitem__(this.counter)}
