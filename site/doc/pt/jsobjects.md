@@ -14,8 +14,8 @@ O código HTML pode vincular funções a eventos do DOM e passá-las alguns par�
 <tr><td>lista de nodos DOM</td><td>lista de instâncias de `DOMNode`</td></tr>
 <tr><td>`null, true, false`</td><td>`None, True, False`</td></tr>
 <tr><td>inteiro</td><td>instância de `int`</td></tr>
-<tr><td>float</td><td>instância de `float`</td></tr>
-<tr><td>string</td><td>instância de `str`</td></tr>
+<tr><td>ponto flutuante</td><td>instância de `float`</td></tr>
+<tr><td>cadeia de caracteres</td><td>instância de `str`</td></tr>
 <tr><td>Array Javascript array</td><td>instânncia de `list`</td></tr>
 <tr><td>Objeto Javascript</td><td>instância de `JSObject`</td></tr>
 </table>

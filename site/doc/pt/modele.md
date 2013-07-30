@@ -33,7 +33,7 @@ Compilando e executando
  <td>geração de código Javascript</td>
  <td>método `to_js()` da árvore retornada por `$py2js`
 
- Esta função chama recursivamente o método de mesmo nome em todos os elementos de sintaxe encontrados na árvore. Ela retorna a sequência contendo o código Javascript resultante. Se o modo de depuração for 2, esta seuência é impressa no console do navegador
+ Esta função chama recursivamente o método de mesmo nome em todos os elementos de sintaxe encontrados na árvore. Ela retorna a cadeia contendo o código Javascript resultante. Se o modo de depuração for 2, esta seuência é impressa no console do navegador
  </td>
 </tr>
 

@@ -16,7 +16,7 @@ language = "en" # default
 has_req = False
 
 lang = doc.query().getfirst("lang")
-if lang and lang in ["en","fr","es"]:
+if lang and lang in ["en","fr","es","pt"]:
     has_req = True
     language = lang
 else:
@@ -24,19 +24,19 @@ else:
     try:
         lang,enc = locale.getdefaultlocale()
         lang = lang[:2]
-        if lang in ["en","fr","es"]:
+        if lang in ["en","fr","es","pt"]:
             language = lang
     except:
         pass
 
 # upper menu
-trans_menu = {
-    'menu_console':{'en':'Console','es':'Consola','fr':'Console'},
-    'menu_gallery':{'en':'Gallery','es':'Galería','fr':'Galerie'},
-    'menu_doc':{'en':'Documentation','es':'Documentación','fr':'Documentation'},
-    'menu_download':{'en':'Download','es':'Descargas','fr':'Téléchargement'},
-    'menu_dev':{'en':'Development','es':'Desarrollo','fr':'Développement'},
-    'menu_groups':{'en':'Groups','es':'Grupos','fr':'Groupes'}
+trans_menu = { 
+    'menu_console':{'en':'Console','es':'Consola','fr':'Console', 'pt':'Console'},
+    'menu_gallery':{'en':'Gallery','es':'Galería','fr':'Galerie', 'pt':'Galeria'},
+    'menu_doc':{'en':'Documentation','es':'Documentación','fr':'Documentation', 'pt':'Documentação'},
+    'menu_download':{'en':'Download','es':'Descargas','fr':'Téléchargement', 'pt':'Download'},
+    'menu_dev':{'en':'Development','es':'Desarrollo','fr':'Développement', 'pt':'Desenvolvimento'},
+    'menu_groups':{'en':'Groups','es':'Grupos','fr':'Groupes', 'pt':'Grupos'}
 }
 links = {'home':'index.html',
     'console':'tests/console.html',
@@ -109,6 +109,7 @@ options:
 <option value="en" selected>English
 <option value="es">Espa&ntilde;ol
 <option value="fr">Fran&ccedil;ais
+<option value="pt">Portugu&ecirc;s
 </select>
 </td>
 </tr>
@@ -150,6 +151,7 @@ However, right click and view the source of this page...
 <option value="en">English
 <option value="es">Espa&ntilde;ol
 <option value="fr" selected>Fran&ccedil;ais
+<option value="pt">Portugu&ecirc;s
 </select>
 </td>
 </tr>
@@ -189,6 +191,7 @@ Maintenant, regardez le code source de cette page...
 <option value="en">English
 <option value="es" selected>Espa&ntilde;ol
 <option value="fr">Fran&ccedil;ais
+<option value="pt">Portugu&ecirc;s
 </select>
 </td>
 </tr>
@@ -214,6 +217,48 @@ Pero, mira el código fuente de esta página...
 
 </div>
 
+<div id="content_pt" style="height:1px;visibility:hidden">
+
+<table style="width:80%;margin-left:10%">
+<tr>
+<td>
+<H1 style="font-size:300%;">Brython</H1>
+<H2>Uma implementação de Python para a programação web do lado do cliente</H2>
+</td>
+<td valign="top">
+<select class="language" onchange="change_lang(this)">
+<option value="en">English
+<option value="es">Espa&ntilde;ol
+<option value="fr">Fran&ccedil;ais
+<option value="pt" selected>Portugu&ecirc;s
+</select>
+</td>
+</tr>
+</table>
+
+<table style="width:80%;margin-left:10%">
+<tr>
+<td style="width:60%;font-size:16px;">
+Sem dúvida você já viu um relógio como este em demonstrações de HTML5
+<p>
+Entretanto, clique com o botão direito e veja o código fonte desta págna...
+<p>Não é código em Javascript! Em vez disso, você encontrará código em Python em um script do tipo "text/python"
+<p>Brython foi desenhado para substituir o Javascript como a linguagem de script da Web. Como tal, é uma implementação de Python 3 (você pode testar no <a href="tests/console.html" id="c_pt">console</a>), adaptada ao ambiente HTML5, quer dizer, com uma interface para objetos e eventos DOM
+<p>A <a href="/gallery/gallery_pt.html">galeria</a> apresenta algumas possibilidades, da criaçao de simples elementos de documentos até a ação de arrastar e soltar e navegação em 3D
+</td>
+
+<td style="padding-left:5%;">
+<canvas width="250" height="250" id="clock">
+<i>Desculpe, Brython não consegue fazer a demonstração funcionar em seu navegador, <br>verifique se o Javascript está ligado
+<br><div id="navig_zone"></div></i>
+</canvas>
+</td>
+
+</tr>
+
+</table>
+
+</div>
 
 <script type="text/python3">
 import time

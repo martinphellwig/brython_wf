@@ -26,7 +26,7 @@ Para interagir com o servidor, você deve usar os seguintes atributos correspond
 O atributo deve ser uma função com um único argumento: o objeto `ajax`. Este objeto tem os seguintes atributos : 
 
 - `status` : um inteiro que representa o estado HTTP da requisição  
-- `text` : a resposta do servidor como uma sequência de caracteres (que seria _responseText_ em Javascript)  
+- `text` : a resposta do servidor como uma cadeia de caracteres (que seria _responseText_ em Javascript)  
 - `xml` : a resposta do servidor como um objeto DOM (que seria _responseXML_ em Javascript)
 
 

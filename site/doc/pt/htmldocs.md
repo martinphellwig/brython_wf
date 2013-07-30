@@ -1,46 +1,46 @@
 ## Gestão de documentos HTML
 
-An HTML page is seen as a tree whose root node is represented by the tag `doc`. Subsequent nodes are either built-in Python objects (strings, integers ...) or objects created by the functions corresponding to their HTML tags
+Uma página HTML pode ser vista como uma árvore cujo nodo raiz é representado pela etiqueta `doc`. Nodos subsequentes são objetos Python integrados (cadeias de caracteres, inteiros ...) ou objetos criados por funções correspondentes a suas etiquetas HTML
 
-These functions stand in the built-in module `html` that must be imported. The tag name is in uppercase letters. As for all Python modules, you can 
+Estas funções ficam no módulo integrado `html` que precisa ser importado. O nome da etiqueta é em letras maiúsculas. Assim como qualquer módulo Python, você pode
 
-- either only import the module name : `import html`, then reference the tags by `html.DIV`
-- or import the names required in the programe : `from html import A,B,DIV`, or if there is no risk of naming conflicts : `from html import *`
+- importar somente o nome do módulo : `import html`, e então se referir às etiquetas por `html.DIV`
+- ou importar os nomes requeridos pelo programa : `from html import A,B,DIV`, ou, se não houver risco de conflito de nomes : `from html import *`
 
-The syntax to create an object (eg a hyperlink) is :
-> `A(<i>[content,[attributes]]</i>)`
+A sintaxe para criar um objeto (p.ex. um hyperlink) é :
+> `A(<i>[conteúdo,[atributos]]</i>)`
 
-> _content_ is the child node of the the object ; _attributes_ is a sequence of keywords corresponding to the attributes of the HTML tag
+> _conteúdo_ é o nodo filho do objeto ; _atributos_ é a sequência de palavras-chave correspondentes aos atributos da etiqueta html
 
-These attributes must be provided as Javascript syntax, not CSS: _backgroundColor_ instead of _background-color_
+Estes atributos devem ser fornecidos com a sintaxe Javascript, não CSS: _backgroundColor_ em vez de _background-color_
 </dl>
-Example :
+Exemplo :
 
 >    import html
 >    link1 = html.A('Brython', href='http://www.brython.info')
 >    link2 = html.A(html.B('Python'), href='http://www.python.org')
 
-For the _style_ attribute, the value must be a dictionary :
+Para o atributo _style_, o valor deve ser um dicionário :
 
 >    d = html.DIV('Brython', style={'height':100, 'width':200})
 
-To avoid conflicts with Python keywords, attributes such as _class_ or _id_ must be capitalized :
+Para evitar conflitos com palavras-chave de Python, atributos como _class_ ou _id_ deven ter a primeira letra maiúscula :
 
 >    d = html.DIV('Brython',Id="zone",Class="container")
 
-You can also create an object without argument, then build it up:
+Você pode também criar um objeto sem argumentos e acrescentá-los depois :
 
-- to add a child node, use the <= operator
-- to add attributes, use the classic Python syntax : `object.attribute = value`
-Example :    
+- para adicionar um nodo, use o operador <=
+- para adicionar atributos, use a sintaxe clássica de Python : `object.attribute = value`
+Exemplo :    
 >    link = A()
 >    link <= B('connexion')    link.href = 'http://example.com'
 
-You can also create multiple elements at the same level by using the plus (+) sign :
+Você pode também criar múltiplos elementos no mesmo nível usando o sinal de adição (+) :
 
 >    row = TR(TH('LastName') + TH('FirstName'))
 
-Here is how to create a selection box from a list (by combining these operators and Python syntax) :
+Abaixo vemos como criar uma caixa de seleção a partir de uma lista (ao combinar estes operadores e a sintaxe Python) :
 
 >    items = ['one', 'two', 'three']
 >    sel = SELECT()
@@ -48,53 +48,52 @@ Here is how to create a selection box from a list (by combining these operators 
 >        sel <= OPTION(elt, value = i)
 >    doc <= sel
 
-It is important to note that the creation of an instance of a class involves creating HTML from a single DOM object. If we assign the instance to a variable, you can not use it in several places. For example, with this code :
+É importante notar que a criação de uma instância de uma classe envolve a criação de HTML de um único objeto DOM. Se designarmos a instância a uma variável, você não pode usá-la em diversos lugares. Por exemplo, com este código :
 
 >    link = A('Python', href='http://www.python.org')
 >    doc <= 'Official Python Website: ' + link
 >    doc <= P( + 'I repeat: the site is ' + link
 
-the link will only show in the second line. One solution is to clone the original object :
+o link aparecerá somente na segunda linha. Uma solução é clonar o objeto original :
 
 >    link = A('Python', href='http://www.python.org')
 >    doc <= 'Official Python Website: ' + link
 >    doc <= P() + 'I repeat: the site is ' + link.clone()
 
-As a rule of thumb, instances of classes HTML attributes have the same name as the corresponding DOM objects. It can for example retrieve the option selected by the `selectedIndex` attribute of the `SELECT` object. Brython adds a few things to make the manipulation a bit more Pythonic
+Como regra geral, atributos de instâncias de classes HTML têm o mesmo nome que os objetos DOM correspondentes. Por exemplo, podemos obter a opção selecionada pelo atributo `selectedIndex` do objeto `SELECT`. Brython adiciona algumas coisas para tornar a manipulação um pouco mais Pythonica
 
-- To search for objects by identifier or by their tag name, use the following syntax :
+- Para buscar um objeto pelo identificador ou pelo nome de etiqueta, use a seguinte sintexe :
 
- - `doc[obj_id]`  returns the object from its identifier, or throws a `KeyError`
- - `doc[A]`  returns a list of all objects of type A (hyperlink) in the document
- - the `get()` method can be used to search for elements :
+ - `doc[obj_id]` retorna o objeto por seu identificador ou lança `KeyError`
+ - `doc[A]` retorna uma lista de objetos do tipo A (hyperlink) no documento
+ - o método `get()` pode ser usado para buscar por elementos :
 
-  - `elt.get(name=N)` returns a list of all the elements within _elt_ whose attribute `name` is equal to `N`
-  - `elt.get(selector=S)` returns a list of all the elements within _elt_ that match the specified selector
+  - `elt.get(name=N)` retorna uma lista de todos os elementos dentro de _elt_ cujo atributo `name` é igual a `N`
+  - `elt.get(selector=S)` retorna uma lista de todos os elementos dentro de _elt_ que correspondem so seletor especificado
 
 
-- the content of a DOM node can be read or modified by the _text_ or _html_ attributes, corresponding to _innerText_ (or _textContent_) and _innerHTML_ respectively for DOM objects
+- o conteúdo de um nodo DOM pode ser lido ou modificado pelos atributos _text_ ou _html_, correspondendo a _innerText_ (ou _textContent_) e _innerHTML_ respectivamente para objetos DOM
 
-- The `options` collection associated with a SELECT object has an interface of a Python list :
+- A coleção `options` associada com um objeto SELECT tem uma interface de lista de Python :
 
- - access to an option by its index : `option = elt.options[index]`
- - insertion of an option at the _index_ position : `elt.options.insert(index,option)`
- - insertion of an option at the end of the list : `elt.options.append(option)`
- - deleting an option : `del elt.options[index]`
+ - acesso a uma opção por seu índice : `option = elt.options[índice]`
+ - inserção de uma opção na posição _índice_ : `elt.options.insert(índice,opção)`
+ - inserção de uma opção ao final da lista : `elt.options.append(opção)`
+ - deleção de uma opção : `del elt.options[índice]`
 
-- it is possible to iterate the object's children using the typical Python syntax : 
+- é possível iterar os filhos do objeto usando a sintaxe típica de Python : 
 
 >    for child in dom_object:
 >       (...)
 
-## Query string
+## Cadeia de consulta
 
-`doc` supports the function `query()`, called with no argument, that returns the content of the query string as an object with the following attributes and methods :
+`doc` suporta a função `query()`, chamada sem argumentos, que retorna o conteúdo da cadeia de consulta como um objeto com os seguintes atributos e métodos :
 
-- <code>doc.query()[<i>key</i>]</code> : returns the value associated with _`key`_. If a key has more than one value (which might be the case for SELECT tags with the attribute MULTIPLE set, or for `<INPUT type="checkbox">` tags), returns a list of the values. Raises `KeyError` if there is no value for the key
+- <code>doc.query()[<i>key</i>]</code> : retorna o valor associado com _`key`_. Se uma chave tem mais de um valor (que pode ser o caso de etiquetas SELECT com o atributo MULTIPLO, ou para etiquetas `<INPUT type="checkbox">`), retorna uma lista de valores. Lança `KeyError` se não houver valor para a chave
 
-- <code>doc.query().getfirst(<i>key[,default]</i>)</code> : returns the first value for _`key`_. If no value is associated with the key, returns _`default`_ if provided, else returns `None`
+- <code>doc.query().getfirst(<i>key[,default]</i>)</code> : retorna o primeiro valor para _`key`_. Se não houver valor associado com a chave, retorna _`default`_ se fornecido, em outros casos retorna `None`
 
-- <code>doc.query().getlist(<i>key</i>)</code> : returns the list of values associated with _`key`_ (the empty list if there is no value for the key)
+- <code>doc.query().getlist(<i>key</i>)</code> : retorna a lista de valores associados com _`key`_ (uma lista vazia se não houver valor para a chave)
 
-- <code>doc.query().getvalue(<i>key[,default]</i>)</code> : same as `doc.query()[key]`, but returns _`default`_ or `None` if there is no value for the key
-
+- <code>doc.query().getvalue(<i>key[,default]</i>)</code> : o mesmo que `doc.query()[key]`, mas retorna _`default`_ ou `None` se não houver valor para a chave
