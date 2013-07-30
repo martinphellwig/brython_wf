@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130730-081758
+// version 1.1.20130730-090529
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130730-081758"]
+__BRYTHON__.version_info=[1,1,"20130730-090529"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -302,19 +302,18 @@ var line_num=pos2line[pos]
 var lines=src.split('\n')
 var lib_module=module
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-info="\nmodule '"+lib_module+"' line "+line_num
+info="module '"+lib_module+"' line "+line_num
 info +='\n'+lines[line_num-1]+'\n'
 var lpos=pos-line_pos[line_num]
 for(var i=0;i<lpos;i++){info+=' '}
-info +='^\n'
-console.log('syntax error info '+info)
+info +='^'
 err=new Error()
 err.name=name
 err.__class__=Exception
 err.__name__=name
 err.__getattr__=function(attr){return err[attr]}
 err.__str__=function(){return msg}
-err.message=msg + info
+err.message=msg
 err.info=info
 err.py_error=true
 __BRYTHON__.exception_stack.push(err)
@@ -2156,10 +2155,10 @@ var line_num=document.$line_info[0]
 var lines=document.$py_src[module].split('\n')
 var lib_module=module
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-err.info +="\nmodule '"+lib_module+"' line "+line_num
+err.info +="module '"+lib_module+"' line "+line_num
 err.info +='\n'+lines[line_num-1]
 }
-err.message=msg + err.info
+err.message=msg
 err.args=tuple(msg.split('\n')[0])
 err.__str__=function(){return msg}
 err.toString=err.__str__
@@ -3568,14 +3567,21 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.transform=function(node,rank){
+if(this.tree[0].type==='list_or_tuple'){
+var condition=this.tree[0].tree[0]
+var message=this.tree[0].tree[1]
+}else{
+var condition=this.tree[0]
+var message=null
+}
 var new_ctx=new $ConditionCtx(node.C,'if')
 var not_ctx=new $NotCtx(new_ctx)
-not_ctx.tree=[this.tree[0]]
+not_ctx.tree=[condition]
 node.C=new_ctx
 var new_node=new $Node('expression')
 var js='throw AssertionError("")'
-if(this.tree.length==2){
-js='throw AssertionError(str('+this.tree[1].to_js()+'))'
+if(message !==null){
+js='throw AssertionError(str('+message.to_js()+'))'
 }
 new $NodeJSCtx(new_node,js)
 node.add(new_node)
@@ -6197,11 +6203,8 @@ eval($js)
 }catch($err){
 if($err.py_error===undefined){$err=RuntimeError($err+'')}
 var $trace=$err.__name__+': '+$err.message
-if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
-$trace +=$err.info
-}
+$trace +='\n'+$err.info
 document.$stderr.__getattr__('write')($trace)
-$err.message +=$err.info
 throw $err
 }
 }

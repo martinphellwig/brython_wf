@@ -290,19 +290,18 @@ function $src_error(name,module,msg,pos) {
     var lib_module = module
     if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
 
-    info = "\nmodule '"+lib_module+"' line "+line_num
+    info = "module '"+lib_module+"' line "+line_num
     info += '\n'+lines[line_num-1]+'\n'
     var lpos = pos-line_pos[line_num]
     for(var i=0;i<lpos;i++){info+=' '}
-    info += '^\n'
-    console.log('syntax error info '+info)
+    info += '^'
     err = new Error()
     err.name = name
     err.__class__ = Exception
     err.__name__ = name
     err.__getattr__ = function(attr){return err[attr]}
     err.__str__ = function(){return msg}
-    err.message = msg + info
+    err.message = msg
     err.info = info
     err.py_error = true
     __BRYTHON__.exception_stack.push(err)
