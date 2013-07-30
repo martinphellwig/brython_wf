@@ -1659,6 +1659,10 @@ function $SliceClass(start,stop,step){
     this.start = start
     this.stop = stop
     this.step = step
+    this.__getattr__ = function(attr){
+        if(this[attr]!==undefined){return this[attr]}
+        else{throw AttributeError("'NoneType' object has no attribute '"+attr+"'")}
+    }
 }
 function slice(){
     var $ns=$MakeArgs('slice',arguments,[],{},'args',null)
