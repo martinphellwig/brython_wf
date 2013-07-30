@@ -6,28 +6,28 @@ Websocket.__class__ = $type
 Websocket.__str__ = function(){return "<class 'Websocket'>"}
 
 function $WebSocketClass(host){
-	if(!window.WebSocket) {
+    if(!window.WebSocket) {
         alert('WebSocket are not supported!');
     } 
-	else {
+    else {
         var $socket = new WebSocket(host);
         $socket.onopen = function() { 
-        	var req = this.$websocket
-        	if('on_open' in req){req.on_open()}
+            var req = this.$websocket
+            if('on_open' in req){req.on_open()}
         }
         $socket.onclose = function(close) { 
-        	var req = this.$websocket
-        	if('on_close' in req){req.on_close(JSObject(close))}
+            var req = this.$websocket
+            if('on_close' in req){req.on_close(JSObject(close))}
         }
         $socket.onerror = function() { 
-        	var req = this.$websocket
-        	if('on_error' in req){req.on_error()}
+            var req = this.$websocket
+            if('on_error' in req){req.on_error()}
         }
         $socket.onmessage = function(message){
-        	var req = this.$websocket
-        	if('on_message' in req){req.on_message(JSObject(message))}        	
+            var req = this.$websocket
+            if('on_message' in req){req.on_message(JSObject(message))}            
         }
-    }	
+    }
 
     $socket.$websocket = this
 
@@ -40,11 +40,11 @@ function $WebSocketClass(host){
     this.__str__ = function(){return "<object 'Websocket'>"}
     
     this.send = function(data){
-    	$socket.send(data)
+        $socket.send(data)
     }
     
     this.close = function(){
-    	$socket.close()
+        $socket.close()
     }
     
 }

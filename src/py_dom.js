@@ -130,7 +130,10 @@ function $DOMEvent(ev){
     ev.__getattr__ = function(attr){
         if(attr=="x"){return $mouseCoords(ev).x}
         if(attr=="y"){return $mouseCoords(ev).y}
-        if(attr=="data"){return new $Clipboard(ev.dataTransfer)}
+        if(attr=="data"){
+            if(ev.dataTransfer!==undefined){return new $Clipboard(ev.dataTransfer)}
+            else{return ev['data']}
+        }
         if(attr=="target"){
             if(ev.target===undefined){return $DOMNode(ev.srcElement)}
             else{return $DOMNode(ev.target)}
@@ -139,6 +142,7 @@ function $DOMEvent(ev){
     }
     if(ev.preventDefault===undefined){ev.preventDefault = function(){ev.returnValue=false}}
     if(ev.stopPropagation===undefined){ev.stopPropagation = function(){ev.cancelBubble=true}}
+    ev.__repr__ = function(){return '<DOMEvent object>'}
     ev.__str__ = function(){return '<DOMEvent object>'}
     ev.toString = ev.__str__
     return ev
@@ -397,9 +401,23 @@ $JSObject.prototype.__setattr__ = function(attr,value){
 
 function $Location(){ // used because of Firefox bug #814622
     var obj = new object()
-    for(var x in window.location){obj[x]=window.location[x]}
+    for(var x in window.location){
+        if(typeof window.location[x]==='function'){
+            obj[x] = (function(f){
+                return function(){
+                    return f.apply(window.location,arguments)
+                }
+              })(window.location[x])
+        }else{
+            obj[x]=window.location[x]
+        }
+    }
+    if(obj['replace']===undefined){ // IE
+        obj['replace'] = function(url){window.location = url}
+    }
     obj.__class__ = new $class(this,'Location')
     obj.toString = function(){return window.location.toString()}
+    obj.__repr__ = obj.__str__ = obj.toString
     return obj
 }
 

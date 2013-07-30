@@ -1029,6 +1029,8 @@ function $iterator_getitem(obj){
     this.__getattr__ = function(attr){
         if(attr==='__next__'){return $bind(this[attr],this)}
     }
+    this.__item__ = function(rank){return obj[rank]}
+    this.__len__ = function(){return obj.length}
     this.__next__ = function(){
         this.counter++
         if(this.counter<obj.__len__()){return obj.__getitem__(this.counter)}
@@ -1203,6 +1205,84 @@ function $open(){
     if(args.length>0){var mode=args[0]}
     if(args.length>1){var encoding=args[1]}
     if(isinstance(file,JSObject)){return new $OpenFile(file.js,mode,encoding)}
+    else if(isinstance(file,str)){
+        // read the file content and return an object with file object methods
+        var req = ajax()
+        req.on_complete = function(obj){
+            var status = obj.__getattr__('status')
+            if(status===404){
+                $res = IOError('File not found')
+            }else if(status!==200){
+                $res = IOError('Could not open file '+file+' : status '+status) 
+            }else{
+                $res = obj.get_text()
+            }
+        }
+        req.open('GET',file,false)
+        req.send()
+        if($res.constructor===Error){throw $res}
+        // return the file-like object
+        var lines = $res.split('\n')
+        var res = new Object(),counter=0
+        res.closed=false
+        // methods for the "with" keyword
+        res.__enter__ = function(){return res}
+        res.__exit__ = function(){return false}
+        res.__getattr__ = function(attr){return res[attr]}
+        res.__item__ = function(rank){return lines[rank]}
+        res.__len__ = function(){return lines.length}
+        res.close = function(){res.closed = true}
+        res.read = function(nb){
+            if(res.closed){throw ValueError('I/O operation on closed file')}
+            if(nb===undefined){return $res}
+            else{
+                counter+=nb
+                return $res.substr(counter-nb,nb)
+            }
+        }
+        res.readable = function(){return true}
+        res.readline = function(limit){
+            if(res.closed){throw ValueError('I/O operation on closed file')}
+            var line = ''
+            if(limit===undefined||limit===-1){limit=null}
+            while(true){
+                if(counter>=$res.length-1){break}
+                else{
+                    var car = $res.charAt(counter)
+                    if(car=='\n'){counter++;return line}
+                    else{
+                        line += car
+                        if(limit!==null && line.length>=limit){return line}
+                        counter++
+                    }
+                }
+            }
+        }
+        res.readlines = function(hint){
+            if(res.closed){throw ValueError('I/O operation on closed file')}
+            var x = $res.substr(counter).split('\n')
+            if(hint && hint!==-1){
+                var y=[],size=0
+                while(true){
+                    var z = x.shift()
+                    y.push(z)
+                    size += z.length
+                    if(size>hint || x.length==0){return y}
+                }
+            }else{return x}
+        }
+        res.seek = function(offset,whence){
+            if(res.closed){throw ValueError('I/O operation on closed file')}
+            if(whence===undefined){whence=0}
+            if(whence===0){counter = offset}
+            else if(whence===1){counter += offset}
+            else if(whence===2){counter = $res.length+offset}
+        }
+        res.seekable = function(){return true}
+        res.tell = function(){return counter}
+        res.writeable = function(){return false}
+        return res
+    }
 }
 
 function ord(c) {
@@ -1780,18 +1860,17 @@ None = new $NoneClass()
 Exception = function (msg){
     var err = Error()
     err.info = ''
-
+    
     if(__BRYTHON__.debug && msg.split('\n').length==1){
         var module = document.$line_info[1]
         var line_num = document.$line_info[0]
         var lines = document.$py_src[module].split('\n')
         var lib_module = module
         if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-        err.info += "\nmodule '"+lib_module+"' line "+line_num
+        err.info += "module '"+lib_module+"' line "+line_num
         err.info += '\n'+lines[line_num-1]
-        //msg += err.info
     }
-    err.message = msg + err.info
+    err.message = msg
 
     err.args = tuple(msg.split('\n')[0])
     err.__str__ = function(){return msg}
@@ -1811,8 +1890,10 @@ __BRYTHON__.exception = function(js_exc){
     if(js_exc.py_error===true){var exc = js_exc}
     else{
         var exc = Exception(js_exc.message)
+        //console.log('exc info '+exc.info)
         exc.__name__= js_exc.name
     }
+    document.$stderr.write(exc.__name__+': '+exc.message+'\n'+exc.info)
     return exc
 }
 
