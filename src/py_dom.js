@@ -401,9 +401,23 @@ $JSObject.prototype.__setattr__ = function(attr,value){
 
 function $Location(){ // used because of Firefox bug #814622
     var obj = new object()
-    for(var x in window.location){obj[x]=window.location[x]}
+    for(var x in window.location){
+        if(typeof window.location[x]==='function'){
+            obj[x] = (function(f){
+                return function(){
+                    return f.apply(window.location,arguments)
+                }
+              })(window.location[x])
+        }else{
+            obj[x]=window.location[x]
+        }
+    }
+    if(obj['replace']===undefined){ // IE
+        obj['replace'] = function(url){window.location = url}
+    }
     obj.__class__ = new $class(this,'Location')
     obj.toString = function(){return window.location.toString()}
+    obj.__repr__ = obj.__str__ = obj.toString
     return obj
 }
 
