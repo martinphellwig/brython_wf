@@ -1890,8 +1890,10 @@ __BRYTHON__.exception = function(js_exc){
     if(js_exc.py_error===true){var exc = js_exc}
     else{
         var exc = Exception(js_exc.message)
+        //console.log('exc info '+exc.info)
         exc.__name__= js_exc.name
     }
+    document.$stderr.write(exc.__name__+': '+exc.message+'\n'+exc.info)
     return exc
 }
 
