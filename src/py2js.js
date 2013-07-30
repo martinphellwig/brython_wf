@@ -166,15 +166,23 @@ function $AssertCtx(context){
     this.tree = []
     context.tree.push(this)
     this.transform = function(node,rank){
+        if(this.tree[0].type==='list_or_tuple'){
+            // form "assert condition,message"
+            var condition = this.tree[0].tree[0]
+            var message = this.tree[0].tree[1]
+        }else{
+            var condition = this.tree[0]
+            var message = null
+        }
         // transform "assert cond" into "if not cond: throw AssertionError"
         var new_ctx = new $ConditionCtx(node.context,'if')
         var not_ctx = new $NotCtx(new_ctx)
-        not_ctx.tree = [this.tree[0]]
+        not_ctx.tree = [condition]
         node.context = new_ctx
         var new_node = new $Node('expression')
         var js = 'throw AssertionError("")'
-        if(this.tree.length==2){
-            js = 'throw AssertionError(str('+this.tree[1].to_js()+'))'
+        if(message !== null){
+            js = 'throw AssertionError(str('+message.to_js()+'))'
         }
         new $NodeJSCtx(new_node,js)
         node.add(new_node)
@@ -3209,11 +3217,11 @@ function brython(options){
             }catch($err){
                 if($err.py_error===undefined){$err = RuntimeError($err+'')}
                 var $trace = $err.__name__+': '+$err.message
-                if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
-                    $trace += $err.info
-                }
+                //if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
+                    $trace += '\n'+$err.info
+                //}
                 document.$stderr.__getattr__('write')($trace)
-                $err.message += $err.info
+                //$err.message += '\n'+$err.info
                 throw $err
             }
         }

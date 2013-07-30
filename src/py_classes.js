@@ -1782,18 +1782,17 @@ None = new $NoneClass()
 Exception = function (msg){
     var err = Error()
     err.info = ''
-
+    
     if(__BRYTHON__.debug && msg.split('\n').length==1){
         var module = document.$line_info[1]
         var line_num = document.$line_info[0]
         var lines = document.$py_src[module].split('\n')
         var lib_module = module
         if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-        err.info += "\nmodule '"+lib_module+"' line "+line_num
+        err.info += "module '"+lib_module+"' line "+line_num
         err.info += '\n'+lines[line_num-1]
-        //msg += err.info
     }
-    err.message = msg + err.info
+    err.message = msg
 
     err.args = tuple(msg.split('\n')[0])
     err.__str__ = function(){return msg}
