@@ -6,16 +6,16 @@ Arrastrar y colocar (drag and drop) un elemento en una página web
 Solución
 --------
 
-Brython implementa una API basada en la especificación 'drag and drop' HTML5. En al forma básica en que se presenta en el siguiente ejemplo consiste en definir funciones de llamada para 3 eventos :
-- _dragstart_ sobre el elemento arratrable (cuando el usuario comienza a arrastrarlo)
+Brython implementa una API basada en la especificación 'drag and drop' HTML5. En la forma básica en que se presenta en el siguiente ejemplo consiste en definir funciones de llamada para 3 eventos :
+- _dragstart_ sobre el elemento arrastrable (cuando el usuario comienza a arrastrarlo)
 - _dragover_ sobre la zona de destino (cuando el elemento arrastrable se mueve a la zona de destino)
 - _drop_ sobre la zona de destino (cuando el usuario deja de apretar el botón del ratón)
 
 Para añadir la función _callback_ a un _event_ en un _element_, usamos el método _element_<code>.bind(_event,callback_)</code>
 
-Las funciones de respuesta (callback) toman un único elemento, una instancia de `DOMEvent`. Para comunicar la información durante la operación de arrastrar y soltar el evento posee un atributo _data_ que recibe un valor en la respuesta asociada a _dragstart_ ; este valor será usado en la respuesta asociada con _drop_ para identificar el elemento que está siendo soltado
+Las funciones de respuesta (callback) toman un único elemento, una instancia de `DOMEvent`. Para comunicar la información durante la operación de arrastrar y soltar, el evento posee un atributo _data_ que recibe un valor en la respuesta asociada a _dragstart_ ; este valor será usado en la respuesta asociada con _drop_ para identificar el elemento que está siendo soltado
 
-En el ejemplo, cuando el objeto arrastrable ha sido soltado, ya no se puede volver a arrastrare ; para ello, eliminamos los 'bindings' añadidos al _event_ sobre este objeto usando el método _element_<code>.unbind(_event_)</code>
+En el ejemplo, cuando el objeto arrastrable ha sido soltado, ya no se puede volver a arrastrar ; para ello, eliminamos los 'bindings' añadidos al _event_ sobre este objeto usando el método _element_<code>.unbind(_event_)</code>
 
 <div style="width:400px;height:150px;background-color:yellow" id="panel">
 <div id="dest" style="position:absolute;width:180px;height:80px;background-color:green;color:white;">Zona de destino</div>
