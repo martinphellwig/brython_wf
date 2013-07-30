@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130729-144527
+// version 1.1.20130730-081138
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130729-144527"]
+__BRYTHON__.version_info=[1,1,"20130730-081138"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -5789,8 +5789,8 @@ var unsupported=["nonlocal","with"]
 var $indented=['class','def','for','condition','single_kw','try','except']
 var punctuation={',':0,':':0}
 var int_pattern=new RegExp("^\\d+")
-var float_pattern1=new RegExp("^\\d+\\.\\d*(e-?\\d+)?")
-var float_pattern2=new RegExp("^\\d+(e-?\\d+)")
+var float_pattern1=new RegExp("^\\d+\\.\\d*([eE][+-]?\\d+)?")
+var float_pattern2=new RegExp("^\\d+([eE][+-]?\\d+)")
 var hex_pattern=new RegExp("^0[xX]([0-9a-fA-F]+)")
 var octal_pattern=new RegExp("^0[oO]([0-7]+)")
 var binary_pattern=new RegExp("^0[bB]([01]+)")
@@ -5988,7 +5988,7 @@ continue
 if(car.search(/\d/)>-1){
 var res=float_pattern1.exec(src.substr(pos))
 if(res){
-if(res[0].search('e')>-1){
+if(res[0].search(/[eE]/)>-1){
 $pos=pos
 C=$transition(C,'float',res[0])
 }else{
@@ -7202,38 +7202,38 @@ function Websocket(){}
 Websocket.__class__=$type
 Websocket.__str__=function(){return "<class 'Websocket'>"}
 function $WebSocketClass(host){
-	if(!window.WebSocket){
+if(!window.WebSocket){
 alert('WebSocket are not supported!')
 }
-	else{
+else{
 var $socket=new WebSocket(host)
 $socket.onopen=function(){
-	var req=this.$websocket
-	if('on_open' in req){req.on_open()}
+var req=this.$websocket
+if('on_open' in req){req.on_open()}
 }
 $socket.onclose=function(close){
-	var req=this.$websocket
-	if('on_close' in req){req.on_close(JSObject(close))}
+var req=this.$websocket
+if('on_close' in req){req.on_close(JSObject(close))}
 }
 $socket.onerror=function(){
-	var req=this.$websocket
-	if('on_error' in req){req.on_error()}
+var req=this.$websocket
+if('on_error' in req){req.on_error()}
 }
 $socket.onmessage=function(message){
-	var req=this.$websocket
-	if('on_message' in req){req.on_message(JSObject(message))}	
+var req=this.$websocket
+if('on_message' in req){req.on_message(JSObject(message))}
 }
-}	
+}
 $socket.$websocket=this
 this.__class__=Websocket
 this.__getattr__=function(attr){return $getattr(this,attr)}
 this.__setattr__=function(attr,value){setattr(this,attr,value)}
 this.__str__=function(){return "<object 'Websocket'>"}
 this.send=function(data){
-	$socket.send(data)
+$socket.send(data)
 }
 this.close=function(){
-	$socket.close()
+$socket.close()
 }
 }
 function websocket(host){

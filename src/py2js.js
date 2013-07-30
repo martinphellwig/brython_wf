@@ -2757,8 +2757,8 @@ function $tokenize(src,module){
 
     var punctuation = {',':0,':':0} //,';':0}
     var int_pattern = new RegExp("^\\d+")
-    var float_pattern1 = new RegExp("^\\d+\\.\\d*(e-?\\d+)?")
-    var float_pattern2 = new RegExp("^\\d+(e-?\\d+)")
+    var float_pattern1 = new RegExp("^\\d+\\.\\d*([eE][+-]?\\d+)?")
+    var float_pattern2 = new RegExp("^\\d+([eE][+-]?\\d+)")
     var hex_pattern = new RegExp("^0[xX]([0-9a-fA-F]+)")
     var octal_pattern = new RegExp("^0[oO]([0-7]+)")
     var binary_pattern = new RegExp("^0[bB]([01]+)")
@@ -2977,7 +2977,7 @@ function $tokenize(src,module){
             // digit
             var res = float_pattern1.exec(src.substr(pos))
             if(res){
-                if(res[0].search('e')>-1){
+                if(res[0].search(/[eE]/)>-1){
                     $pos = pos
                     context = $transition(context,'float',res[0])
                 }else{
