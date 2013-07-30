@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130730-090529
+// version 1.1.20130730-093649
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130730-090529"]
+__BRYTHON__.version_info=[1,1,"20130730-093649"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -6614,9 +6614,23 @@ this.js[attr]=value
 }
 function $Location(){
 var obj=new object()
-for(var x in window.location){obj[x]=window.location[x]}
+for(var x in window.location){
+if(typeof window.location[x]==='function'){
+obj[x]=(function(f){
+return function(){
+return f.apply(window.location,arguments)
+}
+})(window.location[x])
+}else{
+obj[x]=window.location[x]
+}
+}
+if(obj['replace']===undefined){
+obj['replace']=function(url){window.location=url}
+}
 obj.__class__=new $class(this,'Location')
 obj.toString=function(){return window.location.toString()}
+obj.__repr__=obj.__str__=obj.toString
 return obj
 }
 win=new $JSObject(window)
