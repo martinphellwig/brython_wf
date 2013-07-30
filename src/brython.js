@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130726-155936
+// version 1.1.20130730-161229
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -43,7 +43,11 @@ __BRYTHON__.indexedDB=function(){return JSObject(window.indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
-__BRYTHON__.version_info=[1,1,"20130726-155936"]
+__BRYTHON__.has_websocket=(function(){
+try{var x=window.WebSocket;return x!==undefined}
+catch(err){return false}
+})()
+__BRYTHON__.version_info=[1,1,"20130730-161229"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -298,19 +302,18 @@ var line_num=pos2line[pos]
 var lines=src.split('\n')
 var lib_module=module
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-info="\nmodule '"+lib_module+"' line "+line_num
+info="module '"+lib_module+"' line "+line_num
 info +='\n'+lines[line_num-1]+'\n'
 var lpos=pos-line_pos[line_num]
 for(var i=0;i<lpos;i++){info+=' '}
-info +='^\n'
-console.log('syntax error info '+info)
+info +='^'
 err=new Error()
 err.name=name
 err.__class__=Exception
 err.__name__=name
 err.__getattr__=function(attr){return err[attr]}
 err.__str__=function(){return msg}
-err.message=msg + info
+err.message=msg
 err.info=info
 err.py_error=true
 __BRYTHON__.exception_stack.push(err)
@@ -1522,6 +1525,8 @@ this.counter=-1
 this.__getattr__=function(attr){
 if(attr==='__next__'){return $bind(this[attr],this)}
 }
+this.__item__=function(rank){return obj[rank]}
+this.__len__=function(){return obj.length}
 this.__next__=function(){
 this.counter++
 if(this.counter<obj.__len__()){return obj.__getitem__(this.counter)}
@@ -1669,6 +1674,81 @@ for(var attr in $ns){eval('var '+attr+'=$ns["'+attr+'"]')}
 if(args.length>0){var mode=args[0]}
 if(args.length>1){var encoding=args[1]}
 if(isinstance(file,JSObject)){return new $OpenFile(file.js,mode,encoding)}
+else if(isinstance(file,str)){
+var req=ajax()
+req.on_complete=function(obj){
+var status=obj.__getattr__('status')
+if(status===404){
+$res=IOError('File not found')
+}else if(status!==200){
+$res=IOError('Could not open file '+file+' : status '+status)
+}else{
+$res=obj.get_text()
+}
+}
+req.open('GET',file,false)
+req.send()
+if($res.constructor===Error){throw $res}
+var lines=$res.split('\n')
+var res=new Object(),counter=0
+res.closed=false
+res.__enter__=function(){return res}
+res.__exit__=function(){return false}
+res.__getattr__=function(attr){return res[attr]}
+res.__item__=function(rank){return lines[rank]}
+res.__len__=function(){return lines.length}
+res.close=function(){res.closed=true}
+res.read=function(nb){
+if(res.closed){throw ValueError('I/O operation on closed file')}
+if(nb===undefined){return $res}
+else{
+counter+=nb
+return $res.substr(counter-nb,nb)
+}
+}
+res.readable=function(){return true}
+res.readline=function(limit){
+if(res.closed){throw ValueError('I/O operation on closed file')}
+var line=''
+if(limit===undefined||limit===-1){limit=null}
+while(true){
+if(counter>=$res.length-1){break}
+else{
+var car=$res.charAt(counter)
+if(car=='\n'){counter++;return line}
+else{
+line +=car
+if(limit!==null && line.length>=limit){return line}
+counter++
+}
+}
+}
+}
+res.readlines=function(hint){
+if(res.closed){throw ValueError('I/O operation on closed file')}
+var x=$res.substr(counter).split('\n')
+if(hint && hint!==-1){
+var y=[],size=0
+while(true){
+var z=x.shift()
+y.push(z)
+size +=z.length
+if(size>hint || x.length==0){return y}
+}
+}else{return x}
+}
+res.seek=function(offset,whence){
+if(res.closed){throw ValueError('I/O operation on closed file')}
+if(whence===undefined){whence=0}
+if(whence===0){counter=offset}
+else if(whence===1){counter +=offset}
+else if(whence===2){counter=$res.length+offset}
+}
+res.seekable=function(){return true}
+res.tell=function(){return counter}
+res.writeable=function(){return false}
+return res
+}
 }
 function ord(c){
 return c.charCodeAt(0)
@@ -2150,10 +2230,10 @@ var line_num=document.$line_info[0]
 var lines=document.$py_src[module].split('\n')
 var lib_module=module
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-err.info +="\nmodule '"+lib_module+"' line "+line_num
+err.info +="module '"+lib_module+"' line "+line_num
 err.info +='\n'+lines[line_num-1]
 }
-err.message=msg + err.info
+err.message=msg
 err.args=tuple(msg.split('\n')[0])
 err.__str__=function(){return msg}
 err.toString=err.__str__
@@ -2172,6 +2252,7 @@ else{
 var exc=Exception(js_exc.message)
 exc.__name__=js_exc.name
 }
+document.$stderr.write(exc.__name__+': '+exc.message+'\n'+exc.info)
 return exc
 }
 function $make_exc(name){
@@ -3444,6 +3525,7 @@ var $augmented_assigns={
 "&=":"iand","|=":"ior","^=":"ixor"
 }
 function $_SyntaxError(C,msg,indent){
+console.log('syntax error '+msg)
 var ctx_node=C
 while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
 var tree_node=ctx_node.node
@@ -3562,14 +3644,21 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.transform=function(node,rank){
+if(this.tree[0].type==='list_or_tuple'){
+var condition=this.tree[0].tree[0]
+var message=this.tree[0].tree[1]
+}else{
+var condition=this.tree[0]
+var message=null
+}
 var new_ctx=new $ConditionCtx(node.C,'if')
 var not_ctx=new $NotCtx(new_ctx)
-not_ctx.tree=[this.tree[0]]
+not_ctx.tree=[condition]
 node.C=new_ctx
 var new_node=new $Node('expression')
 var js='throw AssertionError("")'
-if(this.tree.length==2){
-js='throw AssertionError(str('+this.tree[1].to_js()+'))'
+if(message !==null){
+js='throw AssertionError(str('+message.to_js()+'))'
 }
 new $NodeJSCtx(new_node,js)
 node.add(new_node)
@@ -4866,6 +4955,37 @@ this.tree=[]
 C.tree.push(this)
 this.to_js=function(){return this.op+$to_js(this.tree)}
 }
+function $WithCtx(C){
+this.type='with'
+this.parent=C
+C.tree.push(this)
+this.tree=[]
+this.expect='as'
+this.toString=function(){return '(with) '}
+this.transform=function(node,rank){
+if(this.tree[0].alias===null){this.tree[0].alias='$temp'}
+var new_node=new $Node('expression')
+new $NodeJSCtx(new_node,'catch($err'+$loop_num+')')
+var fbody=new $Node('expression')
+var js='if(!'+this.tree[0].alias+'.__exit__($err'+$loop_num+'.type,'
+js +='$err'+$loop_num+'.value,$err'+$loop_num+'.traceback))'
+js +='{throw $err'+$loop_num+'}'
+new $NodeJSCtx(fbody,js)
+new_node.add(fbody)
+node.parent.insert(rank+1,new_node)
+$loop_num++
+var new_node=new $Node('expression')
+new $NodeJSCtx(new_node,'finally')
+var fbody=new $Node('expression')
+new $NodeJSCtx(fbody,this.tree[0].alias+'.__exit__(None,None,None)')
+new_node.add(fbody)
+node.parent.insert(rank+2,new_node)
+}
+this.to_js=function(){
+res='var '+this.tree[0].alias+'='+this.tree[0].to_js()+'.__enter__()'
+return res+';try'
+}
+}
 function $YieldCtx(C){
 this.type='yield'
 this.toString=function(){return '(yield) '+this.tree}
@@ -5635,7 +5755,8 @@ else if(token==='raise'){return new $RaiseCtx(C)}
 else if(token==='return'){
 var ret=new $ReturnCtx(C)
 return new $AbstractExprCtx(ret,true)
-}else if(token==='yield'){
+}else if(token==="with"){return new $AbstractExprCtx(new $WithCtx(C),false)}
+else if(token==='yield'){
 var yield=new $YieldCtx(C)
 return new $AbstractExprCtx(yield,true)
 }else if(token==='del'){return new $AbstractExprCtx(new $DelCtx(C),true)}
@@ -5740,6 +5861,36 @@ var op=arguments[2]
 if(C.op===op){C.op='+'}else{C.op='-'}
 return C
 }else{return $transition(C.parent,token,arguments[2])}
+}else if(C.type==='with'){
+if(token==='id' && C.expect==='id'){
+new $TargetCtx(C,arguments[2])
+C.expect='as'
+return C
+}else if(token==='as' && C.expect==='as'
+&& C.has_alias===undefined 
+&& C.tree.length===1){
+C.expect='alias'
+C.has_alias=true
+return C
+}else if(token==='id' && C.expect==='alias'){
+if(C.parenth!==undefined){C.expect=','}
+else{C.expect=':'}
+C.tree[C.tree.length-1].alias=arguments[2]
+return C
+}else if(token===':' &&['id','as',':'].indexOf(C.expect)>-1){
+return $BodyCtx(C)
+}else if(token==='(' && C.expect==='id' && C.tree.length===0){
+C.parenth=true
+return C
+}else if(token===')' &&[',','as'].indexOf(C.expect)>-1){
+C.expect=':'
+return C
+}else if(token===',' && C.parenth!==undefined &&
+C.has_alias===undefined &&
+['as',','].indexOf(C.expect)>-1){
+C.expect='id'
+return C
+}else{$_SyntaxError(C,'token '+token+' after '+C.expect)}
 }else if(C.type==='yield'){
 return $transition(C.parent,token)
 }
@@ -5751,8 +5902,10 @@ src=src.substr(1)
 }
 if(src.charAt(src.length-1)!="\n"){src+='\n'}
 if(module===undefined){module='__main__'}
+if(__BRYTHON__.scope[module]===undefined){
 __BRYTHON__.scope[module]={}
 __BRYTHON__.scope[module].__dict__={}
+}
 document.$py_src[module]=src
 var root=$tokenize(src,module)
 root.transform()
@@ -5777,14 +5930,14 @@ var kwdict=["class","return",
 "for","lambda","try","finally","raise","def","from",
 "nonlocal","while","del","global","with",
 "as","elif","else","if","yield","assert","import",
-"except","raise","in","not","pass",
+"except","raise","in","not","pass","with"
 ]
-var unsupported=["nonlocal","with"]
-var $indented=['class','def','for','condition','single_kw','try','except']
+var unsupported=["nonlocal"]
+var $indented=['class','def','for','condition','single_kw','try','except','with']
 var punctuation={',':0,':':0}
 var int_pattern=new RegExp("^\\d+")
-var float_pattern1=new RegExp("^\\d+\\.\\d*(e-?\\d+)?")
-var float_pattern2=new RegExp("^\\d+(e-?\\d+)")
+var float_pattern1=new RegExp("^\\d+\\.\\d*([eE][+-]?\\d+)?")
+var float_pattern2=new RegExp("^\\d+([eE][+-]?\\d+)")
 var hex_pattern=new RegExp("^0[xX]([0-9a-fA-F]+)")
 var octal_pattern=new RegExp("^0[oO]([0-7]+)")
 var binary_pattern=new RegExp("^0[bB]([01]+)")
@@ -5982,7 +6135,7 @@ continue
 if(car.search(/\d/)>-1){
 var res=float_pattern1.exec(src.substr(pos))
 if(res){
-if(res[0].search('e')>-1){
+if(res[0].search(/[eE]/)>-1){
 $pos=pos
 C=$transition(C,'float',res[0])
 }else{
@@ -6189,11 +6342,8 @@ eval($js)
 }catch($err){
 if($err.py_error===undefined){$err=RuntimeError($err+'')}
 var $trace=$err.__name__+': '+$err.message
-if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
-$trace +=$err.info
-}
+$trace +='\n'+$err.info
 document.$stderr.__getattr__('write')($trace)
-$err.message +=$err.info
 throw $err
 }
 }
@@ -6381,7 +6531,10 @@ ev.__class__=DOMEvent
 ev.__getattr__=function(attr){
 if(attr=="x"){return $mouseCoords(ev).x}
 if(attr=="y"){return $mouseCoords(ev).y}
-if(attr=="data"){return new $Clipboard(ev.dataTransfer)}
+if(attr=="data"){
+if(ev.dataTransfer!==undefined){return new $Clipboard(ev.dataTransfer)}
+else{return ev['data']}
+}
 if(attr=="target"){
 if(ev.target===undefined){return $DOMNode(ev.srcElement)}
 else{return $DOMNode(ev.target)}
@@ -6390,6 +6543,7 @@ return $getattr(ev,attr)
 }
 if(ev.preventDefault===undefined){ev.preventDefault=function(){ev.returnValue=false}}
 if(ev.stopPropagation===undefined){ev.stopPropagation=function(){ev.cancelBubble=true}}
+ev.__repr__=function(){return '<DOMEvent object>'}
 ev.__str__=function(){return '<DOMEvent object>'}
 ev.toString=ev.__str__
 return ev
@@ -6599,9 +6753,23 @@ this.js[attr]=value
 }
 function $Location(){
 var obj=new object()
-for(var x in window.location){obj[x]=window.location[x]}
+for(var x in window.location){
+if(typeof window.location[x]==='function'){
+obj[x]=(function(f){
+return function(){
+return f.apply(window.location,arguments)
+}
+})(window.location[x])
+}else{
+obj[x]=window.location[x]
+}
+}
+if(obj['replace']===undefined){
+obj['replace']=function(url){window.location=url}
+}
 obj.__class__=new $class(this,'Location')
 obj.toString=function(){return window.location.toString()}
+obj.__repr__=obj.__str__=obj.toString
 return obj
 }
 win=new $JSObject(window)
@@ -7192,38 +7360,38 @@ function Websocket(){}
 Websocket.__class__=$type
 Websocket.__str__=function(){return "<class 'Websocket'>"}
 function $WebSocketClass(host){
-	if(!window.WebSocket){
+if(!window.WebSocket){
 alert('WebSocket are not supported!')
 }
-	else{
+else{
 var $socket=new WebSocket(host)
 $socket.onopen=function(){
-	var req=this.$websocket
-	if('on_open' in req){req.on_open()}
+var req=this.$websocket
+if('on_open' in req){req.on_open()}
 }
 $socket.onclose=function(close){
-	var req=this.$websocket
-	if('on_close' in req){req.on_close(JSObject(close))}
+var req=this.$websocket
+if('on_close' in req){req.on_close(JSObject(close))}
 }
 $socket.onerror=function(){
-	var req=this.$websocket
-	if('on_error' in req){req.on_error()}
+var req=this.$websocket
+if('on_error' in req){req.on_error()}
 }
 $socket.onmessage=function(message){
-	var req=this.$websocket
-	if('on_message' in req){req.on_message(JSObject(message))}	
+var req=this.$websocket
+if('on_message' in req){req.on_message(JSObject(message))}
 }
-}	
+}
 $socket.$websocket=this
 this.__class__=Websocket
 this.__getattr__=function(attr){return $getattr(this,attr)}
 this.__setattr__=function(attr,value){setattr(this,attr,value)}
 this.__str__=function(){return "<object 'Websocket'>"}
 this.send=function(data){
-	$socket.send(data)
+$socket.send(data)
 }
 this.close=function(){
-	$socket.close()
+$socket.close()
 }
 }
 function websocket(host){

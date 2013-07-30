@@ -298,4 +298,10 @@ assert 1 <= _a < 10
 _a=random.randrange(1,10,2)
 assert _a in (1,3,5,7,9)
 
+# issue 118
+assert 1.27e+5 == 127000.0
+assert 1.27E+5 == 127000.0
+assert 1.27e+5 == 127000.0
+assert 1.27E5 == 127000.0
+
 print('passed all tests')

@@ -39,7 +39,7 @@ var $augmented_assigns = {
 }
 
 function $_SyntaxError(context,msg,indent){
-    //console.log('syntax error '+msg)
+    console.log('syntax error '+msg)
     var ctx_node = context
     while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
     var tree_node = ctx_node.node
@@ -166,15 +166,23 @@ function $AssertCtx(context){
     this.tree = []
     context.tree.push(this)
     this.transform = function(node,rank){
+        if(this.tree[0].type==='list_or_tuple'){
+            // form "assert condition,message"
+            var condition = this.tree[0].tree[0]
+            var message = this.tree[0].tree[1]
+        }else{
+            var condition = this.tree[0]
+            var message = null
+        }
         // transform "assert cond" into "if not cond: throw AssertionError"
         var new_ctx = new $ConditionCtx(node.context,'if')
         var not_ctx = new $NotCtx(new_ctx)
-        not_ctx.tree = [this.tree[0]]
+        not_ctx.tree = [condition]
         node.context = new_ctx
         var new_node = new $Node('expression')
         var js = 'throw AssertionError("")'
-        if(this.tree.length==2){
-            js = 'throw AssertionError(str('+this.tree[1].to_js()+'))'
+        if(message !== null){
+            js = 'throw AssertionError(str('+message.to_js()+'))'
         }
         new $NodeJSCtx(new_node,js)
         node.add(new_node)
@@ -1637,6 +1645,38 @@ function $UnaryCtx(context,op){
     this.to_js = function(){return this.op+$to_js(this.tree)}
 }
 
+function $WithCtx(context){
+    this.type = 'with'
+    this.parent = context
+    context.tree.push(this)
+    this.tree = []
+    this.expect = 'as'
+    this.toString = function(){return '(with) '}
+    this.transform = function(node,rank){
+        if(this.tree[0].alias===null){this.tree[0].alias = '$temp'}
+        var new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,'catch($err'+$loop_num+')')
+        var fbody = new $Node('expression')
+        var js = 'if(!'+this.tree[0].alias+'.__exit__($err'+$loop_num+'.type,'
+        js += '$err'+$loop_num+'.value,$err'+$loop_num+'.traceback))'
+        js += '{throw $err'+$loop_num+'}'
+        new $NodeJSCtx(fbody,js)
+        new_node.add(fbody)
+        node.parent.insert(rank+1,new_node)
+        $loop_num++
+        var new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,'finally')
+        var fbody = new $Node('expression')
+        new $NodeJSCtx(fbody,this.tree[0].alias+'.__exit__(None,None,None)')
+        new_node.add(fbody)
+        node.parent.insert(rank+2,new_node)
+    }
+    this.to_js = function(){
+        res = 'var '+this.tree[0].alias+'='+this.tree[0].to_js()+'.__enter__()'
+        return res+';try'
+    }
+}
+
 function $YieldCtx(context){ // subscription or slicing
     this.type = 'yield'
     this.toString = function(){return '(yield) '+this.tree}
@@ -2386,7 +2426,7 @@ function $transition(context,token){
         
 
     }else if(context.type==='id'){
-    
+
         if(token==='='){
             if(context.parent.type==='expr' &&
                 context.parent.parent !== undefined &&
@@ -2538,7 +2578,8 @@ function $transition(context,token){
         else if(token==='return'){
             var ret = new $ReturnCtx(context)
             return new $AbstractExprCtx(ret,true)
-        }else if(token==='yield'){
+        }else if(token==="with"){return new $AbstractExprCtx(new $WithCtx(context),false)}
+        else if(token==='yield'){
             var yield = new $YieldCtx(context)
             return new $AbstractExprCtx(yield,true)
         }else if(token==='del'){return new $AbstractExprCtx(new $DelCtx(context),true)}
@@ -2681,6 +2722,38 @@ function $transition(context,token){
             return context
         }else{return $transition(context.parent,token,arguments[2])}
 
+    }else if(context.type==='with'){ 
+
+        if(token==='id' && context.expect==='id'){
+            new $TargetCtx(context,arguments[2])
+            context.expect='as'
+            return context
+        }else if(token==='as' && context.expect==='as'
+            && context.has_alias===undefined  // only one alias allowed
+            && context.tree.length===1){ // if aliased, must be the only exception
+            context.expect = 'alias'
+            context.has_alias = true
+            return context
+        }else if(token==='id' && context.expect==='alias'){
+            if(context.parenth!==undefined){context.expect = ','}
+            else{context.expect=':'}
+            context.tree[context.tree.length-1].alias = arguments[2]
+            return context
+        }else if(token===':' && ['id','as',':'].indexOf(context.expect)>-1){
+            return $BodyCtx(context)
+        }else if(token==='(' && context.expect==='id' && context.tree.length===0){
+            context.parenth = true
+            return context
+        }else if(token===')' && [',','as'].indexOf(context.expect)>-1){
+            context.expect = ':'
+            return context
+        }else if(token===',' && context.parenth!==undefined &&
+            context.has_alias === undefined &&
+            ['as',','].indexOf(context.expect)>-1){
+                context.expect='id'
+                return context
+        }else{$_SyntaxError(context,'token '+token+' after '+context.expect)}
+
     }else if(context.type==='yield'){
 
         return $transition(context.parent,token)
@@ -2695,9 +2768,10 @@ __BRYTHON__.py2js = function(src,module){
     }
     if(src.charAt(src.length-1)!="\n"){src+='\n'}
     if(module===undefined){module='__main__'}
-    __BRYTHON__.scope[module] = {}
-    __BRYTHON__.scope[module].__dict__ = {}
-
+    if(__BRYTHON__.scope[module]===undefined){
+        __BRYTHON__.scope[module] = {}
+        __BRYTHON__.scope[module].__dict__ = {}
+    }
     document.$py_src[module]=src
     var root = $tokenize(src,module)
     root.transform()
@@ -2746,18 +2820,18 @@ function $tokenize(src,module){
         "for","lambda","try","finally","raise","def","from",
         "nonlocal","while","del","global","with",
         "as","elif","else","if","yield","assert","import",
-        "except","raise","in","not","pass",
+        "except","raise","in","not","pass","with"
         //"False","None","True","break","continue",
         // "and',"or","is"
         ]
-    var unsupported = ["nonlocal","with"]
-    var $indented = ['class','def','for','condition','single_kw','try','except']
+    var unsupported = ["nonlocal"]
+    var $indented = ['class','def','for','condition','single_kw','try','except','with']
     // from https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Reserved_Words
 
     var punctuation = {',':0,':':0} //,';':0}
     var int_pattern = new RegExp("^\\d+")
-    var float_pattern1 = new RegExp("^\\d+\\.\\d*(e-?\\d+)?")
-    var float_pattern2 = new RegExp("^\\d+(e-?\\d+)")
+    var float_pattern1 = new RegExp("^\\d+\\.\\d*([eE][+-]?\\d+)?")
+    var float_pattern2 = new RegExp("^\\d+([eE][+-]?\\d+)")
     var hex_pattern = new RegExp("^0[xX]([0-9a-fA-F]+)")
     var octal_pattern = new RegExp("^0[oO]([0-7]+)")
     var binary_pattern = new RegExp("^0[bB]([01]+)")
@@ -2976,7 +3050,7 @@ function $tokenize(src,module){
             // digit
             var res = float_pattern1.exec(src.substr(pos))
             if(res){
-                if(res[0].search('e')>-1){
+                if(res[0].search(/[eE]/)>-1){
                     $pos = pos
                     context = $transition(context,'float',res[0])
                 }else{
@@ -3208,11 +3282,11 @@ function brython(options){
             }catch($err){
                 if($err.py_error===undefined){$err = RuntimeError($err+'')}
                 var $trace = $err.__name__+': '+$err.message
-                if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
-                    $trace += $err.info
-                }
+                //if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
+                    $trace += '\n'+$err.info
+                //}
                 document.$stderr.__getattr__('write')($trace)
-                $err.message += $err.info
+                //$err.message += '\n'+$err.info
                 throw $err
             }
         }
