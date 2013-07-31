@@ -29,7 +29,7 @@ from html import *
 language = "en" # default
 has_req = False
 lang = doc.query().getfirst("lang")
-if lang and lang in ["en","fr","es"]:
+if lang and lang in ["en","fr","es","pt"]:
     has_req = True
     language = lang
 else:
@@ -37,7 +37,7 @@ else:
     try:
         lang,enc = locale.getdefaultlocale()
         lang = lang[:2]
-        if lang in ["en","fr","es"]:
+        if lang in ["en","fr","es","pt"]:
             language = lang
     except:
         pass
@@ -45,13 +45,14 @@ else:
 # upper menu
 
 trans_menu = {
-    'menu_console':{'en':'Console','es':'Consola','fr':'Console'},
-    'menu_gallery':{'en':'Gallery','es':'Galería','fr':'Galerie'},
-    'menu_doc':{'en':'Documentation','es':'Documentación','fr':'Documentation'},
-    'menu_download':{'en':'Download','es':'Descargas','fr':'Téléchargement'},
-    'menu_dev':{'en':'Development','es':'Desarollo','fr':'Développement'},
-    'menu_groups':{'en':'Groups','es':'Grupos','fr':'Groupes'}
+    'menu_console':{'en':'Console','es':'Consola','fr':'Console', 'pt':'Console'},
+    'menu_gallery':{'en':'Gallery','es':'Galería','fr':'Galerie', 'pt':'Galeria'},
+    'menu_doc':{'en':'Documentation','es':'Documentación','fr':'Documentation', 'pt':'Documentação'},
+    'menu_download':{'en':'Download','es':'Descargas','fr':'Téléchargement', 'pt':'Download'},
+    'menu_dev':{'en':'Development','es':'Desarrollo','fr':'Développement', 'pt':'Desenvolvimento'},
+    'menu_groups':{'en':'Groups','es':'Grupos','fr':'Groupes', 'pt':'Grupos'}
 }
+
 
 links = {'home':'../index.html',
     'console':'../tests/console.html',
@@ -93,7 +94,7 @@ trans = {
 
 for key in trans:
     if key in doc:
-        doc[key].html = trans[key][language]
+        doc[key].html = trans[key].get(language,trans[key]['en'])
 
 # link to test page
 tplink = doc['test_page']
