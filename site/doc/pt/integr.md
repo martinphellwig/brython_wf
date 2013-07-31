@@ -3,8 +3,8 @@ Palavras-chave e funções integradas
 
 Brython suporta a maior parde das palavras-chave e funções de Python 3 :
 
-- palavras-chave : `as assert break class continue def del elif else except False finally for from global if import is lambda None pass return True try while yield`
-- funções integradas : `abs(), all(), any(), ascii(), bin(), bool(), chr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), property(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), zip()`
+- palavras-chave : `as, assert, break, class, continue, def, del, elif, else, except, False, finally, for, from, global, if, import, is, lambda, None, pass, return, True, try, while, with, yield`
+- funções integradas : `abs(), all(), any(), ascii(), bin(), bool(), callable(), chr(), classmethod(), delattr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), globals(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), locals(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), property(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), type(), zip()`
 
 Por padrão, `print()` será mostrado no console do navegador web, assim como as mensagens de erro. `sys.stderr` e `sys.stdout` podem ser designados a um objeto que tenha o método `write()`, permitindo o redirecionamento das saídas para uma janela ou área de texto
 
@@ -14,8 +14,8 @@ Para abrir um diálogo de impressão (para uma impressora), use `win.print`
 
 O seguinte ainda não está implementado na versão atual :
 
-- palavras-chave `nonlocal with`
-- funções integradas `bytearray(), bytes(), callable(), classmethod(), compile(), complex(), delattr(), format(), globals(), help(), locals(), memoryview(), staticmethod(), super(), type(), vars(), __import__`
+- palavras-chave `nonlocal`
+- funções integradas `bytearray(), bytes(), compile(), complex(), format(), help(),  memoryview(), super(), vars(), __import__`
 - números complexos tipo (`j`) não são suportados
 
 Diferentemente de Python, você pode adicionar atributos a objetos criados com `object()` :

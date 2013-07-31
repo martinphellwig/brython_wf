@@ -12,16 +12,15 @@ où _hote_ est l'adresse d'un serveur qui supporte le protocole WebSocket
 
 Cet appel renvoie une instance de la classe `WebSocket`. Pour décrire le processus de communication, il faut définir des fonctions de rappel en tant qu'attributs de l'instance :
 
-- `onopen` : fonction sans argument, appelée une fois que la connection avec le serveur est établie
-- `onerror` : fonction sans argument, appelée si une erreur se produit pendant la communication
-- `onmessage` : fonction qui prend un argument, une instance de `DOMEvent`. Cette instance possède un atttibut `data` qui contient le message envoyé par le serveur
-- `onclose` : fonction sans argument, appelée quand la connection est close
+- `on_open` : fonction sans argument, appelée une fois que la connection avec le serveur est établie
+- `on_error` : fonction sans argument, appelée si une erreur se produit pendant la communication
+- `on_message` : fonction qui prend un argument, une instance de `DOMEvent`. Cette instance possède un atttibut `data` qui contient le message envoyé par le serveur
+- `on_close` : fonction sans argument, appelée quand la connection est close
 
 Les instances de `WebSocket` possèdent les deux méthodes suivantes :
 
 - <code>send(_data_)</code> : envoie la chaine _data_ au serveur
 - `close()` : ferme la connection
-
 
 Exemple :
 <table>
