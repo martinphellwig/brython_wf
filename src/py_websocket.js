@@ -6,8 +6,12 @@ Websocket.__class__ = $type
 Websocket.__str__ = function(){return "<class 'Websocket'>"}
 
 function $WebSocketClass(host){
-    if(!window.WebSocket) {
-        alert('WebSocket are not supported!');
+
+    var has_ws = (function(){try{var x=window.WebSocket;return x!==undefined}
+    catch(err){return false}})()
+    
+    if(!has_ws) {
+        throw NotImplementedError('WebSocket are not supported by the browser');
     } 
     else {
         var $socket = new WebSocket(host);

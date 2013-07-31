@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130730-161229
+// version 1.1.20130731-090941
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130730-161229"]
+__BRYTHON__.version_info=[1,1,"20130731-090941"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -2061,6 +2061,10 @@ this.__class__=slice
 this.start=start
 this.stop=stop
 this.step=step
+this.__getattr__=function(attr){
+if(this[attr]!==undefined){return this[attr]}
+else{throw AttributeError("'NoneType' object has no attribute '"+attr+"'")}
+}
 }
 function slice(){
 var $ns=$MakeArgs('slice',arguments,[],{},'args',null)
@@ -7360,8 +7364,10 @@ function Websocket(){}
 Websocket.__class__=$type
 Websocket.__str__=function(){return "<class 'Websocket'>"}
 function $WebSocketClass(host){
-if(!window.WebSocket){
-alert('WebSocket are not supported!')
+var has_ws=(function(){try{var x=window.WebSocket;return x!==undefined}
+catch(err){return false}})()
+if(!has_ws){
+throw NotImplementedError('WebSocket are not supported by the browser')
 }
 else{
 var $socket=new WebSocket(host)
