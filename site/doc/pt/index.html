@@ -1,7 +1,102 @@
-<frameset rows="20%,*">
-<frame src="header.html" frameborder=0>
-<frameset cols="20%,*">
-<frame src="menu.html" frameborder=0>
-<frame name="right" src="intro.html" frameborder=0>
-</frameset>
-</frameset>
+<!DOCTYPE html> 
+<html>
+<head>
+<meta charset="utf-8">
+<title>Brython - Documentação</title>
+<link rel="stylesheet" href="../doc_brython.css">
+
+<script src="/src/brython.js"></script>
+<script src="/src/py2js.js"></script>
+<script src="/src/py_classes.js"></script>
+
+<script type="text/python3">
+import markdown
+import time
+
+target = None
+
+class Loader:
+
+    def __init__(self,url):
+        self.url = url
+    
+    def load(self,target):
+        self.target = target
+        req = ajax()
+        req.on_complete = self.fill
+        req.open('GET',self.url,False)
+        req.send()
+
+    def fill(self,req):
+        if req.status == 200:
+            mk,scripts = markdown.mark(req.text)
+            doc[self.target].html = mk
+            for script in scripts:
+                exec(script,globals())
+
+def load(url,target):
+    Loader(url+'?foo=%s' %time.time()).load(target)
+    return False
+
+language = "pt"
+</script>
+
+<script type="text/python3" src="../menu_doc.py"></script>
+
+</head>
+<body onLoad="brython(1);load('intro.md','content')">
+
+<table id="banner" cellpadding=0 cellspacing=0>
+<tr id="banner_row">
+</tr>
+</table>
+
+<table width="100%">
+<tr>
+<td style="width:20%;vertical-align:top;">
+<h4><a class="navig" href="#" onClick="load('intro.md','content')">Introdução</a></h4>
+<h4>Usage</h4>
+<div style="padding-left:10px;">
+<a class="navig" href="#" onClick="load('syntax.md','content')">Sintaxe</a>
+<br><a class="navig" href="#" onClick="load('integr.md','content')">Palavras-chave e funções ingegradas</a>
+<br><a class="navig" href="#" onClick="load('htmldocs.md','content')">Gestão de documentos HTML</a>
+<br><a class="navig" href="#" onClick="load('events.md','content')">Eventos</a>
+<br><a class="navig" href="#" onClick="load('svg.md','content')">Gráficos SVG</a>
+<br><a class="navig" href="#" onClick="load('jsobjects.md','content')">Usando objetos e bibliotecas Javascript</a>
+<br><a class="navig" href="#" onClick="load('ajax.md','content')">Ajax</a>
+<br><a class="navig" href="#" onClick="load('websockets.md','content')">Web sockets</a>
+<br><a class="navig" href="#" onClick="load('locstor.md','content')">Armazenamento Local</a>
+</div>
+<h4>Trabalhando com Brython</h4>
+<div style="padding-left:10px;">
+<a class="navig" href="#" onClick="load('dev_env.md','content')">Instalando o ambiente de desenvolvimento</a>
+<br><a class="navig" href="#" onClick="load('test.md','content')">Teste e depuração</a>
+<br><a class="navig" href="#" onClick="load('deploy.md','content')">Implantando uma aplicação</a></div>
+
+<h4>Livro de receitas</h4>
+<div style="padding-left:10px;">
+<a class="navig" href="#" onClick="load('cookbook/hello_world.md','content')">Olá mundo !</a>
+<br><a class="navig" href="#" onClick="load('cookbook/content_in_div.md','content')">Inserir conteúdo em um elemento</a>
+<br><a class="navig" href="#" onClick="load('cookbook/basic_markup.md','content')">HTML markup (bold,italic...)</a>
+<br><a class="navig" href="#" onClick="load('cookbook/table.md','content')">Tabela HTML</a>
+<br><a class="navig" href="#" onClick="load('cookbook/drag_drop.md','content')">Arrastar e soltar</a>
+<br><a class="navig" href="#" onClick="load('cookbook/get_content.md','content')">Obter o conteúdo de um elemento</a>
+<br><a class="navig" href="#" onClick="load('cookbook/read_file.md','content')">Ler o conteúdo de um arquivo</a>
+<br><a class="navig" href="#" onClick="load('cookbook/local_storage.md','content')">Armazenar objetos localmente</a>
+<br><a class="navig" href="#" onClick="load('cookbook/read_text_from_imagemap.md','content')">Exemplo de onmouseover</a>
+</div>
+
+<h4>Notas de implementação</h4>
+<div style="padding-left:10px;">
+<a class="navig" href="#" onClick="load('modele.md','content')">Compilando e executando</a>
+<br><a class="navig" href="#" onClick="load('implem.md','content')">Conversão de sintaxe Python &rarr; JS</a>
+<br><a class="navig" href="#" onClick="load('import.md','content')">Implementação de <tt>import</tt></a>
+</div>
+</td>
+
+<td id="content" style="vertical-align:top;">
+&nbsp;
+</td>
+</tr>
+</table>
+</html>
