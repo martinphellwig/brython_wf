@@ -1,8 +1,6 @@
 ## Web Sockets
 
-Los Web sockets son una manera de manejar comunicación bidireccional entre el cliente y el servidor
-
-Han sido especificados en HTML5. Para comprobar si tu navegador lo soporta puedes usar el booleano integrado en Brython `__BRYTHON__.has_websocket`
+Los Web sockets son una manera de manejar comunicación bidireccional entre el cliente y el servidor. Han sido especificados en HTML5
 
 Si están soportados, la comunicación con el servidor se establece usando la función integrada en Brython llamada `websocket` :
 
@@ -10,12 +8,14 @@ Si están soportados, la comunicación con el servidor se establece usando la fu
 
 donde _host_ es la localización de un servidor que soporta el protocolo WebSocket
 
+Si tu nevagador non soporta WebSocket, se obtendr&aacute; un `NotImplementedError`
+
 Esta llamada devuelve una instancia de la clase `WebSocket`. Para describir el proceso de comunicación, se deben definir funciones de respuesta (callbacks) como atributos de la instancia :
 
-- `onopen` : función sin argumento, establece la conexión con el servidor una vez que se la llama
-- `onerror` : función sin argumento, será llamada si ocurre un error durante la comunicación
-- `onmessage` : función con un argumento, una instancia del `DOMEvent`. Esta instancia posee el atributo `data` que recibe el mensaje enviado por el servidor
-- `onclose` : función sin argumento, será llamada cuando se cierra la conexión
+- `on_open` : función sin argumento, establece la conexión con el servidor una vez que se la llama
+- `on_error` : función sin argumento, será llamada si ocurre un error durante la comunicación
+- `on_message` : función con un argumento, una instancia del `DOMEvent`. Esta instancia posee el atributo `data` que recibe el mensaje enviado por el servidor
+- `on_close` : función sin argumento, será llamada cuando se cierra la conexión
 
 Instancias a `WebSocket` soportan los siguientes métodos :
 

@@ -1,8 +1,6 @@
 ## Web Sockets
 
-Web sockets are a way to handle bi directional communication between client and server
-
-They have been specified in HTML5. To check if your browser supports them, use the boolean built-in `__BRYTHON__.has_websocket`
+Web sockets are a way to handle bi directional communication between client and server. They have been specified in HTML5
 
 If so, the communication with the server is established using the built-in function `websocket` :
 
@@ -10,12 +8,14 @@ If so, the communication with the server is established using the built-in funct
 
 where _host_ is the location of a server that supports the WebSocket protocol
 
+If your browser doesn't support WebSocket, a `NotImplementedError` will be raised
+
 This call returns an instance of the `WebSocket` class. To describe the communication process, callback functions must be defined as attributes of the instance :
 
-- `onopen` : set to a function with no argument, called once the connection with the server is established
-- `onerror` : set to a function with no argument, called if an error occurs during the communication
-- `onmessage` : set to a function with one argument, an instance of `DOMEvent`. This instance has an attribute `data` that holds the message sent by the server
-- `onclose` : set to a function with no argument, called when the connection is closed
+- `on_open` : set to a function with no argument, called once the connection with the server is established
+- `on_error` : set to a function with no argument, called if an error occurs during the communication
+- `on_message` : set to a function with one argument, an instance of `DOMEvent`. This instance has an attribute `data` that holds the message sent by the server
+- `on_close` : set to a function with no argument, called when the connection is closed
 
 `WebSocket` instances support the following methods :
 

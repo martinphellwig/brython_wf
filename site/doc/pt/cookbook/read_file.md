@@ -6,28 +6,15 @@ Ler o conteúdo de um arquivo
 Solução
 -------
 
-Usamos a função integrada `ajax()` para carregar o conteúdo do arquivo
+Usamos a função integrada `open()` para carregar o conteúdo do arquivo
 
 <table width="100%">
 <tr>
 <td style="width:40%;padding-right:10px;">
 
     import time
-    import html
-
-    def on_complete(req):
-        if req.status==200 or req.status==0:
-            doc["zone"].value = req.text
-        else:
-            doc["zone"].value = "error "+req.text
-    
-    def go(url):
-        req = ajax()
-        req.on_complete = on_complete
-        req.open('GET',url,True)
-        req.send()
-
-    go('cookbook/file.txt?foo=%s' %time.time())
+    fake_qs = '?foo=%s' %time.time()
+    doc['zone'].value = open('cookbook/file.txt'+fake_qs).read()
 
 <button onclick="get_file()">Teste</button>
 
