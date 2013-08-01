@@ -152,7 +152,7 @@ function $import_py_module(module,alias,names,path,module_contents) {
         $module.__file__ = path
         return $module
     }catch(err){
-        eval('throw '+err.name+'(err.message)')
+        throw __BRYTHON__.exception(err)
     }
 }
 
