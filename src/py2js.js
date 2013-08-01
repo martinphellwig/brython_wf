@@ -2768,6 +2768,8 @@ __BRYTHON__.py2js = function(src,module){
     }
     if(src.charAt(src.length-1)!="\n"){src+='\n'}
     if(module===undefined){module='__main__'}
+    // Python built-in variable __name__
+    __name__ = module
     if(__BRYTHON__.scope[module]===undefined){
         __BRYTHON__.scope[module] = {}
         __BRYTHON__.scope[module].__dict__ = {}

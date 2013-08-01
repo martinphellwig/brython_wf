@@ -1009,7 +1009,7 @@ function isinstance(obj,arg){
             return ((typeof obj=="number" && obj.valueOf()%1!==0))||
                 (obj.__class__===float)
         }
-        if(arg===str){return (typeof obj=="string")}
+        if(arg===str){return (typeof obj=="string"||obj.__class__===str)}
         if(arg===list){return (obj.constructor===Array)}
         if(obj.__class__!==undefined){return obj.__class__===arg}
         return obj.constructor===arg

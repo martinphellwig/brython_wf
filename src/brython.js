@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130731-090941
+// version 1.1.20130801-094454
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130731-090941"]
+__BRYTHON__.version_info=[1,1,"20130801-094454"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -1509,7 +1509,7 @@ if(arg===float){
 return((typeof obj=="number" && obj.valueOf()%1!==0))||
 (obj.__class__===float)
 }
-if(arg===str){return(typeof obj=="string")}
+if(arg===str){return(typeof obj=="string"||obj.__class__===str)}
 if(arg===list){return(obj.constructor===Array)}
 if(obj.__class__!==undefined){return obj.__class__===arg}
 return obj.constructor===arg
@@ -5906,6 +5906,7 @@ src=src.substr(1)
 }
 if(src.charAt(src.length-1)!="\n"){src+='\n'}
 if(module===undefined){module='__main__'}
+__name__=module
 if(__BRYTHON__.scope[module]===undefined){
 __BRYTHON__.scope[module]={}
 __BRYTHON__.scope[module].__dict__={}
