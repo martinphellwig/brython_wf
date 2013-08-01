@@ -169,7 +169,7 @@ def apply_markdown(src):
     code_pattern = r'\`(\S.*?\S)\`'
     src = re.sub(code_pattern,s_escape,src)
     # also convert _
-    src = re.sub(code_pattern,s_unmark,src)    
+    src = re.sub(code_pattern,s_unmark,src)
     
     # inline links
     link_pattern1 = r'\[(.+?)\]\s?\((.+?)\)'

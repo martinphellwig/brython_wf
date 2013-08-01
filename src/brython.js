@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130801-094851
+// version 1.1.20130801-103056
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130801-094851"]
+__BRYTHON__.version_info=[1,1,"20130801-103056"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -2256,7 +2256,8 @@ else{
 var exc=Exception(js_exc.message)
 exc.__name__=js_exc.name
 }
-document.$stderr.write(exc.__name__+': '+exc.message+'\n'+exc.info)
+__BRYTHON__.exception_stack.push(exc)
+console.log(exc.__name__+': '+exc.message+'\n'+exc.info)
 return exc
 }
 function $make_exc(name){
@@ -3434,7 +3435,7 @@ $module.__str__=function(){return "<module '"+module+"' from "+path+" >"}
 $module.__file__=path
 return $module
 }catch(err){
-eval('throw '+err.name+'(err.message)')
+throw __BRYTHON__.exception(err)
 }
 }
 $import_funcs=[$import_js, $import_module_search_path]
