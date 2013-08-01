@@ -40,14 +40,24 @@ $module =  {
     time : function(){return (new Date().getTime())/1000},
     
     strftime : function(format,arg){
-
         function ns(arg,nb){
             // left padding with 0
             var res = arg.toString()
             while(res.length<nb){res = '0'+res}
             return res
         }
-        if(arg){var obj = new Date(arg)}else{var obj=new Date()}
+        if(arg){
+            var obj = new Date(arg[0],arg[1]-1,arg[2],arg[3],arg[4],arg[5],arg[6])
+        }else{
+            var obj=new Date()
+        }
+        var abb_weekdays = ['Su','Mo','Tu','We','Th','Fr','Sa']
+        var full_weekdays = ['Sunday','Monday','Tuesday','Wednesday',
+            'Thursday','Friday','Saturday']
+        var abb_months = ['Jan','Feb','Mar','Apr','May','Jun',
+            'Jul','Aug','Sep','Oct','Nov','Dec']
+        var full_months = ['January','February','March','April','May','June',
+            'July','August','September','October','November','December']
         var res = format
         res = res.replace(/%H/,ns(obj.getHours(),2))
         res = res.replace(/%M/,ns(obj.getMinutes(),2))
@@ -56,6 +66,35 @@ $module =  {
         res = res.replace(/%y/,ns(obj.getFullYear(),4).substr(2))
         res = res.replace(/%m/,ns(obj.getMonth()+1,2))
         res = res.replace(/%d/,ns(obj.getDate(),2))
+        res = res.replace(/%a/,abb_weekdays[obj.getDay()])
+        res = res.replace(/%A/,full_weekdays[obj.getDay()])
+        res = res.replace(/%b/,abb_months[obj.getMonth()])
+        res = res.replace(/%B/,full_months[obj.getMonth()])
+        return res
+    },
+    
+    struct_time : function(arg){
+        if(!isinstance(arg,[tuple,list])){
+            throw TypeError('constructor requires a sequence')
+        }
+        if(len(arg)!=9){
+            throw TypeError("time.struct_time() takes a 9-sequence ("+len(arg)+"-sequence given")
+        }
+        var res = arg
+        console.log(res.__getitem__[0])
+        var names = ['tm_year','tm_mon','tm_mday','tm_hour','tm_min','tm_sec','tm_wday',
+            'tm_yday','tm_isdst','tm_zone','tm_gmtoff']
+        res.__getattr__ = function(attr){
+            var ix = names.indexOf(attr)
+            if(ix>-1){return arg.__getitem__(ix)}
+            if(typeof res[attr]==='function'){
+                return (function(obj){
+                    return function(){return obj[attr].apply(obj,arguments)}
+                })(res)
+            }else if(res[attr]!==undefined){
+                return res[attr]
+            }else{throw AttributeError("object has no attribute '"+attr+"'")}
+        }
         return res
     }
 }
