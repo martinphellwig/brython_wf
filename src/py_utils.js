@@ -123,7 +123,16 @@ function $gen_expr(){ // generator expresssion
     $py += $res+'.append('+arguments[1]+')'
     var $js = __BRYTHON__.py2js($py,'generator expression').to_js()
     eval($js)
-    return eval($res)
+    var $res1 = eval($res)
+    $res1.__class__ = {
+        __class__:$type,
+        __getattr__:function(attr){return $res1[attr]},
+        __repr__:function(){return "<class 'generator'>"},
+        __str__:function(){return "<class 'generator'>"}
+    }
+    $res1.__repr__ = function(){return "<generator object <genexpr>>"}
+    $res1.__str__ = $res1.__repr__
+    return $res1
 }
 
 function $dict_comp(){ // dictionary comprehension

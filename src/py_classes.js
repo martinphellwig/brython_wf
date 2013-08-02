@@ -510,12 +510,31 @@ function divmod(x,y) {
 }
 
 function enumerate(iterator){
-    var res = []
-    for(var i=0;i<iterator.__len__();i++){
-        res.push([i,iterator.__item__(i)])
+    var _iter = iter(iterator)
+    var res = {
+        __class__:enumerate,
+        __getattr__:function(attr){return res[attr]},
+        __iter__:function(){return res},
+        __next__:function(){
+            res.counter++
+            return [res.counter,next(_iter)]
+        },
+        __repr__:function(){return "<enumerate object>"},
+        __str__:function(){return "<enumerate object>"},
+        counter:-1
+    }
+    for(var attr in res){
+        if(typeof res[attr]==='function' && attr!=="__class__"){
+            res[attr].__str__=(function(x){
+                return function(){return "<method wrapper '"+x+"' of enumerate object>"}
+            })(attr)
+        }
     }
     return res
-}      
+}
+enumerate.__class__ = $type
+enumerate.__repr__ = function(){return "<class 'enumerate'>"}
+enumerate.__str__ = function(){return "<class 'enumerate'>"}
 
 //eval() (built in function)
 //exec() (built in function)
@@ -1362,8 +1381,14 @@ function range(){
     }else if(step<0){
         for(var i=start;i>stop;i+=step){res.push(i)}
     }
+    res.__class__ = range
+    res.__repr__ = res.__str__ = function(){
+            return 'range('+start+','+stop+(args.length>=3 ? ','+step : '')+')'
+        }
     return res
 }
+range.__repr__ = range.__str__ = function(){return "<class 'range'>"}
+
 
 function repr(obj){
     if(obj.__repr__!==undefined){return obj.__repr__()}
@@ -1875,8 +1900,7 @@ Exception = function (msg){
         err.info += '\n'+lines[line_num-1]
     }
     err.message = msg
-
-    err.args = tuple(msg.split('\n')[0])
+    err.args = msg
     err.__str__ = function(){return msg}
     err.toString = err.__str__
     err.__getattr__ = function(attr){return this[attr]}
