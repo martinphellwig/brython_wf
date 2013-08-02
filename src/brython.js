@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130801-103056
+// version 1.1.20130802-213606
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130801-103056"]
+__BRYTHON__.version_info=[1,1,"20130802-213606"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -164,7 +164,16 @@ for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.append('+arguments[1]+')'
 var $js=__BRYTHON__.py2js($py,'generator expression').to_js()
 eval($js)
-return eval($res)
+var $res1=eval($res)
+$res1.__class__={
+__class__:$type,
+__getattr__:function(attr){return $res1[attr]},
+__repr__:function(){return "<class 'generator'>"},
+__str__:function(){return "<class 'generator'>"}
+}
+$res1.__repr__=function(){return "<generator object <genexpr>>"}
+$res1.__str__=$res1.__repr__
+return $res1
 }
 function $dict_comp(){
 var $env=arguments[0]
@@ -1103,12 +1112,31 @@ return[int(Math.ceil(x/y)), x2]
 return[int(Math.floor(x/y)), x%y]
 }
 function enumerate(iterator){
-var res=[]
-for(var i=0;i<iterator.__len__();i++){
-res.push([i,iterator.__item__(i)])
+var _iter=iter(iterator)
+var res={
+__class__:enumerate,
+__getattr__:function(attr){return res[attr]},
+__iter__:function(){return res},
+__next__:function(){
+res.counter++
+return[res.counter,next(_iter)]
+},
+__repr__:function(){return "<enumerate object>"},
+__str__:function(){return "<enumerate object>"},
+counter:-1
+}
+for(var attr in res){
+if(typeof res[attr]==='function' && attr!=="__class__"){
+res[attr].__str__=(function(x){
+return function(){return "<method wrapper '"+x+"' of enumerate object>"}
+})(attr)
+}
 }
 return res
 }
+enumerate.__class__=$type
+enumerate.__repr__=function(){return "<class 'enumerate'>"}
+enumerate.__str__=function(){return "<class 'enumerate'>"}
 function filter(){
 if(arguments.length!=2){throw TypeError(
 "filter expected 2 arguments, got "+arguments.length)}
@@ -1811,8 +1839,13 @@ for(var i=start;i<stop;i+=step){res.push(i)}
 }else if(step<0){
 for(var i=start;i>stop;i+=step){res.push(i)}
 }
+res.__class__=range
+res.__repr__=res.__str__=function(){
+return 'range('+start+','+stop+(args.length>=3 ? ','+step : '')+')'
+}
 return res
 }
+range.__repr__=range.__str__=function(){return "<class 'range'>"}
 function repr(obj){
 if(obj.__repr__!==undefined){return obj.__repr__()}
 else{throw AttributeError("object has no attribute __repr__")}
@@ -2238,7 +2271,7 @@ err.info +="module '"+lib_module+"' line "+line_num
 err.info +='\n'+lines[line_num-1]
 }
 err.message=msg
-err.args=tuple(msg.split('\n')[0])
+err.args=msg
 err.__str__=function(){return msg}
 err.toString=err.__str__
 err.__getattr__=function(attr){return this[attr]}
@@ -2426,10 +2459,30 @@ list.__in__=function(self,item){return item.__contains__(self)}
 list.__init__=function(self){
 while(self.__len__()>0){self.pop()}
 if(arguments.length===1){return}
-var arg=arguments[1]
-for(var i=0;i<arg.__len__();i++){self.push(arg.__item__(i))}
+var arg=iter(arguments[1])
+while(true){
+try{self.push(arg.__next__())}
+catch(err){break}
+}
 }
 list.__item__=function(self,i){return self[i]}
+list.__iter__=function(self){
+var res={
+__class__:$list_iterator,
+__getattr__:function(attr){return res[attr]},
+__item__:function(rank){return self[rank]},
+__len__:function(){return self.length},
+__next__:function(){
+res.counter++
+if(res.counter<self.__len__()){return self.__getitem__(res.counter)}
+else{throw StopIteration("StopIteration")}
+},
+__repr__:function(){return "<list iterator object>"},
+__str__:function(){return "<list iterator object>"},
+counter:-1
+}
+return res
+}
 list.__len__=function(self){return self.length}
 list.__mul__=function(self,other){
 if(isinstance(other,int)){return other.__mul__(self)}
@@ -2626,6 +2679,12 @@ return res
 }
 return list
 }()
+$list_iterator={
+__class__:$type,
+__getattr__:function(){return $list_iterator[attr]},
+__repr__:function(){return "<class 'list_iterator'>"},
+__str__:function(){return "<class 'list_iterator'>"}
+}
 str=function(){
 function str(arg){
 if(arg===undefined){return '<undefined>'}
@@ -3435,7 +3494,7 @@ $module.__str__=function(){return "<module '"+module+"' from "+path+" >"}
 $module.__file__=path
 return $module
 }catch(err){
-throw __BRYTHON__.exception(err)
+eval('throw '+err.name+'(err.message)')
 }
 }
 $import_funcs=[$import_js, $import_module_search_path]
@@ -3661,7 +3720,7 @@ var not_ctx=new $NotCtx(new_ctx)
 not_ctx.tree=[condition]
 node.C=new_ctx
 var new_node=new $Node('expression')
-var js='throw AssertionError("")'
+var js='throw AssertionError("AssertionError")'
 if(message !==null){
 js='throw AssertionError(str('+message.to_js()+'))'
 }
@@ -4348,11 +4407,10 @@ var new_nodes=[]
 var new_node=new $Node('expression')
 var target=this.tree[0]
 var iterable=this.tree[1]
-new $NodeJSCtx(new_node,'var $iter'+$loop_num+'='+iterable.to_js())
+new $NodeJSCtx(new_node,'var $iter'+$loop_num+'=iter('+iterable.to_js()+')')
 new_nodes.push(new_node)
 new_node=new $Node('expression')
-var js='for(var $i'+$loop_num+'=0;$i'+$loop_num
-js +='<$iter'+$loop_num+'.__len__();$i'+$loop_num+'++)'
+var js='while(true)'
 new $NodeJSCtx(new_node,js)
 new_nodes.push(new_node)
 var children=node.children
@@ -4360,13 +4418,21 @@ node.parent.children.splice(rank,1)
 for(var i=new_nodes.length-1;i>=0;i--){
 node.parent.insert(rank,new_nodes[i])
 }
-var new_node=new $Node('expression')
-node.insert(0,new_node)
-var C=new $NodeCtx(new_node)
+var try_node=new $Node('expression')
+new $NodeJSCtx(try_node,'try')
+node.insert(0,try_node)
+var iter_node=new $Node('expression')
+var C=new $NodeCtx(iter_node)
 var target_expr=new $ExprCtx(C,'left',true)
 target_expr.tree=target.tree
 var assign=new $AssignCtx(target_expr)
-assign.tree[1]=new $JSCode('$iter'+$loop_num+'.__item__($i'+$loop_num+')')
+assign.tree[1]=new $JSCode('$iter'+$loop_num+'.__next__()')
+try_node.add(iter_node)
+var catch_node=new $Node('expression')
+var js='catch($err){if($err.__name__=="StopIteration"){break}'
+js +='else{throw($err)}}'
+new $NodeJSCtx(catch_node,js)
+node.insert(1,catch_node)
 node.parent.children[rank+1].children=children
 $loop_num++
 }

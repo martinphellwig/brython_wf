@@ -162,11 +162,32 @@ list.__in__ = function(self,item){return item.__contains__(self)}
 list.__init__ = function(self){
     while(self.__len__()>0){self.pop()}
     if(arguments.length===1){return}
-    var arg = arguments[1]
-    for(var i=0;i<arg.__len__();i++){self.push(arg.__item__(i))}
+    var arg = iter(arguments[1])
+    while(true){
+        try{self.push(arg.__next__())}
+        catch(err){break}
+    }
 }
 
 list.__item__ = function(self,i){return self[i]}
+
+list.__iter__ = function(self){
+    var res = {
+        __class__:$list_iterator,
+        __getattr__:function(attr){return res[attr]},
+        __item__:function(rank){return self[rank]},
+        __len__:function(){return self.length},
+        __next__:function(){
+            res.counter++
+            if(res.counter<self.__len__()){return self.__getitem__(res.counter)}
+            else{throw StopIteration("StopIteration")}
+        },
+        __repr__:function(){return "<list iterator object>"},
+        __str__:function(){return "<list iterator object>"},
+        counter:-1
+    }
+    return res
+}
 
 list.__len__ = function(self){return self.length}
 
@@ -399,4 +420,9 @@ Array.prototype.__getattr__ = function(attr){
 }
 return list
 }()
-
+$list_iterator = {
+    __class__:$type,
+    __getattr__:function(){return $list_iterator[attr]},
+    __repr__:function(){return "<class 'list_iterator'>"},
+    __str__:function(){return "<class 'list_iterator'>"}
+}

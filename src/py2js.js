@@ -180,7 +180,7 @@ function $AssertCtx(context){
         not_ctx.tree = [condition]
         node.context = new_ctx
         var new_node = new $Node('expression')
-        var js = 'throw AssertionError("")'
+        var js = 'throw AssertionError("AssertionError")'
         if(message !== null){
             js = 'throw AssertionError(str('+message.to_js()+'))'
         }
@@ -949,15 +949,16 @@ function $ForExpr(context){
     this.toString = function(){return '(for) '+this.tree}
     this.transform = function(node,rank){
         var new_nodes = []
+        
+        // node to create a temporary variable set to iter(iterable)
         var new_node = new $Node('expression')
         var target = this.tree[0]
         var iterable = this.tree[1]
-        new $NodeJSCtx(new_node,'var $iter'+$loop_num+'='+iterable.to_js())
+        new $NodeJSCtx(new_node,'var $iter'+$loop_num+'=iter('+iterable.to_js()+')')
         new_nodes.push(new_node)
 
         new_node = new $Node('expression')
-        var js = 'for(var $i'+$loop_num+'=0;$i'+$loop_num
-        js += '<$iter'+$loop_num+'.__len__();$i'+$loop_num+'++)'
+        var js = 'while(true)'
         new $NodeJSCtx(new_node,js)
         new_nodes.push(new_node)
 
@@ -969,13 +970,26 @@ function $ForExpr(context){
             node.parent.insert(rank,new_nodes[i])
         }
 
-        var new_node = new $Node('expression')
-        node.insert(0,new_node)
-        var context = new $NodeCtx(new_node) // create ordinary node
+        // add lines to get next item in iterator, or exit the loop
+        // if __next__ raises StopIteration
+        var try_node = new $Node('expression')
+        new $NodeJSCtx(try_node,'try')
+        node.insert(0,try_node)
+
+        var iter_node = new $Node('expression')
+        var context = new $NodeCtx(iter_node) // create ordinary node
         var target_expr = new $ExprCtx(context,'left',true)
         target_expr.tree = target.tree
         var assign = new $AssignCtx(target_expr) // assignment to left operand
-        assign.tree[1] = new $JSCode('$iter'+$loop_num+'.__item__($i'+$loop_num+')')
+        assign.tree[1] = new $JSCode('$iter'+$loop_num+'.__next__()')
+        try_node.add(iter_node)
+
+        var catch_node = new $Node('expression')
+        var js = 'catch($err){if($err.__name__=="StopIteration"){break}'
+        js += 'else{throw($err)}}'
+        new $NodeJSCtx(catch_node,js)
+        node.insert(1,catch_node)
+
         // set new loop children
         node.parent.children[rank+1].children = children
         $loop_num++
