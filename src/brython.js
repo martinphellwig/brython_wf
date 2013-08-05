@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130802-213606
+// version 1.1.20130805-091540
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130802-213606"]
+__BRYTHON__.version_info=[1,1,"20130805-091540"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -6864,6 +6864,7 @@ res.children.push(document.createTextNode(str(other)))
 }else{res.children.push(other)}
 return res
 }
+DOMNode.prototype.__bool__=function(){return true}
 DOMNode.prototype.__class__=DOMObject
 DOMNode.prototype.__contains__=function(key){
 try{this.__getitem__(key);return True}
