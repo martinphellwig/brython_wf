@@ -449,6 +449,8 @@ DOMNode.prototype.__add__ = function(other){
     return res
 }
 
+DOMNode.prototype.__bool__ = function(){return true}
+
 DOMNode.prototype.__class__ = DOMObject
 
 DOMNode.prototype.__contains__ = function(key){
@@ -534,8 +536,9 @@ DOMNode.prototype.__getitem__ = function(key){
 
 DOMNode.prototype.__in__ = function(other){return other.__contains__(this)}
 
-DOMNode.prototype.__item__ = function(key){ // for iteration
-    return $DOMNode(this.childNodes[key])
+DOMNode.prototype.__iter__ = function(key){ // for iteration
+    this.$counter = -1
+    return this
 }
 
 DOMNode.prototype.__le__ = function(other){
@@ -572,6 +575,13 @@ DOMNode.prototype.__mul__ = function(other){
 
 DOMNode.prototype.__ne__ = function(other){return !this.__eq__(other)}
 
+DOMNode.prototype.__next__ = function(){
+   this.counter++
+   if(this.counter<this.childNodes.length){
+       return $DOMNode(this.childNodes[this.counter])
+   }
+   throw StopIteration('StopIteration')
+}
 DOMNode.prototype.__not_in__ = function(other){return !other.__contains__(this)}
 
 DOMNode.prototype.__radd__ = function(other){ // add to a string
