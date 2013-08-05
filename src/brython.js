@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130805-091540
+// version 1.1.20130805-114015
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130805-091540"]
+__BRYTHON__.version_info=[1,1,"20130805-114015"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -4285,13 +4285,33 @@ var tree=this.tree[0].tree
 for(var i=0;i<tree.length;i++){
 var expr=tree[i]
 if(expr.type==='expr'||expr.type==='id'){
-res.push('delete '+expr.to_js())
+var scope=$get_scope(this)
+var js='(function(){'
+js +='if('+expr.to_js()+'.__del__===undefined)'
+js +='{delete '+expr.to_js()+'}else{'
+js +=expr.to_js()+'.__del__()};'
+if(scope.ntype==='module'){
+js+='delete $globals["'+expr.to_js()+'"]'
+}else if(scope.ntype==="def"||scope.ntype==="generator"){
+if(scope.globals.indexOf(expr.to_js())>-1){
+js+='delete $globals["'+expr.to_js()+'"]'
+}else{
+js+='delete $locals["'+expr.to_js()+'"]'
+}
+}
+js +='})()'
+res.push(js)
 }else if(expr.type==='sub'){
 expr.func='delitem'
 res.push(expr.to_js())
 expr.func='getitem'
 }else{
-throw SyntaxError("wrong argument for del "+expr.type)
+if(expr.type==='op'){
+$_SyntaxError(this,["can't delete operator"])
+}else if(expr.type==='call'){
+$_SyntaxError(this,["can't delete function call"])
+}
+$_SyntaxError(this,["can't delete "+expr.type])
 }
 }
 return res.join(';')
@@ -5182,12 +5202,14 @@ var ntype=tree_node.parent.C.tree[0].type
 if(['def','class','generator'].indexOf(ntype)>-1){
 scope=tree_node.parent
 scope.ntype=ntype
+scope.elt=scope.C.tree[0]
 return scope
 }
 tree_node=tree_node.parent
 }
 scope=tree_node.parent 
 scope.ntype="module"
+scope.elt=scope.module
 return scope
 }
 function $get_module(C){
@@ -6870,6 +6892,10 @@ DOMNode.prototype.__contains__=function(key){
 try{this.__getitem__(key);return True}
 catch(err){return False}
 }
+DOMNode.prototype.__del__=function(){
+console.log('delete')
+this.parentNode.removeChild(this)
+}
 DOMNode.prototype.__delitem__=function(key){
 if(this.nodeType===9){
 var res=document.getElementById(key)
@@ -6939,8 +6965,9 @@ return $DOMNode(this.childNodes[key])
 }
 }
 DOMNode.prototype.__in__=function(other){return other.__contains__(this)}
-DOMNode.prototype.__item__=function(key){
-return $DOMNode(this.childNodes[key])
+DOMNode.prototype.__iter__=function(key){
+this.$counter=-1
+return this
 }
 DOMNode.prototype.__le__=function(other){
 var obj=this
@@ -6971,6 +6998,13 @@ throw ValueError("can't multiply "+this.__class__+"by "+other)
 }
 }
 DOMNode.prototype.__ne__=function(other){return !this.__eq__(other)}
+DOMNode.prototype.__next__=function(){
+this.counter++
+if(this.counter<this.childNodes.length){
+return $DOMNode(this.childNodes[this.counter])
+}
+throw StopIteration('StopIteration')
+}
 DOMNode.prototype.__not_in__=function(other){return !other.__contains__(this)}
 DOMNode.prototype.__radd__=function(other){
 var res=$TagSum()

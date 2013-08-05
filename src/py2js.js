@@ -817,13 +817,35 @@ function $DelCtx(context){
         for(var i=0;i<tree.length;i++){
             var expr = tree[i]
             if(expr.type==='expr'||expr.type==='id'){
-                res.push('delete '+expr.to_js())
+                var scope = $get_scope(this)
+                var js = '(function(){'
+                js += 'if('+expr.to_js()+'.__del__===undefined)'
+                js += '{delete '+expr.to_js()+'}else{'
+                js += expr.to_js()+'.__del__()};'
+                // remove name from dictionaries
+                if(scope.ntype==='module'){
+                    js+='delete $globals["'+expr.to_js()+'"]'
+                }else if(scope.ntype==="def"||scope.ntype==="generator"){
+                    if(scope.globals.indexOf(expr.to_js())>-1){
+                        // global variable
+                        js+='delete $globals["'+expr.to_js()+'"]'
+                    }else{ // local variable
+                        js+='delete $locals["'+expr.to_js()+'"]'
+                    }
+                }
+                js += '})()'
+                res.push(js)
             }else if(expr.type==='sub'){
                 expr.func = 'delitem'
                 res.push(expr.to_js())
                 expr.func = 'getitem'
             }else{
-                throw SyntaxError("wrong argument for del "+expr.type)
+                if(expr.type==='op'){
+                    $_SyntaxError(this,["can't delete operator"])
+                }else if(expr.type==='call'){
+                    $_SyntaxError(this,["can't delete function call"])
+                }
+                $_SyntaxError(this,["can't delete "+expr.type])
             }
         }
         return res.join(';')
@@ -1853,12 +1875,14 @@ function $get_scope(context){
         if(['def','class','generator'].indexOf(ntype)>-1){
             scope = tree_node.parent
             scope.ntype = ntype
+            scope.elt = scope.context.tree[0]
             return scope
         }
         tree_node = tree_node.parent
     }
     scope = tree_node.parent // module
     scope.ntype = "module"
+    scope.elt = scope.module
     return scope
 }
 

@@ -458,6 +458,13 @@ DOMNode.prototype.__contains__ = function(key){
     catch(err){return False}
 }
 
+DOMNode.prototype.__del__ = function(){
+    // if element has a parent, calling __del__ removes object
+    // from the parent's children
+    console.log('delete')
+    this.parentNode.removeChild(this)
+}
+
 DOMNode.prototype.__delitem__ = function(key){
     if(this.nodeType===9){ // document : remove by id
         var res = document.getElementById(key)
