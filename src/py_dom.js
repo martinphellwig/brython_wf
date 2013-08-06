@@ -432,7 +432,7 @@ function $DOMNode(elt){
         elt.$brython_id=Math.random().toString(36).substr(2, 8)
         // add attributes of Node to element
         for(var attr in DOMNode.prototype){elt[attr]=DOMNode.prototype[attr]}
-        elt.__str__ = $DOMtoString
+        elt.__repr__ = elt.__str__ = $DOMtoString
     }
     return elt
 }

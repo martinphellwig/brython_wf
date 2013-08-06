@@ -40,7 +40,7 @@ function $SVGTag(tag_name,args){
                 } else {
                     if($arg.value!==false){
                         // option.selected=false sets it to true :-)
-                        elt.setAttributeNS(null,$arg.name.toLowerCase().replace('_','-'),$arg.value)
+                        elt.setAttributeNS(null,$arg.name.replace('_','-'),$arg.value)
                     }
                 }
             }
