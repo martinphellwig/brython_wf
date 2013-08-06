@@ -461,7 +461,9 @@ DOMNode.prototype.__contains__ = function(key){
 DOMNode.prototype.__del__ = function(){
     // if element has a parent, calling __del__ removes object
     // from the parent's children
-    console.log('delete')
+    if(!this.parentNode){
+        throw ValueError("can't delete "+str(this))
+    }
     this.parentNode.removeChild(this)
 }
 

@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130806-085010
+// version 1.1.20130806-103916
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130806-085010"]
+__BRYTHON__.version_info=[1,1,"20130806-103916"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -6893,7 +6893,9 @@ try{this.__getitem__(key);return True}
 catch(err){return False}
 }
 DOMNode.prototype.__del__=function(){
-console.log('delete')
+if(!this.parentNode){
+throw ValueError("can't delete "+str(this))
+}
 this.parentNode.removeChild(this)
 }
 DOMNode.prototype.__delitem__=function(key){
