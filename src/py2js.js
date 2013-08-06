@@ -1059,15 +1059,15 @@ function $FromCtx(context){
                   res += this.aliases[this.names[i]]||this.names[i]
                   res += '"]'
               }
-              res += '=$mod.__getattr__("'+this.names[i]+'");'
+              res += '=$mod["'+this.module+'"].__getattr__("'+this.names[i]+'");'
              }
            }else{
-             res +='for(var $attr in $mod){'
+             res +='for(var $attr in $mod["'+this.module+'"]){'
              res +="if($attr.substr(0,1)!=='_'){eval('var '+$attr+'"
               if(scope.ntype==="module"){
                   res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__[$attr]'
               }
-             res += "=$mod["+'"'+"'+$attr+'"+'"'+"]')}}"
+             res += '=$mod["'+this.module+'"]["'+"'+$attr+'"+'"'+"]')}}"
            }
         }
         return res
@@ -1212,14 +1212,24 @@ function $ImportCtx(context){
         var scope = $get_scope(this)
         var res = '$mods=$import_list(['+$to_js(this.tree)+']);'
         for(var i=0;i<this.tree.length;i++){
-            if(scope!==null && ['def','class'].indexOf(scope.ntype)>-1){
-                res += 'var '
+        var parts = this.tree[i].name.split('.')
+            // $import_list returns an object
+            // for "import a.b.c" this object has attributes
+            // "a", "a.b" and "a.b.c", values are the matching modules
+            for(j=0;j<parts.length;j++){
+                if(j==0 && scope!==null && 
+                    ['def','class'].indexOf(scope.ntype)>-1){
+                    res += 'var '
+                }
+                var key = parts.slice(0,j+1).join('.')
+                var alias = key
+                if(j==parts.length-1){alias = this.tree[i].alias}
+                res += alias
+                if(scope!==null && scope.ntype == 'def'){
+                    res += '=$locals["'+alias+'"]'
+                }            
+                res += '=$mods['+i+']["'+key+'"];'
             }
-            res += this.tree[i].alias
-            if(scope!==null && scope.ntype == 'def'){
-                res += '=$locals["'+this.tree[i].alias+'"]'
-            }            
-            res += '=$mods['+i+'];'
         }
         // add None so that exec('import foo') returns None
         // (used in interactive console)
@@ -1228,6 +1238,7 @@ function $ImportCtx(context){
 }
 
 function $ImportedModuleCtx(context,name){
+    this.type = 'imported module'
     this.toString = function(){return ' (imported module) '+this.name}
     this.parent = context
     this.name = name
@@ -2484,6 +2495,14 @@ function $transition(context,token){
         if(token==='id' && context.expect==='id'){
             new $ImportedModuleCtx(context,arguments[2])
             context.expect=','
+            return context
+        }else if(token==='.' && context.expect===','){
+            context.expect = 'qual'
+            return context
+        }else if(token==='id' && context.expect==='qual'){
+            context.expect = ','
+            context.tree[context.tree.length-1].name += '.'+arguments[2]
+            context.tree[context.tree.length-1].alias += '.'+arguments[2]
             return context
         }else if(token===',' && context.expect===','){
             context.expect = 'id'
