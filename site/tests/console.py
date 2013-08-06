@@ -84,11 +84,14 @@ def run():
     t0 = time.perf_counter()
     try:
         exec(src)
+        state = 1
     except Exception as exc:
         traceback.print_exc()
+        state = 0
     output = doc["console"].value
 
     print('<completed in %6.2f ms>' % ((time.perf_counter()-t0)*1000.0))
+    return state
 
 # load a Python script
 def on_complete(req):
