@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130806-162647
+// version 1.1.20130806-190804
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130806-162647"]
+__BRYTHON__.version_info=[1,1,"20130806-190804"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -3433,25 +3433,53 @@ $module.__class__=$type
 $module.__repr__=function(){return "<module '"+module+"' from "+filepath+" >"}
 $module.__str__=function(){return "<module '"+module+"' from "+filepath+" >"}
 $module.__file__=filepath
-return $module
+var res=new Object()
+res[module]=$module
+return res
 }
 function $import_module_search_path(module,alias,names){
 return $import_module_search_path_list(module,alias,names,__BRYTHON__.path)
 }
 function $import_module_search_path_list(module,alias,names,path_list){
-var modnames=[module, module+'/__init__']
+var parts=module.split('.'),part=null
+var found={}
+var search=[]
+for(var ip=0;ip<parts.length;ip++){
+part=parts.slice(0,ip+1)
+if(ip<parts.length-1){
+search.push([part.join('.'),[part.join('/')+'/__init__']])
+}else{
+search.push([part.join('.'),
+[part.join('/'),part.join('/')+'/__init__']])
+}
+}
 var import_mod=[$import_py]
+for(var j=0;j < search.length;j++){
+var modname=search[j][0],modpaths=search[j][1]
+var flag=false
 for(var i=0;i<path_list.length;i++){
-for(var j=0;j < modnames.length;j++){
-var path=path_list[i]+ "/" + modnames[j]
-for(var k=0;k < import_mod.length;k++){
-try{return import_mod[k](module,alias,names,path)
-}catch(err){if(err.name!=="NotFoundError"){throw err}
+for(k=0;k<modpaths.length;k++){
+modpath=modpaths[k]
+var path=path_list[i]+ "/" + modpath
+for(var m=0;m < import_mod.length;m++){
+try{
+found[modname]=import_mod[m](module,alias,names,path)
+flag=true
+}catch(err){if(err.name!=="NotFoundError"){throw err}}
+if(flag){break}
+}
+if(flag){break}
+}
+if(flag){break}
+}
+if(!flag){
+var res=new Error()
+res.name='NotFoundError'
+res.message="module "+modname+" not found"
+throw res
 }
 }
-}
-}
-throw ImportError("No module named '"+module+"'")
+return found
 }
 function $import_py(module,alias,names,path){
 var module_contents=$download_module(module, path+'.py')
@@ -4495,15 +4523,15 @@ res +='=__BRYTHON__.scope["'+scope.module+'"].__dict__["'
 res +=this.aliases[this.names[i]]||this.names[i]
 res +='"]'
 }
-res +='=$mod.__getattr__("'+this.names[i]+'");'
+res +='=$mod["'+this.module+'"].__getattr__("'+this.names[i]+'");'
 }
 }else{
-res +='for(var $attr in $mod){'
+res +='for(var $attr in $mod["'+this.module+'"]){'
 res +="if($attr.substr(0,1)!=='_'){eval('var '+$attr+'"
 if(scope.ntype==="module"){
 res +='=__BRYTHON__.scope["'+scope.module+'"].__dict__[$attr]'
 }
-res +="=$mod["+'"'+"'+$attr+'"+'"'+"]')}}"
+res +='=$mod["'+this.module+'"]["'+"'+$attr+'"+'"'+"]')}}"
 }
 }
 return res
@@ -4626,19 +4654,27 @@ this.to_js=function(){
 var scope=$get_scope(this)
 var res='$mods=$import_list(['+$to_js(this.tree)+']);'
 for(var i=0;i<this.tree.length;i++){
-if(scope!==null &&['def','class'].indexOf(scope.ntype)>-1){
+var parts=this.tree[i].name.split('.')
+for(j=0;j<parts.length;j++){
+if(j==0 && scope!==null && 
+['def','class'].indexOf(scope.ntype)>-1){
 res +='var '
 }
-res +=this.tree[i].alias
+var key=parts.slice(0,j+1).join('.')
+var alias=key
+if(j==parts.length-1){alias=this.tree[i].alias}
+res +=alias
 if(scope!==null && scope.ntype=='def'){
-res +='=$locals["'+this.tree[i].alias+'"]'
+res +='=$locals["'+alias+'"]'
 }
-res +='=$mods['+i+'];'
+res +='=$mods['+i+']["'+key+'"];'
+}
 }
 return res+";None"
 }
 }
 function $ImportedModuleCtx(C,name){
+this.type='imported module'
 this.toString=function(){return ' (imported module) '+this.name}
 this.parent=C
 this.name=name
@@ -5729,6 +5765,14 @@ return $transition(C.parent,token,arguments[2])
 if(token==='id' && C.expect==='id'){
 new $ImportedModuleCtx(C,arguments[2])
 C.expect=','
+return C
+}else if(token==='.' && C.expect===','){
+C.expect='qual'
+return C
+}else if(token==='id' && C.expect==='qual'){
+C.expect=','
+C.tree[C.tree.length-1].name +='.'+arguments[2]
+C.tree[C.tree.length-1].alias +='.'+arguments[2]
 return C
 }else if(token===',' && C.expect===','){
 C.expect='id'
