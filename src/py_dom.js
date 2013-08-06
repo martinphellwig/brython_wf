@@ -585,9 +585,9 @@ DOMNode.prototype.__mul__ = function(other){
 DOMNode.prototype.__ne__ = function(other){return !this.__eq__(other)}
 
 DOMNode.prototype.__next__ = function(){
-   this.counter++
-   if(this.counter<this.childNodes.length){
-       return $DOMNode(this.childNodes[this.counter])
+   this.$counter++
+   if(this.$counter<this.childNodes.length){
+       return $DOMNode(this.childNodes[this.$counter])
    }
    throw StopIteration('StopIteration')
 }
