@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130806-103916
+// version 1.1.20130806-162647
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130806-103916"]
+__BRYTHON__.version_info=[1,1,"20130806-162647"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -7001,9 +7001,9 @@ throw ValueError("can't multiply "+this.__class__+"by "+other)
 }
 DOMNode.prototype.__ne__=function(other){return !this.__eq__(other)}
 DOMNode.prototype.__next__=function(){
-this.counter++
-if(this.counter<this.childNodes.length){
-return $DOMNode(this.childNodes[this.counter])
+this.$counter++
+if(this.$counter<this.childNodes.length){
+return $DOMNode(this.childNodes[this.$counter])
 }
 throw StopIteration('StopIteration')
 }
