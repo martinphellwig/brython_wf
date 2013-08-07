@@ -53,7 +53,6 @@ function $download_module(module,url){
             }
         }
     }
-
     $xmlhttp.open('GET',url+fake_qs,false)
     if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
     $xmlhttp.send()
@@ -72,8 +71,9 @@ function $import_js_module(module,alias,names,filepath,module_contents){
     $module.__repr__ = function(){return "<module '"+module+"' from "+filepath+" >"}
     $module.__str__ = function(){return "<module '"+module+"' from "+filepath+" >"}
     $module.__file__ = filepath
-   
-    return $module
+    var res = new Object()
+    res[module] = $module
+    return res
 }
 
 function $import_module_search_path(module,alias,names){
@@ -82,20 +82,50 @@ function $import_module_search_path(module,alias,names){
 }
 
 function $import_module_search_path_list(module,alias,names,path_list){
-    var modnames = [module, module+'/__init__']
-    var import_mod = [$import_py]
-    for(var i=0;i<path_list.length;i++){
-       for(var j=0; j < modnames.length; j++) {
-           var path = path_list[i] + "/" + modnames[j];
-           for (var k=0; k < import_mod.length; k++) {
-               try {return import_mod[k](module,alias,names,path)
-               }catch(err){if(err.name!=="NotFoundError"){throw err}
-               }
-           }
-       }
+    // module may have dots, for relative imports
+    // in this case we must do an import for all parts of the path
+    // in 'import foo.bar', first try foo/__init__.py then
+    // foo/bar.py
+    var parts = module.split('.'),part=null
+    var found = {}
+    var search = []
+    for(var ip=0;ip<parts.length;ip++){
+        part = parts.slice(0,ip+1)
+        if(ip<parts.length-1){
+            search.push([part.join('.'),[part.join('/')+'/__init__']])
+        }else{
+            search.push([part.join('.'),
+                [part.join('/'),part.join('/')+'/__init__']])
+        }
     }
-    // if we get here, we couldn't import the module
-    throw ImportError("No module named '"+module+"'")
+
+    var import_mod = [$import_py]
+    for(var j=0; j < search.length; j++) {
+        var modname = search[j][0],modpaths = search[j][1]
+        var flag=false
+        for(var i=0;i<path_list.length;i++){
+           for(k=0;k<modpaths.length;k++){
+               modpath = modpaths[k]
+               var path = path_list[i] + "/" + modpath;
+               for (var m=0; m < import_mod.length; m++) {
+                   try {
+                       found[modname]=import_mod[m](module,alias,names,path)
+                       flag = true
+                   }catch(err){if(err.name!=="NotFoundError"){throw err}}
+                   if(flag){break}
+               }
+               if(flag){break}
+           }
+           if(flag){break}
+        }
+        if(!flag){
+            var res = new Error()
+            res.name = 'NotFoundError'
+            res.message = "module "+modname+" not found"
+            throw res
+        }
+    }
+    return found
 }
 
 function $import_py(module,alias,names,path){
