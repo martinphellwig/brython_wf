@@ -221,6 +221,15 @@ function dict(){
                 res.__setitem__(attr,obj.js[attr])
             }
             return res
+        }else if(isinstance(obj,object)){
+            if(obj.__iter__===undefined){
+                throw TypeError(obj+' is not iterable')
+            }
+            var res = new $DictClass([],[])
+            for(var attr in obj){
+                res.__setitem__(attr,obj[attr])
+            }
+            return res
         }
     }
     var $ns=$MakeArgs('dict',arguments,[],{},'args','kw')
@@ -490,6 +499,7 @@ function $dict_iterator(obj,info){
 }
 
 function dir(obj){
+    if(isinstance(obj,JSObject)){obj=obj.js}
     var res = []
     for(var attr in obj){if(attr.charAt(0)!=='$'){res.push(attr)}}
     res.sort()
@@ -1207,6 +1217,7 @@ object.__hash__ = function () {
 }
 
 $ObjectClass.prototype.__hash__ = object.__hash__
+$ObjectClass.prototype.__str__ = function(){return "<object 'object'>"}
 
 // oct() (built in function)
 function oct(x) {

@@ -7,7 +7,14 @@ function _py(obj){
         }
         return res
     }
-    if(obj.__class__!==undefined && (typeof obj!=='function')){return obj}
+    if(obj.__class__!==undefined){
+        if(obj.__class__===list){
+            for(var i=0;i<obj.length;i++){
+                obj[i] = _py(obj[i])
+            }
+        }
+        return obj
+    }
     if(typeof obj==='object' && obj.__class__===undefined){
         // transform JS object into a Python dict
         var res = dict()

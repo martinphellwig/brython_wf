@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130806-190804
+// version 1.1.20130807-092331
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130806-190804"]
+__BRYTHON__.version_info=[1,1,"20130807-092331"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -264,6 +264,11 @@ if(src%1===0){return src}
 else{return float(src)}
 }
 if(src.__class__!==undefined){
+if(src.__class__===list){
+for(var i=0;i<src.length;i++){
+src[i]=$JS2Py(src[i])
+}
+}
 return src
 }
 if(typeof src=="object"){
@@ -871,6 +876,15 @@ for(var attr in obj.js){
 res.__setitem__(attr,obj.js[attr])
 }
 return res
+}else if(isinstance(obj,object)){
+if(obj.__iter__===undefined){
+throw TypeError(obj+' is not iterable')
+}
+var res=new $DictClass([],[])
+for(var attr in obj){
+res.__setitem__(attr,obj[attr])
+}
+return res
 }
 }
 var $ns=$MakeArgs('dict',arguments,[],{},'args','kw')
@@ -1096,6 +1110,7 @@ this.toString=function(){return info+'('+obj.toString()+')'}
 this.__str__=this.toString
 }
 function dir(obj){
+if(isinstance(obj,JSObject)){obj=obj.js}
 var res=[]
 for(var attr in obj){if(attr.charAt(0)!=='$'){res.push(attr)}}
 res.sort()
@@ -1693,6 +1708,7 @@ __BRYTHON__.$py_next_hash+=1;
 return __BRYTHON__.$py_next_hash
 }
 $ObjectClass.prototype.__hash__=object.__hash__
+$ObjectClass.prototype.__str__=function(){return "<object 'object'>"}
 function oct(x){
 return $builtin_base_convert_helper(x, 8)
 }
