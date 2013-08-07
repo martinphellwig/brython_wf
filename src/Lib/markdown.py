@@ -155,7 +155,7 @@ def apply_markdown(src):
                 mk,_scripts = mark('\n'.join(bqlines))
                 scripts += _scripts
                 src = head
-                src += '<blockquote>' + mk + '</blockquote>'
+                src += '\n<blockquote>' + mk + '</blockquote>'
                 src += '\n'.join(lines[j:])
                 break
             i += 1
@@ -210,9 +210,9 @@ def apply_markdown(src):
     for strong_pattern in strong_patterns:
         src = re.sub(strong_pattern,r'<strong>\1</strong>',src)
 
-    em_patterns = [r'\*(.*?)\*',r'\_(.*?)\_']
-    for em_pattern in em_patterns:
-        src = re.sub(em_pattern,r'<em>\1</em>',src)
+    em_patterns = [('EM',r'\*(.*?)\*'),('I',r'\_(.*?)\_')]
+    for tag,em_pattern in em_patterns:
+        src = re.sub(em_pattern,r'<%s>\1</%s>' %(tag,tag),src)
 
     # inline code
     # replace \` by &#96;
