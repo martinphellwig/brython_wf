@@ -32,7 +32,7 @@ où _elt_ sera l'instance de `DOMNode` pour l'élément bouton, _valeur_ sera l'
 
 Les instances de `JSObject` sont utilisées comme des objets Python ordinaires ; ici, la valeur de l'attribut "x" est `obj.x`. Pour les convertir en dictionnaire Python, utilisez la fonction intégrée `dict()` : `dict(obj)['x']`
 
-### Objets dans des programmes Javascript
+### Utilisation d'objets Javascript
 
 Un document HTML peut utiliser des scripts ou des librairies Javascript, et des scripts ou des librairies Python. Brython ne peut pas exploiter directement les objets Javascript : par exemple les attributs d'un objet sont récupérés par la méthode _\_\_getattr\_\__ de l'objet, qui n'existe pas pour les objets Javascript
 
@@ -47,6 +47,31 @@ Par exemple :
     doc['result'].value = JSObject(circle).surface(10)
     </script>
 
+
+### Utilisation de constructeurs Javascript
+
+Si une fonction Javascript est un constructeur d'objets, qu'on peut appeler dans du code Javascript avec le mot-clé `new`, on peut l'utiliser avec Brython en la transformant par la fonction intégrée `JSConstructor()`
+
+<code>JSConstructor(_constr_)</code> renvoie une fonction qui, quand on lui passe des arguments, retourne un objet Python correspondant à l'objet Javascript constuit par le constructeur *constr*
+
+Par exemple :
+
+    <script type="text/javascript">
+    function Rectangle(x0,y0,x1,y1){
+        this.x0 = x0
+        this.y0 = y0
+        this.x1 = x1
+        this.y1 = y1
+        this.surface = function(){return (x1-x0)*(y1-y0)}
+    }
+    </script>
+    
+    <script type="text/python">
+    rectangle = JSConstructor(Rectangle)
+    alert(rectangle(10,10,30,30).surface())
+    </script>
+
+### Exemple d'interface avec jQuery
 
 Voici un exemple plus complet qui montre comment utiliser la populaire librairie jQuery :
 
