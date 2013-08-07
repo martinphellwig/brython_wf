@@ -237,6 +237,11 @@ function $JS2Py(src){
         else{return float(src)}
     }
     if(src.__class__!==undefined){
+        if(src.__class__===list){
+            for(var i=0;i<src.length;i++){
+                src[i] = $JS2Py(src[i])
+            }
+        }
         return src
     }
     if(typeof src=="object"){
