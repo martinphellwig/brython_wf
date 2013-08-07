@@ -305,15 +305,14 @@ La classe hérite d'une autre classe `A`, qu'on retrouve comme 3ème argument de
 import time
 time.set_interval(func,millisec)
 </code></pre></td>
-<td>&nbsp;</td>
 </tr>
 
 <tr>
 <td>`clearInterval(interval_id)`</td>
-<td><pre><code>
-import time
-time.clear_interval(interval_id)
-</code></pre></td>
+<td><pre>
+    import time
+    time.clear_interval(interval_id)
+</pre></td>
 </tr>
 
 <tr>

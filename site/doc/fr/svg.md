@@ -1,5 +1,5 @@
-Graphiques SVG
---------------
+module svg
+----------
 
 Pour créer des graphiques au format SVG, supporté par la plupart des navigateurs, on utilise le module intégré `svg`, qui contient les noms des éléments disponibles pour tracer des formes ou écrire du texte
 
