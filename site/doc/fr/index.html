@@ -10,29 +10,17 @@
 import markdown
 import time
 
-target = None
-
-class Loader:
-
-    def __init__(self,url):
-        self.url = url
-    
-    def load(self,target):
-        self.target = target
-        req = ajax()
-        req.on_complete = self.fill
-        req.open('GET',self.url,False)
-        req.send()
-
-    def fill(self,req):
-        if req.status == 200:
-            mk,scripts = markdown.mark(req.text)
-            doc[self.target].html = mk
-            for script in scripts:
-                exec(script,globals())
-
 def load(url,target):
-    Loader(url+'?foo=%s' %time.time()).load(target)
+    # fake query string to bypass browser cache
+    qs = '?foo=%s' %time.time()
+    try:
+        mk,scripts = markdown.mark(open(url+qs).read())
+    except IOError:
+        doc[target].html = "Page %s not found" %url
+        return False
+    doc[target].html = mk
+    for script in scripts:
+        exec(script,globals())
     return False
 
 language = "fr"
@@ -52,17 +40,31 @@ language = "fr"
 <tr>
 <td style="width:20%;vertical-align:top;">
 <h4><a class="navig" href="#" onClick="load('intro.md','content')">Introduction</a></h4>
-<h4>Usage</h4>
+<h4><a class="navig" href="#" onClick="load('syntax.md','content')">Syntaxe, mots-clés et fonctions intégrées</a></h4>
+
+<h4>Interface avec le navigateur</h4>
 <div style="padding-left:10px;">
-<a class="navig" href="#" onClick="load('syntax.md','content')">Syntaxe</a>
-<br><a class="navig" href="#" onClick="load('integr.md','content')">Mots-clés et fonctions intégrées</a>
-<br><a class="navig" href="#" onClick="load('htmldocs.md','content')">Manipulation de documents HTML</a>
-<br><a class="navig" href="#" onClick="load('svg.md','content')">Graphiques SVG</a>
-<br><a class="navig" href="#" onClick="load('jsobjects.md','content')">Utiliser des objets et des librairies Javascript</a>
+<a class="navig" href="#" onClick="load('create.md','content')">Créer un document</a>
+<br><a class="navig" href="#" onClick="load('access.md','content')">Accéder aux éléments</a>
+<br><a class="navig" href="#" onClick="load('attributes.md','content')">Attributs et méthodes</a>
+<br><a class="navig" href="#" onClick="load('events.md','content')">Evénements</a>
+<br><a class="navig" href="#" onClick="load('query.md','content')">Chaine de requête</a>
+<br><a class="navig" href="#" onClick="load('jsobjects.md','content')">Objets et librairies Javascript</a>
 <br><a class="navig" href="#" onClick="load('ajax.md','content')">Ajax</a>
 <br><a class="navig" href="#" onClick="load('websockets.md','content')">Web sockets</a>
-<br><a class="navig" href="#" onClick="load('locstor.md','content')">Local storage</a>
 </div>
+
+<h4>Librairies</h4>
+<div style="padding-left:10px;">
+<a class="navig" href="#" onClick="load('html.md','content')">html</a>
+<br><a class="navig" href="#" onClick="load('local_storage.md','content')">local_storage</a>
+<br><a class="navig" href="#" onClick="load('markdown.md','content')">markdown</a>
+<br><a class="navig" href="#" onClick="load('pydom.md','content')">pydom</a>
+<br><a class="navig" href="#" onClick="load('pyindexedDB.md','content')">pyindexedDB</a>
+<br><a class="navig" href="#" onClick="load('svg.md','content')">svg</a>
+<br><a class="navig" href="#" onClick="load('time.md','content')">time</a>
+</div>
+
 <h4>Travailler avec Brython</h4>
 <div style="padding-left:10px;">
 <a class="navig" href="#" onClick="load('dev_env.md','content')">Installer l'environnement de développement</a>

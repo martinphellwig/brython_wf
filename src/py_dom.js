@@ -843,6 +843,8 @@ DOMNode.prototype.get_html = function(){return this.innerHTML}
 
 DOMNode.prototype.get_value = function(value){return this.value}
 
+DOMNode.prototype.set_class = function(arg){this.className == arg}
+
 DOMNode.prototype.set_html = function(value){this.innerHTML=str(value)}
 
 DOMNode.prototype.set_text = function(value){
