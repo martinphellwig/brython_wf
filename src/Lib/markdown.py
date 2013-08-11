@@ -206,9 +206,9 @@ def apply_markdown(src):
     src = re.sub(r' _ ',' &#95; ',src)
     src = re.sub(r' \* ',' &#42; ',src)
 
-    strong_patterns = [r'\*\*(.*?)\*\*',r'__(.*?)__']
-    for strong_pattern in strong_patterns:
-        src = re.sub(strong_pattern,r'<strong>\1</strong>',src)
+    strong_patterns = [('STRONG',r'\*\*(.*?)\*\*'),('B',r'__(.*?)__')]
+    for tag,strong_pattern in strong_patterns:
+        src = re.sub(strong_pattern,r'<%s>\1</%s>' %(tag,tag),src)
 
     em_patterns = [('EM',r'\*(.*?)\*'),('I',r'\_(.*?)\_')]
     for tag,em_pattern in em_patterns:
