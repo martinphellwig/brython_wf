@@ -86,6 +86,7 @@ function $import_module_search_path_list(module,path_list){
         search.push(mod_path)
     }
     search.push(mod_path+'/__init__')
+
     var flag = false
     for(var j=0; j < search.length; j++) {
         var modpath = search[j]
@@ -215,7 +216,7 @@ function $import_list(modules){
 
 function $import_list_intra(modules){
     // intra-package, like "from . import X" or "from ..Z import bar"
-    // modules is a list of [module,alias,search_path]
+    // modules is a list of [module,search_path]
     // where search_path is the url of the folder where the module should
     // be found
     var res = []
@@ -248,16 +249,6 @@ function $import_from(module,names,parent_module,alias){
        var i=relpath.lastIndexOf('/')
        relpath=relpath.substring(0, i)
     
-       if (module === 'undefined') {
-          // from . import mymodule
-          var res=[]
-          for (var i=0; i < names.length; i++) {
-              console.log(names[i])
-              res.push($import_module_search_path_list(names[i],alias,names[i],[relpath]))
-          }
-          return res
-       }
-
        // todo: does the next statement make sense? 
        alias=__BRYTHON__.$py_module_alias[parent_module]
       // console.log(parent_module+','+alias+','+relpath)

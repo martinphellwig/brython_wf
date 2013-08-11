@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130811-173201
+// version 1.1.20130811-211111
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130811-173201"]
+__BRYTHON__.version_info=[1,1,"20130811-211111"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -3597,14 +3597,6 @@ if(parent_module !==undefined){
 var relpath=__BRYTHON__.$py_module_path[parent_module]
 var i=relpath.lastIndexOf('/')
 relpath=relpath.substring(0, i)
-if(module==='undefined'){
-var res=[]
-for(var i=0;i < names.length;i++){
-console.log(names[i])
-res.push($import_module_search_path_list(names[i],alias,names[i],[relpath]))
-}
-return res
-}
 alias=__BRYTHON__.$py_module_alias[parent_module]
 console.log('in import from, call import_md_s_p_l for module '+module)
 return $import_module_search_path_list(module,alias,names,[relpath])
@@ -4715,20 +4707,35 @@ C.tree.push(this)
 this.expect='id'
 this.to_js=function(){
 var scope=$get_scope(this)
+var $path=__BRYTHON__.$py_module_path[$get_module(this).module]
+var from_path=false
+if($path!==undefined){
+from_path=true
+var elts=$path.split('/')
+elts.pop()
+var path=elts.join('/')
+if(__BRYTHON__.path.indexOf(path)==-1){
+__BRYTHON__.path.splice(0,0,path)
+}
+}
 var res='$mods=$import_list(['+$to_js(this.tree)+']);'
 for(var i=0;i<this.tree.length;i++){
 var parts=this.tree[i].name.split('.')
 for(j=0;j<parts.length;j++){
-if(j==0 && scope!==null && 
+if(j==0 && 
 ['def','class'].indexOf(scope.ntype)>-1){
+res +='var '
+}else if(j==0 && scope.ntype==="module" && scope.module !=="__main__"){
 res +='var '
 }
 var key=parts.slice(0,j+1).join('.')
 var alias=key
 if(j==parts.length-1){alias=this.tree[i].alias}
 res +=alias
-if(scope!==null && scope.ntype=='def'){
+if(scope.ntype=='def' || scope.ntype==="generator"){
 res +='=$locals["'+alias+'"]'
+}else if(scope.ntype==="module"){
+res +='=$globals["'+alias+'"]'
 }
 res +='=__BRYTHON__.modules["'+key+'"];'
 }
@@ -6532,7 +6539,7 @@ __BRYTHON__.path.splice(0,0,$src_path)
 }
 }else{
 var $src=($elt.innerHTML || $elt.textContent)
-__BRYTHON__.$py_module_path['__main__']='.' 
+__BRYTHON__.$py_module_path['__main__']=$script_path
 }
 try{
 var $root=__BRYTHON__.py2js($src,'__main__')

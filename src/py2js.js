@@ -1253,6 +1253,20 @@ function $ImportCtx(context){
     this.expect = 'id'
     this.to_js = function(){
         var scope = $get_scope(this)
+        var $path = __BRYTHON__.$py_module_path[$get_module(this).module]
+        // if current module is an imported module, we must temporarily add its
+        // path to __BRYTHON__.path so that imports from this module will use
+        // the module path
+        var from_path = false
+        if($path!==undefined){
+            from_path = true
+            var elts = $path.split('/')
+            elts.pop()
+            var path =elts.join('/')
+            if(__BRYTHON__.path.indexOf(path)==-1){
+                __BRYTHON__.path.splice(0,0,path)
+            }
+        }
         var res = '$mods=$import_list(['+$to_js(this.tree)+']);'
         for(var i=0;i<this.tree.length;i++){
             var parts = this.tree[i].name.split('.')
@@ -1260,20 +1274,26 @@ function $ImportCtx(context){
             // for "import a.b.c" this object has attributes
             // "a", "a.b" and "a.b.c", values are the matching modules
             for(j=0;j<parts.length;j++){
-                if(j==0 && scope!==null && 
+                if(j==0 && 
                     ['def','class'].indexOf(scope.ntype)>-1){
+                    res += 'var '
+                }else if(j==0 && scope.ntype==="module" && scope.module !=="__main__"){
                     res += 'var '
                 }
                 var key = parts.slice(0,j+1).join('.')
                 var alias = key
                 if(j==parts.length-1){alias = this.tree[i].alias}
                 res += alias
-                if(scope!==null && scope.ntype == 'def'){
+                if(scope.ntype == 'def' || scope.ntype==="generator"){
                     res += '=$locals["'+alias+'"]'
-                }            
+                }else if(scope.ntype==="module"){
+                    res += '=$globals["'+alias+'"]'
+                }
                 res += '=__BRYTHON__.modules["'+key+'"];'
             }
         }
+        // clean up __BRYTHON__.path
+        //if(from_path){__BRYTHON__.path.shift()}
         // add None so that exec('import foo') returns None
         // (used in interactive console)
         return res+";None"
@@ -3375,7 +3395,7 @@ function brython(options){
                 }
             }else{
                 var $src = ($elt.innerHTML || $elt.textContent)
-                __BRYTHON__.$py_module_path['__main__']='.' 
+                __BRYTHON__.$py_module_path['__main__'] = $script_path
             }
             try{
                 var $root = __BRYTHON__.py2js($src,'__main__')
