@@ -304,4 +304,11 @@ assert 1.27E+5 == 127000.0
 assert 1.27e+5 == 127000.0
 assert 1.27E5 == 127000.0
 
+# issue 126
+assert ''' \'inner quote\'''', 'fails inner quote'
+assert " \'inner quote\'", 'fails inner quote'
+assert ' \'inner quote\'', 'fails inner quote'
+assert """ \"inner quote\"""", 'fails inner quote'
+assert " \"inner quote\"", 'fails inner quote'
+
 print('passed all tests')

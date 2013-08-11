@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130811-161446
+// version 1.1.20130811-172226
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130811-161446"]
+__BRYTHON__.version_info=[1,1,"20130811-172226"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -6238,18 +6238,14 @@ end++
 }else{
 found=true
 $pos=pos
-if(car==='"'){
-if(_type=="triple_string"){
-var string=zone.substr(1).replace(qesc,'\\\"')
-}else{
-var string=zone.substr(1).replace(qesc,'\"')
+var $string=zone.substr(1),string=''
+for(var i=0;i<$string.length;i++){
+var $car=$string.charAt(i)
+if($car==car &&
+(i==0 || $string.charAt(i-1)!=='\\')){
+string +='\\'
 }
-}else{
-if(_type=="triple_string"){
-var string=zone.substr(1).replace(sqesc,"\\\'")
-}else{
-var string=zone.substr(1).replace(sqesc,"\'")
-}
+string +=$car
 }
 C=$transition(C,'str',car+string+car)
 pos=end+1
