@@ -1025,31 +1025,56 @@ function $ForExpr(context){
 function $FromCtx(context){
     this.type = 'from'
     this.parent = context
+    this.module = ''
     this.names = []
     this.aliases = {}
     context.tree.push(this)
     this.expect = 'module'
     this.toString = function(){
         var res = '(from) '+this.module+' (import) '+this.names 
-        res += '(parent module)' + this.parent_module + '(as)' + this.aliases
+        res += '(as)' + this.aliases
         return res
     }
     this.to_js = function(){
-        var res; 
-        if (this.parent_module!==undefined){
-           res="$mod=$import_from('" + this.module
-           res+= "', ['" + this.names.join("','") + "']"
-           res+=",'" + this.parent_module +"');"
-           for(var i=0;i<this.names.length;i++){
-             res += this.parent_module+'.__setattr__("'
-             res += (this.aliases[this.names[i]]||this.names[i])
-             res += '",$mod.__getattr__("'+this.names[i]+'"));'
-           }
-
-           //console.log(res)
+        var res;
+        var scope = $get_scope(this)
+        if (this.module.charAt(0)=='.'){
+            // intra-package reference : "from . import x"
+            // get the name of current module
+            var parent_module = $get_module(this).module
+            // get the url of current module
+            var parent_path = __BRYTHON__.$py_module_path[parent_module]
+            // split it into parts
+            var search_path_parts = parent_path.split('/')
+            // remove as many parts as the number of leading dots
+            var mod = this.module
+            while(mod && mod.charAt(0)=='.'){
+               search_path_parts.pop()
+               mod = mod.substr(1)
+            }
+            if(mod){
+               search_path_parts.push(mod)
+            }
+            var search_path = '/'.join(search_path_parts)
+            res="$mods=$import_list_intra(["
+            var _mods = []
+            for(var i=0;i<this.names.length;i++){
+             _mods.push('["'+this.names[i]+'","'+search_path+'"]')
+            }
+            res += _mods.join(',')+']);'
+            for(var i=0;i<this.names.length;i++){
+                if(['def','class'].indexOf(scope.ntype)>-1){
+                    res += 'var '
+                }
+                var alias = this.aliases[this.names[i]]||this.names[i]
+                res += alias
+                if(scope!==null && scope.ntype == 'def'){
+                    res += '=$locals["'+alias+'"]'
+                }            
+                res += '=$mods['+i+'];'
+            }
         } else {
-            var scope=$get_scope(this)
-           res = '$mod=$import_list([["'+this.module+'","'+this.module+'"]])[0];'
+           res = '$import_list(["'+this.module+'"])[0];'
         
            if(this.names[0]!=='*'){
              for(var i=0;i<this.names.length;i++){
@@ -1059,15 +1084,16 @@ function $FromCtx(context){
                   res += this.aliases[this.names[i]]||this.names[i]
                   res += '"]'
               }
-              res += '=$mod["'+this.module+'"].__getattr__("'+this.names[i]+'");'
+              res += '=__BRYTHON__.modules["'+this.module+'"].__getattr__("'+this.names[i]+'");'
              }
            }else{
-             res +='for(var $attr in $mod["'+this.module+'"]){'
-             res +="if($attr.substr(0,1)!=='_'){eval('var '+$attr+'"
+             res += 'var $mod=__BRYTHON__.modules["'+this.module+'"];'
+             res +='for(var $attr in $mod){'
+             res +="if($attr.substr(0,1)!=='_'){var $x = 'var '+$attr+'"
               if(scope.ntype==="module"){
-                  res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__[$attr]'
+                  res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
               }
-             res += '=$mod["'+this.module+'"]["'+"'+$attr+'"+'"'+"]')}}"
+             res += '=$mod["'+"'+$attr+'"+'"]'+"'"+';eval($x)}}'
            }
         }
         return res
@@ -1184,16 +1210,33 @@ function $IdCtx(context,value,minus){
         if(scope.ntype==='class' && !this.is_left){
             // ids used in a class body (not inside a method) are resolved
             // in a specific way :
-            // - if the id matches a class attribute, and is not the target of
-            // an assignement, it is resolved as this class attribute
-            // - otherwise it is left as is
+            // - if the id is used as the left part of a keyword argument
+            //   (eg the id "x" in "foo(x=8)") it is left as is
+            // - if this is the left part of an assignement, it is left as is
+            // - otherwise, if the id matches a class attribute, it is resolved 
+            //   as this class attribute, else it is left as is
             // example :
-            // ==========
+            // =============
             // x = 0
             // class foo:
             //   y = 1
             //   z = [x,y]
-            // ===========
+            //   A = foo(u=8)
+            // ==============
+            // y and u will be left as they are
+            // x will be replaced by :
+            //     ($class["x"]!==undefined ? $class["x"] : x)
+            // y will be replaced by :
+            //     ($class["y"]!==undefined ? $class["y"] : y)
+            // at run time, the test will fail for x and will succeed for y
+            var ch ='',parent=this.parent
+            while(parent){ch += parent.type+',';parent=parent.parent}
+            if(this.parent.type==='expr' && this.parent.parent.type=='call_arg'){
+                // left part of a keyword argument
+                if(this.parent.parent.tree[0].type=='kwarg'){
+                    return val+$to_js(this.tree,'')
+                }
+            }
             var class_name = scope.context.tree[0].name
             return '($class["'+val+'"] !==undefined ? $class["'+val+'"] : '+val+')'
         }
@@ -1212,7 +1255,7 @@ function $ImportCtx(context){
         var scope = $get_scope(this)
         var res = '$mods=$import_list(['+$to_js(this.tree)+']);'
         for(var i=0;i<this.tree.length;i++){
-        var parts = this.tree[i].name.split('.')
+            var parts = this.tree[i].name.split('.')
             // $import_list returns an object
             // for "import a.b.c" this object has attributes
             // "a", "a.b" and "a.b.c", values are the matching modules
@@ -1228,7 +1271,7 @@ function $ImportCtx(context){
                 if(scope!==null && scope.ntype == 'def'){
                     res += '=$locals["'+alias+'"]'
                 }            
-                res += '=$mods['+i+']["'+key+'"];'
+                res += '=__BRYTHON__.modules["'+key+'"];'
             }
         }
         // add None so that exec('import foo') returns None
@@ -1245,7 +1288,7 @@ function $ImportedModuleCtx(context,name){
     this.alias = name
     context.tree.push(this)
     this.to_js = function(){
-        return '["'+this.name+'","'+this.alias+'"]'
+        return '"'+this.name+'"'
     }
 }
 
@@ -1325,6 +1368,7 @@ function $LambdaCtx(context){
 
         var args = src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
         var body = src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
+        body = body.replace(/\n/g,' ')
         return '$lambda('+env_str+',"'+args+'","'+body+'")'
     }
 }
@@ -1700,6 +1744,7 @@ function $WithCtx(context){
     this.expect = 'as'
     this.toString = function(){return '(with) '}
     this.transform = function(node,rank){
+        if(this.transformed){return} // used if inside a for loop
         if(this.tree[0].alias===null){this.tree[0].alias = '$temp'}
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,'catch($err'+$loop_num+')')
@@ -1717,6 +1762,7 @@ function $WithCtx(context){
         new $NodeJSCtx(fbody,this.tree[0].alias+'.__exit__(None,None,None)')
         new_node.add(fbody)
         node.parent.insert(rank+2,new_node)
+        this.transformed = true
     }
     this.to_js = function(){
         res = 'var '+this.tree[0].alias+'='+this.tree[0].to_js()+'.__enter__()'
@@ -2171,8 +2217,8 @@ function $transition(context,token){
                 }else if(token===':'){
                     if(context.real==='dict_or_set'){context.real='dict'}
                     if(context.real==='dict'){
-                        context.expect='id'
-                        return context
+                        context.expect=','
+                        return new $AbstractExprCtx(context,false)
                     }else{$_SyntaxError(context,'token '+token+' after '+context)}
                 }else if(token==='for'){
                     // comprehension
@@ -2358,15 +2404,11 @@ function $transition(context,token){
 
     }else if(context.type==='from'){
 
-        if(token==='id' && context.expect==='module'){
-            context.module = arguments[2]
-            context.expect = 'import'
+        if((token==='id'||token==='.') && context.expect==='module'){
+            if(token==='id'){context.module += arguments[2]}
+            else{context.module += '.'}
             return context
-        }else if(token==='import' && context.expect==='import'){
-            context.expect = 'id'
-            return context
-        }else if (token==='import' && context.expect==='module' 
-                 && context.parent_module !== undefined) {
+        }else if(token==='import' && context.expect==='module'){
             context.expect = 'id'
             return context
         }else if(token==='id' && context.expect==='id'){
@@ -2385,11 +2427,6 @@ function $transition(context,token){
         }else if(token==='eol' && 
             (context.expect ===',' || context.expect==='eol')){
             return $transition(context.parent,token)
-        }else if (token==='.' && context.expect === 'module') {
-            context.expect='module'
-            // this is a relative import
-            context.parent_module=context.parent.node.module;
-            return context
         }else if (token==='as' &&
             (context.expect ===',' || context.expect==='eol')){
             context.expect='alias'
@@ -2458,6 +2495,16 @@ function $transition(context,token){
             context.name = arguments[2]
             context.parent.names.push(arguments[2])
             return context.parent
+        }else if(token==',' && context.name===undefined){
+            // anonymous star arg - found in configparser
+            context.name = '$dummy'
+            context.parent.names.push('$dummy')
+            return $transition(context.parent,token)
+        }else if(token==')'){
+            // anonymous star arg - found in configparser
+            context.name = '$dummy'
+            context.parent.names.push('$dummy')
+            return $transition(context.parent,token)
         }else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='global'){
@@ -2690,7 +2737,7 @@ function $transition(context,token){
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='star_arg'){
-    
+
         if($expr_starters.indexOf(token)>-1){
             return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
         }else if(token===','){return $transition(context.parent,token)}
@@ -3336,7 +3383,7 @@ function brython(options){
             try{
                 var $root = __BRYTHON__.py2js($src,'__main__')
                 var $js = $root.to_js()
-                if(__BRYTHON__.debug===2){console.log($js)}
+                if(__BRYTHON__.debug>1){console.log($js)}
                 eval($js)
             }catch($err){
                 if($err.py_error===undefined){$err = RuntimeError($err+'')}
