@@ -3057,18 +3057,15 @@ function $tokenize(src,module){
                         found = true
                         // end of string
                         $pos = pos
-                        if(car==='"'){
-                            if(_type=="triple_string"){
-                                var string = zone.substr(1).replace(qesc,'\\\"')
-                            }else{
-                                var string = zone.substr(1).replace(qesc,'\"')
+                        // escape quotes inside string, except if they are already escaped
+                        var $string = zone.substr(1),string=''
+                        for(var i=0;i<$string.length;i++){
+                            var $car = $string.charAt(i)
+                            if($car==car &&
+                                (i==0 || $string.charAt(i-1)!=='\\')){
+                                    string += '\\'
                             }
-                        }else{
-                            if(_type=="triple_string"){
-                                var string = zone.substr(1).replace(sqesc,"\\\'")
-                            }else{
-                                var string = zone.substr(1).replace(sqesc,"\'")
-                            }
+                            string += $car
                         }
                         context = $transition(context,'str',car+string+car)
                         pos = end+1
