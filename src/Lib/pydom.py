@@ -39,9 +39,10 @@ class Selector:
         'HEAD','HTML','LI','P','TBODY','OPTION','TD','TFOOT','TH','THEAD','TR',
         'AREA','BASE','BASEFONT','BR','COL','FRAME','HR','IMG','INPUT',
         'ISINDEX','LINK','META','PARAM',  #HTML 5 elements...
-        'ARTICLE','ASIDE','FIGURE','FOOTER','HEADER','NAV','SECTION','AUDIO',
-        'VIDEO','CANVAS','COMMAND','DATALIST','DETAILS','OUTPUT','PROGRESS',
-        'HGROUP','MARK','METER','TIME','RP','RT','RUBY']
+        'ARTICLE','ASIDE','AUDIO','BDI','CANVAS','COMMAND','DATALIST',
+        'DETAILS','DIALOG','EMBED','FIGCAPTION','FIGURE','FOOTER','HEADER',
+        'KEYGEN','MARK','METER','NAV','OUTPUT','PROGRESS','RP','RT',
+        'RUBY','SECTION','SOURCE','SUMMARY','TIME','TRACK','VIDEO','WBR']
 
   def __init__(self, selector, start_node=doc):
       self._doc=start_node
@@ -545,6 +546,15 @@ class NodeCollection:
       return self._nodes
 
   toArray=toList   #for jQuery compatibility
+
+  def touchend(self, handler=None):
+      pass
+
+  def touchmove(self, handler=None):
+      pass
+
+  def touchstart(self, handler=None):
+      pass
 
   def trigger(self, event_type):
       pass
