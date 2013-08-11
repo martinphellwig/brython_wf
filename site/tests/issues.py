@@ -304,6 +304,21 @@ assert 1.27E+5 == 127000.0
 assert 1.27e+5 == 127000.0
 assert 1.27E5 == 127000.0
 
+# issue 125
+a = [1,2]
+a.clear()
+assert a == []
+
+a = [3,6,'a']
+c = a
+b = a.copy()
+assert b == a
+b.append(4)
+a.append(99)
+
+assert b != a
+assert c == a
+
 # issue 126
 assert ''' \'inner quote\'''', 'fails inner quote'
 assert " \'inner quote\'", 'fails inner quote'

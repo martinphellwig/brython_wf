@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130811-172226
+// version 1.1.20130811-173201
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130811-172226"]
+__BRYTHON__.version_info=[1,1,"20130811-173201"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -2552,6 +2552,14 @@ throw TypeError('list indices must be integer, not '+str(arg.__class__))
 }
 list.__str__=list.__repr__
 list.append=function(self,other){self.push(other)}
+list.clear=function(self){
+while(self.length){self.pop()}
+}
+list.copy=function(self){
+var res=[]
+for(var i=0;i<this.length;i++){res.push(this[i])}
+return res
+}
 list.count=function(self,elt){
 var res=0
 for(var i=0;i<self.length;i++){

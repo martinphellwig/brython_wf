@@ -254,6 +254,16 @@ list.__str__ = list.__repr__
 
 list.append = function(self,other){self.push(other)}
 
+list.clear = function(self){
+    while(self.length){self.pop()}
+}
+
+list.copy = function(self){
+    var res = []
+    for(var i=0;i<this.length;i++){res.push(this[i])}
+    return res
+}
+
 list.count = function(self,elt){
     var res = 0
     for(var i=0;i<self.length;i++){
