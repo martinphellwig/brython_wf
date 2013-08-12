@@ -1595,7 +1595,14 @@ function $StringCtx(context,value){
     this.tree = []
     context.tree.push(this)
     this.to_js = function(){
-        return this.value.replace(/\n/g,'\\n\\\n')+$to_js(this.tree,'')
+        if(this.value.charAt(0)!='b'){
+            return this.value.replace(/\n/g,'\\n\\\n')+$to_js(this.tree,'')
+        }else{
+            var res = 'bytes('
+            res += this.value.substr(1).replace(/\n/g,'\\n\\\n')
+            res += $to_js(this.tree,'')+')'
+            return res
+        }
     }
 }
 
@@ -2021,7 +2028,7 @@ function $to_js(tree,sep){
 }
 
 // expression starters
-var $expr_starters = ['id','int','float','str','[','(','{','not','lambda']
+var $expr_starters = ['id','int','float','str','bytes','[','(','{','not','lambda']
 
 function $arbo(ctx){
     while(ctx.parent!=undefined){ctx=ctx.parent}
@@ -2041,6 +2048,10 @@ function $transition(context,token){
         }
         if(token==='id'){return new $IdCtx(new $ExprCtx(context,'id',commas),arguments[2])}
         else if(token==='str'){return new $StringCtx(new $ExprCtx(context,'str',commas),arguments[2])}
+        else if(token==='bytes'){
+            console.log('bytes '+arguments[2])
+            return new $StringCtx(new $ExprCtx(context,'bytes',commas),arguments[2])
+            }
         else if(token==='int'){return new $IntCtx(new $ExprCtx(context,'int',commas),arguments[2])}
         else if(token==='float'){return new $FloatCtx(new $ExprCtx(context,'float',commas),arguments[2])}
         else if(token==='('){return new $ListOrTupleCtx(new $ExprCtx(context,'tuple',commas),'tuple')}
@@ -3040,14 +3051,20 @@ function $tokenize(src,module){
         // string
         if(car=='"' || car=="'"){
             var raw = false
+            var bytes = false
             var end = null
-            if(name.length>0 && name.toLowerCase()=="r"){
-                // raw string
-                raw = true;name=''
-            }else if(name.length>0 && name.toLowerCase()=='u'){
-                // in string literals, '\U' and '\u' escapes in raw strings 
-                // are not treated specially.
-                name = ''
+            if(name.length>0){
+                if(name.toLowerCase()=="r"){ // raw string
+                    raw = true;name=''
+                }else if(name.toLowerCase()=='u'){
+                    // in string literals, '\U' and '\u' escapes in raw strings 
+                    // are not treated specially.
+                    name = ''
+                }else if(name.toLowerCase()=='b'){
+                    bytes = true;name=''
+                }else if(['rb','br'].indexOf(name.toLowerCase)>-1){
+                    bytes=true;raw=true;name=''
+                }
             }
             if(src.substr(pos,3)==car+car+car){_type="triple_string";end=pos+3}
             else{_type="string";end=pos+1}
@@ -3087,7 +3104,11 @@ function $tokenize(src,module){
                             }
                             string += $car
                         }
-                        context = $transition(context,'str',car+string+car)
+                        if(bytes){
+                            context = $transition(context,'str','b'+car+string+car)
+                        }else{
+                            context = $transition(context,'str',car+string+car)
+                        }
                         pos = end+1
                         if(_type=="triple_string"){pos = end+3}
                         break

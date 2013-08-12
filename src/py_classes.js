@@ -122,8 +122,32 @@ function bytearray(source, encoding, errors) {
 }
 //bytes() (built in function)
 function bytes(source, encoding, errors) {
-  throw NotImplementedError('bytes has not been implemented')
+    return new $BytesClass(source,encoding,errors)
 }
+bytes.__class__ = $type
+bytes.__repr__ = bytes.__str__ = function(){return "<class 'bytes'>"}
+
+function $BytesClass(source,encoding,errors){
+    this.__class__ = bytes
+    this.value = source
+}
+
+$BytesClass.prototype.__getattr__ = function(attr){
+    if(attr==='__class__'){return bytes}
+    if(this[attr]!==undefined){
+        if(typeof this[attr]==='function'){return $bind(this[attr],this)}
+        else{return this[attr]}
+    }
+    else{throw AttributeError("'bytes' object has no attribute '"+attr+"'")}
+}
+
+$BytesClass.prototype.__len__ = function(){return this.value.length}
+
+$BytesClass.prototype.__repr__ = function(){return this.value}
+
+$BytesClass.prototype.__str__ = function(){return this.value}
+
+
 //callable() (built in function)
 function callable(obj) {
   if (obj.__call__) return True
