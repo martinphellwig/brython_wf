@@ -583,7 +583,18 @@ function filter(){
             res.push(iterable.__item__(i))
         }
     }
-    return res
+    var obj = {
+        __class__:{
+            __class__:$type,
+            __repr__:function(){return "<class 'filter'>"},
+            __str__:function(){return "<class 'filter'>"}
+        },
+        __getattr__:function(attr){return obj[attr]},
+        __iter__:function(){return iter(res)},
+        __repr__:function(){return "<filter object>"},
+        __str__:function(){return "<filter object>"}
+    }
+    return obj
 }
 
 function float(value){
@@ -1131,7 +1142,18 @@ function map(){
         res.push(func.apply(null,args))
         rank++
     }
-    return res
+    var obj = {
+        __class__:{
+            __class__:$type,
+            __repr__:function(){return "<class 'map'>"},
+            __str__:function(){return "<class 'map'>"}
+        },
+        __getattr__:function(attr){return obj[attr]},
+        __iter__:function(){return iter(res)},
+        __repr__:function(){return "<map object>"},
+        __str__:function(){return "<map object>"}
+    }
+    return obj
 }
 
 function $extreme(args,op){ // used by min() and max()
