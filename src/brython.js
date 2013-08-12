@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130811-211111
+// version 1.1.20130812-165324
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130811-211111"]
+__BRYTHON__.version_info=[1,1,"20130812-165324"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -808,8 +808,25 @@ function bytearray(source, encoding, errors){
 throw NotImplementedError('bytearray has not been implemented')
 }
 function bytes(source, encoding, errors){
-throw NotImplementedError('bytes has not been implemented')
+return new $BytesClass(source,encoding,errors)
 }
+bytes.__class__=$type
+bytes.__repr__=bytes.__str__=function(){return "<class 'bytes'>"}
+function $BytesClass(source,encoding,errors){
+this.__class__=bytes
+this.value=source
+}
+$BytesClass.prototype.__getattr__=function(attr){
+if(attr==='__class__'){return bytes}
+if(this[attr]!==undefined){
+if(typeof this[attr]==='function'){return $bind(this[attr],this)}
+else{return this[attr]}
+}
+else{throw AttributeError("'bytes' object has no attribute '"+attr+"'")}
+}
+$BytesClass.prototype.__len__=function(){return this.value.length}
+$BytesClass.prototype.__repr__=function(){return this.value}
+$BytesClass.prototype.__str__=function(){return this.value}
 function callable(obj){
 if(obj.__call__)return True
 return False
@@ -5010,7 +5027,14 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.to_js=function(){
+if(this.value.charAt(0)!='b'){
 return this.value.replace(/\n/g,'\\n\\\n')+$to_js(this.tree,'')
+}else{
+var res='bytes('
+res +=this.value.substr(1).replace(/\n/g,'\\n\\\n')
+res +=$to_js(this.tree,'')+')'
+return res
+}
 }
 }
 function $SubCtx(C){
@@ -5375,7 +5399,7 @@ if(i<tree.length-1){res+=sep}
 }
 return res
 }
-var $expr_starters=['id','int','float','str','[','(','{','not','lambda']
+var $expr_starters=['id','int','float','str','bytes','[','(','{','not','lambda']
 function $arbo(ctx){
 while(ctx.parent!=undefined){ctx=ctx.parent}
 return ctx
@@ -5389,6 +5413,10 @@ C=C.parent
 }
 if(token==='id'){return new $IdCtx(new $ExprCtx(C,'id',commas),arguments[2])}
 else if(token==='str'){return new $StringCtx(new $ExprCtx(C,'str',commas),arguments[2])}
+else if(token==='bytes'){
+console.log('bytes '+arguments[2])
+return new $StringCtx(new $ExprCtx(C,'bytes',commas),arguments[2])
+}
 else if(token==='int'){return new $IntCtx(new $ExprCtx(C,'int',commas),arguments[2])}
 else if(token==='float'){return new $FloatCtx(new $ExprCtx(C,'float',commas),arguments[2])}
 else if(token==='('){return new $ListOrTupleCtx(new $ExprCtx(C,'tuple',commas),'tuple')}
@@ -6221,11 +6249,18 @@ pos +=end+1;continue
 }
 if(car=='"' || car=="'"){
 var raw=false
+var bytes=false
 var end=null
-if(name.length>0 && name.toLowerCase()=="r"){
+if(name.length>0){
+if(name.toLowerCase()=="r"){
 raw=true;name=''
-}else if(name.length>0 && name.toLowerCase()=='u'){
+}else if(name.toLowerCase()=='u'){
 name=''
+}else if(name.toLowerCase()=='b'){
+bytes=true;name=''
+}else if(['rb','br'].indexOf(name.toLowerCase)>-1){
+bytes=true;raw=true;name=''
+}
 }
 if(src.substr(pos,3)==car+car+car){_type="triple_string";end=pos+3}
 else{_type="string";end=pos+1}
@@ -6262,7 +6297,11 @@ string +='\\'
 }
 string +=$car
 }
+if(bytes){
+C=$transition(C,'str','b'+car+string+car)
+}else{
 C=$transition(C,'str',car+string+car)
+}
 pos=end+1
 if(_type=="triple_string"){pos=end+3}
 break
@@ -7302,6 +7341,7 @@ var $obj=this
 return function(){$obj.reset()}
 }
 DOMNode.prototype.get_style=function(){
+this.style.float=this.style.cssFloat || this.style.styleFloat
 return new $JSObject(this.style)
 }
 DOMNode.prototype.get_setSelectionRange=function(){
@@ -7323,11 +7363,6 @@ range.select()
 })(this)
 }
 }
-DOMNode.prototype.set_style=function(style){
-for(var i=0;i<style.$keys.length;i++){
-this.style[style.$keys[i]]=style.$values[i]
-}
-}
 DOMNode.prototype.get_submit=function(){
 var $obj=this
 return function(){$obj.submit()}
@@ -7339,6 +7374,16 @@ DOMNode.prototype.get_html=function(){return this.innerHTML}
 DOMNode.prototype.get_value=function(value){return this.value}
 DOMNode.prototype.set_class=function(arg){this.className==arg}
 DOMNode.prototype.set_html=function(value){this.innerHTML=str(value)}
+DOMNode.prototype.set_style=function(style){
+for(var i=0;i<style.$keys.length;i++){
+if(style.$keys[i].toLowerCase()==='float'){
+this.style.cssFloat=style.$values[i]
+this.style.styleFloat=style.$values[i]
+}else{
+this.style[style.$keys[i].toLowerCase()]=style.$values[i]
+}
+}
+}
 DOMNode.prototype.set_text=function(value){
 this.innerText=str(value)
 this.textContent=str(value)
