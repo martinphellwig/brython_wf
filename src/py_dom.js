@@ -801,6 +801,8 @@ DOMNode.prototype.get_reset = function(){ // for FORM
 }
 
 DOMNode.prototype.get_style = function(){
+    // set attribute "float" for cross-browser compatibility
+    this.style.float = this.style.cssFloat || this.style.styleFloat
     return new $JSObject(this.style)
 }
 
@@ -824,12 +826,6 @@ DOMNode.prototype.get_setSelectionRange = function(){ // for TEXTAREA
     }
 }
     
-DOMNode.prototype.set_style = function(style){ // style is a dict
-    for(var i=0;i<style.$keys.length;i++){
-        this.style[style.$keys[i]] = style.$values[i]
-    }
-}
-
 DOMNode.prototype.get_submit = function(){ // for FORM
     var $obj = this
     return function(){$obj.submit()}
@@ -846,6 +842,18 @@ DOMNode.prototype.get_value = function(value){return this.value}
 DOMNode.prototype.set_class = function(arg){this.className == arg}
 
 DOMNode.prototype.set_html = function(value){this.innerHTML=str(value)}
+
+DOMNode.prototype.set_style = function(style){ // style is a dict
+    for(var i=0;i<style.$keys.length;i++){
+        if(style.$keys[i].toLowerCase()==='float'){
+            this.style.cssFloat = style.$values[i]
+            this.style.styleFloat = style.$values[i]
+        
+        }else{
+            this.style[style.$keys[i].toLowerCase()] = style.$values[i]
+        }
+    }
+}
 
 DOMNode.prototype.set_text = function(value){
     this.innerText=str(value)
