@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130812-165324
+// version 1.1.20130812-170513
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130812-165324"]
+__BRYTHON__.version_info=[1,1,"20130812-170513"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -1179,7 +1179,18 @@ if(func(iterable.__item__(i))){
 res.push(iterable.__item__(i))
 }
 }
-return res
+var obj={
+__class__:{
+__class__:$type,
+__repr__:function(){return "<class 'filter'>"},
+__str__:function(){return "<class 'filter'>"}
+},
+__getattr__:function(attr){return obj[attr]},
+__iter__:function(){return iter(res)},
+__repr__:function(){return "<filter object>"},
+__str__:function(){return "<filter object>"}
+}
+return obj
 }
 function float(value){
 if(value===undefined){return new $FloatClass(0.0)}
@@ -1627,7 +1638,18 @@ if(!flag){break}
 res.push(func.apply(null,args))
 rank++
 }
-return res
+var obj={
+__class__:{
+__class__:$type,
+__repr__:function(){return "<class 'map'>"},
+__str__:function(){return "<class 'map'>"}
+},
+__getattr__:function(attr){return obj[attr]},
+__iter__:function(){return iter(res)},
+__repr__:function(){return "<map object>"},
+__str__:function(){return "<map object>"}
+}
+return obj
 }
 function $extreme(args,op){
 if(op==='__gt__'){var $op_name="max"}
