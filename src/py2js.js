@@ -1845,6 +1845,8 @@ function $add_line_num(node,rank){
         else if(elt.type==='single_kw'){flag=false}
         if(flag){
             js = 'document.$line_info=['+node.line_num+',"'+node.module+'"];'
+            // add a trailing None for interactive mode
+            js += 'None;'
             var new_node = new $Node('expression')
             new $NodeJSCtx(new_node,js)
             node.parent.insert(rank,new_node)

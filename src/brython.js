@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130812-170513
+// version 1.1.20130813-082716
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130812-170513"]
+__BRYTHON__.version_info=[1,1,"20130813-082716"]
 __BRYTHON__.path=[]
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
@@ -5273,6 +5273,7 @@ else if(elt.type==='except'){flag=false}
 else if(elt.type==='single_kw'){flag=false}
 if(flag){
 js='document.$line_info=['+node.line_num+',"'+node.module+'"];'
+js +='None;'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 node.parent.insert(rank,new_node)
@@ -7082,7 +7083,11 @@ this.removeChild(this.childNodes[key])
 }
 }
 DOMNode.prototype.__eq__=function(other){
-if(this.isEqualNode!==undefined){return this.isEqualNode(other)}
+console.log('eqality test '+(this.isEqualNode!==undefined))
+if(this.isEqualNode!==undefined){
+if(isinstance(other,DOMNode)){return this.isEqualNode(other)}
+return false
+}
 else if(this.$brython_id!==undefined){return this.$brython_id===other.$brython_id}
 else{throw NotImplementedError('__eq__ is not implemented')}
 }
