@@ -478,7 +478,10 @@ DOMNode.prototype.__delitem__ = function(key){
 }
 
 DOMNode.prototype.__eq__ = function(other){
-    if(this.isEqualNode!==undefined){return this.isEqualNode(other)}
+    if(this.isEqualNode!==undefined){
+        if(isinstance(other,DOMNode)){return this.isEqualNode(other)}
+        return false
+    }
     else if(this.$brython_id!==undefined){return this.$brython_id===other.$brython_id}
     else{throw NotImplementedError('__eq__ is not implemented')}
 }
