@@ -200,7 +200,7 @@ list.__name__ = 'list'
 
 list.__ne__ = function(self,other){return !self.__eq__(other)}
 
-list.__new__ = function(arg){return list(arg)}
+list.__new__ = function(arg){return list.apply(null,arguments)}
 
 list.__not_in__ = function(self,item){return !list.__in__(self,item)}
 

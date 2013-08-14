@@ -276,129 +276,6 @@ function $OptionsClass(parent){
     
 }
 
-// transforms a Javascript constructor into a Python function
-// that returns instances of the constructor, converted to Python objects
-function JSConstructor(obj){
-    return new $JSConstructor(obj)
-}
-JSConstructor.__class__ = $type
-JSConstructor.__str__ = function(){return "<class 'JSConstructor'>"}
-JSConstructor.toString = JSConstructor.__str__
-
-function $JSConstructor(js){
-    this.js = js
-    this.__class__ = JSConstructor
-    this.__str__ = function(){return "<object 'JSConstructor' wraps "+this.js+">"}
-    this.toString = this.__str__
-}
-
-function $applyToConstructor(constructor, argArray) {
-    var args = [null].concat(argArray);
-    var factoryFunction = constructor.bind.apply(constructor, args);
-    return new factoryFunction();
-}
-
-$JSConstructor.prototype.__call__ = function(){
-    // this.js is a constructor
-    // it takes Javascript arguments so we must convert
-    // those passed to the Python function
-    var args = []
-    for(var i=0;i<arguments.length;i++){
-        var arg = arguments[i]
-        if(isinstance(arg,[JSObject,JSConstructor])){
-            args.push(arg.js)
-        }
-        else if(isinstance(arg,dict)){
-            var obj = new Object()
-            for(var j=0;j<arg.$keys.length;j++){
-                obj[arg.$keys[j]]=arg.$values[j]
-            }
-            args.push(obj)
-        }else{args.push(arg)}
-    }
-    var res = $applyToConstructor(this.js,args)
-    // res is a Javascript object
-    return JSObject(res)
-}
-
-function JSObject(obj){
-    if(obj===null){return new $JSObject(obj)}
-    if(obj.__class__!==undefined && (typeof obj!=='function')){return obj}
-    return new $JSObject(obj)
-}
-JSObject.__class__ = $type
-JSObject.__repr__ = function(){return "<class 'JSObject'>"}
-JSObject.__str__ = function(){return "<class 'JSObject'>"}
-JSObject.toString = JSObject.__str__
-
-function $JSObject(js){
-    this.js = js
-    this.__class__ = JSObject
-    this.__str__ = function(){return "<object 'JSObject' wraps "+this.js+">"}
-    this.toString = this.__str__
-}
-
-$JSObject.prototype.__bool__ = function(){return (new Boolean(this.js)).valueOf()}
-
-$JSObject.prototype.__getitem__ = function(rank){
-    if(this.js.item!==undefined){return this.js.item(rank)}
-    else{throw AttributeError,this+' has no attribute __getitem__'}
-}
-
-$JSObject.prototype.__item__ = function(rank){ // for iterator protocol
-    try{return JSObject(this.js[rank])}
-    catch(err){console.log(err);throw AttributeError(this+' has no attribute __item__')}
-}
-
-$JSObject.prototype.__len__ = function(){
-    if(this.js.length!==undefined){return this.js.length}
-    else{throw AttributeError(this+' has no attribute __len__')}
-}
-
-$JSObject.prototype.__getattr__ = function(attr){
-    if(attr==='__class__'){return JSObject}
-    if(this['get_'+attr]!==undefined){
-        var res = this['get_'+attr]
-        if(typeof res==='function'){
-            return (function(obj){
-                return function(){return obj['get_'+attr].apply(obj,arguments)}
-              })(this)
-        }
-        return this['get_'+attr]
-    }else if(this.js[attr] !== undefined){
-        var obj = this.js,obj_attr = this.js[attr]
-        if(typeof this.js[attr]=='function'){
-            var res = function(){
-                var args = []
-                for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-                var res = obj_attr.apply(obj,args)
-                if(typeof res == 'object'){return JSObject(res)}
-                else if(res===undefined){return None}
-                else{return $JS2Py(res)}
-            }
-            res.__repr__ = function(){return '<function '+attr+'>'}
-            res.__str__ = function(){return '<function '+attr+'>'}
-            return res
-        }else if(obj===window && attr==='location'){
-            // special lookup because of Firefox bug 
-            // https://bugzilla.mozilla.org/show_bug.cgi?id=814622
-            return $Location()
-        }else{
-            return $JS2Py(this.js[attr])
-        }
-    }else{
-        throw AttributeError("no attribute "+attr+' for '+this)
-    }
-}
-
-$JSObject.prototype.__setattr__ = function(attr,value){
-    if(isinstance(value,JSObject)){
-        this.js[attr]=value.js
-    }else{
-        this.js[attr]=value
-    }
-}
-
 function $Location(){ // used because of Firefox bug #814622
     var obj = new object()
     for(var x in window.location){
@@ -479,7 +356,8 @@ DOMNode.prototype.__delitem__ = function(key){
 
 DOMNode.prototype.__eq__ = function(other){
     if(this.isEqualNode!==undefined){
-        if(isinstance(other,DOMNode)){return this.isEqualNode(other)}
+        try{return this.isEqualNode(other)}
+        catch(err){return false}
         return false
     }
     else if(this.$brython_id!==undefined){return this.$brython_id===other.$brython_id}

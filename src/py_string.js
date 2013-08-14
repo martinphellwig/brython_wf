@@ -278,7 +278,12 @@ str.__mul__ = function(self,other){
 
 str.__ne__ = function(self,other){return other!==self.valueOf()}
 
-str.__new__ = function(arg){return str(arg)}
+str.__new__ = function(arg){
+    // used in subclasses of str
+    // return an instance of String, not a native string object
+    // otherwise other attributes could not be set in subclasses
+    return new String(str.apply(null,arguments))
+}
 
 str.__not_in__ = function(self,item){return !str.__in__(self,item)}
 

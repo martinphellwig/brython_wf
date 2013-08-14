@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130813-082716
+// version 1.1.20130814-110038
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,8 +47,112 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130813-082716"]
+__BRYTHON__.version_info=[1,1,"20130814-110038"]
 __BRYTHON__.path=[]
+
+function JSConstructor(obj){
+return new $JSConstructor(obj)
+}
+JSConstructor.__class__=$type
+JSConstructor.__str__=function(){return "<class 'JSConstructor'>"}
+JSConstructor.toString=JSConstructor.__str__
+function $JSConstructor(js){
+this.js=js
+this.__class__=JSConstructor
+this.__str__=function(){return "<object 'JSConstructor' wraps "+this.js+">"}
+this.toString=this.__str__
+}
+function $applyToConstructor(constructor, argArray){
+var args=[null].concat(argArray)
+var factoryFunction=constructor.bind.apply(constructor, args)
+return new factoryFunction()
+}
+$JSConstructor.prototype.__call__=function(){
+var args=[]
+for(var i=0;i<arguments.length;i++){
+var arg=arguments[i]
+if(isinstance(arg,[JSObject,JSConstructor])){
+args.push(arg.js)
+}
+else if(isinstance(arg,dict)){
+var obj=new Object()
+for(var j=0;j<arg.$keys.length;j++){
+obj[arg.$keys[j]]=arg.$values[j]
+}
+args.push(obj)
+}else{args.push(arg)}
+}
+var res=$applyToConstructor(this.js,args)
+return JSObject(res)
+}
+function JSObject(obj){
+if(obj===null){return new $JSObject(obj)}
+if(obj.__class__!==undefined &&(typeof obj!=='function')){return obj}
+return new $JSObject(obj)
+}
+JSObject.__class__=$type
+JSObject.__repr__=function(){return "<class 'JSObject'>"}
+JSObject.__str__=function(){return "<class 'JSObject'>"}
+JSObject.toString=JSObject.__str__
+function $JSObject(js){
+this.js=js
+this.__class__=JSObject
+this.__str__=function(){return "<object 'JSObject' wraps "+this.js+">"}
+this.toString=this.__str__
+}
+$JSObject.prototype.__bool__=function(){return(new Boolean(this.js)).valueOf()}
+$JSObject.prototype.__getitem__=function(rank){
+if(this.js.item!==undefined){return this.js.item(rank)}
+else{throw AttributeError,this+' has no attribute __getitem__'}
+}
+$JSObject.prototype.__item__=function(rank){
+try{return JSObject(this.js[rank])}
+catch(err){console.log(err);throw AttributeError(this+' has no attribute __item__')}
+}
+$JSObject.prototype.__len__=function(){
+if(this.js.length!==undefined){return this.js.length}
+else{throw AttributeError(this+' has no attribute __len__')}
+}
+$JSObject.prototype.__getattr__=function(attr){
+if(attr==='__class__'){return JSObject}
+if(this['get_'+attr]!==undefined){
+var res=this['get_'+attr]
+if(typeof res==='function'){
+return(function(obj){
+return function(){return obj['get_'+attr].apply(obj,arguments)}
+})(this)
+}
+return this['get_'+attr]
+}else if(this.js[attr]!==undefined){
+var obj=this.js,obj_attr=this.js[attr]
+if(typeof this.js[attr]=='function'){
+var res=function(){
+var args=[]
+for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+var res=obj_attr.apply(obj,args)
+if(typeof res=='object'){return JSObject(res)}
+else if(res===undefined){return None}
+else{return $JS2Py(res)}
+}
+res.__repr__=function(){return '<function '+attr+'>'}
+res.__str__=function(){return '<function '+attr+'>'}
+return res
+}else if(obj===window && attr==='location'){
+return $Location()
+}else{
+return $JS2Py(this.js[attr])
+}
+}else{
+throw AttributeError("no attribute "+attr+' for '+this)
+}
+}
+$JSObject.prototype.__setattr__=function(attr,value){
+if(isinstance(value,JSObject)){
+this.js[attr]=value.js
+}else{
+this.js[attr]=value
+}
+}
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$def_names=[],$ns={}
 for(var k in $defaults){$def_names.push(k);$ns[k]=$defaults[k]}
@@ -375,6 +479,8 @@ return res
 }
 if(factory[attr]!==undefined){
 var res=factory[attr]
+if(attr==='__str__')
+console.log('factory '+factory.__name__+' str auto '+res.auto)
 if(typeof res==='function'){
 res=(function(func){
 return function(){
@@ -405,28 +511,63 @@ void(0)
 throw AttributeError("'"+factory.__name__+"' object has no attribute '"+attr+"'")
 }
 }
+function $generic_methods(fact){
+return{
+__eq__ : function(self,other){
+if(other===undefined){
+return self===fact.$class
+}
+return other===self
+},
+__ne__ : function(self,other){
+if(other===undefined){
+return self!==fact.$class
+}
+return other !==self
+},
+__repr__ : function(self){
+if(self===undefined){return "<class "+fact.__name__+">"}
+else{return "<"+fact.__name__+" object>"}
+},
+__str__ : function(self){
+if(self===undefined){return "<class "+fact.__name__+">"}
+else{return "<"+fact.__name__+" object>"}
+}
+}
+}
 function $class_constructor(class_name,factory,parents){
 var parent_classes=[]
 if(parents===undefined){parents=tuple()}
 if(!isinstance(parents,tuple)){parents=[parents]}
 for(var i=0;i<parents.length;i++){
 if(parents[i]===object){continue}
-else if(parents[i]===int){parents[i]=$NativeWrapper['int']}
-else if(parents[i]===str){parents[i]=$NativeWrapper['str']}
-else if(parents[i]===list){parents[i]=$NativeWrapper['list']}
+else if(parents[i]===int){parents[i]=$IntWrapper}
 parent_classes.push(parents[i])
 }
 factory.$parents=parent_classes
 factory.__name__=class_name
+var gfuncs=$generic_methods(factory)
+for(var fname in gfuncs){
+var flag=false
+try{
+flag=$resolve_class_attr(null,factory,fname).generic===undefined
+}
+catch(err){void(0)}
+if(!flag){
+factory[fname]=gfuncs[fname]
+factory[fname].generic=true
+}
+}
 var f=function(){
 var obj=new Object()
-obj.$initialized=false
+var $initialized=false
 var fact=factory
 if(fact.__new__===undefined){
 while(fact.$parents!==undefined && fact.$parents.length>0){
 if(fact.$parents.length && 
 fact.$parents[0].__new__!==undefined){
 var obj=fact.$parents[0].__new__.apply(null,arguments)
+$initialized=true
 break
 }
 fact=fact.$parents[0]
@@ -462,17 +603,12 @@ if(factory['__setattr__']==undefined){
 obj.__setattr__=function(attr,value){obj[attr]=value}
 }
 obj.__setattr__.__name__="<bound method __setattr__ of "+class_name+" object>"
-try{$resolve_attr(obj,factory,'__str__')}
-catch(err){
-$pop_exc()
-obj.__str__=function(){return "<"+class_name+" object>"}
-obj.__str__.__name__="<bound method __str__ of "+class_name+" object>"
-}
 try{$resolve_attr(obj,factory,'__repr__')}
 catch(err){
 $pop_exc()
 obj.__repr__=function(){return "<"+class_name+" object>"}
 obj.__repr__.__name__="<bound method __repr__ of "+class_name+" object>"
+obj.__repr__.auto=true
 }
 try{$resolve_attr(obj,factory,'__eq__')}
 catch(err){
@@ -489,7 +625,7 @@ return __BRYTHON__.$py_next_hash
 }
 obj.__hash__.__name__="<bound method __hash__ of "+class_name+" object>"
 }
-if(!obj.$initialized){
+if(!$initialized){
 var init_func=null
 try{init_func=$resolve_attr(obj,factory,'__init__')}
 catch(err){$pop_exc()}
@@ -511,7 +647,6 @@ obj.$initialized=true
 }
 return obj
 }
-f.__str__=function(){return "<class '"+class_name+"'>"}
 for(var attr in factory){
 if(attr==='__call__'){continue}
 f[attr]=factory[attr]
@@ -529,45 +664,6 @@ factory[attr]=value;f[attr]=value
 }
 factory.$class=f
 return f
-}
-$NativeWrapper={
-'int':{__new__ : function(arg){return new $IntWrapper(arg)}},
-'str':{__new__ : function(arg){
-if(arg===undefined){arg=''}
-return new $BuiltinWrapper(str,arg)
-}
-},
-'list':{__new__ : function(arg){
-if(arg===undefined){arg=[]}
-return new $BuiltinWrapper(list,arg)
-}
-},
-'object':{__new__ : function(arg){
-if(arg===undefined){arg=[]}
-return new $BuiltinWrapper(object,arg)
-}
-}
-}
-function $IntWrapper(arg){
-for(var attr in Number.prototype){
-this[attr]=(function(attr){
-return function(){
-return Number.prototype[attr].apply(arg,arguments)
-}
-})(attr)
-}
-}
-function $BuiltinWrapper(builtin,arg){
-var value=builtin(arg)
-for(var attr in builtin){
-this[attr]=(function(value,attr){
-return function(){
-args=[value]
-for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-return builtin[attr].apply(value,args)
-}
-})(value,attr)
-}
 }
 var $dq_regexp=new RegExp('"',"g")
 function $escape_dq(arg){return arg.replace($dq_regexp,'\\"')}
@@ -627,7 +723,9 @@ return other+''===this+''
 }
 Function.prototype.__class__=Function
 Function.prototype.__repr__=function(){return "<function "+this.__name__+">"}
+Function.prototype.__repr__.def='function'
 Function.prototype.__str__=function(){return "<function "+this.__name__+">"}
+Function.prototype.__str__.def='function'
 Array.prototype.match=function(other){
 var $i=0
 while($i<this.length && $i<other.length){
@@ -1419,7 +1517,7 @@ return parseInt(value.value)
 int.__bool__=function(){if(value===0){return False}else{return True}}
 int.__class__=$type
 int.__name__='int'
-int.__new__=function(arg){return int(arg)}
+int.__new__=function(arg){console.log('new int');return int(arg)}
 int.toString=int.__str__=function(){return "<class 'int'>"}
 int.__getattr__=function(attr){
 if(attr==='__class__'){return int}
@@ -1533,6 +1631,17 @@ else{return float(this/other.value)}
 }else{$UnsupportedOpType("//","int",other.__class__)}
 }
 Number.prototype.__xor__=function(other){return this ^ other}
+$IntWrapper=new Object()
+for(var $attr in Number.prototype){$IntWrapper[$attr]=Number.prototype[$attr]}
+$IntWrapper.__new__=function(){
+var value=int.apply(null,arguments)
+var res=new Object()
+for(var attr in Number.prototype){
+res[attr]=Number.prototype[attr]
+}
+res.valueOf=function(){return value}
+return res
+}
 var $op_func=function(other){
 if(isinstance(other,int)){
 var res=this.valueOf()-other.valueOf()
@@ -2545,7 +2654,7 @@ else{throw TypeError("can't multiply sequence by non-int of type '"+other.__name
 }
 list.__name__='list'
 list.__ne__=function(self,other){return !self.__eq__(other)}
-list.__new__=function(arg){return list(arg)}
+list.__new__=function(arg){return list.apply(null,arguments)}
 list.__not_in__=function(self,item){return !list.__in__(self,item)}
 list.__repr__=function(self){
 if(self===undefined){return "<class 'list'>"}
@@ -2998,7 +3107,9 @@ for(var i=0;i<other;i++){$res+=self.valueOf()}
 return $res
 }
 str.__ne__=function(self,other){return other!==self.valueOf()}
-str.__new__=function(arg){return str(arg)}
+str.__new__=function(arg){
+return new String(str.apply(null,arguments))
+}
 str.__not_in__=function(self,item){return !str.__in__(self,item)}
 str.__repr__=function(self){
 if(self===undefined){return "<class 'str'>"}
@@ -6917,109 +7028,6 @@ return parent.options.namedItem(name)
 this.get_remove=function(arg){parent.options.remove(arg)}
 this.toString=this.__str__
 }
-function JSConstructor(obj){
-return new $JSConstructor(obj)
-}
-JSConstructor.__class__=$type
-JSConstructor.__str__=function(){return "<class 'JSConstructor'>"}
-JSConstructor.toString=JSConstructor.__str__
-function $JSConstructor(js){
-this.js=js
-this.__class__=JSConstructor
-this.__str__=function(){return "<object 'JSConstructor' wraps "+this.js+">"}
-this.toString=this.__str__
-}
-function $applyToConstructor(constructor, argArray){
-var args=[null].concat(argArray)
-var factoryFunction=constructor.bind.apply(constructor, args)
-return new factoryFunction()
-}
-$JSConstructor.prototype.__call__=function(){
-var args=[]
-for(var i=0;i<arguments.length;i++){
-var arg=arguments[i]
-if(isinstance(arg,[JSObject,JSConstructor])){
-args.push(arg.js)
-}
-else if(isinstance(arg,dict)){
-var obj=new Object()
-for(var j=0;j<arg.$keys.length;j++){
-obj[arg.$keys[j]]=arg.$values[j]
-}
-args.push(obj)
-}else{args.push(arg)}
-}
-var res=$applyToConstructor(this.js,args)
-return JSObject(res)
-}
-function JSObject(obj){
-if(obj===null){return new $JSObject(obj)}
-if(obj.__class__!==undefined &&(typeof obj!=='function')){return obj}
-return new $JSObject(obj)
-}
-JSObject.__class__=$type
-JSObject.__repr__=function(){return "<class 'JSObject'>"}
-JSObject.__str__=function(){return "<class 'JSObject'>"}
-JSObject.toString=JSObject.__str__
-function $JSObject(js){
-this.js=js
-this.__class__=JSObject
-this.__str__=function(){return "<object 'JSObject' wraps "+this.js+">"}
-this.toString=this.__str__
-}
-$JSObject.prototype.__bool__=function(){return(new Boolean(this.js)).valueOf()}
-$JSObject.prototype.__getitem__=function(rank){
-if(this.js.item!==undefined){return this.js.item(rank)}
-else{throw AttributeError,this+' has no attribute __getitem__'}
-}
-$JSObject.prototype.__item__=function(rank){
-try{return JSObject(this.js[rank])}
-catch(err){console.log(err);throw AttributeError(this+' has no attribute __item__')}
-}
-$JSObject.prototype.__len__=function(){
-if(this.js.length!==undefined){return this.js.length}
-else{throw AttributeError(this+' has no attribute __len__')}
-}
-$JSObject.prototype.__getattr__=function(attr){
-if(attr==='__class__'){return JSObject}
-if(this['get_'+attr]!==undefined){
-var res=this['get_'+attr]
-if(typeof res==='function'){
-return(function(obj){
-return function(){return obj['get_'+attr].apply(obj,arguments)}
-})(this)
-}
-return this['get_'+attr]
-}else if(this.js[attr]!==undefined){
-var obj=this.js,obj_attr=this.js[attr]
-if(typeof this.js[attr]=='function'){
-var res=function(){
-var args=[]
-for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-var res=obj_attr.apply(obj,args)
-if(typeof res=='object'){return JSObject(res)}
-else if(res===undefined){return None}
-else{return $JS2Py(res)}
-}
-res.__repr__=function(){return '<function '+attr+'>'}
-res.__str__=function(){return '<function '+attr+'>'}
-return res
-}else if(obj===window && attr==='location'){
-return $Location()
-}else{
-return $JS2Py(this.js[attr])
-}
-}else{
-throw AttributeError("no attribute "+attr+' for '+this)
-}
-}
-$JSObject.prototype.__setattr__=function(attr,value){
-if(isinstance(value,JSObject)){
-this.js[attr]=value.js
-}else{
-this.js[attr]=value
-}
-}
 function $Location(){
 var obj=new object()
 for(var x in window.location){
@@ -7083,9 +7091,9 @@ this.removeChild(this.childNodes[key])
 }
 }
 DOMNode.prototype.__eq__=function(other){
-console.log('eqality test '+(this.isEqualNode!==undefined))
 if(this.isEqualNode!==undefined){
-if(isinstance(other,DOMNode)){return this.isEqualNode(other)}
+try{return this.isEqualNode(other)}
+catch(err){return false}
 return false
 }
 else if(this.$brython_id!==undefined){return this.$brython_id===other.$brython_id}
