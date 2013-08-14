@@ -875,7 +875,7 @@ function int(value){
 int.__bool__ = function(){if (value === 0) {return False} else {return True}}
 int.__class__ = $type
 int.__name__ = 'int'
-int.__new__ = function(arg){return int(arg)}
+int.__new__ = function(arg){console.log('new int');return int(arg)}
 int.toString = int.__str__ = function(){return "<class 'int'>"}
 
 int.__getattr__ = function(attr){
@@ -1021,6 +1021,19 @@ Number.prototype.__truediv__ = function(other){
 }
 
 Number.prototype.__xor__ = function(other){return this ^ other} // bitwise XOR
+
+// used for subclasses of int
+$IntWrapper = new Object()
+for(var $attr in Number.prototype){$IntWrapper[$attr]=Number.prototype[$attr]}
+$IntWrapper.__new__ = function(){
+    var value = int.apply(null,arguments)
+    var res = new Object()
+    for(var attr in Number.prototype){
+        res[attr] = Number.prototype[attr]
+    }
+    res.valueOf = function(){return value}
+    return res
+}
 
 // operations
 var $op_func = function(other){
