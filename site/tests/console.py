@@ -104,7 +104,7 @@ def load(evt):
     _name=evt.target.value
     req = ajax()
     req.on_complete = on_complete
-    req.open('GET',_name+'?foo=%s' % _rand,False)
+    req.open('GET',_name+'?foo=%s' %time.time(),False)
     req.send()
 
 def show_js():

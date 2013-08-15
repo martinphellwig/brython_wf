@@ -326,4 +326,50 @@ assert ' \'inner quote\'', 'fails inner quote'
 assert """ \"inner quote\"""", 'fails inner quote'
 assert " \"inner quote\"", 'fails inner quote'
 
+# issue 128
+LIST = []
+class Parent:
+    def __init__(self):
+        self.level = self.get_level()
+        print("init:", self)
+        self.inherited()
+    def get_level(self): return 0
+    def inherited(self):
+        self.override()
+        return self
+    def override(self):
+        print("parent override:", self, self.level)
+        LIST.append((self, self.level))
+        return self
+
+
+class Child(Parent):
+    def get_level(self): return 1
+    def override(self):
+        print("child override:", self, self.level)
+        LIST.append((self, self.level))
+        return self
+
+
+class Sibling(Parent):
+    def __init__(self):
+        self.level = self.get_level()
+        Parent.__init__(self)
+    def get_level(self): return 1
+    def override(self):
+        print("sibil override:", self, self.level)
+        LIST.append((self, self.level))
+        return self
+
+parent = Parent()
+child = Child()
+sibil = Sibling()
+given = sibil.override()
+print(child, given, sibil, sibil.level, given.level)
+print("LIST", LIST)
+print([l[1] for l in LIST])
+assert parent == parent.override()
+assert sibil == given
+print('Ok')
+
 print('passed all tests')

@@ -17,10 +17,8 @@ function all(iterable){
     }
 }
 
-function any(iterable){
-    if(iterable.__item__===undefined){
-        throw TypeError("'"+iterable.__class__.__name__+"' object is not iterable")
-    }
+function any(obj){
+    var iterable = iter(obj)
     while(true){
         try{
             var elt = next(iterable)
@@ -260,11 +258,16 @@ function dict(){
     var args = $ns['args']
     var kw = $ns['kw']
     if(args.length>0){ // format dict([(k1,v1),(k2,v2)...])
-        var iterable = args[0]
+        var iterable = iter(args[0])
         var obj = new $DictClass([],[])
-        for(var i=0;i<iterable.__len__();i++){
-            var elt = iterable.__item__(i)
-            obj.__setitem__(elt.__item__(0),elt.__item__(1))
+        while(true){
+            try{
+                var elt = next(iterable)
+                obj.__setitem__(elt.__getitem__(0),elt.__getitem__(1))
+            }catch(err){
+                if(err.__name__==='StopIteration'){break}
+                else{throw err}
+            }
         }
         return obj
     }else if(kw.$keys.length>0){ // format dict(k1=v1,k2=v2...)
@@ -337,8 +340,6 @@ dict.__getitem__ = function(self,arg){
 dict.__hash__ = function(self) {throw TypeError("unhashable type: 'dict'");}
 
 dict.__in__ = function(self,item){return item.__contains__(self)}
-
-dict.__item__ = function(self,i){return self.$keys[i]}
 
 dict.__iter__ = function(self){return new $iterator_getitem(self.$keys)}
 
@@ -515,7 +516,6 @@ function $dict_iterator(obj,info){
         else{return $bind(this[attr],this)}
     }
     this.__len__ = function(){return obj.__len__()}
-    this.__item__ = function(i){return obj.__item__(i)}
     this.__iter__ = function(){return new $iterator_getitem(obj)}
     this.__class__ = new $class(this,info)
     this.toString = function(){return info+'('+obj.toString()+')'}
@@ -576,11 +576,15 @@ enumerate.__str__ = function(){return "<class 'enumerate'>"}
 function filter(){
     if(arguments.length!=2){throw TypeError(
             "filter expected 2 arguments, got "+arguments.length)}
-    var func=arguments[0],iterable=arguments[1]
+    var func=arguments[0],iterable=iter(arguments[1])
     var res=[]
-    for(var i=0;i<iterable.__len__();i++){
-        if(func(iterable.__item__(i))){
-            res.push(iterable.__item__(i))
+    while(true){
+        try{
+            var _item = next(iterable)
+            if(func(_item)){res.push(_item)}
+        }catch(err){
+            if(err.__name__==='StopIteration'){$pop_exc();break}
+            else{throw err}
         }
     }
     var obj = {
@@ -1106,7 +1110,7 @@ function $iterator_getitem(obj){
     this.__getattr__ = function(attr){
         if(attr==='__next__'){return $bind(this[attr],this)}
     }
-    this.__item__ = function(rank){return obj[rank]}
+    this.__iter__ = function(rank){return $iterator_getitem(obj)}
     this.__len__ = function(){return obj.length}
     this.__next__ = function(){
         this.counter++
@@ -1144,12 +1148,19 @@ function locals(obj_id){
 
 function map(){
     var func = arguments[0],res=[],rank=0
+    var iter_args = []
+    for(var i=1;i<arguments.length;i++){iter_args.push(iter(arguments[i]))}
     while(true){
         var args = [],flag=true
-        for(var i=1;i<arguments.length;i++){
-            var x = arguments[i].__item__(rank)
-            if(x===undefined){flag=false;break}
-            args.push(x)
+        for(var i=0;i<iter_args.length;i++){
+            try{
+                var x = next(iter_args[i])
+                args.push(x)
+            }catch(err){
+                if(err.__name__==='StopIteration'){
+                    $pop_exc;flag=false;break
+                }else{throw err}
+            }
         }
         if(!flag){break}
         res.push(func.apply(null,args))
@@ -1318,7 +1329,7 @@ function $open(){
         res.__enter__ = function(){return res}
         res.__exit__ = function(){return false}
         res.__getattr__ = function(attr){return res[attr]}
-        res.__item__ = function(rank){return lines[rank]}
+        res.__iter__ = function(){return iter(lines)}
         res.__len__ = function(){return lines.length}
         res.close = function(){res.closed = true}
         res.read = function(nb){
@@ -1609,8 +1620,6 @@ set.__lt__ = function(self,other){
 
 set.__len__ = function(self){return int(self.items.length)}
 
-set.__item__ = function(self,i){return self.items[i]}
-
 set.__ne__ = function(self,other){return !set.__eq__(self,other)}
 
 set.__not_in__ = function(self,item){return !set.__in__(self,item)}
@@ -1783,8 +1792,13 @@ function sorted (iterable, key, reverse) {
    if (reverse === undefined) {reverse=False}
 
    var obj = new $list()
-   for(var i=0;i<iterable.__len__();i++){
-       obj.append(iterable.__item__(i))
+   iterable = iter(iterable)
+   while(true){
+       try{obj.append(next(iterable))}
+       catch(err){
+           if(err.__name__==='StopIteration'){$pop_exc();break}
+           else{throw err}
+       }
    }
 
    if (key !== undefined) {
@@ -1807,9 +1821,16 @@ function staticmethod(func) {
 
 function sum(iterable,start){
     if(start===undefined){start=0}
-    var res = 0
-    for(var i=start;i<iterable.__len__();i++){        
-        res = res.__add__(iterable.__item__(i))
+    var res = start
+    var iterable = iter(iterable)
+    while(true){
+        try{
+            var _item = next(iterable)
+            res = res.__add__(_item)
+        }catch(err){
+           if(err.__name__==='StopIteration'){$pop_exc();break}
+           else{throw err}
+        }
     }
     return res
 }
@@ -1860,15 +1881,21 @@ function type(obj) {
 
 function zip(){
     var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')
-    var args = $ns['args']
+    var _args = $ns['args']
+    var args = []
+    for(var i=0;i<_args.length;i++){args.push(iter(_args[i]))}
     var kw = $ns['kw']
     var rank=0,res=[]
     while(true){
         var line=[],flag=true
         for(var i=0;i<args.length;i++){
-            var x=args[i].__item__(rank)
-            if(x===undefined){flag=false;break}
-            line.push(x)
+            try{
+                var x=next(args[i])
+                line.push(x)
+            }catch(err){
+                if(err.__name__==='StopIteration'){$pop_exc();flag=false;break}
+                else{throw err}
+            }
         }
         if(!flag){return res}
         res.push(line)
