@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130814-110038
+// version 1.1.20130815-180437
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130814-110038"]
+__BRYTHON__.version_info=[1,1,"20130815-180437"]
 __BRYTHON__.path=[]
 
 function JSConstructor(obj){
@@ -2940,7 +2940,23 @@ hash=(101*hash + self.charCodeAt(i))& 0xFFFFFFFF
 return hash
 }
 str.__in__=function(self,item){return item.__contains__(self.valueOf())}
-str.__item__=function(self,i){return self.charAt(i)}
+str.__iter__=function(self){
+var res={
+__class__:$str_iterator,
+__getattr__:function(attr){return res[attr]},
+__item__:function(rank){return self.charAt(rank)},
+__len__:function(){return self.length},
+__next__:function(){
+res.counter++
+if(res.counter<self.__len__()){return self.__getitem__(res.counter)}
+else{throw StopIteration("StopIteration")}
+},
+__repr__:function(){return "<str_iterator object>"},
+__str__:function(){return "<str_iterator object>"},
+counter:-1
+}
+return res
+}
 str.__len__=function(self){return self.length}
 str.__mod__=function(self,args){
 var flags=$List2Dict('#','0','-',' ','+')
@@ -3275,16 +3291,20 @@ str.isupper=function(self){
 var pat=/^[A-Z]+$/
 return pat.test(self)
 }
-str.join=function(self,iterable){
-if(!'__item__' in iterable){throw TypeError(
-"'"+str(iterable.__class__)+"' object is not iterable")}
+str.join=function(self,obj){
+var iterable=iter(obj)
 var res='',count=0
-for(var i=0;i<iterable.length;i++){
-var obj2=iterable.__getitem__(i)
+while(true){
+try{
+var obj2=next(iterable)
 if(!isinstance(obj2,str)){throw TypeError(
 "sequence item "+count+": expected str instance, "+obj2.__class__+"found")}
 res +=obj2+self
 count++
+}catch(err){
+if(err.__name__==='StopIteration'){break}
+else{throw err}
+}
 }
 if(count==0){return ''}
 res=res.substr(0,res.length-self.length)
@@ -3547,6 +3567,12 @@ return str[attr].apply(this,args)
 }
 return str
 }()
+$str_iterator={
+__class__:$type,
+__getattr__:function(){return $str_iterator[attr]},
+__repr__:function(){return "<class 'str_iterator'>"},
+__str__:function(){return "<class 'str_iterator'>"}
+}
 
 function $importer(){
 if(window.XMLHttpRequest){

@@ -98,7 +98,23 @@ str.__hash__ = function(self) {
 
 str.__in__ = function(self,item){return item.__contains__(self.valueOf())}
 
-str.__item__ = function(self,i){return self.charAt(i)}
+str.__iter__ = function(self){
+    var res = {
+        __class__:$str_iterator,
+        __getattr__:function(attr){return res[attr]},
+        __item__:function(rank){return self.charAt(rank)},
+        __len__:function(){return self.length},
+        __next__:function(){
+            res.counter++
+            if(res.counter<self.__len__()){return self.__getitem__(res.counter)}
+            else{throw StopIteration("StopIteration")}
+        },
+        __repr__:function(){return "<str_iterator object>"},
+        __str__:function(){return "<str_iterator object>"},
+        counter:-1
+    }
+    return res
+}
 
 str.__len__ = function(self){return self.length}
 
@@ -499,16 +515,20 @@ str.isupper = function(self) {
   return pat.test(self)
 }
 
-str.join = function(self,iterable){
-    if(!'__item__' in iterable){throw TypeError(
-         "'"+str(iterable.__class__)+"' object is not iterable")}
+str.join = function(self,obj){
+    var iterable=iter(obj)
     var res = '',count=0
-    for(var i=0;i<iterable.length;i++){
-        var obj2 = iterable.__getitem__(i)
-        if(!isinstance(obj2,str)){throw TypeError(
-            "sequence item "+count+": expected str instance, "+obj2.__class__+"found")}
-        res += obj2+self
-        count++
+    while(true){
+        try{
+            var obj2 = next(iterable)
+            if(!isinstance(obj2,str)){throw TypeError(
+                "sequence item "+count+": expected str instance, "+obj2.__class__+"found")}
+            res += obj2+self
+            count++
+        }catch(err){
+            if(err.__name__==='StopIteration'){break}
+            else{throw err}
+        }
     }
     if(count==0){return ''}
     res = res.substr(0,res.length-self.length)
@@ -824,3 +844,9 @@ for(var attr in str){
 
 return str
 }()
+$str_iterator = {
+    __class__:$type,
+    __getattr__:function(){return $str_iterator[attr]},
+    __repr__:function(){return "<class 'str_iterator'>"},
+    __str__:function(){return "<class 'str_iterator'>"}
+}
