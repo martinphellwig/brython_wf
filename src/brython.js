@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130815-180437
+// version 1.1.20130816-160500
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130815-180437"]
+__BRYTHON__.version_info=[1,1,"20130816-160500"]
 __BRYTHON__.path=[]
 
 function JSConstructor(obj){
@@ -105,9 +105,21 @@ $JSObject.prototype.__getitem__=function(rank){
 if(this.js.item!==undefined){return this.js.item(rank)}
 else{throw AttributeError,this+' has no attribute __getitem__'}
 }
-$JSObject.prototype.__item__=function(rank){
-try{return JSObject(this.js[rank])}
-catch(err){console.log(err);throw AttributeError(this+' has no attribute __item__')}
+$JSObject.prototype.__iter__=function(){
+var res={
+__class__:JSObject,
+__getattr__:function(attr){return res[attr]},
+__iter__:function(){return res},
+__next__:function(){
+res.counter++
+if(res.counter<self.js.length){return self.js[res.counter]}
+else{throw StopIteration("StopIteration")}
+},
+__repr__:function(){return "<JSObject iterator object>"},
+__str__:function(){return "<JSObject iterator object>"},
+counter:-1
+}
+return res
 }
 $JSObject.prototype.__len__=function(){
 if(this.js.length!==undefined){return this.js.length}
@@ -249,6 +261,7 @@ $py +="    return res\n"
 $py +="res"+$ix+"=func"+$ix+"()"
 var $js=__BRYTHON__.py2js($py,'list comprehension').to_js()
 eval($js)
+console.log('list comp\n'+$js)
 return eval("res"+$ix)
 }
 function $gen_expr(){
@@ -320,7 +333,6 @@ obj.$iter=-1
 obj.__class__=$generator
 obj.__getattr__=function(attr){return obj[attr]}
 obj.__len__=function(){return func.$iter.__len__()}
-obj.__item__=function(rank){return obj.__next__()}
 obj.__iter__=function(){return obj}
 obj.__next__=function(){
 obj.$iter++
@@ -819,10 +831,8 @@ if(!bool(elt)){return False}
 }catch(err){return True}
 }
 }
-function any(iterable){
-if(iterable.__item__===undefined){
-throw TypeError("'"+iterable.__class__.__name__+"' object is not iterable")
-}
+function any(obj){
+var iterable=iter(obj)
 while(true){
 try{
 var elt=next(iterable)
@@ -1006,11 +1016,16 @@ var $ns=$MakeArgs('dict',arguments,[],{},'args','kw')
 var args=$ns['args']
 var kw=$ns['kw']
 if(args.length>0){
-var iterable=args[0]
+var iterable=iter(args[0])
 var obj=new $DictClass([],[])
-for(var i=0;i<iterable.__len__();i++){
-var elt=iterable.__item__(i)
-obj.__setitem__(elt.__item__(0),elt.__item__(1))
+while(true){
+try{
+var elt=next(iterable)
+obj.__setitem__(elt.__getitem__(0),elt.__getitem__(1))
+}catch(err){
+if(err.__name__==='StopIteration'){break}
+else{throw err}
+}
 }
 return obj
 }else if(kw.$keys.length>0){
@@ -1070,7 +1085,6 @@ throw KeyError(str(arg))
 }
 dict.__hash__=function(self){throw TypeError("unhashable type: 'dict'");}
 dict.__in__=function(self,item){return item.__contains__(self)}
-dict.__item__=function(self,i){return self.$keys[i]}
 dict.__iter__=function(self){return new $iterator_getitem(self.$keys)}
 dict.__len__=function(self){return self.$keys.length}
 dict.__ne__=function(self,other){return !dict.__eq__(self,other)}
@@ -1218,7 +1232,6 @@ if(res===undefined){throw AttributeError(
 else{return $bind(this[attr],this)}
 }
 this.__len__=function(){return obj.__len__()}
-this.__item__=function(i){return obj.__item__(i)}
 this.__iter__=function(){return new $iterator_getitem(obj)}
 this.__class__=new $class(this,info)
 this.toString=function(){return info+'('+obj.toString()+')'}
@@ -1270,11 +1283,15 @@ enumerate.__str__=function(){return "<class 'enumerate'>"}
 function filter(){
 if(arguments.length!=2){throw TypeError(
 "filter expected 2 arguments, got "+arguments.length)}
-var func=arguments[0],iterable=arguments[1]
+var func=arguments[0],iterable=iter(arguments[1])
 var res=[]
-for(var i=0;i<iterable.__len__();i++){
-if(func(iterable.__item__(i))){
-res.push(iterable.__item__(i))
+while(true){
+try{
+var _item=next(iterable)
+if(func(_item)){res.push(_item)}
+}catch(err){
+if(err.__name__==='StopIteration'){$pop_exc();break}
+else{throw err}
 }
 }
 var obj={
@@ -1705,7 +1722,7 @@ this.counter=-1
 this.__getattr__=function(attr){
 if(attr==='__next__'){return $bind(this[attr],this)}
 }
-this.__item__=function(rank){return obj[rank]}
+this.__iter__=function(rank){return $iterator_getitem(obj)}
 this.__len__=function(){return obj.length}
 this.__next__=function(){
 this.counter++
@@ -1736,12 +1753,19 @@ return res
 }
 function map(){
 var func=arguments[0],res=[],rank=0
+var iter_args=[]
+for(var i=1;i<arguments.length;i++){iter_args.push(iter(arguments[i]))}
 while(true){
 var args=[],flag=true
-for(var i=1;i<arguments.length;i++){
-var x=arguments[i].__item__(rank)
-if(x===undefined){flag=false;break}
+for(var i=0;i<iter_args.length;i++){
+try{
+var x=next(iter_args[i])
 args.push(x)
+}catch(err){
+if(err.__name__==='StopIteration'){
+$pop_exc;flag=false;break
+}else{throw err}
+}
 }
 if(!flag){break}
 res.push(func.apply(null,args))
@@ -1887,7 +1911,7 @@ res.closed=false
 res.__enter__=function(){return res}
 res.__exit__=function(){return false}
 res.__getattr__=function(attr){return res[attr]}
-res.__item__=function(rank){return lines[rank]}
+res.__iter__=function(){return iter(lines)}
 res.__len__=function(){return lines.length}
 res.close=function(){res.closed=true}
 res.read=function(nb){
@@ -2137,7 +2161,6 @@ set.__lt__=function(self,other){
 return set.__le__(self,other)&&set.__len__(self)<other.__len__()
 }
 set.__len__=function(self){return int(self.items.length)}
-set.__item__=function(self,i){return self.items[i]}
 set.__ne__=function(self,other){return !set.__eq__(self,other)}
 set.__not_in__=function(self,item){return !set.__in__(self,item)}
 set.__or__=function(self,other){
@@ -2284,8 +2307,13 @@ return new $SliceClass(start,stop,step)
 function sorted(iterable, key, reverse){
 if(reverse===undefined){reverse=False}
 var obj=new $list()
-for(var i=0;i<iterable.__len__();i++){
-obj.append(iterable.__item__(i))
+iterable=iter(iterable)
+while(true){
+try{obj.append(next(iterable))}
+catch(err){
+if(err.__name__==='StopIteration'){$pop_exc();break}
+else{throw err}
+}
 }
 if(key !==undefined){
 var d=$DictClass(('key', key),('reverse', reverse))
@@ -2301,9 +2329,16 @@ return func
 }
 function sum(iterable,start){
 if(start===undefined){start=0}
-var res=0
-for(var i=start;i<iterable.__len__();i++){
-res=res.__add__(iterable.__item__(i))
+var res=start
+var iterable=iter(iterable)
+while(true){
+try{
+var _item=next(iterable)
+res=res.__add__(_item)
+}catch(err){
+if(err.__name__==='StopIteration'){$pop_exc();break}
+else{throw err}
+}
 }
 return res
 }
@@ -2343,15 +2378,21 @@ throw NotImplementedError('type not implemented yet')
 }
 function zip(){
 var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')
-var args=$ns['args']
+var _args=$ns['args']
+var args=[]
+for(var i=0;i<_args.length;i++){args.push(iter(_args[i]))}
 var kw=$ns['kw']
 var rank=0,res=[]
 while(true){
 var line=[],flag=true
 for(var i=0;i<args.length;i++){
-var x=args[i].__item__(rank)
-if(x===undefined){flag=false;break}
+try{
+var x=next(args[i])
 line.push(x)
+}catch(err){
+if(err.__name__==='StopIteration'){$pop_exc();flag=false;break}
+else{throw err}
+}
 }
 if(!flag){return res}
 res.push(line)
@@ -2629,12 +2670,11 @@ try{self.push(arg.__next__())}
 catch(err){break}
 }
 }
-list.__item__=function(self,i){return self[i]}
 list.__iter__=function(self){
 var res={
 __class__:$list_iterator,
 __getattr__:function(attr){return res[attr]},
-__item__:function(rank){return self[rank]},
+__iter__:function(){return res},
 __len__:function(){return self.length},
 __next__:function(){
 res.counter++
@@ -2686,7 +2726,7 @@ var step=arg.step===None ? 1 : arg.step
 if(start<0){start=self.length+start}
 if(stop<0){stop=self.length+stop}
 self.splice(start,stop-start)
-if(hasattr(value,'__item__')){
+if(hasattr(value,'__iter__')){
 var $temp=list(value)
 for(var i=$temp.length-1;i>=0;i--){
 self.splice(start,0,$temp[i])
@@ -2718,10 +2758,13 @@ return res
 list.extend=function(self,other){
 if(arguments.length!=2){throw TypeError(
 "extend() takes exactly one argument ("+arguments.length+" given)")}
-try{
-for(var i=0;i<other.__len__();i++){self.push(other.__item__(i))}
-}catch(err){
-throw TypeError("object is not iterable")
+other=iter(other)
+while(true){
+try{self.push(next(other))}
+catch(err){
+if(err.__name__=='StopIteration'){$pop_exc();break}
+else{throw err}
+}
 }
 }
 list.index=function(self,elt){
@@ -2944,7 +2987,7 @@ str.__iter__=function(self){
 var res={
 __class__:$str_iterator,
 __getattr__:function(attr){return res[attr]},
-__item__:function(rank){return self.charAt(rank)},
+__iter__:function(){return res},
 __len__:function(){return self.length},
 __next__:function(){
 res.counter++
@@ -4026,29 +4069,45 @@ node.parent.insert(rank,new_nodes[i])
 $loop_num++
 }else{
 var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,'$right='+right.to_js())
+new $NodeJSCtx(new_node,'$right=iter('+right.to_js()+');$counter=-1')
 var new_nodes=[new_node]
-var test_node=new $Node('expression')
-var js='if($right.__len__()>'+left_items.length
-js +='){throw ValueError("too many values to unpack '
-js +='(expected '+left_items.length+')")}'
-js +='else if($right.__len__()<'+left_items.length
-js +='){throw ValueError("need more than "+$right.__len__()'
-js +='+" value"+($right.__len__()>1 ? "s" : "")+" to unpack")}'
-new $NodeJSCtx(test_node,js)
-new_nodes.push(test_node)
+var try_node=new $Node('expression')
+try_node.line_num=node.parent.children[rank].line_num
+try_node.module=node.parent.children[rank].module
+new $NodeJSCtx(try_node,'try')
+new_nodes.push(try_node)
 for(var i=0;i<left_items.length;i++){
+var new_node=new $Node('expression')
+new $NodeJSCtx(new_node,'$counter++')
+try_node.add(new_node)
 var new_node=new $Node('expression')
 var C=new $NodeCtx(new_node)
 left_items[i].parent=C
 var assign=new $AssignCtx(left_items[i])
-assign.tree[1]=new $JSCode('$right.__item__('+i+')')
-new_nodes.push(new_node)
+assign.tree[1]=new $JSCode('next($right)')
+try_node.add(new_node)
 }
+var catch_node=new $Node('expression')
+new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
+new_nodes.push(catch_node)
+var catch_node1=new $Node('expression')
+var js='if($err'+$loop_num+'.__name__=="StopIteration")'
+js +='{throw ValueError("need more than "+$counter+" value"+'
+js +='($counter>1 ? "s" : "")+" to unpack")}'
+new $NodeJSCtx(catch_node1,js)
+catch_node.add(catch_node1)
+var exhausted=new $Node('expression')
+js='var $exhausted=true;try{next($right);$exhausted=false}'
+js +='catch(err){console.log(err)}'
+js +='if(!$exhausted){throw ValueError('
+js +='"too many values to unpack (expected "+($counter+1)+")")}'
+new $NodeJSCtx(exhausted,js)
+new_nodes.push(exhausted)
 node.parent.children.splice(rank,1)
 for(var i=new_nodes.length-1;i>=0;i--){
 node.parent.insert(rank,new_nodes[i])
 }
+$loop_num++
 }
 }
 this.to_js=function(){

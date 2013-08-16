@@ -102,7 +102,7 @@ str.__iter__ = function(self){
     var res = {
         __class__:$str_iterator,
         __getattr__:function(attr){return res[attr]},
-        __item__:function(rank){return self.charAt(rank)},
+        __iter__:function(){return res},
         __len__:function(){return self.length},
         __next__:function(){
             res.counter++

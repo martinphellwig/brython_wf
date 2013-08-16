@@ -266,8 +266,10 @@ function $AssignCtx(context){
         }else{ // form x,y=a
             // evaluate right argument (it might be a function call)
             var new_node = new $Node('expression')
-            new $NodeJSCtx(new_node,'$right='+right.to_js())
+            new $NodeJSCtx(new_node,'$right=iter('+right.to_js()+');$counter=-1')
             var new_nodes = [new_node]
+
+            /*
             var test_node = new $Node('expression')
             var js = 'if($right.__len__()>'+left_items.length
             js += '){throw ValueError("too many values to unpack '
@@ -276,20 +278,53 @@ function $AssignCtx(context){
             js += '){throw ValueError("need more than "+$right.__len__()'
             js += '+" value"+($right.__len__()>1 ? "s" : "")+" to unpack")}'
             new $NodeJSCtx(test_node,js)
+           */
+            
+            var try_node = new $Node('expression')
+            // we must set line_num and module to generate document.$line_info
+            try_node.line_num = node.parent.children[rank].line_num
+            try_node.module = node.parent.children[rank].module
+            new $NodeJSCtx(try_node,'try')
+            new_nodes.push(try_node)
                 
-            new_nodes.push(test_node)
             for(var i=0;i<left_items.length;i++){
+                var new_node = new $Node('expression')
+                new $NodeJSCtx(new_node,'$counter++')
+                try_node.add(new_node)
+                
                 var new_node = new $Node('expression')
                 var context = new $NodeCtx(new_node) // create ordinary node
                 left_items[i].parent = context
                 var assign = new $AssignCtx(left_items[i]) // assignment to left operand
-                assign.tree[1] = new $JSCode('$right.__item__('+i+')')
-                new_nodes.push(new_node)
+                assign.tree[1] = new $JSCode('next($right)')
+                try_node.add(new_node)
             }
+
+            var catch_node = new $Node('expression')
+            new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
+            new_nodes.push(catch_node)
+            
+            var catch_node1 = new $Node('expression')
+            var js = 'if($err'+$loop_num+'.__name__=="StopIteration")'
+            js += '{throw ValueError("need more than "+$counter+" value"+'
+            js += '($counter>1 ? "s" : "")+" to unpack")}'
+            new $NodeJSCtx(catch_node1,js)
+            catch_node.add(catch_node1)
+            
+            // add a test to see if iterator is exhausted
+            var exhausted = new $Node('expression')
+            js = 'var $exhausted=true;try{next($right);$exhausted=false}'
+            js += 'catch(err){console.log(err)}'
+            js += 'if(!$exhausted){throw ValueError('
+            js += '"too many values to unpack (expected "+($counter+1)+")")}'
+            new $NodeJSCtx(exhausted,js)
+            new_nodes.push(exhausted)
+            
             node.parent.children.splice(rank,1) // remove original line
             for(var i=new_nodes.length-1;i>=0;i--){
                 node.parent.insert(rank,new_nodes[i])
             }
+            $loop_num++
         }
     }
     this.to_js = function(){
