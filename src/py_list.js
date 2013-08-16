@@ -169,13 +169,11 @@ list.__init__ = function(self){
     }
 }
 
-list.__item__ = function(self,i){return self[i]}
-
 list.__iter__ = function(self){
     var res = {
         __class__:$list_iterator,
         __getattr__:function(attr){return res[attr]},
-        __item__:function(rank){return self[rank]},
+        __iter__:function(){return res},
         __len__:function(){return self.length},
         __next__:function(){
             res.counter++
@@ -237,7 +235,7 @@ list.__setitem__ = function(self,arg,value){
         self.splice(start,stop-start)
         // copy items in a temporary JS array
         // otherwise, a[:0]=a fails
-        if(hasattr(value,'__item__')){
+        if(hasattr(value,'__iter__')){
             var $temp = list(value)
             for(var i=$temp.length-1;i>=0;i--){
                 self.splice(start,0,$temp[i])
@@ -275,10 +273,13 @@ list.count = function(self,elt){
 list.extend = function(self,other){
     if(arguments.length!=2){throw TypeError(
         "extend() takes exactly one argument ("+arguments.length+" given)")}
-    try{
-        for(var i=0;i<other.__len__();i++){self.push(other.__item__(i))}
-    }catch(err){
-        throw TypeError("object is not iterable")
+    other = iter(other)
+    while(true){
+        try{self.push(next(other))}
+        catch(err){
+            if(err.__name__=='StopIteration'){$pop_exc();break}
+            else{throw err}
+        }
     }
 }
 

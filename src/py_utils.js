@@ -67,9 +67,21 @@ $JSObject.prototype.__getitem__ = function(rank){
     else{throw AttributeError,this+' has no attribute __getitem__'}
 }
 
-$JSObject.prototype.__item__ = function(rank){ // for iterator protocol
-    try{return JSObject(this.js[rank])}
-    catch(err){console.log(err);throw AttributeError(this+' has no attribute __item__')}
+$JSObject.prototype.__iter__ = function(){ // for iterator protocol
+    var res = {
+        __class__:JSObject,
+        __getattr__:function(attr){return res[attr]},
+        __iter__:function(){return res},
+        __next__:function(){
+            res.counter++
+            if(res.counter<self.js.length){return self.js[res.counter]}
+            else{throw StopIteration("StopIteration")}
+        },
+        __repr__:function(){return "<JSObject iterator object>"},
+        __str__:function(){return "<JSObject iterator object>"},
+        counter:-1
+    }
+    return res
 }
 
 $JSObject.prototype.__len__ = function(){
@@ -226,6 +238,7 @@ function $list_comp(){
     $py += "res"+$ix+"=func"+$ix+"()"
     var $js = __BRYTHON__.py2js($py,'list comprehension').to_js()
     eval($js)
+    console.log('list comp\n'+$js)
     return eval("res"+$ix)
 }
 
@@ -308,7 +321,6 @@ function $generator(func){
         obj.__class__ = $generator
         obj.__getattr__ = function(attr){return obj[attr]}
         obj.__len__ = function(){return func.$iter.__len__()}
-        obj.__item__ = function(rank){return obj.__next__()}
         obj.__iter__ = function(){return obj}
         obj.__next__ = function(){
             obj.$iter++
