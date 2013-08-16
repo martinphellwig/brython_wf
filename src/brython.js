@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130816-160500
+// version 1.1.20130816-224546
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130816-160500"]
+__BRYTHON__.version_info=[1,1,"20130816-224546"]
 __BRYTHON__.path=[]
 
 function JSConstructor(obj){
@@ -4098,7 +4098,7 @@ new $NodeJSCtx(catch_node1,js)
 catch_node.add(catch_node1)
 var exhausted=new $Node('expression')
 js='var $exhausted=true;try{next($right);$exhausted=false}'
-js +='catch(err){console.log(err)}'
+js +='catch(err){void(0)}'
 js +='if(!$exhausted){throw ValueError('
 js +='"too many values to unpack (expected "+($counter+1)+")")}'
 new $NodeJSCtx(exhausted,js)
@@ -4950,7 +4950,6 @@ var elts=$path.split('/')
 elts.pop()
 var path=elts.join('/')
 if(__BRYTHON__.path.indexOf(path)==-1){
-__BRYTHON__.path.splice(0,0,path)
 }
 }
 var res='$mods=$import_list(['+$to_js(this.tree)+']);'
