@@ -314,7 +314,7 @@ function $AssignCtx(context){
             // add a test to see if iterator is exhausted
             var exhausted = new $Node('expression')
             js = 'var $exhausted=true;try{next($right);$exhausted=false}'
-            js += 'catch(err){console.log(err)}'
+            js += 'catch(err){void(0)}'
             js += 'if(!$exhausted){throw ValueError('
             js += '"too many values to unpack (expected "+($counter+1)+")")}'
             new $NodeJSCtx(exhausted,js)
@@ -1294,12 +1294,13 @@ function $ImportCtx(context){
         // the module path
         var from_path = false
         if($path!==undefined){
+            //console.log('preprend path from '+$path)
             from_path = true
             var elts = $path.split('/')
             elts.pop()
             var path =elts.join('/')
             if(__BRYTHON__.path.indexOf(path)==-1){
-                __BRYTHON__.path.splice(0,0,path)
+                // __BRYTHON__.path.splice(0,0,path)
             }
         }
         var res = '$mods=$import_list(['+$to_js(this.tree)+']);'
@@ -3398,6 +3399,7 @@ function brython(options){
     if (!(__BRYTHON__.path.indexOf($script_path) > -1)) {
        __BRYTHON__.path.push($script_path)
     }
+
     // get path of brython.js or py2js to determine brython_path
     // it will be used for imports
 
@@ -3455,6 +3457,7 @@ function brython(options){
                 var $src = ($elt.innerHTML || $elt.textContent)
                 __BRYTHON__.$py_module_path['__main__'] = $script_path
             }
+
             try{
                 var $root = __BRYTHON__.py2js($src,'__main__')
                 var $js = $root.to_js()
