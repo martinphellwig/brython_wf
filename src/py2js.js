@@ -1071,8 +1071,16 @@ function $FromCtx(context){
         return res
     }
     this.to_js = function(){
-        var res;
         var scope = $get_scope(this)
+        var mod = $get_module(this).module
+        if(mod.substr(0,13)==='__main__,exec'){mod='__main__'}
+        var path = __BRYTHON__.$py_module_path[mod]
+        var elts = path.split('/')
+        elts.pop()
+        path =elts.join('/')
+        // temporarily add module path to __BRYTHON__.path
+        var res = 'var $flag=false;if(__BRYTHON__.path.indexOf("'+path+'")==-1){__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
+
         if (this.module.charAt(0)=='.'){
             // intra-package reference : "from . import x"
             // get the name of current module
@@ -1091,7 +1099,7 @@ function $FromCtx(context){
                search_path_parts.push(mod)
             }
             var search_path = '/'.join(search_path_parts)
-            res="$mods=$import_list_intra(["
+            res +="$mods=$import_list_intra(["
             var _mods = []
             for(var i=0;i<this.names.length;i++){
              _mods.push('["'+this.names[i]+'","'+search_path+'"]')
@@ -1109,7 +1117,7 @@ function $FromCtx(context){
                 res += '=$mods['+i+'];'
             }
         } else {
-           res = '$import_list(["'+this.module+'"])[0];'
+           res += '$import_list(["'+this.module+'"])[0];'
         
            if(this.names[0]!=='*'){
              for(var i=0;i<this.names.length;i++){
@@ -1131,6 +1139,7 @@ function $FromCtx(context){
              res += '=$mod["'+"'+$attr+'"+'"]'+"'"+';eval($x)}}'
            }
         }
+        res += ';if($flag){__BRYTHON__.path.shift()};None'
         return res
     }
 }
@@ -1288,22 +1297,17 @@ function $ImportCtx(context){
     this.expect = 'id'
     this.to_js = function(){
         var scope = $get_scope(this)
-        var $path = __BRYTHON__.$py_module_path[$get_module(this).module]
-        // if current module is an imported module, we must temporarily add its
-        // path to __BRYTHON__.path so that imports from this module will use
-        // the module path
-        var from_path = false
-        if($path!==undefined){
-            //console.log('preprend path from '+$path)
-            from_path = true
-            var elts = $path.split('/')
-            elts.pop()
-            var path =elts.join('/')
-            if(__BRYTHON__.path.indexOf(path)==-1){
-                // __BRYTHON__.path.splice(0,0,path)
-            }
-        }
-        var res = '$mods=$import_list(['+$to_js(this.tree)+']);'
+        var mod = $get_module(this).module
+        if(mod.substr(0,13)==='__main__,exec'){mod='__main__'}
+        var path = __BRYTHON__.$py_module_path[mod]
+        var elts = path.split('/')
+        elts.pop()
+        path =elts.join('/')
+        // temporarily add module path to __BRYTHON__.path
+        var res = 'var $flag=false;'
+        res += 'if(__BRYTHON__.path.indexOf("'+path+'")==-1)'
+        res += '{__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
+        res += '$import_list(['+$to_js(this.tree)+']);'
         for(var i=0;i<this.tree.length;i++){
             var parts = this.tree[i].name.split('.')
             // $import_list returns an object
@@ -1329,10 +1333,8 @@ function $ImportCtx(context){
             }
         }
         // clean up __BRYTHON__.path
-        //if(from_path){__BRYTHON__.path.shift()}
-        // add None so that exec('import foo') returns None
-        // (used in interactive console)
-        return res+";None"
+        res += 'if($flag){__BRYTHON__.path.shift()};None'
+        return res
     }
 }
 
@@ -3455,7 +3457,7 @@ function brython(options){
                 }
             }else{
                 var $src = ($elt.innerHTML || $elt.textContent)
-                __BRYTHON__.$py_module_path['__main__'] = $script_path
+                __BRYTHON__.$py_module_path['__main__'] = $href
             }
 
             try{
