@@ -86,7 +86,7 @@ function $import_module_search_path_list(module,path_list){
         search.push(mod_path)
     }
     search.push(mod_path+'/__init__')
-
+    
     var flag = false
     for(var j=0; j < search.length; j++) {
         var modpath = search[j]

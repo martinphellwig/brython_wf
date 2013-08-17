@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130816-224546
+// version 1.1.20130817-104517
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130816-224546"]
+__BRYTHON__.version_info=[1,1,"20130817-104517"]
 __BRYTHON__.path=[]
 
 function JSConstructor(obj){
@@ -4763,8 +4763,14 @@ res +='(as)' + this.aliases
 return res
 }
 this.to_js=function(){
-var res
 var scope=$get_scope(this)
+var mod=$get_module(this).module
+if(mod.substr(0,13)==='__main__,exec'){mod='__main__'}
+var path=__BRYTHON__.$py_module_path[mod]
+var elts=path.split('/')
+elts.pop()
+path=elts.join('/')
+var res='var $flag=false;if(__BRYTHON__.path.indexOf("'+path+'")==-1){__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
 if(this.module.charAt(0)=='.'){
 var parent_module=$get_module(this).module
 var parent_path=__BRYTHON__.$py_module_path[parent_module]
@@ -4778,7 +4784,7 @@ if(mod){
 search_path_parts.push(mod)
 }
 var search_path='/'.join(search_path_parts)
-res="$mods=$import_list_intra(["
+res +="$mods=$import_list_intra(["
 var _mods=[]
 for(var i=0;i<this.names.length;i++){
 _mods.push('["'+this.names[i]+'","'+search_path+'"]')
@@ -4796,7 +4802,7 @@ res +='=$locals["'+alias+'"]'
 res +='=$mods['+i+'];'
 }
 }else{
-res='$import_list(["'+this.module+'"])[0];'
+res +='$import_list(["'+this.module+'"])[0];'
 if(this.names[0]!=='*'){
 for(var i=0;i<this.names.length;i++){
 res +=(this.aliases[this.names[i]]||this.names[i])
@@ -4817,6 +4823,7 @@ res +='=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
 res +='=$mod["'+"'+$attr+'"+'"]'+"'"+';eval($x)}}'
 }
 }
+res +=';if($flag){__BRYTHON__.path.shift()};None'
 return res
 }
 }
@@ -4942,17 +4949,16 @@ C.tree.push(this)
 this.expect='id'
 this.to_js=function(){
 var scope=$get_scope(this)
-var $path=__BRYTHON__.$py_module_path[$get_module(this).module]
-var from_path=false
-if($path!==undefined){
-from_path=true
-var elts=$path.split('/')
+var mod=$get_module(this).module
+if(mod.substr(0,13)==='__main__,exec'){mod='__main__'}
+var path=__BRYTHON__.$py_module_path[mod]
+var elts=path.split('/')
 elts.pop()
-var path=elts.join('/')
-if(__BRYTHON__.path.indexOf(path)==-1){
-}
-}
-var res='$mods=$import_list(['+$to_js(this.tree)+']);'
+path=elts.join('/')
+var res='var $flag=false;'
+res +='if(__BRYTHON__.path.indexOf("'+path+'")==-1)'
+res +='{__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
+res +='$import_list(['+$to_js(this.tree)+']);'
 for(var i=0;i<this.tree.length;i++){
 var parts=this.tree[i].name.split('.')
 for(j=0;j<parts.length;j++){
@@ -4974,7 +4980,8 @@ res +='=$globals["'+alias+'"]'
 res +='=__BRYTHON__.modules["'+key+'"];'
 }
 }
-return res+";None"
+res +='if($flag){__BRYTHON__.path.shift()};None'
+return res
 }
 }
 function $ImportedModuleCtx(C,name){
@@ -6796,7 +6803,7 @@ __BRYTHON__.path.splice(0,0,$src_path)
 }
 }else{
 var $src=($elt.innerHTML || $elt.textContent)
-__BRYTHON__.$py_module_path['__main__']=$script_path
+__BRYTHON__.$py_module_path['__main__']=$href
 }
 try{
 var $root=__BRYTHON__.py2js($src,'__main__')
