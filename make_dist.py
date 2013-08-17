@@ -188,3 +188,16 @@ except ImportError:
   sys.exit()
 
 make_VFS.process("src/py_VFS.js")
+
+# changelog file
+try:
+    _in = open('dist/changelog.txt').read()
+    out = open('dist/changelog_%s.txt' %now,'w')
+    first = 'Changes in Brython version %s' %now
+    out.write('%s\n' %first)
+    out.write('%s\n\n' %('='*len(first)))
+    out.write(_in)
+    out.close()
+except:
+    print("Warning - no changelog file")
+
