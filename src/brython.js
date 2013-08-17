@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130817-133909
+// version 1.1.20130817-185706
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130817-133909"]
+__BRYTHON__.version_info=[1,1,"20130817-185706"]
 __BRYTHON__.path=[]
 
 function JSConstructor(obj){
@@ -1861,38 +1861,53 @@ __repr__:function(){return 'NotImplemented'},
 __str__:function(){return 'NotImplemented'}
 }
 function $not(obj){return !bool(obj)}
+function object(){
+return new $ObjectClass()
+}
+object.__class__=$type
+object.__getattr__=function(attr){return object[attr]}
+object.__name__='object'
+object.__new__=function(cls){return new $ObjectClass(cls)}
+object.__repr__=function(){return "<class 'object'>"}
+object.__str__=function(){return "<class 'object'>"}
+var $ObjectNI=function(name,op){
+return function(other){
+throw TypeError('unorderable types: object() '+op+' '+str(other.__class__.__name__)+'()')
+}
+}
 function $ObjectClass(cls){
-this.__class__="<class 'object'>"
 if(cls !==undefined){
 for(attr in cls){
 this[attr]=cls[attr]
 }
 }
 }
-$ObjectClass.prototype.__getattr__=function(attr){
-if(attr in this){return this[attr]}
-else{throw AttributeError("object has no attribute '"+attr+"'")}
-}
+$ObjectClass.prototype.__class__=object
 $ObjectClass.prototype.__delattr__=function(attr){delete this[attr]}
-$ObjectClass.prototype.__setattr__=function(attr,value){this[attr]=value}
-function object(){
-return new $ObjectClass()
+$ObjectClass.prototype.__eq__=function(other){return this===other}
+$ObjectClass.prototype.__ge__=$ObjectNI('__ge__','>=')
+$ObjectClass.prototype.__getattr__=function(attr){
+if(attr=='__class__'){return object}
+else if(this[attr]!==undefined){
+var val=this[attr]
+if(typeof val=='function'){
+return(function(f){
+return function(){return f.apply(null,arguments)}
+})(val)
+}else{return val}
+}else{throw AttributeError("object has no attribute '"+attr+"'")}
 }
-object.__new__=function(cls){return new $ObjectClass(cls)}
-object.__class__=$type
-object.__eq__=function(other){return this===other}
-object.__name__='object'
-object.__ne__=function(other){return this!==other}
-object.toString=object.__str__=function(){return "<class 'object'>" }
-object.__getattr__=function(attr){
-if(attr in this){return this[attr]}
-else{throw AttributeError("object has no attribute '"+attr+"'")}
-}
-object.__hash__=function(){
+$ObjectClass.prototype.__gt__=$ObjectNI('__gt__','>')
+$ObjectClass.prototype.__hash__=function(){
 __BRYTHON__.$py_next_hash+=1;
 return __BRYTHON__.$py_next_hash
 }
-$ObjectClass.prototype.__hash__=object.__hash__
+$ObjectClass.prototype.__le__=$ObjectNI('__le__','<=')
+$ObjectClass.prototype.__lt__=$ObjectNI('__lt__','<')
+$ObjectClass.prototype.__name__='object'
+$ObjectClass.prototype.__ne__=function(other){return this!==other}
+$ObjectClass.prototype.__repr__=function(){return "<class 'object'>" }
+$ObjectClass.prototype.__setattr__=function(attr,value){this[attr]=value}
 $ObjectClass.prototype.__str__=function(){return "<object 'object'>"}
 function oct(x){
 return $builtin_base_convert_helper(x, 8)
