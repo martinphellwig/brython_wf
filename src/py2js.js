@@ -268,17 +268,6 @@ function $AssignCtx(context){
             var new_node = new $Node('expression')
             new $NodeJSCtx(new_node,'$right=iter('+right.to_js()+');$counter=-1')
             var new_nodes = [new_node]
-
-            /*
-            var test_node = new $Node('expression')
-            var js = 'if($right.__len__()>'+left_items.length
-            js += '){throw ValueError("too many values to unpack '
-            js += '(expected '+left_items.length+')")}'
-            js += 'else if($right.__len__()<'+left_items.length
-            js += '){throw ValueError("need more than "+$right.__len__()'
-            js += '+" value"+($right.__len__()>1 ? "s" : "")+" to unpack")}'
-            new $NodeJSCtx(test_node,js)
-           */
             
             var try_node = new $Node('expression')
             // we must set line_num and module to generate document.$line_info
@@ -366,7 +355,7 @@ function $AssignCtx(context){
                 // assignment in a function : depends if variable is local
                 // or global
                 if(scope.globals && scope.globals.indexOf(left.value)>-1){
-                    return left.to_js()+'='+right.to_js()
+                    return left.to_js()+'=$globals["'+left.to_js()+'"]='+right.to_js()
                 }else{ // local to scope : prepend 'var'
                     var scope_id = scope.context.tree[0].id
                     var locals = __BRYTHON__.scope[scope_id].locals
@@ -1461,8 +1450,10 @@ function $ListOrTupleCtx(context,real){
         if(this.real==='list'){return 'list(['+$to_js(this.tree)+'])'}
         else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
             var src = this.get_src()
+            /*
             var res = '{'
             for(var i=0;i<this.vars.length;i++){
+                console.log('test var '+this.vars[i])
                 // ignore keyword arguments eg "x" in [foo(x=0) for z in Z]
                 if(this.kwargs&&this.kwargs.indexOf(this.vars[i])>-1){continue}
                 if(this.locals.indexOf(this.vars[i])===-1){
@@ -1471,6 +1462,8 @@ function $ListOrTupleCtx(context,real){
                 }
             }
             res += '},'
+            */
+            var res = '$mkdict($globals,$locals),'
 
             var qesc = new RegExp('"',"g") // to escape double quotes in arguments
             for(var i=1;i<this.intervals.length;i++){
@@ -2953,7 +2946,7 @@ __BRYTHON__.py2js = function(src,module){
     var root = $tokenize(src,module)
     root.transform()
     // add variable $globals
-    js = 'var $globals = __BRYTHON__.scope["'+module+'"].__dict__'
+    js = 'var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $globals'
     var new_node = new $Node('expression')
     new $NodeJSCtx(new_node,js)
     root.insert(0,new_node)

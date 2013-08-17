@@ -371,4 +371,14 @@ assert [l[1] for l in LIST]==[0,1,1,1]
 assert parent == parent.override()
 assert sibil == given
 
+# issue 129
+def rect(x,y,width, height):
+    pass
+
+def comp(x,y,width, height):
+    return[rect(x=x, y=y, width=10, height=10) for i in range(2)]
+
+
+assert comp(1,2,3,4), 'error in list'
+
 print('passed all tests')

@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130817-104517
+// version 1.1.20130817-133909
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130817-104517"]
+__BRYTHON__.version_info=[1,1,"20130817-133909"]
 __BRYTHON__.path=[]
 
 function JSConstructor(obj){
@@ -241,6 +241,12 @@ if($other_kw!=null){$ns[$other_kw]=new $DictClass($dict_keys,$dict_values)}
 if($other_args!=null){$ns[$other_args]=tuple($ns[$other_args])}
 return $ns
 }
+function $mkdict(glob,loc){
+var res={}
+for(var arg in glob){res[arg]=glob[arg]}
+for(var arg in loc){res[arg]=loc[arg]}
+return res
+}
 function $list_comp(){
 var $env=arguments[0]
 for(var $arg in $env){
@@ -259,9 +265,10 @@ for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +='res.append('+arguments[1]+')\n'
 $py +="    return res\n"
 $py +="res"+$ix+"=func"+$ix+"()"
-var $js=__BRYTHON__.py2js($py,'list comprehension').to_js()
+var mod_name='lc'+$ix
+var $js=__BRYTHON__.py2js($py,mod_name).to_js()
+__BRYTHON__.scope[mod_name].__dict__=$env
 eval($js)
-console.log('list comp\n'+$js)
 return eval("res"+$ix)
 }
 function $gen_expr(){
@@ -269,7 +276,8 @@ var $env=arguments[0]
 for(var $arg in $env){
 eval("var "+$arg+'=$env["'+$arg+'"]')
 }
-var $res='res'+Math.random().toString(36).substr(2,8)
+var $ix=Math.random().toString(36).substr(2,8)
+var $res='res'+$ix
 var $py=$res+"=[]\n"
 var indent=0
 for(var $i=2;$i<arguments.length;$i++){
@@ -279,7 +287,9 @@ indent +=4
 }
 for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.append('+arguments[1]+')'
-var $js=__BRYTHON__.py2js($py,'generator expression').to_js()
+var mod_name='ge'+$ix
+var $js=__BRYTHON__.py2js($py,mod_name).to_js()
+__BRYTHON__.scope[mod_name].__dict__=$env
 eval($js)
 var $res1=eval($res)
 $res1.__class__={
@@ -297,7 +307,8 @@ var $env=arguments[0]
 for(var $arg in $env){
 eval("var "+$arg+'=$env["'+$arg+'"]')
 }
-var $res='res'+Math.random().toString(36).substr(2,8)
+var $ix=Math.random().toString(36).substr(2,8)
+var $res='res'+$ix
 var $py=$res+"={}\n"
 var indent=0
 for(var $i=2;$i<arguments.length;$i++){
@@ -307,7 +318,9 @@ indent +=4
 }
 for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.update({'+arguments[1]+'})'
-var $js=__BRYTHON__.py2js($py,'dict comprehension').to_js()
+var mod_name='dc'+$ix
+var $js=__BRYTHON__.py2js($py,mod_name).to_js()
+__BRYTHON__.scope[mod_name].__dict__=$env
 eval($js)
 return eval($res)
 }
@@ -4145,7 +4158,7 @@ res +='='+right.to_js()
 return res
 }else if(scope.ntype==='def'||scope.ntype==="generator"){
 if(scope.globals && scope.globals.indexOf(left.value)>-1){
-return left.to_js()+'='+right.to_js()
+return left.to_js()+'=$globals["'+left.to_js()+'"]='+right.to_js()
 }else{
 var scope_id=scope.C.tree[0].id
 var locals=__BRYTHON__.scope[scope_id].locals
@@ -5094,15 +5107,7 @@ this.to_js=function(){
 if(this.real==='list'){return 'list(['+$to_js(this.tree)+'])'}
 else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
 var src=this.get_src()
-var res='{'
-for(var i=0;i<this.vars.length;i++){
-if(this.kwargs&&this.kwargs.indexOf(this.vars[i])>-1){continue}
-if(this.locals.indexOf(this.vars[i])===-1){
-res +="'"+this.vars[i]+"':"+this.vars[i]
-if(i<this.vars.length-1){res+=','}
-}
-}
-res +='},'
+var res='$mkdict($globals,$locals),'
 var qesc=new RegExp('"',"g")
 for(var i=1;i<this.intervals.length;i++){
 var txt=src.substring(this.intervals[i-1],this.intervals[i])
@@ -6373,7 +6378,7 @@ __BRYTHON__.scope[module].__dict__={}
 document.$py_src[module]=src
 var root=$tokenize(src,module)
 root.transform()
-js='var $globals = __BRYTHON__.scope["'+module+'"].__dict__'
+js='var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $globals'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 root.insert(0,new_node)
