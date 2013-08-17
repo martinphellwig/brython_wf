@@ -218,6 +218,13 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
     return $ns
 }
 
+function $mkdict(glob,loc){
+    var res = {}
+    for(var arg in glob){res[arg]=glob[arg]}
+    for(var arg in loc){res[arg]=loc[arg]}
+    return res
+}
+
 function $list_comp(){
     var $env = arguments[0]
     for(var $arg in $env){
@@ -236,9 +243,10 @@ function $list_comp(){
     $py += 'res.append('+arguments[1]+')\n'
     $py += "    return res\n"
     $py += "res"+$ix+"=func"+$ix+"()"
-    var $js = __BRYTHON__.py2js($py,'list comprehension').to_js()
+    var mod_name = 'lc'+$ix
+    var $js = __BRYTHON__.py2js($py,mod_name).to_js()
+    __BRYTHON__.scope[mod_name].__dict__ = $env
     eval($js)
-    console.log('list comp\n'+$js)
     return eval("res"+$ix)
 }
 
@@ -247,7 +255,8 @@ function $gen_expr(){ // generator expresssion
     for(var $arg in $env){
         eval("var "+$arg+'=$env["'+$arg+'"]')
     }
-    var $res = 'res'+Math.random().toString(36).substr(2,8)
+    var $ix = Math.random().toString(36).substr(2,8)
+    var $res = 'res'+$ix
     var $py = $res+"=[]\n"
     var indent=0
     for(var $i=2;$i<arguments.length;$i++){
@@ -257,7 +266,9 @@ function $gen_expr(){ // generator expresssion
     }
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.append('+arguments[1]+')'
-    var $js = __BRYTHON__.py2js($py,'generator expression').to_js()
+    var mod_name = 'ge'+$ix
+    var $js = __BRYTHON__.py2js($py,mod_name).to_js()
+    __BRYTHON__.scope[mod_name].__dict__=$env
     eval($js)
     var $res1 = eval($res)
     $res1.__class__ = {
@@ -276,7 +287,8 @@ function $dict_comp(){ // dictionary comprehension
     for(var $arg in $env){
         eval("var "+$arg+'=$env["'+$arg+'"]')
     }
-    var $res = 'res'+Math.random().toString(36).substr(2,8)
+    var $ix = Math.random().toString(36).substr(2,8)
+    var $res = 'res'+$ix
     var $py = $res+"={}\n"
     var indent=0
     for(var $i=2;$i<arguments.length;$i++){
@@ -286,7 +298,9 @@ function $dict_comp(){ // dictionary comprehension
     }
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.update({'+arguments[1]+'})'
-    var $js = __BRYTHON__.py2js($py,'dict comprehension').to_js()
+    var mod_name = 'dc'+$ix
+    var $js = __BRYTHON__.py2js($py,mod_name).to_js()
+    __BRYTHON__.scope[mod_name].__dict__ = $env
     eval($js)
     return eval($res)
 }
