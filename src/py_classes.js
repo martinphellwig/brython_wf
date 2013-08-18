@@ -1407,7 +1407,14 @@ function ord(c) {
 }
 
 // pow() (built in function)
-function pow(x,y) {
+function pow() {
+    var $ns=$MakeArgs('print',arguments,[],{},'args','kw')
+    var args = $ns['args']
+    if(args.length!=2){throw TypeError(
+        "pow expected 2 arguments, got "+args.length)
+    }
+    var x = args[0]
+    var y = args[1]
     var a,b
     if (isinstance(x, float)) {a=x.value} else {a=x}
     if (isinstance(y, float)) {b=y.value} else {b=y}
