@@ -1408,7 +1408,7 @@ function ord(c) {
 
 // pow() (built in function)
 function pow() {
-    var $ns=$MakeArgs('print',arguments,[],{},'args','kw')
+    var $ns=$MakeArgs('pow',arguments,[],{},'args','kw')
     var args = $ns['args']
     if(args.length!=2){throw TypeError(
         "pow expected 2 arguments, got "+args.length)
