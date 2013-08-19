@@ -21,7 +21,7 @@ On utilise la fonction intégrée `open()` pour récupérer le contenu du fichie
 
 </td>
 <td style="background-color:#FF7400;text-align:center;">
-<textarea id="zone" rows=10 cols=40>Initial content</textarea>
+<textarea id="zone" rows=10 cols=40>Contenu Initial</textarea>
 </td>
 </tr>
 </table>
@@ -35,7 +35,7 @@ def get_file():
 
 Noter la chaine de requête (query string) avec une valeur aléatoire à la fin du nom de fichier : elle est nécessaire pour rafraichir le résultat si le fichier source a été modifié entre deux appels
 
-L'exempe suivant ajoute une fonction de dépassement de délai qui affiche un message au cas où le fichier n'aurait pas été trouvé au bout de 4 secondes :
+L'exemple suivant ajoute une fonction de dépassement de délai qui affiche un message au cas où le fichier n'aurait pas été trouvé au bout de 4 secondes :
 
     import time
 
