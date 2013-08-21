@@ -15,7 +15,7 @@ def Grab(evt):
     targetElement = evt.target
     
     # you cannot drag the background itself, so ignore any attempts to mouse down on it
-    if targetElement != BackDrop and targetElement.style.fill == 'orange':
+    if targetElement != BackDrop and (targetElement.style.fill == '#ffa500' or targetElement.style.fill == 'orange'):
         #set the item moused down on as the element to be dragged
         DragTarget = targetElement
         
@@ -72,7 +72,7 @@ def Drop(evt):
             DragTarget.setAttributeNS(None, 'transform', 
                 'translate(%s,%s)' %(newX,newY))
 
-        elif targetElement.style.fill == "orange":
+        elif (targetElement.style.fill == "#ffa500" or targetElement.style.fill == "orange"):
             # invalid move : dropped on a non empty cell
             newX = DragStart.x - GrabPoint.x
             newY = DragStart.y - GrabPoint.y
