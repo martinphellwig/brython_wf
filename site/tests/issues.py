@@ -378,7 +378,12 @@ def rect(x,y,width, height):
 def comp(x,y,width, height):
     return[rect(x=x, y=y, width=10, height=10) for i in range(2)]
 
-
 assert comp(1,2,3,4), 'error in list'
+
+# issue 135
+assert pow(*(2,3)) == 8
+assert pow(*(2,-3)) == 0.125
+assert pow(*(-2,3)) == -8
+assert pow(*(-2,-3)) == -0.125
 
 print('passed all tests')
