@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130817-185706
+// version 1.1.20130827-150720
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130817-185706"]
+__BRYTHON__.version_info=[1,1,"20130827-150720"]
 __BRYTHON__.path=[]
 
 function JSConstructor(obj){
@@ -1997,7 +1997,14 @@ return res
 function ord(c){
 return c.charCodeAt(0)
 }
-function pow(x,y){
+function pow(){
+var $ns=$MakeArgs('pow',arguments,[],{},'args','kw')
+var args=$ns['args']
+if(args.length!=2){throw TypeError(
+"pow expected 2 arguments, got "+args.length)
+}
+var x=args[0]
+var y=args[1]
 var a,b
 if(isinstance(x, float)){a=x.value}else{a=x}
 if(isinstance(y, float)){b=y.value}else{b=y}
@@ -3866,7 +3873,7 @@ var $operators={
 }
 var $op_order=[['or'],['and'],
 ['in','not_in'],
-['<','<=','>','>=','!=','==','is'],
+['<','<=','>','>=','!=','==','is','is_not'],
 ['|','^','&'],
 ['+'],
 ['-'],

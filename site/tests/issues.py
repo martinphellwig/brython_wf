@@ -380,6 +380,11 @@ def comp(x,y,width, height):
 
 assert comp(1,2,3,4), 'error in list'
 
+# issue 132
+a = 1
+if a is not None and not isinstance(a,int):
+    raise AssertionError
+    
 # issue 135
 assert pow(*(2,3)) == 8
 assert pow(*(2,-3)) == 0.125
