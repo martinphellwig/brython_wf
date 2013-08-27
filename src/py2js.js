@@ -13,7 +13,7 @@ var $operators = {
 // operators weight for precedence
 var $op_order = [['or'],['and'],
     ['in','not_in'],
-    ['<','<=','>','>=','!=','==','is'],
+    ['<','<=','>','>=','!=','==','is','is_not'],
     ['|','^','&'],
     ['+'],
     ['-'],
