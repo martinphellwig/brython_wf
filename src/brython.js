@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130827-150720
+// version 1.1.20130829-191038
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130827-150720"]
+__BRYTHON__.version_info=[1,1,"20130829-191038"]
 __BRYTHON__.path=[]
 
 function JSConstructor(obj){
@@ -4223,6 +4223,34 @@ var body_node=new $Node('expression')
 tree_node.insert(0,body_node)
 return new $NodeCtx(body_node)
 }
+function $BreakCtx(C){
+this.type='break'
+this.toString=function(){return 'break '}
+this.parent=C
+C.tree.push(this)
+var ctx_node=C
+while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
+var tree_node=ctx_node.node
+var loop_node=tree_node.parent
+while(true){
+if(loop_node.type==='module'){
+$_SyntaxError(C,'break outside of a loop')
+}else{
+var ctx=loop_node.C.tree[0]
+if(ctx.type==='for' ||(ctx.type==='condition' && ctx.token==='while')){
+this.loop_ctx=ctx
+break
+}else if(['def','generator','class'].indexOf(ctx.type)>-1){
+$_SyntaxError(C,'break outside of a loop')
+}else{
+loop_node=loop_node.parent
+}
+}
+}
+this.to_js=function(){
+return 'var $no_break'+this.loop_ctx.loop_num+'=false;break'
+}
+}
 function $CallArgCtx(C){
 this.type='call_arg'
 this.toString=function(){return 'call_arg '+this.tree}
@@ -4407,11 +4435,13 @@ this.type='condition'
 this.token=token
 this.parent=C
 this.tree=[]
+if(token==='while'){this.loop_num=$loop_num;$loop_num++}
 C.tree.push(this)
 this.toString=function(){return this.token+' '+this.tree}
 this.to_js=function(){
 var tok=this.token
 if(tok==='elif'){tok='else if'}
+if(tok==='while'){tok='var $no_break'+this.loop_num+'=true;'+tok}
 if(this.tree.length==1){
 var res=tok+'(bool('+$to_js(this.tree)+'))'
 }else{
@@ -4744,17 +4774,20 @@ this.type='for'
 this.parent=C
 this.tree=[]
 C.tree.push(this)
+this.loop_num=$loop_num
 this.toString=function(){return '(for) '+this.tree}
 this.transform=function(node,rank){
 var new_nodes=[]
 var new_node=new $Node('expression')
 var target=this.tree[0]
 var iterable=this.tree[1]
+this.loop_num=$loop_num
 new $NodeJSCtx(new_node,'var $iter'+$loop_num+'=iter('+iterable.to_js()+')')
 new_nodes.push(new_node)
 new_node=new $Node('expression')
-var js='while(true)'
+var js='var $no_break'+$loop_num+'=true;while(true)'
 new $NodeJSCtx(new_node,js)
+new_node.C.loop_num=$loop_num 
 new_nodes.push(new_node)
 var children=node.children
 node.parent.children.splice(rank,1)
@@ -5258,7 +5291,24 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.toString=function(){return this.token}
-this.to_js=function(){return this.token}
+this.to_js=function(){
+if(this.token==='finally'){return this.token}
+var ctx_node=C
+while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
+var tree_node=ctx_node.node
+var parent=tree_node.parent
+for(var i=0;i<parent.children.length;i++){
+if(parent.children[i]===tree_node){
+if(i==0){$_SyntaxError(C,"block begins with 'else'")}
+var pctx=parent.children[i-1].C
+if(pctx.type==='node_js'){var loop=pctx.loop_num}
+else{var loop=pctx.tree[0].loop_num}
+if(loop!==undefined){return 'if ($no_break'+loop+')'}
+else{break}
+}
+}
+return this.token
+}
 }
 function $StarArgCtx(C){
 this.type='star_arg'
@@ -5702,6 +5752,9 @@ if(name.substr(0,2)=='$$'){name=name.substr(2)}
 C.name=name
 return C.parent
 }else{$_SyntaxError(C,token)}
+}else if(C.type==='break'){
+if(token==='eol'){return $transition(C.parent,'eol')}
+else{$_SyntaxError(C,token)}
 }else if(C.type==='call'){
 if(token===','){return C}
 else if($expr_starters.indexOf(token)>-1){
@@ -6227,6 +6280,7 @@ return $transition(expr,token,arguments[2])
 var expr=new $AbstractExprCtx(C,true)
 return $transition(expr,token,arguments[2])
 }else if(token==='class'){return new $ClassCtx(C)}
+else if(token==='break'){return new $BreakCtx(C)}
 else if(token==='def'){return new $DefCtx(C)}
 else if(token==='for'){return new $TargetListCtx(new $ForExpr(C))}
 else if(['if','elif','while'].indexOf(token)>-1){
@@ -6417,7 +6471,7 @@ var br_open={"(":0,"[":0,"{":0}
 var br_close={")":"(","]":"[","}":"{"}
 var br_stack=""
 var br_pos=new Array()
-var kwdict=["class","return",
+var kwdict=["class","return","break",
 "for","lambda","try","finally","raise","def","from",
 "nonlocal","while","del","global","with",
 "as","elif","else","if","yield","assert","import",

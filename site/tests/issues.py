@@ -384,7 +384,35 @@ assert comp(1,2,3,4), 'error in list'
 a = 1
 if a is not None and not isinstance(a,int):
     raise AssertionError
-    
+
+# issue 134
+run_else = False
+for i in range(4):
+ pass
+else:
+ run_else = True
+
+assert run_else
+
+run_else = False
+assert not run_else
+for i in range(10):
+ if i>7:
+  break
+else:
+ run_else = True
+
+assert not run_else
+
+run_else = False
+n=10
+while n>5:
+ n -= 1
+else:
+ run_else = True
+
+assert run_else    
+
 # issue 135
 assert pow(*(2,3)) == 8
 assert pow(*(2,-3)) == 0.125
