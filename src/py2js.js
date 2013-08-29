@@ -404,6 +404,47 @@ function $BodyCtx(context){
     return new $NodeCtx(body_node)
 }
 
+function $BreakCtx(context){
+    // used for the keyword "break"
+    // a flag is associated to the enclosing "for" or "while" loop
+    // if the loop exits with a break, this flag is set to true
+    // so that the "else" clause of the loop, if present, is executed
+    
+    
+    this.type = 'break'
+    this.toString = function(){return 'break '}
+    this.parent = context
+    context.tree.push(this)
+
+    // get loop context
+    var ctx_node = context
+    while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
+    var tree_node = ctx_node.node
+    var loop_node = tree_node.parent
+    while(true){
+        if(loop_node.type==='module'){
+            // "break" is not inside a loop
+            $_SyntaxError(context,'break outside of a loop')
+        }else{
+            var ctx = loop_node.context.tree[0]
+            if(ctx.type==='for' || (ctx.type==='condition' && ctx.token==='while')){
+                this.loop_ctx = ctx
+                break
+            }else if(['def','generator','class'].indexOf(ctx.type)>-1){
+                // "break" must not be inside a def or class, even if they are
+                // enclosed in a loop
+                $_SyntaxError(context,'break outside of a loop')        
+            }else{
+                loop_node=loop_node.parent
+            }
+        }
+    }
+
+    this.to_js = function(){
+        return 'var $no_break'+this.loop_ctx.loop_num+'=false;break'
+    }
+}
+
 function $CallArgCtx(context){
     this.type = 'call_arg'
     this.toString = function(){return 'call_arg '+this.tree}
@@ -617,11 +658,16 @@ function $ConditionCtx(context,token){
     this.token = token
     this.parent = context
     this.tree = []
+    if(token==='while'){this.loop_num=$loop_num;$loop_num++}
     context.tree.push(this)
     this.toString = function(){return this.token+' '+this.tree}
     this.to_js = function(){
         var tok = this.token
         if(tok==='elif'){tok='else if'}
+        // in a "while" loop, insert a flag initially set to false
+        // if the loop exits with a "break" this flag will be set to
+        // true so that an optional "else" clause will not be run
+        if(tok==='while'){tok = 'var $no_break'+this.loop_num+'=true;'+tok}
         if(this.tree.length==1){
             var res = tok+'(bool('+$to_js(this.tree)+'))'
         }else{ // syntax "if cond : do_something" in the same line
@@ -992,6 +1038,7 @@ function $ForExpr(context){
     this.parent = context
     this.tree = []
     context.tree.push(this)
+    this.loop_num = $loop_num
     this.toString = function(){return '(for) '+this.tree}
     this.transform = function(node,rank){
         var new_nodes = []
@@ -1000,12 +1047,14 @@ function $ForExpr(context){
         var new_node = new $Node('expression')
         var target = this.tree[0]
         var iterable = this.tree[1]
+        this.loop_num = $loop_num
         new $NodeJSCtx(new_node,'var $iter'+$loop_num+'=iter('+iterable.to_js()+')')
         new_nodes.push(new_node)
 
         new_node = new $Node('expression')
-        var js = 'while(true)'
+        var js = 'var $no_break'+$loop_num+'=true;while(true)'
         new $NodeJSCtx(new_node,js)
+        new_node.context.loop_num = $loop_num // used for "else" clauses
         new_nodes.push(new_node)
 
         // save original node children
@@ -1604,7 +1653,31 @@ function $SingleKwCtx(context,token){ // used for finally,else
     this.tree = []
     context.tree.push(this)
     this.toString = function(){return this.token}
-    this.to_js = function(){return this.token}
+    this.to_js = function(){
+        if(this.token==='finally'){return this.token}
+        // For "else" we must check if the previous block was a loop
+        // If so, check if the loop exited with a "break" to decide
+        // if the block below "else" should be run
+        var ctx_node = context
+        while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
+        var tree_node = ctx_node.node
+        var parent = tree_node.parent
+        for(var i=0;i<parent.children.length;i++){
+            if(parent.children[i]===tree_node){
+                if(i==0){$_SyntaxError(context,"block begins with 'else'")}
+                var pctx = parent.children[i-1].context
+                // get loop num : for a 'for' loop the previous node is a node_js
+                if(pctx.type==='node_js'){var loop = pctx.loop_num}
+                // for a 'while' loop it is a normal node
+                else{var loop=pctx.tree[0].loop_num}
+                // if 'else' inside a loop, translate it into a condition
+                // on the 'no break' variable associated with the loop
+                if(loop!==undefined){return 'if ($no_break'+loop+')'}
+                else{break}
+            }
+        }
+        return this.token
+    }
 }
 
 function $StarArgCtx(context){
@@ -2124,6 +2197,11 @@ function $transition(context,token){
             context.name=name
             return context.parent
         }else{$_SyntaxError(context,token)}
+
+    }else if(context.type==='break'){
+    
+        if(token==='eol'){return $transition(context.parent,'eol')}
+        else{$_SyntaxError(context,token)}
 
     }else if(context.type==='call'){ 
         if(token===','){return context}
@@ -2728,6 +2806,7 @@ function $transition(context,token){
             var expr = new $AbstractExprCtx(context,true)
             return $transition(expr,token,arguments[2])
         }else if(token==='class'){return new $ClassCtx(context)}
+        else if(token==='break'){return new $BreakCtx(context)}
         else if(token==='def'){return new $DefCtx(context)}
         else if(token==='for'){return new $TargetListCtx(new $ForExpr(context))}
         else if(['if','elif','while'].indexOf(token)>-1){
@@ -2986,12 +3065,12 @@ function $tokenize(src,module){
     var br_close = {")":"(","]":"[","}":"{"}
     var br_stack = ""
     var br_pos = new Array()
-    var kwdict = ["class","return",
+    var kwdict = ["class","return","break",
         "for","lambda","try","finally","raise","def","from",
         "nonlocal","while","del","global","with",
         "as","elif","else","if","yield","assert","import",
         "except","raise","in","not","pass","with"
-        //"False","None","True","break","continue",
+        //"False","None","True","continue",
         // "and',"or","is"
         ]
     var unsupported = ["nonlocal"]
