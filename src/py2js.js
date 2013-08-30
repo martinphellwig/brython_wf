@@ -2411,15 +2411,13 @@ function $transition(context,token){
             context.expect='as'
             return context
         }else if(token==='as' && context.expect==='as'
-            && context.has_alias===undefined  // only one alias allowed
-            && context.tree.length===1){ // if aliased, must be the only exception
+            && context.has_alias===undefined) {  // only one alias allowed
             context.expect = 'alias'
             context.has_alias = true
             return context
         }else if(token==='id' && context.expect==='alias'){
-            if(context.parenth!==undefined){context.expect = ','}
-            else{context.expect=':'}
-            context.tree[context.tree.length-1].alias = arguments[2]
+            context.expect=':'
+            context.tree[0].alias = arguments[2]
             return context
         }else if(token===':' && ['id','as',':'].indexOf(context.expect)>-1){
             return $BodyCtx(context)
@@ -2427,7 +2425,7 @@ function $transition(context,token){
             context.parenth = true
             return context
         }else if(token===')' && [',','as'].indexOf(context.expect)>-1){
-            context.expect = ':'
+            context.expect = 'as'
             return context
         }else if(token===',' && context.parenth!==undefined &&
             context.has_alias === undefined &&
