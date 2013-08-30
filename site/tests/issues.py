@@ -419,4 +419,14 @@ assert pow(*(2,-3)) == 0.125
 assert pow(*(-2,3)) == -8
 assert pow(*(-2,-3)) == -0.125
 
+# issue 137
+assert int('-10') == -10
+
+# issue 139
+try:
+    d = []
+    d[3]
+except (IndexError,TypeError) as err:
+    pass # just check that there is no SyntaxError
+    
 print('passed all tests')

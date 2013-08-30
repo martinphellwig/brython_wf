@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130829-191038
+// version 1.1.20130830-183946
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130829-191038"]
+__BRYTHON__.version_info=[1,1,"20130830-183946"]
 __BRYTHON__.path=[]
 
 function JSConstructor(obj){
@@ -1536,7 +1536,7 @@ else if(isinstance(value,int)){return value}
 else if(value===True){return 1}
 else if(value===False){return 0}
 else if(typeof value=="number"){return parseInt(value)}
-else if(typeof value=="string" &&(new RegExp(/^\d+$/)).test(value)){
+else if(typeof value=="string" &&(new RegExp(/^[+-]?\d+$/)).test(value)){
 return parseInt(value)
 }else if(isinstance(value,float)){
 return parseInt(value.value)
@@ -5932,15 +5932,13 @@ new $TargetCtx(C,arguments[2])
 C.expect='as'
 return C
 }else if(token==='as' && C.expect==='as'
-&& C.has_alias===undefined 
-&& C.tree.length===1){
+&& C.has_alias===undefined){
 C.expect='alias'
 C.has_alias=true
 return C
 }else if(token==='id' && C.expect==='alias'){
-if(C.parenth!==undefined){C.expect=','}
-else{C.expect=':'}
-C.tree[C.tree.length-1].alias=arguments[2]
+C.expect=':'
+C.tree[0].alias=arguments[2]
 return C
 }else if(token===':' &&['id','as',':'].indexOf(C.expect)>-1){
 return $BodyCtx(C)
@@ -5948,7 +5946,7 @@ return $BodyCtx(C)
 C.parenth=true
 return C
 }else if(token===')' &&[',','as'].indexOf(C.expect)>-1){
-C.expect=':'
+C.expect='as'
 return C
 }else if(token===',' && C.parenth!==undefined &&
 C.has_alias===undefined &&
