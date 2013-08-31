@@ -103,6 +103,8 @@ list.__getattr__ = function(attr){
             }
             res.__str__ = function(){return 'list'}
             return res
+        case 'sort': // don't shadow the Javascript sort() function of arrays
+            return list.$sort
         default:
             return list[attr]
     }
@@ -361,7 +363,7 @@ function $qsort(arg,array, begin, end)
     }
 }
 
-list.sort = function(self){
+list.$sort = function(self){
     var func=function(x){return x}
     var reverse = false
     for(var i=1;i<arguments.length;i++){
@@ -412,13 +414,15 @@ Array.prototype.__class__ = list
 
 Array.prototype.__getattr__ = function(attr){
     if(attr==='__class__'){return this.__class__} // may be list or tuple
+    var lib = attr
+    if(attr==='sort'){attr='$sort'}
     if(list[attr]===undefined){
-        throw AttributeError("'"+this.__class__.__name__+"' object has no attribute '"+attr+"'")
+        throw AttributeError("'"+this.__class__.__name__+"' object has no attribute '"+lib+"'")
     }
     if(this.__class__===tuple && 
         ['__add__','__delitem__','__setitem__',
-        'append','extend','insert','remove','pop','reverse','sort'].indexOf(attr)>-1){
-        throw AttributeError("'"+this.__class__.__name__+"' object has no attribute '"+attr+"'")
+        'append','extend','insert','remove','pop','reverse','sort'].indexOf(lib)>-1){
+        throw AttributeError("'"+this.__class__.__name__+"' object has no attribute '"+lib+"'")
     }
     var obj = this
     var res = function(){
@@ -426,7 +430,7 @@ Array.prototype.__getattr__ = function(attr){
         for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
         return list[attr].apply(obj,args)
     }
-    res.__str__ = function(){return "<built-in method "+attr+" of "+obj.__class__.__name__+" object>"}
+    res.__str__ = function(){return "<built-in method "+lib+" of "+obj.__class__.__name__+" object>"}
     return res
 }
 return list

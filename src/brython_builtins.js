@@ -57,5 +57,5 @@ __BRYTHON__.has_websocket = (function(){
     catch(err){return false}
 })()
 
-__BRYTHON__.version_info = [1,1,"20130830-183946"]
+__BRYTHON__.version_info = [1,1,"20130831-182000"]
 __BRYTHON__.path = [] // path for .py modules
