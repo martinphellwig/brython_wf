@@ -63,12 +63,12 @@ for i,area in enumerate(doc[AREA]):
     _top = 100+30*(i-15*(i//15))
     ctag.style= {'position':'absolute','left':left,'top':_top,
         'width':80,'height':16}
-    ctag.ondragstart = drag_start
-    ctag.onmouseover = mouse_over
+    ctag.bind('dragstart',drag_start)
+    ctag.bind('mouseover',mouse_over)
     doc <= ctag
     # drag and drop event handlers
-    area.ondragover = drag_over
-    area.ondrop = drop
+    area.bind('dragover',drag_over)
+    area.bind('drop',drop)
 step = 0
 
 def go_back(elt,mouse):
