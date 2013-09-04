@@ -731,7 +731,7 @@ DOMNode.prototype.set_style = function(style){ // style is a dict
             this.style.styleFloat = style.$values[i]
         
         }else{
-            this.style[style.$keys[i].toLowerCase()] = style.$values[i]
+            this.style[style.$keys[i]] = style.$values[i]
         }
     }
 }
