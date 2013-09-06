@@ -73,7 +73,7 @@ function $isNodeList(nodes) {
 
 var $DOMEventAttrs_W3C = ['NONE','CAPTURING_PHASE','AT_TARGET','BUBBLING_PHASE',
     'type','target','currentTarget','eventPhase','bubbles','cancelable','timeStamp',
-    'stopPropagation','preventDefault','initEvent']
+    'stopPropagation','preventDefault','initEvent','changedTouches']
 
 var $DOMEventAttrs_IE = ['altKey','altLeft','button','cancelBubble',
     'clientX','clientY','contentOverflow','ctrlKey','ctrlLeft','data',
@@ -121,15 +121,38 @@ $NodeTypes = {1:"ELEMENT",
     12:"NOTATION"
 }
 
+
 function DOMEvent(){}
 DOMEvent.__class__ = $type
 DOMEvent.toString = function(){return "<class 'DOMEvent'>"}
+
+function $Touch(obj){
+    var res = object()
+    res.clientX = int(obj.clientX)
+    res.clientY = int(obj.clientY)
+    res.identifier = int(obj.identifier)
+    res.target = obj.target
+    res.__getattr__ = function(attr){return this[attr]}
+    res.__class__ = "Touch"
+    return res  
+}
+
+function $TouchList(obj){
+    var res = []
+        for(var i=0; i<obj.length;i++){
+                res.push($Touch(obj[i]))
+        }
+        return res
+}
+
+$TouchProperties = {'changedTouches':'','targetTouches':'','touches':''}
 
 function $DOMEvent(ev){
     ev.__class__ = DOMEvent
     ev.__getattr__ = function(attr){
         if(attr=="x"){return $mouseCoords(ev).x}
         if(attr=="y"){return $mouseCoords(ev).y}
+        if(attr in $TouchProperties){return $TouchList(ev[attr])}
         if(attr=="data"){
             if(ev.dataTransfer!==undefined){return new $Clipboard(ev.dataTransfer)}
             else{return ev['data']}
