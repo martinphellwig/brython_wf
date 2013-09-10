@@ -428,5 +428,16 @@ try:
     d[3]
 except (IndexError,TypeError) as err:
     pass # just check that there is no SyntaxError
-    
+
+# issue 144
+from local_storage import storage
+storage.clear()
+for key, value in zip('abcde', range(5)):
+    storage[key] = value
+assert len(storage.keys()) == 5
+assert len(storage.values()) == 5
+storage.clear()
+storage['a'] = 1
+assert storage.items() == [['a','1']]
+
 print('passed all tests')
