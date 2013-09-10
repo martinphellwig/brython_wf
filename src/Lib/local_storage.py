@@ -28,7 +28,8 @@ class LocalStorage:
         return False
 
     def keys(self):
-        return [self.store.key(i) for i in range(self.store.length)]
+        length = self.store.length
+        return [self.store.key(i) for i in range(length)]
 
     def values(self):
         return [self.store.getItem(key) for key in self.keys()]
