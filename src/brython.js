@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20130831-182000
+// version 1.1.20130916-214436
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__=new Object()
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20130831-182000"]
+__BRYTHON__.version_info=[1,1,"20130916-214436"]
 __BRYTHON__.path=[]
 
 function JSConstructor(obj){
@@ -7037,7 +7037,7 @@ return false
 }
 var $DOMEventAttrs_W3C=['NONE','CAPTURING_PHASE','AT_TARGET','BUBBLING_PHASE',
 'type','target','currentTarget','eventPhase','bubbles','cancelable','timeStamp',
-'stopPropagation','preventDefault','initEvent']
+'stopPropagation','preventDefault','initEvent','changedTouches']
 var $DOMEventAttrs_IE=['altKey','altLeft','button','cancelBubble',
 'clientX','clientY','contentOverflow','ctrlKey','ctrlLeft','data',
 'dataFld','dataTransfer','fromElement','keyCode','nextPage',
@@ -7080,11 +7080,30 @@ $NodeTypes={1:"ELEMENT",
 function DOMEvent(){}
 DOMEvent.__class__=$type
 DOMEvent.toString=function(){return "<class 'DOMEvent'>"}
+function $Touch(obj){
+var res=object()
+res.clientX=int(obj.clientX)
+res.clientY=int(obj.clientY)
+res.identifier=int(obj.identifier)
+res.target=obj.target
+res.__getattr__=function(attr){return this[attr]}
+res.__class__="Touch"
+return res 
+}
+function $TouchList(obj){
+var res=[]
+for(var i=0;i<obj.length;i++){
+res.push($Touch(obj[i]))
+}
+return res
+}
+$TouchProperties={'changedTouches':'','targetTouches':'','touches':''}
 function $DOMEvent(ev){
 ev.__class__=DOMEvent
 ev.__getattr__=function(attr){
 if(attr=="x"){return $mouseCoords(ev).x}
 if(attr=="y"){return $mouseCoords(ev).y}
+if(attr in $TouchProperties){return $TouchList(ev[attr])}
 if(attr=="data"){
 if(ev.dataTransfer!==undefined){return new $Clipboard(ev.dataTransfer)}
 else{return ev['data']}
@@ -7589,7 +7608,7 @@ if(style.$keys[i].toLowerCase()==='float'){
 this.style.cssFloat=style.$values[i]
 this.style.styleFloat=style.$values[i]
 }else{
-this.style[style.$keys[i].toLowerCase()]=style.$values[i]
+this.style[style.$keys[i]]=style.$values[i]
 }
 }
 }
