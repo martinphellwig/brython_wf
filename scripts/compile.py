@@ -38,7 +38,7 @@ def compile_file(root, file):
 
     _js=__BRYTHON__.compile_python(_src,file);
     if _js is not None:
-       _fp1=FileIO(os_path_join(root, file.replace('.py', '.js')), 'w')
+       _fp1=FileIO(os_path_join(root, file.replace('.py', '.pyj')), 'w')
        _fp1.write(_js)
        _fp1.close()
     else:
