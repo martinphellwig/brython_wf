@@ -30,15 +30,16 @@ def process(filename):
             if _file.endswith('.py'):
                # we only want to include a .py file if a compiled javascript
                # version is not available
-               if os.path.exists(os.path.join(_root, _file.replace('.py', '.js'))):
+               if os.path.exists(os.path.join(_root, _file.replace('.py', '.pyj'))):
                   continue
 
-            if _file.endswith('.js') or _file.endswith('.py'):
+            _ext=os.path.splitext(_file)[1]
+            if _ext in ('.js', '.py', '.pyj'): #_file.endswith('.js') or _file.endswith('.py') or _file.endswith('.pyj'):
                _fp=open(os.path.join(_root, _file), "r")
                _data=_fp.read()
                _fp.close()
 
-               if _file.endswith('.js') and minify is not None:
+               if _ext in ('.js', '.pyj') and minify is not None:
                   _data=minify(_data)
 
                _vfs_filename=os.path.join(_root, _file).replace(_main_root, '')
@@ -85,9 +86,34 @@ function readFromVFS(lib){
    return window.atob(__BRYTHON__.$py_VFS[lib])
 }
 
+
+function $import_pyj_module(module,alias,names,path,module_contents) {
+    __BRYTHON__.$py_module_path[module]=path
+    __BRYTHON__.$py_module_alias[module]=alias
+    __BRYTHON__.scope[module+'.py']={}
+    __BRYTHON__.scope[module+'.py'].__dict__={}
+
+   try {
+     eval(module_contents);
+     // add names defined in the module as attributes of $module
+     for(var attr in __BRYTHON__.scope[module].__dict__){
+       $module[attr] = __BRYTHON__.scope[module].__dict__[attr]
+     }
+        
+     // add class and __str__
+     $module.__class__ = $type
+     $module.__repr__ = function(){return "<module '"+module+"' from "+path+" >"}
+     $module.__str__ = function(){return "<module '"+module+"' from "+path+" >"}
+     $module.__file__ = path
+     return $module
+   } catch(err) {
+     eval('throw '+err.name+'(err.message)')
+   }
+}
+
 //define import procedure to look up module in VFS
 $import_via_VFS=function(module,alias,names){
-  var ext=['.js', '.py']
+  var ext=['.js', '.pyj', '.py']
   var search_path=__BRYTHON__.path
   var root = __BRYTHON__.brython_path;
   if (root.endswith('/')) {
@@ -112,6 +138,9 @@ $import_via_VFS=function(module,alias,names){
            console.log("imported ("+module+") via VFS:" + path)
            if (ext[j] == '.js') {
               return $import_js_module(module,alias,names,path,module_contents)
+           }
+           if (ext[j] == '.pyj') {
+              return $import_pyj_module(module,alias,names,path,module_contents)
            }
            return $import_py_module(module,alias,names,path,module_contents)
          }
