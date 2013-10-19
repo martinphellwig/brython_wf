@@ -33,7 +33,7 @@ $module = {
                 else{res.push(jsmatch[arguments[i]])}
             }
             if(arguments.length===1){return res[0]}
-            return res
+            return tuple(res)
         }
         mo.groups = function(_default){
             if(_default===undefined){_default=None}
@@ -42,7 +42,7 @@ $module = {
                 if(jsmatch[i]===undefined){res.push(_default)}
                 else{res.push(jsmatch[i])}
             }
-            return res
+            return tuple(res)
         }
         mo.start = function(){return jsmatch.index}
         mo.string = string
