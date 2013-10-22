@@ -52,6 +52,6 @@ Mueve el rat&oacute;n por encima de esta &aacute;rea</textarea>
 
 `element.unbind(event,callback1[,callback2...])` elimina el v&iacute;nculo entre el elemento y la funci&oacute;n especificada
 
-`element.unbind(event)` elimina todos los v&iacute;nculos para el vento
+`element.unbind(event)` elimina todos los v&iacute;nculos para el evento
 
 
