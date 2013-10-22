@@ -36,5 +36,5 @@ def fill_zone():
     doc["zone"] <= "blah "
 </script>
 
-`doc["zone"]` es el elemento en la p&aacute;gina web con el id "zone" (aqu$iacute;, la celda coloreada de la tabla)
+`doc["zone"]` es el elemento en la p&aacute;gina web con el id "zone" (aqu&iacute;, la celda coloreada de la tabla)
 
