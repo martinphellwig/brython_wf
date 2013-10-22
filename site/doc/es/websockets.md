@@ -8,7 +8,7 @@ Si están soportados, la comunicación con el servidor se establece usando la fu
 
 donde _host_ es la localización de un servidor que soporta el protocolo WebSocket
 
-Si tu nevagador non soporta WebSocket, se obtendr&aacute; un `NotImplementedError`
+Si tu nevagador no soporta WebSockets, se obtendr&aacute; un `NotImplementedError`
 
 Esta llamada devuelve una instancia de la clase `WebSocket`. Para describir el proceso de comunicación, se deben definir funciones de respuesta (callbacks) como atributos de la instancia :
 
