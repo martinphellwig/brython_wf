@@ -27,4 +27,4 @@ A diferencia de Python, puedes a&ntilde;adir atributos a objetos creados mediant
 Por &uacute;ltimo, se han incluido algunas keywords y funciones integradas (built-in functions) dise&ntilde;adas para realizar operaciones en el navegador :
 - Los 'built-ins' `alert(), confirm(), prompt()` corresponden a sus equivalentes en Javascript.
 - La funci&oacute;n integrada `ajax()` permite la ejecuci&oacute;n de peticiones HTTP requests en modo Ajax.
-- La 'keyword' `win` es la ventana (objeto _window_ en Javascripts) y `doc` representa el documento HTML (_document_ en Javascript).
+- La 'keyword' `win` es la ventana (objeto _window_ en Javascript) y `doc` representa el documento HTML (_document_ en Javascript).
