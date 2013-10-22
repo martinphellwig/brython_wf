@@ -10,16 +10,20 @@ Traducci&oacute;n de la sintaxis Python a c&oacute;digo Javascript
 </tr>
 
 <tr>
-<td><pre><code>
-x = 1
-y = 3.14
-z = "azerty"
-</code></pre></td>
-<td><pre><code>
-x = int(1)
-y = float(3.14)
-z = "azerty"
-</pre></code></td>
+<td>
+`x = 1`
+
+`y = 3.14`
+
+`z = "azerty"`
+</td>
+<td>
+`x = int(1)`
+
+`y = float(3.14)`
+
+`z = "azerty"`
+</td>
 <td>
 _float_ es una funci&oacute;n Javascript definida en __py\_classes.js__
 </td>
@@ -27,35 +31,35 @@ _float_ es una funci&oacute;n Javascript definida en __py\_classes.js__
 
 <tr>
 <td>`x = foo.bar`</td>
-<td>`x = foo.__getattr__('bar')`</pre>
+<td>`x = foo.__getattr__('bar')`
 <td>&nbsp;</td>
 </td>
 </tr>
 
 <tr>
 <td>`foo.bar = x`</td>
-<td>`foo.__setattr__('bar',x)`</pre>
+<td>`foo.__setattr__('bar',x)`
 <td>&nbsp;</td>
 </td>
 </tr>
 
 <tr>
 <td>`x = foo[bar]`</td>
-<td>`x = foo.__getitem__(bar)`</pre>
+<td>`x = foo.__getitem__(bar)`
 <td>&nbsp;</td>
 </td>
 </tr>
 
 <tr>
 <td>`foo[bar] = x`</td>
-<td>`foo.__setitem__(bar,x)`</pre>
+<td>`foo.__setitem__(bar,x)`
 <td>&nbsp;</td>
 </td>
 </tr>
 
 <tr>
 <td>`x+y`</td>
-<td>`x.__add__(b)`</pre>
+<td>`x.__add__(b)`
 <td>Lo mismo para todos los operadores
 <br>necesario implementar tales operaciones como 2 * "a"</td>
 </td>
@@ -70,78 +74,82 @@ _float_ es una funci&oacute;n Javascript definida en __py\_classes.js__
 </tr>
 
 <tr>
-<td><pre><code>
-for obj in iterable:
-   (...)
-</code></pre></td>
-<td><pre><code>
-var $Iter1 = iterable
-for (var $i1=0;$i1<$iter1.__len__();$i1++){ 
-   obj =$iter1.__item__($i1)
-   void(0)
-}</pre>
+<td>
+    for obj in iterable:
+       (...)
+</td>
+<td>
+    var $Iter1 = iterable
+    for (var $i1=0;$i1<$iter1.__len__();$i1++){ 
+       obj =$iter1.__item__($i1)
+       void(0)
+    }
 </td>
 <td>&nbsp;</td></tr>
 
 <tr>
 <td>`x,y = iterable`</td>
-<td><pre><code>
-var $var =iterable 
-x =$var.__item__(0) 
-y =$var.__item__(1) 
-</code></pre></td>
+<td>
+    var $var =iterable 
+    x =$var.__item__(0) 
+    y =$var.__item__(1) 
+</td>
 <td>&nbsp;</td></tr>
 
 <tr>
 <td>`x,y = a,b`</td>
-<td><pre><code>
-var $temp=[]
-$temp.push(a)
-$temp.push(b)
-x =$temp[0] 
-y =$temp[1]
-</code></pre></td>
+<td>
+    var $temp=[]
+    $temp.push(a)
+    $temp.push(b)
+    x =$temp[0] 
+    y =$temp[1]
+</td>
 <td>&nbsp;</td></tr>
 
 <tr>
-<td><pre><code>
-def foo():
-   x=3
-</code></pre></td>
-<td><pre><code>function foo(){
-   var x=3
-}
-window.foo=foo 
-</code></pre></td>
+<td>
+    def foo():
+       x=3
+</td>
+<td><pre><
+    function foo(){
+       var x=3
+    }
+    window.foo=foo 
+</td>
 <td>Para ser consistente en la gesti&oacute;n del espacio de nombres (namespace) de Python, la variable local _x_ ser&aacute; declarada por la keyword `var`
 
 La &uacute;ltima l&iacute;nea a&ntilde;ade el nombre de la funci&oacute;n al espacio de nombres del navegador; solo existir&aacute; si la funci&oacute;n est&aacute; en el nivel del m&oacute;dulo y no dentro de otra funci&oacute;n</td></tr>
 
 <tr>
-<td><pre><code>
-def foo():
-   global x
-   x=3
-</code></pre></td>
-<td><pre><code>function foo(){
-   x=3
-}
-window.foo=foo 
-</code></pre></td>
+<td>
+    def foo():
+       global x
+       x=3
+</td>
+<td>
+    function foo(){
+       x=3
+    }
+    window.foo=foo 
+</td>
 <td>para una variable global no usamos la keyword `var`</td>
 </tr>
 
 <tr>
-<td><pre><code>def foo(x,y=3,*args,**kw):
-   (...)
-</code></pre></td>
-<td><pre><code>function foo(){
-   $ns=$MakeArgs(arguments,['x'],{"y":3},"args","kw")
-   for($var in $ns){eval("var "+$var+"=$ns[$var]")} 
-   (...)
-}
-window.foo=foo 
-</code></pre></td>
+<td>
+    def foo(x,y=3,*args,**kw):
+       (...)
+</td>
+<td>
+    function foo(){
+       $ns=$MakeArgs(arguments,['x'],{"y":3},"args","kw")
+       for($var in $ns){eval("var "+$var+"=$ns[$var]")} 
+       (...)
+    }
+    window.foo=foo 
+</td>
 <td>la funci&oacute;n _$MakeArgs_ crea un objeto Javascript combinando los nombres definidos en la firma de la funci&oacute;n con valores que han sido introducidos realmente. La siguiente l&iacute;nea crea el namespace de la funci&oacute;n (variables locales)</td>
 </tr>
 
@@ -156,15 +164,15 @@ window.foo=foo
 </tr>
 
 <tr>
-<td><pre><code>
-x='brython'
-try:
-    x[2]='a'
-except TypeError:
-    log('error')
-except:
-    log('another error')
-</code></pre></td>
+<td>
+    x='brython'
+    try:
+        x[2]='a'
+    except TypeError:
+        log('error')
+    except:
+        log('another error')
+</td>
 <td>
     x ='brython' 
     try{
@@ -181,8 +189,9 @@ except:
     }
 </td>
 <td>las l&iacute;neas
-<pre><b>catch($err0){
-   if(false){void(0)} </b></pre><p>
+    catch($err0){
+       if(false){void(0)}
+       
 se a&ntilde;aden antes que las cl&aacute;usulas `except`, traducido como `else if` cuando el nombre de una excepci&oacute;n se especifica o como un `else` cuando no es el caso
 
 </tr>
@@ -198,26 +207,26 @@ se a&ntilde;aden antes que las cl&aacute;usulas `except`, traducido como `else i
 
 <tr>
 <td>`setInterval(func,millisec)`</td>
-<td><pre><code>
-import time
-time.set_interval(func,millisec)
-</code></pre></td>
+<td>
+    import time
+    time.set_interval(func,millisec)
+</td>
 </tr>
 
 <tr>
 <td>`clearInterval(interval_id)`</td>
-<td><pre><code>
-import time
-time.clear_interval(interval_id)
-</code></pre></td>
+<td>
+    import time
+    time.clear_interval(interval_id)
+</td>
 </tr>
 
 <tr>
 <td>`setTimeOut(func,millisec)`</td>
-<td><pre><code>
-import time
-time.set_timeout(func,millisec)
-</code></pre></td>
+<td>
+    import time
+    time.set_timeout(func,millisec)
+</td>
 </tr>
 
 </table>
