@@ -151,7 +151,26 @@ $import_via_VFS=function(module,alias,names){
   res.message = "No module named '"+module+"'"
   throw res
 }
-$import_funcs.unshift($import_via_VFS)
+
+// since $import_funcs is now a local variable (import_funcs), we have
+// to over write the $import_single function to get VFS to work
+$import_single=function (module){
+    var import_funcs = [$import_via_VFS, $import_js, $import_module_search_path]
+    if(module.name.search(/\./)>-1){import_funcs = [$import_module_search_path]}
+    for(var j=0;j<import_funcs.length;j++){
+        try{
+            return import_funcs[j](module)
+        } catch(err){
+            if(err.name==="NotFoundError"){
+                if(j==import_funcs.length-1){
+                    throw ImportError("no module named '"+module.name+"'")
+                }else{
+                    continue
+                }
+            }else{throw(err)}
+        }
+    }
+}
   """)
 
   _vfs.close()
