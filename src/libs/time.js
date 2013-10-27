@@ -1,6 +1,8 @@
 $module =  {
 
     __getattr__ : function(attr){return this[attr]},
+    
+    __name__ : 'time',
 
     clear_interval : function(int_id){window.clearInterval(int_id)},
 
@@ -37,7 +39,7 @@ $module =  {
                     d.getMinutes(), d.getSeconds(), d.getDay(), 0, dst])
        //fixme  (second to last value is 0 which is the number of days in this year..)
     },
-    time : function(){return (new Date().getTime())/1000},
+    time : function(){return float((new Date().getTime())/1000)},
     
     strftime : function(format,arg){
         function ns(arg,nb){

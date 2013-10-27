@@ -373,12 +373,12 @@ assert 'top' in dict(top=True), 'top was mangled: %s'%dict(top=True)
 
 # issue 100
 a = [round(kk) for kk in [1.1,2.2,3.3]]
-assert str(a)=='[1,2,3]'
+assert str(a)=='[1, 2, 3]'
 
 b = [1.0,2.0,3.0]
-assert str(b)=='[1.0,2.0,3.0]'
+assert str(b)=='[1.0, 2.0, 3.0]'
 
-assert str([value for value in [1.0,2.0,3.0]])=='[1.0,2.0,3.0]'
+assert str([value for value in [1.0,2.0,3.0]])=='[1.0, 2.0, 3.0]'
 # issue 102
 try:
     eval('1<>0')

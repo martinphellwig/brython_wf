@@ -14,7 +14,6 @@ class LocalStorage:
         res=self.store.getItem(key)
         if res:
            return res
-
         raise KeyError(key)
 
     def __setitem__(self,key,value):
@@ -25,23 +24,17 @@ class LocalStorage:
         res=self.store.getItem(key)
         if res:
            return True
+
         return False
 
     def keys(self):
-        length = self.store.length
-        return [self.store.key(i) for i in range(length)]
+        return list(self.store)
 
     def values(self):
-        return [self.store.getItem(key) for key in self.keys()]
+        return [self.__getitem__(k) for k in self.keys()]
 
     def items(self):
         return zip(self.keys(),self.values())
-
-    def clear(self):
-        self.store.clear()
-
-    def __len__(self):
-        return self.store.length
 
 storage = LocalStorage()
 

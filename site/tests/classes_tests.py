@@ -11,7 +11,7 @@ assert str(y)=="3.14"
 z=[1,2,3]
 assert z.__class__ == list
 assert isinstance(z,list)
-assert str(z)=="[1,2,3]"
+assert str(z)=="[1, 2, 3]"
 d = {1:'Z','y':88}
 assert d.__class__ == dict
 assert isinstance(d,dict)
@@ -19,6 +19,6 @@ assert str(d)=="{1:'Z','y':88}"
 t = (1,8)
 assert t.__class__ == tuple
 assert isinstance(t,tuple)
-assert str(t)=='(1,8)'
+assert str(t)=='(1, 8)'
 
 print("passed all tests..")

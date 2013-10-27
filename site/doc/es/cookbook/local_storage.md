@@ -1,33 +1,33 @@
-Problema
+Problem
+-------
+
+Store objects locally, using HTML5 Local Storage
+
+
+Solution
 --------
 
-Almacenar objetos localmente usando Local Storage en HTML5
-
-
-Solución
---------
-
-Brython proporciona un módulo `local_storage` que permite almacenar cadenas de valores asociadas a cadenas clave.
+Brython provides a built-in module `local_storage` that stores string values associated to string keys
 
 
     from local_storage import storage
     storage['brython_test'] = doc['zone'].value
     
 <input id="zone" value="Local Storage">
-<button onclick="show_locstor(0)">Almacenar valor</button>
+<button onclick="show_locstor(0)">Store value</button>
 
     alert(storage['brython_test'])
 
-<button onclick="mostrar_locstor(1)">Mostrar el valor almacenado</button>
+<button onclick="show_locstor(1)">Show stored value</button>
 
 
 <script type="text/python3">
-def mostrar_locstor(num):
+def show_locstor(num):
     src = doc.get(selector="pre.marked")[num].text
     exec(src)
 </script>
 
-Si un objeto Python puede ser serializado mediante el módulo `json`, podrías almacenar la versión serializada, y más tarde obtener el objeto original :
+If a Python object can be serialized by the `json` module, you can store the serialized version, then retrieve the original object :
 
     from local_storage import storage
     import json
@@ -40,6 +40,6 @@ Si un objeto Python puede ser serializado mediante el módulo `json`, podrías a
     alert(b['foo'])
     alert(b['1515'])
 
-<button onclick="mostrar_locstor(2)">Test it</button>
+<button onclick="show_locstor(2)">Test it</button>
 
-Hay que tener precaución ya que el módulo `json` convierte las claves del diccionario a cadenas, debido a ello es por lo que hemos usado `b['1515']` en lugar de `b[1515]`
+Beware that `json` converts dictionary keys to their string value, this is why we use `b['1515']` instead of `b[1515]`

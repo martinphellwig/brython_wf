@@ -6,37 +6,28 @@ function $list(){
     // but list(1) is invalid (integer 1 is not iterable)
     var args = new Array()
     for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-    return new $ListClass(args)
+    return new $ListDict(args)
 }
 
-function list(){
-    if(arguments.length===0){return []}
-    else if(arguments.length>1){
-        throw TypeError("list() takes at most 1 argument ("+arguments.length+" given)")
-    }
-    var res = []
-    list.__init__(res,arguments[0])
-    res.__brython__ = true // false for Javascript arrays - used in sort()
-    return res
-}
+$ListDict = {}
 
-list.__add__ = function(self,other){
+$ListDict.__add__ = function(self,other){
     var res = self.valueOf().concat(other.valueOf())
     if(isinstance(self,tuple)){res = tuple(res)}
     return res
 }
 
-list.__class__ = $type
+$ListDict.__class__ = $type
 
-list.__contains__ = function(self,item){
+$ListDict.__contains__ = function(self,item){
     for(var i=0;i<self.length;i++){
-        try{if(self[i].__eq__(item)){return true}
-        }catch(err){void(0)}
+        try{if(getattr(self[i],'__eq__')(item)){return true}
+        }catch(err){$pop_exc();void(0)}
     }
     return false
 }
 
-list.__delitem__ = function(self,arg){
+$ListDict.__delitem__ = function(self,arg){
     if(isinstance(arg,int)){
         var pos = arg
         if(arg<0){pos=self.length+pos}
@@ -76,41 +67,22 @@ list.__delitem__ = function(self,arg){
     }
 }
 
-list.__eq__ = function(self,other){
+$ListDict.__eq__ = function(self,other){
     if(other===undefined){ // compare object "self" to class "list"
         return self===list
     }
-    if(isinstance(other,self.__class__)){
+    if(other.__class__===self.__class__){
         if(other.length==self.length){
             for(var i=0;i<self.length;i++){
-                if(!self[i].__eq__(other[i])){return False}
+                if(!getattr(self[i],'__eq__')(other[i])){return False}
             }
             return True
         }
-    }
+    }else{console.log('not the same class '+self.__class__+' '+other.__class__)}
     return False
 }
 
-list.__getattr__ = function(attr){
-    switch(attr){
-        case '__class__':
-            var res = function(){return list}
-            res.__str__ = list.__str__
-            return res
-        case '__name__':
-            var res = function(){
-                throw AttributeError(" 'list' object has no attribute '__name__'")
-            }
-            res.__str__ = function(){return 'list'}
-            return res
-        case 'sort': // don't shadow the Javascript sort() function of arrays
-            return list.$sort
-        default:
-            return list[attr]
-    }
-}
-
-list.__getitem__ = function(self,arg){
+$ListDict.__getitem__ = function(self,arg){
     if(isinstance(arg,int)){
         var items=self.valueOf()
         var pos = arg
@@ -123,9 +95,9 @@ list.__getitem__ = function(self,arg){
         var step = arg.step===None ? 1 : arg.step
         if(step>0){
             var start = arg.start===None ? 0 : arg.start
-            var stop = arg.stop===None ? self.__len__() : arg.stop
+            var stop = arg.stop===None ? self.length : arg.stop
         }else{
-            var start = arg.start===None ? self.__len__()-1 : arg.start
+            var start = arg.start===None ? self.length-1 : arg.start
             var stop = arg.stop===None ? 0 : arg.stop
         }
         if(start<0){start=int(self.length+start)}
@@ -151,78 +123,121 @@ list.__getitem__ = function(self,arg){
             }
         } 
     } else if(isinstance(arg,bool)){
-        return self.__getitem__(int(arg))
+        return $ListDict.__getitem__(self,int(arg))
     } else {
         throw TypeError('list indices must be integer, not '+str(arg.__class__))
     }
 }
 
-list.__hash__ = function(self){throw TypeError("unhashable type: 'list'")}
+$ListDict.__ge__ = function(self,other){
+    if(!isinstance(other,list)){
+        throw TypeError("unorderable types: list() >= "+other.__class__.__name__+'()')
+    }
+    var i=0
+    while(i<self.length){
+        if(i>=other.length){return true}
+        else if(self[i]==other[i]){i++}
+        else return(self[i]>=other[i])
+    }
+    // other starts like self, but is longer
+    return false        
+}
 
-list.__in__ = function(self,item){return item.__contains__(self)}
+$ListDict.__gt__ = function(self,other){
+    if(!isinstance(other,list)){
+        throw TypeError("unorderable types: list() > "+other.__class__.__name__+'()')
+    }
+    var i=0
+    while(i<self.length){
+        if(i>=other.length){return true}
+        else if(self[i]==other[i]){i++}
+        else return(self[i]>other[i])
+    }
+    // other starts like self, but is longer
+    return false        
+}
 
-list.__init__ = function(self){
-    while(self.__len__()>0){self.pop()}
-    if(arguments.length===1){return}
-    var arg = iter(arguments[1])
+$ListDict.__hash__ = function(){throw TypeError("unhashable type: 'list'")}
+
+$ListDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
+
+$ListDict.__init__ = function(self,arg){
+    var len_func = getattr(self,'__len__'),pop_func=getattr(self,'pop')
+    while(len_func()){pop_func()}
+    if(arg===undefined){return}
+    var arg = iter(arg)
+    var next_func = getattr(arg,'__next__')
     while(true){
-        try{self.push(arg.__next__())}
-        catch(err){break}
+        try{self.push(next_func())}
+        catch(err){if(err.__name__=='StopIteration'){$pop_exc()};break}
     }
 }
 
-list.__iter__ = function(self){
+$ListDict.__iter__ = function(self){
     var res = {
         __class__:$list_iterator,
-        __getattr__:function(attr){return res[attr]},
         __iter__:function(){return res},
         __len__:function(){return self.length},
+        __name__:'list iterator',
         __next__:function(){
             res.counter++
-            if(res.counter<self.__len__()){return self.__getitem__(res.counter)}
+            if(res.counter<self.length){return self[res.counter]}
             else{throw StopIteration("StopIteration")}
         },
         __repr__:function(){return "<list iterator object>"},
         __str__:function(){return "<list iterator object>"},
+        toString:function(){return "<list iterator object>"},
         counter:-1
     }
     return res
 }
 
-list.__len__ = function(self){return self.length}
-
-list.__mul__ = function(self,other){
-    if(isinstance(other,int)){return other.__mul__(self)}
-    else{throw TypeError("can't multiply sequence by non-int of type '"+other.__name+"'")}
+$ListDict.__le__ = function(self,other){
+    return !$ListDict.__gt__(self,other)
 }
 
-list.__name__ = 'list'
+$ListDict.__len__ = function(self){return self.length}
 
-list.__ne__ = function(self,other){return !self.__eq__(other)}
+$ListDict.__lt__ = function(self,other){
+    return !$ListDict.__ge__(self,other)
+}
 
-list.__new__ = function(arg){return list.apply(null,arguments)}
+$ListDict.__mro__ = [$ListDict,$ObjectDict]
 
-list.__not_in__ = function(self,item){return !list.__in__(self,item)}
+$ListDict.__mul__ = function(self,other){
+    if(isinstance(other,int)){return getattr(other,'__mul__')(self)}
+    else{
+        throw TypeError("can't multiply sequence by non-int of type '"+other.__class__.__name__+"'")
+    }
+}
 
-list.__repr__ = function(self){
+$ListDict.__name__ = 'list'
+
+$ListDict.__ne__ = function(self,other){return !$ListDict.__eq__(self,other)}
+
+$ListDict.__new__ = function(cls){var res = [];res.__class__=cls;return res}
+
+$ListDict.__not_in__ = function(self,item){return !$ListDict.__in__(self,item)}
+
+$ListDict.__repr__ = function(self){
     if(self===undefined){return "<class 'list'>"}
     var items=self.valueOf()
     var res = '['
-    if(self.__class__===tuple){res='('}
+    if(self.__class__===$TupleDict){res='('}
     for(var i=0;i<self.length;i++){
         var x = self[i]
-        if(x.__repr__!==undefined){res+=x.__repr__()}
-        else{res += x.toString()}
-        if(i<self.length-1){res += ','}
+        try{res+=getattr(x,'__repr__')()}
+        catch(err){console.log('no __repr__');res += x.toString()}
+        if(i<self.length-1){res += ', '}
     }
-    if(self.__class__===tuple){
+    if(self.__class__===$TupleDict){
         if(self.length==1){res+=','}
         return res+')'
     }
     else{return res+']'}
 }
 
-list.__setitem__ = function(self,arg,value){
+$ListDict.__setitem__ = function(self,arg,value){
     if(isinstance(arg,int)){
         var pos = arg
         if(arg<0){pos=self.length+pos}
@@ -230,7 +245,7 @@ list.__setitem__ = function(self,arg,value){
         else{throw IndexError('list index out of range')}
     } else if(isinstance(arg,slice)){
         var start = arg.start===None ? 0 : arg.start
-        var stop = arg.stop===None ? self.__len__() : arg.stop
+        var stop = arg.stop===None ? self.length : arg.stop
         var step = arg.step===None ? 1 : arg.step
         if(start<0){start=self.length+start}
         if(stop<0){stop=self.length+stop}
@@ -250,29 +265,29 @@ list.__setitem__ = function(self,arg,value){
     }
 }
 
-list.__str__ = list.__repr__
+$ListDict.__str__ = $ListDict.__repr__
 
-list.append = function(self,other){self.push(other)}
+$ListDict.append = function(self,other){self.push(other)}
 
-list.clear = function(self){
+$ListDict.clear = function(self){
     while(self.length){self.pop()}
 }
 
-list.copy = function(self){
+$ListDict.copy = function(self){
     var res = []
-    for(var i=0;i<this.length;i++){res.push(this[i])}
+    for(var i=0;i<self.length;i++){res.push(self[i])}
     return res
 }
 
-list.count = function(self,elt){
+$ListDict.count = function(self,elt){
     var res = 0
     for(var i=0;i<self.length;i++){
-        if(self[i].__eq__(elt)){res++}
+        if(getattr(self[i],'__eq__')(elt)){res++}
     }
     return res
 }
 
-list.extend = function(self,other){
+$ListDict.extend = function(self,other){
     if(arguments.length!=2){throw TypeError(
         "extend() takes exactly one argument ("+arguments.length+" given)")}
     other = iter(other)
@@ -285,18 +300,18 @@ list.extend = function(self,other){
     }
 }
 
-list.index = function(self,elt){
+$ListDict.index = function(self,elt){
     for(var i=0;i<self.length;i++){
-        if(self[i].__eq__(elt)){return i}
+        if(getattr(self[i],'__eq__')(elt)){return i}
     }
     throw ValueError(str(elt)+" is not in list")
 }
 
-list.insert = function(self,i,item){self.splice(i,0,item)}
+$ListDict.insert = function(self,i,item){self.splice(i,0,item)}
 
-list.remove = function(self,elt){
+$ListDict.remove = function(self,elt){
     for(var i=0;i<self.length;i++){
-        if(self[i].__eq__(elt)){
+        if(getattr(self[i],'__eq__')(elt)){
             self.splice(i,1)
             return
         }
@@ -304,7 +319,7 @@ list.remove = function(self,elt){
     throw ValueError(str(elt)+" is not in list")
 }
 
-list.pop = function(self,pos){
+$ListDict.pop = function(self,pos){
     if(pos===undefined){ // can't use self.pop() : too much recursion !
         var res = self[self.length-1]
         self.splice(self.length-1,1)
@@ -322,7 +337,7 @@ list.pop = function(self,pos){
     }
 }
 
-list.reverse = function(self){
+$ListDict.reverse = function(self){
     for(var i=0;i<parseInt(self.length/2);i++){
         var buf = self[i]
         self[i] = self[self.length-i-1]
@@ -337,7 +352,7 @@ function $partition(arg,array,begin,end,pivot)
     array.swap(pivot, end-1);
     var store=begin;
     for(var ix=begin;ix<end-1;++ix) {
-        if(arg(array[ix]).__le__(arg(piv))) {
+        if(getattr(arg(array[ix]),'__le__')(arg(piv))) {
             array.swap(store, ix);
             ++store;
         }
@@ -363,81 +378,95 @@ function $qsort(arg,array, begin, end)
     }
 }
 
-list.$sort = function(self){
+$ListDict.sort = function(self){
     var func=function(x){return x}
     var reverse = false
     for(var i=1;i<arguments.length;i++){
         var arg = arguments[i]
-        if(isinstance(arg,$Kw)){
+        if(arg.__class__==$Kw){
             if(arg.name==='key'){func=arg.value}
             else if(arg.name==='reverse'){reverse=arg.value}
         }
     }
     if(self.length==0){return}
     $qsort(func,self,0,self.length)
-    if(reverse){list.reverse(self)}
+    if(reverse){$ListDict.reverse(self)}
     // Javascript libraries might use the return value
     if(!self.__brython__){return self}
 }
 
-list.toString = list.__str__
+$ListDict.toString = function(){return '$ListDict'}
 
-function $ListClass(items){
-
-    var x = null,i = null;
-    this.iter = null
-    this.__class__ = list
-    this.items = items // JavaScript array
+// attribute __dict__
+$ListDict.__dict__ = dict()
+for(var $attr in list){
+    $ListDict.__dict__.$keys.push($attr)
+    $ListDict.__dict__.$values.push(list[$attr])
 }
 
-// add Brython attributes to Javascript Array
-
-
-// set other Array.prototype attributes
-
-for(var attr in list){
-    if(typeof list[attr]==='function'){list[attr].__str__=function(){return "<list method "+attr+">"}}
-    var func = (function(attr){
-        return function(){
-            var args = [this]
-            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-            return list[attr].apply(this,args)
+// constructor for built-in type 'list'
+function list(){
+    if(arguments.length===0){return []}
+    else if(arguments.length>1){
+        throw TypeError("list() takes at most 1 argument ("+arguments.length+" given)")
+    }
+    var res = []
+    var arg = iter(arguments[0])
+    var next_func = getattr(arg,'__next__')
+    while(true){
+        try{res.push(next_func())}
+        catch(err){
+            if(err.__name__=='StopIteration'){
+                $pop_exc()
+            }else{
+                //console.log('err in next func '+err+'\n'+dir(arguments[0]))
+            }
+            break
         }
-    })(attr)
-    func.__str__ = (function(attr){
-        return function(){return "<method-wrapper '"+attr+"' of list object>"}
-    })(attr)
-    Array.prototype[attr] = func
-}
-
-Array.prototype.__class__ = list
-
-Array.prototype.__getattr__ = function(attr){
-    if(attr==='__class__'){return this.__class__} // may be list or tuple
-    var lib = attr
-    if(attr==='sort'){attr='$sort'}
-    if(list[attr]===undefined){
-        throw AttributeError("'"+this.__class__.__name__+"' object has no attribute '"+lib+"'")
-    }
-    if(this.__class__===tuple && 
-        ['__add__','__delitem__','__setitem__',
-        'append','extend','insert','remove','pop','reverse','sort'].indexOf(lib)>-1){
-        throw AttributeError("'"+this.__class__.__name__+"' object has no attribute '"+lib+"'")
-    }
-    var obj = this
-    var res = function(){
-        var args = [obj]
-        for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-        return list[attr].apply(obj,args)
-    }
-    res.__str__ = function(){return "<built-in method "+lib+" of "+obj.__class__.__name__+" object>"}
+    }    
+    res.__brython__ = true // false for Javascript arrays - used in sort()
     return res
 }
+list.__class__ = $factory
+list.$dict = $ListDict
+$ListDict.$factory = list
+
+Array.prototype.__class__ = $ListDict
+
+// override built-in methods 'pop' and 'sort'
+Array.prototype.$dict = {
+    'pop':function(){$ListDict.pop.apply(this,arguments)},
+    'sort':function(){$ListDict.sort.apply(this,arguments)}
+}
+
+// add tuple methods
+for(var attr in $ListDict){
+    if(['__delitem__','__setitem__',
+        'append','extend','insert','remove','pop','reverse','sort'].indexOf(attr)>-1){continue}
+    if($TupleDict[attr]===undefined){
+        $TupleDict[attr] = $ListDict[attr]
+    }
+}
+
+$TupleDict.__eq__ = function(self,other){
+    if(other===undefined){ // compare object "self" to class "list"
+        return self===tuple
+    }
+    return $ListDict.__eq__(self,other)
+}
+
+$TupleDict.__mro__ = [$TupleDict,$ObjectDict]
+$TupleDict.__name__ = 'tuple'
+
 return list
 }()
 $list_iterator = {
     __class__:$type,
     __getattr__:function(){return $list_iterator[attr]},
+    __name__:'list_iterator',
     __repr__:function(){return "<class 'list_iterator'>"},
-    __str__:function(){return "<class 'list_iterator'>"}
+    __str__:function(){return "<class 'list_iterator'>"},
+    toString:function(){return 'list iterator'}
 }
+$list_iterator.__mro__ = [$list_iterator,$ObjectDict]
+$list_iterator.$factory = $list_iterator

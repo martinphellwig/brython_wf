@@ -9,8 +9,10 @@ import traceback
 import pydom
 _height=doc.documentElement.clientHeight
 _s=pydom.Selector('#container')
+print('selector : ',_s)
 #set height of container to 66% of screen
 _s.get().height('%spx' % int(_height*0.66))
+print('ok selector')
 
 _rand=random.random()
 has_ace = True
@@ -94,18 +96,9 @@ def run():
     return state
 
 # load a Python script
-def on_complete(req):
-    editor.setValue(req.text)
-    if has_ace:
-        editor.scrollToRow(0)
-        editor.gotoLine(0)
-
 def load(evt):
     _name=evt.target.value
-    req = ajax()
-    req.on_complete = on_complete
-    req.open('GET',_name+'?foo=%s' %time.time(),False)
-    req.send()
+    editor.setValue(open(_name).read())
 
 def show_js():
     src = editor.getValue()
