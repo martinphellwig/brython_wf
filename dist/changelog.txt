@@ -1,0 +1,1 @@
+- change implementation of query string : attribute doc.query instead of function doc.query()

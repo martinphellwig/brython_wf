@@ -26,7 +26,7 @@ from html import *
 language = "en" # default
 has_req = False
 
-lang = doc.query().getfirst("lang")
+lang = doc.query.getfirst("lang")
 if lang and lang in ["en","fr","es","pt"]:
     has_req = True
     language = lang
@@ -84,7 +84,6 @@ if has_req:
     doc["c_%s" %lang].href += "?lang=%s" %lang
     
 def change_lang(sel):
-    print('sel',sel,sel.options)
     new_lang = sel.options[sel.selectedIndex].value
     doc.location.href = 'index.html?lang=%s' %new_lang
 </script>
