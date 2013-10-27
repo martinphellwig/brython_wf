@@ -386,12 +386,13 @@ DOMNode.__eq__ = function(self,other){
 }
 
 DOMNode.__getattribute__ = function(self,attr){
-    if(['children','html','left','parent','text','top','value'].indexOf(attr)>-1){
+    if(['children','html','left','parent','query','text','top','value'].indexOf(attr)>-1){
         return DOMNode[attr](self)
     }
     if(attr=='remove'){
         return DOMNode[attr](self,attr)
     }
+    if(attr=='$$location'){attr='location'}
     if(self.elt.getAttribute!==undefined){
         res = self.elt.getAttribute(attr)
         // IE returns the properties of a DOMNode (eg parentElement)
@@ -847,10 +848,57 @@ doc.$dict.headers = function(){
 
 // return query string as an object with methods to access keys and values
 // same interface as cgi.FieldStorage, with getvalue / getlist / getfirst
-doc.$dict.query = function(){
-    var res = object()
-    res._keys = []
-    res._values = object()
+DOMNode.query = function(self){
+    console.log('get query ')
+    $QueryDict = {__class__:$type,__name__:'query'}
+    
+    $QueryDict.__contains__ = function(self,key){
+        return self._keys.indexOf(key)>-1
+    }
+
+    $QueryDict.__getitem__ = function(self,key){
+        // returns a single value or a list of values 
+        // associated with key, or raise KeyError
+        var result = self._values[key]
+        if(result===undefined){throw KeyError(key)}
+        else if(result.length==1){return result[0]}
+        return result
+    }
+
+    $QueryDict.__mro__ = [$QueryDict,$ObjectDict]
+
+    $QueryDict.getfirst = function(self,key,_default){
+        // returns the first value associated with key
+        var result = self._values[key]
+        if(result===undefined){
+            if(_default===undefined){return None}
+            return _default
+        }
+        return result[0]
+    }
+
+    $QueryDict.getlist = function(self,key){
+        // always return a list
+        var result = self._values[key]
+        if(result===undefined){return []}
+        return result
+    }
+
+    $QueryDict.getvalue = function(self,key,_default){
+        try{return self.__getitem__(key)}
+        catch(err){
+            $pop_exc()
+            if(_default===undefined){return None}
+            else{return _default}
+        }
+    }
+
+    $QueryDict.keys = function(self){return self._keys}
+
+    var res = {__class__:$QueryDict,
+        _keys : [],
+        _values : {}
+    }
     var qs = location.search.substr(1).split('&')
     for(var i=0;i<qs.length;i++){
         var pos = qs[i].search('=')
@@ -860,41 +908,7 @@ doc.$dict.query = function(){
         if(res._keys.indexOf(key)>-1){res._values[key].push(value)}
         else{res._values[key] = [value]}
     }
-    res.__contains__ = function(key){
-        return res._keys.indexOf(key)>-1
-    }
-    res.__getitem__ = function(key){
-        // returns a single value or a list of values 
-        // associated with key, or raise KeyError
-        var result = res._values[key]
-        if(result===undefined){throw KeyError(key)}
-        else if(result.length==1){return result[0]}
-        return result
-    }
-    res.getfirst = function(key,_default){
-        // returns the first value associated with key
-        var result = res._values[key]
-        if(result===undefined){
-            if(_default===undefined){return None}
-            return _default
-        }
-        return result[0]
-    }
-    res.getlist = function(key){
-        // always return a list
-        var result = res._values[key]
-        if(result===undefined){return []}
-        return result
-    }
-    res.getvalue = function(key,_default){
-        try{return res.__getitem__(key)}
-        catch(err){
-            $pop_exc()
-            if(_default===undefined){return None}
-            else{return _default}
-        }
-    }
-    res.keys = function(){return res._keys}
+
     return res
 }
 
