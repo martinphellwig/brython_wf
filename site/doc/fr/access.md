@@ -1,7 +1,7 @@
 Accéder aux éléments de la page
 -------------------------------
 
-Pour accéder à un élément, on peut utiliser plusieurs méthodes. La plus courante est de se servir de son identifiant, c'est-à-dire de son attribut _id_ : si on a une zone de saisie définie par
+Pour accéder à un élément, on peut utiliser plusieurs méthodes. La plus courante est de se servir de son identifiant, c'est-à-dire de son attribut _id_ : avec une zone de saisie définie par
 
 >    <input id="data">
 
