@@ -1,7 +1,20 @@
 <!doctype html>
 <html lang="en">
 <head>
-<script src="/src/brython.js"></script>
+<script type="text/javascript" src="../../src/brython_builtins.js"></script>
+<script type="text/javascript" src="../../src/py2js.js"></script>
+<script type="text/javascript" src="../../src/py_utils.js"></script>
+<script type="text/javascript" src="../../src/py_object.js"></script>
+<script type="text/javascript" src="../../src/py_classes.js"></script>
+<script type="text/javascript" src="../../src/js_objects.js"></script>
+<script type="text/javascript" src="../../src/py_import.js"></script>
+
+<script type="text/javascript" src="../../src/py_dict.js"></script>
+<script type="text/javascript" src="../../src/py_list.js"></script>
+<script type="text/javascript" src="../../src/py_string.js"></script>
+<script type="text/javascript" src="../../src/py_dom.js"></script>
+<script type="text/javascript" src="../../src/py_ajax.js"></script>
+
 <meta charset="utf-8">
 <meta name="description" content="Rewriting of a Javascript demo in Brython www.brython.info">
 <meta name="keywords" content="Python,Brython">
@@ -204,7 +217,7 @@ nbnw = 0
 def nearWall(x,y):
     # check if point (x,y) is near a wall
     global nbnw
-    nbnw += 1
+    nbnw = nbnw+1
     for i in [-0.1,0.1]:
         xx=floor(x+i)
         for j in [-0.1,0.1]:
@@ -238,11 +251,11 @@ def shoot():
 
 def update():
     global total,jumpCycle,playerVelY,playerDir
-    total+=1
+    total = total+1
     change=False
 
     if jumpCycle:
-        jumpCycle -= 1
+        jumpCycle = jumpCycle - 1
         change=True
         playerPosZ = 1 + jumpCycle*(20-jumpCycle)/110
     elif key[4]:
@@ -250,28 +263,28 @@ def update():
     
     if key[0]:
         if not key[1]:
-            playerDir-=0.07 # left
+            playerDir = playerDir-0.07 # left
             change=True
     elif key[1]:
-        playerDir +=0.07 # right
+        playerDir = playerDir+0.07 # right
         change=True
 
     if change:
-        playerDir+=2*pi
-        playerDir%=2*pi
+        playerDir = playerDir+2*pi
+        playerDir = playerDir % 2*pi
         doc["sky"].style.backgroundPosition="%spx 0" %floor(1-playerDir/(2*pi)*2400)
 
     if key[2] and not key[3]:
         if playerVelY<0.1:
-            playerVelY += 0.02
+            playerVelY = playerVelY + 0.02
     elif key[3] and not key[2]:
         if playerVelY>-0.1:
-            playerVelY -= 0.02
+            playerVelY = playerVelY - 0.02
     else:
         if playerVelY<-0.02:
-            playerVelY += 0.015
+            playerVelY = playerVelY + 0.015
         elif playerVelY>0.02:
-            playerVelY -= 0.015
+            playerVelY = playerVelY - 0.015
         else:
             playerVelY=0
     

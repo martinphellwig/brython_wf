@@ -1,5 +1,5 @@
 // global object with brython built-ins
-__BRYTHON__ = new Object()
+__BRYTHON__ = {}
 __BRYTHON__.__getattr__ = function(attr){return this[attr]}
 __BRYTHON__.__setattr__ = function(attr,value){
     // limited to some attributes
@@ -57,5 +57,6 @@ __BRYTHON__.has_websocket = (function(){
     catch(err){return false}
 })()
 
-__BRYTHON__.version_info = [1,1,"20131026-171611"]
+__BRYTHON__.version_info = [1,1,"20131026-154544"]
 __BRYTHON__.path = [] // path for .py modules
+

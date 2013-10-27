@@ -5,10 +5,23 @@
 <meta name="keywords" content="Python,Brython">
 <meta name="author" content="Pierre Quentel">
 <meta charset="iso-8859-1">
-<script src="/src/brython.js"></script>
+<script type="text/javascript" src="../../src/brython_builtins.js"></script>
+<script type="text/javascript" src="../../src/py2js.js"></script>
+<script type="text/javascript" src="../../src/py_utils.js"></script>
+<script type="text/javascript" src="../../src/py_object.js"></script>
+<script type="text/javascript" src="../../src/py_classes.js"></script>
+<script type="text/javascript" src="../../src/js_objects.js"></script>
+<script type="text/javascript" src="../../src/py_import.js"></script>
+
+<script type="text/javascript" src="../../src/py_dict.js"></script>
+<script type="text/javascript" src="../../src/py_list.js"></script>
+<script type="text/javascript" src="../../src/py_string.js"></script>
+<script type="text/javascript" src="../../src/py_dom.js"></script>
+<script type="text/javascript" src="../../src/py_ajax.js"></script>
+
 </head>
 
-<body onLoad="brython()">
+<body onLoad="brython(2)">
 <img src="../brython.png">
 <p>
 
@@ -37,7 +50,7 @@ def needle(angle,r1,r2,color="#000000"):
 def set_clock():
     # erase clock
     ctx.beginPath()
-    ctx.fillStyle = "#FFF"
+    ctx.fillStyle = "#F0F"
     ctx.arc(width/2,height/2,ray*0.89,0,2*math.pi)
     ctx.fill()
     
@@ -94,7 +107,7 @@ for i in range(60):
 def show_hours():
     ctx.beginPath()
     ctx.arc(width/2,height/2,ray*0.05,0,2*math.pi)
-    ctx.fillStyle = "#000"
+    ctx.fillStyle = "#0F0"
     ctx.fill()
     for i in range(1,13):
         angle = i*math.pi/6-math.pi/2
@@ -105,10 +118,11 @@ def show_hours():
         ctx.textBaseline = "middle"
         ctx.fillText(i,x3,y3)
     # cell for day
-    ctx.fillStyle = "#000"
+    ctx.fillStyle = "#0F0"
     ctx.fillRect(width*0.65,height*0.47,width*0.1,height*0.06)
-show_hours()
 
+show_hours()
+set_clock()
 </script>
 
 <p>

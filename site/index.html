@@ -5,9 +5,19 @@
 <meta name="keywords" content="Python,Brython">
 <meta name="author" content="Pierre Quentel">
 <meta http-equiv="content-type" content="text/html;charset=iso-8859-1">
-<script src="../src/brython.js"></script>
-<script src="../src/py_VFS.js"></script>
-<script src="../src/py_dom.js"></script>
+<script type="text/javascript" src="../../src/brython_builtins.js"></script>
+<script type="text/javascript" src="../../src/py2js.js"></script>
+<script type="text/javascript" src="../../src/py_utils.js"></script>
+<script type="text/javascript" src="../../src/py_object.js"></script>
+<script type="text/javascript" src="../../src/py_classes.js"></script>
+<script type="text/javascript" src="../../src/js_objects.js"></script>
+<script type="text/javascript" src="../../src/py_import.js"></script>
+
+<script type="text/javascript" src="../../src/py_dict.js"></script>
+<script type="text/javascript" src="../../src/py_list.js"></script>
+<script type="text/javascript" src="../../src/py_string.js"></script>
+<script type="text/javascript" src="../../src/py_dom.js"></script>
+<script type="text/javascript" src="../../src/py_ajax.js"></script>
 
 <script type="text/python3">
 from html import *
@@ -58,7 +68,8 @@ for key in ['home','console','gallery','doc','download','dev','groups']:
         # add lang to href
         href += '?lang=%s' %language
     if key == 'home':
-        link = A(IMG(src="brython_white.png",Class="logo"),href=href)
+        img = IMG(src="brython_white.png",Class="logo")
+        link = A(img,href=href)
         cell = TD(link,Class="logo")
     else:
         link = A(trans_menu['menu_%s'%key][language],href=href,Class="banner")
@@ -73,6 +84,7 @@ if has_req:
     doc["c_%s" %lang].href += "?lang=%s" %lang
     
 def change_lang(sel):
+    print('sel',sel,sel.options)
     new_lang = sel.options[sel.selectedIndex].value
     doc.location.href = 'index.html?lang=%s' %new_lang
 </script>
@@ -88,7 +100,7 @@ options:
          'browser' - nothing is appended to request.  A clients browser is responsible for caching actions.
   pythonpath: a list of additional urls/paths to search for modules
 -->
-<body onload="brython({debug:1, cache:'none'})">
+<body onload="brython({debug:2, cache:'none'})">
 
 <table id="banner" cellpadding=0 cellspacing=0>
 <tr id="banner_row">

@@ -90,7 +90,6 @@ class Selector:
          _matched_nodes=self._doc.get(selector=self._selector)
       else:
          _matched_nodes=[]
-
       return NodeCollection(_matched_nodes)
 
 class NodeCollection:

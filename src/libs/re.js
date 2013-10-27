@@ -21,7 +21,7 @@ $module = {
         var $ns=$MakeArgs('re.search',arguments,['pattern','string'],{},'args','kw')
         var args = $ns['args']
         if(args.length>0){var flags=args[0]}
-        else{var flags = $ns['kw'].get('flags','')}
+        else{var flags = getattr($ns['kw'],'get')('flags','')}
         var jsp = new RegExp(pattern,flags)
         var jsmatch = string.match(jsp)
         if(jsmatch===null){return None}
@@ -52,8 +52,8 @@ $module = {
         var $ns=$MakeArgs('re.search',arguments,['pattern','repl','string'],{},'args','kw')
         for($var in $ns){eval("var "+$var+"=$ns[$var]")}
         var args = $ns['args']
-        var count = $ns['kw'].get('count',0)
-        var flags = $ns['kw'].get('flags','')
+        var count = $DictDict.get($ns['kw'],'count',0)
+        var flags = $DictDict.get($ns['kw'],'flags','')
         if(args.length>0){var count=args[0]}
         if(args.length>1){var flags=args[1]}
         if(typeof repl==="string"){
