@@ -220,7 +220,7 @@ function divmod(x,y) {
        } 
        return [int(Math.ceil(x/y)), x2]
     } 
-    return list([int(Math.floor(x/y)), int(x%y)])
+    return list([int(Math.floor(x/y)), x.__class__.__mod__(x,y)])
 }
 
 function enumerate(iterator){
