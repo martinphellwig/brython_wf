@@ -775,6 +775,19 @@ function $DefCtx(context){
     __BRYTHON__.scope[this.id] = this
     this.locals = []
     context.tree.push(this)
+    
+    this.set_name = function(name){
+        this.name = name
+        // if function is defined inside another function, add the name
+        // to local names
+        var scope = $get_scope(this)
+        if(scope.ntype=='def' || scope.ntype=='generator'){
+            if(scope.context.tree[0].locals.indexOf(name)==-1){
+                scope.context.tree[0].locals.push(name)
+            }
+        }
+    }
+    
     this.toString = function(){return 'def '+this.name+'('+this.tree+')'}
     this.transform = function(node,rank){
         // already transformed ?
@@ -2486,7 +2499,7 @@ function $transition(context,token){
             if(context.name){
                 $_SyntaxError(context,'token '+token+' after '+context)
             }else{
-                context.name = arguments[2]
+                context.set_name(arguments[2])
                 return context
             }
         }else if(token==='('){context.has_args=true;return new $FuncArgs(context)}
