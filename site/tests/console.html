@@ -31,7 +31,7 @@ from html import *
 # detect language
 language = "en" # default
 has_req = False
-lang = doc.query().getfirst("lang")
+lang = doc.query.getfirst("lang")
 if lang and lang in ["en","fr","es","pt"]:
     has_req = True
     language = lang

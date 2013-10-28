@@ -28,7 +28,7 @@ _banner = doc['banner_row']
 #
 # "lang" is the language received in the query string, or None
 # It is used to append a query string to menu links
-lang = doc.query().getvalue('lang',None)
+lang = doc.query.getvalue('lang',None)
 
 for key in ['home','console','gallery','doc','download','dev','groups']:
     href = links[key]
