@@ -138,7 +138,13 @@ $DOMEventDict.__getattribute__ = function(self,attr){
         if(self.target===undefined){return $DOMNode(self.srcElement)}
         else{return $DOMNode(self.target)}
     }
-    return $ObjectDict.__getattribute__(self,attr)
+    var res =  self[attr]
+    if(res!==undefined){
+        if(typeof res=='function'){return function(){return res.apply(self,arguments)}}
+        return res
+    }else{
+        throw AttributeError("object DOMEvent has no attribute '"+attr+"'")
+    }
 }
 
 function $DOMEvent(ev){
@@ -431,8 +437,7 @@ DOMNode.__getattribute__ = function(self,attr){
             return $JS2Py(self.elt[attr])
         }
     }
-    if(attr.substr(0,2)!=='__'){console.log('__ga__ '+attr+' of '+self)}
-    if(self[attr]!==undefined){return self[attr]}
+    if(self.elt[attr]!==undefined){return self.elt[attr]}
     return $ObjectDict.__getattribute__(self,attr)
 }
 
@@ -533,12 +538,11 @@ DOMNode.__setattr__ = function(self,attr,value){
     }else{
         var attr1 = attr.replace('_','-')
         if(DOMNode['set_'+attr1]!==undefined){return DOMNode['set_'+attr1](self,value)}
-        if(self.elt[attr1]!==undefined){self.elt[attr1]=value}
+        if(self.elt[attr1]!==undefined){self.elt[attr1]=value;return}
         var res = self.elt.getAttribute(attr1)
         if(res!==undefined&&res!==null){self.elt.setAttribute(attr1,value)}
         else{
-            console.log('set attr '+attr+' of '+self)
-            self[attr]=value
+            self.elt[attr]=value
         }
     }
 }
