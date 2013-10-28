@@ -787,7 +787,7 @@ DOMNode.set_text = function(self,value){
     self.elt.textContent=str(value)
 }
 
-DOMNode.set_value = function(self,value){self.elt.value = value.toString()}
+DOMNode.set_value = function(self,value){self.elt.value = str(value)}
 
 DOMNode.toString = function(self){
     if(self===undefined){return 'DOMNode'}
