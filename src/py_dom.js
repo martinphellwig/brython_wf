@@ -431,6 +431,8 @@ DOMNode.__getattribute__ = function(self,attr){
             return $JS2Py(self.elt[attr])
         }
     }
+    if(attr.substr(0,2)!=='__'){console.log('__ga__ '+attr+' of '+self)}
+    if(self[attr]!==undefined){return self[attr]}
     return $ObjectDict.__getattribute__(self,attr)
 }
 
@@ -529,12 +531,15 @@ DOMNode.__setattr__ = function(self,attr,value){
             DOMNode.bind(self,attr.substr(2),value)
         }
     }else{
-        attr = attr.replace('_','-')
-        if(DOMNode['set_'+attr]!==undefined){return DOMNode['set_'+attr](self,value)}
-        if(self.elt[attr]!==undefined){self.elt[attr]=value}
-        var res = self.elt.getAttribute(attr)
-        if(res!==undefined&&res!==null){self.elt.setAttribute(attr,value)}
-        else{self[attr]=value}
+        var attr1 = attr.replace('_','-')
+        if(DOMNode['set_'+attr1]!==undefined){return DOMNode['set_'+attr1](self,value)}
+        if(self.elt[attr1]!==undefined){self.elt[attr1]=value}
+        var res = self.elt.getAttribute(attr1)
+        if(res!==undefined&&res!==null){self.elt.setAttribute(attr1,value)}
+        else{
+            console.log('set attr '+attr+' of '+self)
+            self[attr]=value
+        }
     }
 }
 
