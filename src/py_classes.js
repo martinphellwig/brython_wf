@@ -1022,7 +1022,6 @@ function $open(){
             }else if(status!==200){
                 $res = IOError('Could not open file '+file+' : status '+status) 
             }else{
-                console.log('found file '+file)
                 $res = req.responseText
             }
         }
@@ -1854,27 +1853,30 @@ Exception.__name__ = 'Exception'
 Exception.__class__ = $type
 
 __BRYTHON__.exception = function(js_exc){
-    if(js_exc.py_error===true){
+    if(!js_exc.py_error){
         if(__BRYTHON__.debug>0){
-            var module = __BRYTHON__.modules[document.$line_info[1]]
-            if(module && module.context!=undefined){
-                // for list comprehension and the likes, replace
-                // by the line in the enclosing module
-                document.$line_info = module.context
-                var module = document.$line_info[1]
-                var lib_module = module
+            var mod_name = document.$line_info[1]
+            var module = __BRYTHON__.modules[mod_name]
+            if(module){
+                if(module.caller!==undefined){
+                    // for list comprehension and the likes, replace
+                    // by the line in the enclosing module
+                    document.$line_info = module.caller
+                    var module = document.$line_info[1]
+                }
+                var lib_module = mod_name
                 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
                 var line_num = document.$line_info[0]
-                var lines = document.$py_src[module].split('\n')
+                var lines = document.$py_src[mod_name].split('\n')
                 js_exc.info = "module '"+lib_module+"' line "+line_num
                 js_exc.info += '\n'+lines[line_num-1]
             }
         }
         var exc = js_exc
+        exc.__name__ = js_exc.name
+        exc.message += '\n'+js_exc.info
     }else{
-        var msg = js_exc.message
-        var exc = Exception(msg,js_exc)
-        exc.__name__= js_exc.name
+        var exc = js_exc
     }
     __BRYTHON__.exception_stack.push(exc)
     return exc
