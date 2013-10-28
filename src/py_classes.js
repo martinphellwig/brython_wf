@@ -1006,7 +1006,6 @@ function $open(){
     for(var attr in $ns){eval('var '+attr+'=$ns["'+attr+'"]')}
     if(args.length>0){var mode=args[0]}
     if(args.length>1){var encoding=args[1]}
-    console.log('open file '+file)
     if(isinstance(file,JSObject)){return new $OpenFile(file.js,mode,encoding)}
     else if(isinstance(file,str)){
         // read the file content and return an object with file object methods
@@ -1877,6 +1876,7 @@ __BRYTHON__.exception = function(js_exc){
         exc.message += '\n'+js_exc.info
     }else{
         var exc = js_exc
+        exc.message += '\n'+exc.info
     }
     __BRYTHON__.exception_stack.push(exc)
     return exc
