@@ -1,1 +1,23 @@
+This version brings a major change in class implementations in Brython
+
+In the previous version, when a class instance was created, the Javascript object for this instance had attributes made from the class attributes : if the class defined a method foo, the instance has an attribute 'foo'
+
+It made basic attribute lookup fast : instance.foo was found as the attribute 'foo' of the Javascript object. It was more difficult for attributes defined in subclasses of the class. But it made it impossible to reflect any change in the class in already created instances
+
+For instance, a bug that was never reported :
+
+def foo:
+    A = 0
+x = foo()
+foo.A = 1
+print(x.A)
+
+The new version applies the same attribute resolution algorithm as Python : search in the instance dictionary first, then in the class attributes, then in the parent classes, using the Method Resolution Order built from the parent classes using the C3 algorithm
+
+A Python class is represented by 2 Javascript objects :
+- a 'factory' function, used to create instances of the class : it is defined using the class methods __new__ and __init__
+- a class 'dictionary' : a Javascript object whose attributes are the class attributes and methods
+
+The Python code 'obj.x' is translated into 'getattr(obj,'x')'. getattr() resolves attributes using the object's method __getattribute__ first, else __getattr__
+
 - change implementation of query string : attribute doc.query instead of function doc.query()
