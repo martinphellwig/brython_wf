@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131028-223923
+// version 1.1.20131029-204241
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20131028-223923"]
+__BRYTHON__.version_info=[1,1,"20131029-204241"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -2090,7 +2090,7 @@ else if(token==='op'){
 if('+-~'.search(arguments[2])>-1){
 return new $UnaryCtx(new $ExprCtx(C,'unary',false),arguments[2])
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
-}else if(token==='='){$_SyntaxError(C,token)}
+}else if([')','=',','].indexOf(token)>-1){$_SyntaxError(C,token)}
 else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='assert'){
 if(token==='eol'){
@@ -2615,6 +2615,8 @@ return C
 C.expect=','
 var expr=new $AbstractExprCtx(C,false)
 return $transition(expr,token,arguments[2])
+}else if(token==','){
+$_SyntaxError(C,'unexpected comma inside list')
 }
 }else{return $transition(C.parent,token,arguments[2])}
 }
@@ -3683,9 +3685,9 @@ write: function(data){console.log(data)}
 var $type={}
 function $instance_creator(klass){
 return function(){
-var new_func=null
+var new_func=null,init_func=null
 try{
-var new_func=getattr(klass,'__new__')
+new_func=getattr(klass,'__new__')
 }catch(err){$pop_exc()}
 if(new_func!==null){
 var args=[klass]
@@ -3693,12 +3695,14 @@ for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 obj=new_func.apply(null,args)
 }
 try{
-var init_func=getattr(klass,'__init__')
+init_func=getattr(klass,'__init__')
+}catch(err){
+$pop_exc()
+}
+if(init_func!==null){
 var args=[obj]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 init_func.apply(null,args)
-}catch(err){
-$pop_exc()
 }
 return obj
 }
@@ -4443,7 +4447,6 @@ return res
 frozenset.__class__=$factory
 frozenset.$dict=$FrozensetDict
 function getattr(obj,attr,_default){
-if(attr=='query'){console.log('get attr '+attr)}
 if(obj===undefined){console.log('object is undefined !')}
 if(obj.__class__===undefined){
 if(obj[attr]!==undefined){return obj[attr]}
@@ -8212,7 +8215,6 @@ res.__setitem__(header.substr(0,pos),header.substr(pos+1).lstrip())
 return res
 }
 DOMNode.query=function(self){
-console.log('get query ')
 $QueryDict={__class__:$type,__name__:'query'}
 $QueryDict.__contains__=function(self,key){
 return self._keys.indexOf(key)>-1
