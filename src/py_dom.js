@@ -858,7 +858,6 @@ doc.$dict.headers = function(){
 // return query string as an object with methods to access keys and values
 // same interface as cgi.FieldStorage, with getvalue / getlist / getfirst
 DOMNode.query = function(self){
-    console.log('get query ')
     $QueryDict = {__class__:$type,__name__:'query'}
     
     $QueryDict.__contains__ = function(self,key){
