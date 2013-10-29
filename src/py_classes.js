@@ -481,7 +481,6 @@ frozenset.$dict = $FrozensetDict
 
 function getattr(obj,attr,_default){
 
-    if(attr=='query'){console.log('get attr '+attr)}
     if(obj===undefined){console.log('object is undefined !')}
     if(obj.__class__===undefined){
         // for native JS objects used in Python code
