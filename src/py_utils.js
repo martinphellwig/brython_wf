@@ -523,10 +523,10 @@ var $type = {}
 function $instance_creator(klass){
     // return the function to initalise a class instance
     return function(){
-        var new_func=null
+        var new_func=null,init_func=null
         // apply __new__ to initialize the instance
         try{
-            var new_func = getattr(klass,'__new__')
+            new_func = getattr(klass,'__new__')
         }catch(err){$pop_exc()}
         if(new_func!==null){
             var args = [klass]
@@ -534,12 +534,14 @@ function $instance_creator(klass){
             obj = new_func.apply(null,args)
         }
         try{
-            var init_func = getattr(klass,'__init__')
+            init_func = getattr(klass,'__init__')
+        }catch(err){
+            $pop_exc()
+        }
+        if(init_func!==null){
             var args = [obj]
             for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
             init_func.apply(null,args)
-        }catch(err){
-            $pop_exc()
         }
         return obj
     }
