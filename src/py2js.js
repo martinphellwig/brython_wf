@@ -1324,12 +1324,10 @@ function $check_unbound(assigned,scope,varname){
                 delete scope.var2node[varname]
                 break
             }else{
-                console.log('ref before assigned')
                 while(ctx.parent){ctx=ctx.parent}
                 var ctx_node = ctx.node
                 var js = 'throw UnboundLocalError("local variable '+"'"
                 js += varname+"'"+' referenced before assignment")'
-                console.log('ERREUR '+js)
                 new $NodeJSCtx(ctx_node,js)                        
             }
         }
