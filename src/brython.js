@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131029-204241
+// version 1.1.20131030-081725
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20131029-204241"]
+__BRYTHON__.version_info=[1,1,"20131030-081725"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -1209,12 +1209,10 @@ if(ctx==assigned){
 delete scope.var2node[varname]
 break
 }else{
-console.log('ref before assigned')
 while(ctx.parent){ctx=ctx.parent}
 var ctx_node=ctx.node
 var js='throw UnboundLocalError("local variable '+"'"
 js +=varname+"'"+' referenced before assignment")'
-console.log('ERREUR '+js)
 new $NodeJSCtx(ctx_node,js)
 }
 }
@@ -5558,7 +5556,7 @@ Exception=function(msg,js_exc){
 var err=Error()
 err.info=''
 if(msg===undefined){msg='Exception'}
-if(__BRYTHON__.debug && msg.split('\n').length==1){
+if(__BRYTHON__.debug && !msg.info){
 if(js_exc!==undefined){
 for(var attr in js_exc){
 if(attr==='message'){continue}
@@ -5590,7 +5588,7 @@ Exception.__name__='Exception'
 Exception.__class__=$type
 __BRYTHON__.exception=function(js_exc){
 if(!js_exc.py_error){
-if(__BRYTHON__.debug>0){
+if(__BRYTHON__.debug>0 && !js_exc.info){
 var mod_name=document.$line_info[1]
 var module=__BRYTHON__.modules[mod_name]
 if(module){
@@ -5602,16 +5600,16 @@ var lib_module=mod_name
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
 var line_num=document.$line_info[0]
 var lines=document.$py_src[mod_name].split('\n')
-js_exc.info="module '"+lib_module+"' line "+line_num
-js_exc.info +='\n'+lines[line_num-1]
+js_exc.message +="\nmodule '"+lib_module+"' line "+line_num
+js_exc.message +='\n'+lines[line_num-1]
+js_exc.info_in_msg=true
 }
 }
-var exc=js_exc
+var exc=Error()
 exc.__name__=js_exc.name
-exc.message +='\n'+js_exc.info
+exc.message=js_exc.message
 }else{
 var exc=js_exc
-exc.message +='\n'+exc.info
 }
 __BRYTHON__.exception_stack.push(exc)
 return exc
