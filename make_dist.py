@@ -61,7 +61,8 @@ def custom_minify(src):
 now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
 sources = ['brython_builtins','py2js','py_utils','py_object',
-    'py_classes','js_objects','py_import','py_dict','py_list','py_string',
+    'py_builtin_functions','js_objects','py_import',
+    'py_dict','py_list','py_string','py_set',
     'py_ajax','py_dom', 'py_websocket']
 
 abs_path = lambda path:os.path.join(os.getcwd(),'src',path)
