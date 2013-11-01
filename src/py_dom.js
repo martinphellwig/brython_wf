@@ -326,6 +326,7 @@ DOMNode.__class__ = $type
 DOMNode.__mro__ = [DOMNode,object]
 DOMNode.__name__ = 'DOMNode'
 DOMNode.$dict = DOMNode // for isinstance
+DOMNode.$factory = DOMNode
 
 function $DOMNode(elt){ 
     // returns the element, enriched with an attribute $brython_id for 

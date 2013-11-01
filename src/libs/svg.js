@@ -30,7 +30,7 @@ function $SVGTag(tag_name,args){
         for($i=$start;$i<args.length;$i++){
             // keyword arguments
             $arg = args[$i]
-            if(isinstance($arg,$Kw)){
+            if($arg && $arg.__class__===$Kw){
                 if($arg.name.toLowerCase().substr(0,2)=="on"){ // events
                     eval('DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
                 }else if($arg.name.toLowerCase()=="style"){

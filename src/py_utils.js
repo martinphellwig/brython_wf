@@ -13,23 +13,24 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
     // create new list of arguments in case some are packed
     var upargs = []
     for(var i=0;i<$args.length;i++){
-        if($args[i]===null){upargs.push(null)}
-        else if(isinstance($args[i],$ptuple)){
-            for(var j=0;j<$args[i].arg.length;j++){
-                upargs.push($args[i].arg[j])
+        $arg = $args[i]
+        if($arg===null){upargs.push(null)}
+        else if($arg.__class__===$ptupleDict){
+            for(var j=0;j<$arg.arg.length;j++){
+                upargs.push($arg.arg[j])
             }
-        }else if(isinstance($args[i],$pdict)){
-            for(var j=0;j<$args[i].arg.$keys.length;j++){
-                upargs.push($Kw($args[i].arg.$keys[j],$args[i].arg.$values[j]))
+        }else if($arg.__class__===$pdictDict){
+            for(var j=0;j<$arg.arg.$keys.length;j++){
+                upargs.push($Kw($arg.arg.$keys[j],$arg.arg.$values[j]))
             }
         }else{
-            upargs.push($args[i])
+            upargs.push($arg)
         }
     }
     for(var $i=0;$i<upargs.length;$i++){
         $arg=upargs[$i]
         $PyVar=$JS2Py($arg)
-        if(isinstance($arg,$Kw)){ // keyword argument
+        if($arg && $arg.__class__===$Kw){ // keyword argument
             $PyVar = $arg.value
             if($set_vars.indexOf($arg.name)>-1){
                 throw new TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
@@ -500,6 +501,7 @@ function type(name,bases,cl_dict){
 }
 
 $factory = {toString:function(){return '<factory>'}}
+$factory.__mro__ = [$factory]
 
 // escaping double quotes
 var $dq_regexp = new RegExp('"',"g") // to escape double quotes in arguments

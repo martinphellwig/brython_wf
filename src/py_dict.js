@@ -263,15 +263,6 @@ function dict(){
                 res.__setitem__(attr,obj.js[attr])
             }
             return res
-        }else if(isinstance(obj,object)){
-            if(obj.__iter__===undefined){
-                throw TypeError(obj+' is not iterable')
-            }
-            var res = new $DictClass([],[])
-            for(var attr in obj){
-                res.__setitem__(attr,obj[attr])
-            }
-            return res
         }
     }
     var $ns=$MakeArgs('dict',arguments,[],{},'args','kw')
