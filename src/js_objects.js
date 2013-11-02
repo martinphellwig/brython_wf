@@ -1,33 +1,24 @@
 // transforms a Javascript constructor into a Python function
 // that returns instances of the constructor, converted to Python objects
-function JSConstructor(obj){
-    return new $JSConstructor(obj)
-}
-JSConstructor.__class__ = $type
-JSConstructor.__str__ = function(){return "<class 'JSConstructor'>"}
-JSConstructor.toString = JSConstructor.__str__
-
-function $JSConstructor(js){
-    this.js = js
-    this.__class__ = JSConstructor
-    this.__str__ = function(){return "<object 'JSConstructor' wraps "+this.js+">"}
-    this.toString = this.__str__
-}
-
 function $applyToConstructor(constructor, argArray) {
     var args = [null].concat(argArray);
     var factoryFunction = constructor.bind.apply(constructor, args);
     return new factoryFunction();
 }
 
-$JSConstructor.prototype.__call__ = function(){
+$JSConstructorDict = {
+    __class__:$type,
+    __name__:'JSConstructor'
+}
+
+$JSConstructorDict.__call__ = function(self){
     // this.js is a constructor
     // it takes Javascript arguments so we must convert
     // those passed to the Python function
     var args = []
-    for(var i=0;i<arguments.length;i++){
+    for(var i=1;i<arguments.length;i++){
         var arg = arguments[i]
-        if(isinstance(arg,[JSObject,JSConstructor])){
+        if(arg && (arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
             args.push(arg.js)
         }
         else if(isinstance(arg,dict)){
@@ -38,11 +29,23 @@ $JSConstructor.prototype.__call__ = function(){
             args.push(obj)
         }else{args.push(arg)}
     }
-    var res = $applyToConstructor(this.js,args)
+    var res = $applyToConstructor(self.js,args)
     // res is a Javascript object
     return JSObject(res)
 }
 
+$JSConstructorDict.__mro__ = [$JSConstructorDict,$ObjectDict]
+
+function JSConstructor(obj){
+    return {
+        __class__:$JSConstructorDict,
+        js:obj
+    }
+}
+JSConstructor.__class__ = $factory
+JSConstructor.$dict = $JSConstructorDict
+
+// JSObject : wrapper around a native Javascript object
 function $JSObject(js){
     this.js = js
     this.$dict = js
