@@ -21,3 +21,17 @@ A Python class is represented by 2 Javascript objects :
 The Python code 'obj.x' is translated into 'getattr(obj,'x')'. getattr() resolves attributes using the object's method __getattribute__ first, else __getattr__
 
 - change implementation of query string : attribute doc.query instead of function doc.query()
+
+- ajax and websockets are now in modules, not built-in :
+
+import ajax
+req = ajax.ajax()
+
+import websocket
+ws = websocket.websocket()
+
+- issue 142 : isinstance(obj,klass) checks parent classes of obj
+
+- issue 154 : ajax.send() accepts string arguments (supposed to be JSON data)
+
+- issue 155 : JSObject accepts arguments that are themselves instances of JSObject or JSContructor
