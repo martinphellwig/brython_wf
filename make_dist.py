@@ -62,8 +62,7 @@ now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
 sources = ['brython_builtins','py2js','py_utils','py_object',
     'py_builtin_functions','js_objects','py_import',
-    'py_dict','py_list','py_string','py_set',
-    'py_ajax','py_dom', 'py_websocket']
+    'py_dict','py_list','py_string','py_set','py_dom']
 
 abs_path = lambda path:os.path.join(os.getcwd(),'src',path)
 
@@ -121,7 +120,6 @@ if not os.path.exists(dest_dir):
     os.mkdir(dest_dir)
 name = 'Brython_site_mirror-%s' %now
 dest_path = os.path.join(dest_dir,name)
-dist = tarfile.open(dest_path+'.gz',mode='w:gz')
 
 def is_valid(filename):
     if filename.startswith('.'):
@@ -131,6 +129,8 @@ def is_valid(filename):
             return False
     return True
 
+dist_gz = tarfile.open(dest_path+'.gz',mode='w:gz')
+
 for path in os.listdir(os.getcwd()):
     if not is_valid(path):
         continue
@@ -138,10 +138,33 @@ for path in os.listdir(os.getcwd()):
     if os.path.isdir(abs_path) and path=="dist":
         continue
     print('add',path)
-    dist.add(os.path.join(os.getcwd(),path),
+    dist_gz.add(os.path.join(os.getcwd(),path),
         arcname=os.path.join(name,path))
 
-dist.close()
+dist_gz.close()
+
+dist_zip = zipfile.ZipFile(dest_path+'.zip',mode='w',compression=zipfile.ZIP_DEFLATED)
+
+for dirpath,dirnames,filenames in os.walk(os.getcwd()):
+    print(dirpath)
+    for path in filenames:
+        if not is_valid(path):
+            continue
+        abs_path = os.path.join(os.getcwd(),dirpath,path)
+        print('add',path)
+        dist_zip.write(os.path.join(dirpath,path),
+            arcname=os.path.join(name,dirpath[len(os.getcwd())+1:],path))
+    if 'dist' in dirnames:
+        dirnames.remove('dist')
+    if '.hg' in dirnames:
+        dirnames.remove('.hg')
+    for dirname in dirnames:
+        if dirname == 'dist':
+            continue
+
+dist_zip.close()
+
+print('end of mirror')
 
 # minimum package
 name = 'Brython-%s' %now
