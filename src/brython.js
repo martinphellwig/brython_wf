@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131102-075307
+// version 1.1.20131102-083708
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20131102-075307"]
+__BRYTHON__.version_info=[1,1,"20131102-083708"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -5492,8 +5492,15 @@ return obj['get_'+attr]
 }else if(obj.js[attr]!==undefined){
 if(typeof obj.js[attr]=='function'){
 var res=function(){
-var args=[]
-for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+var args=[],arg
+for(var i=0;i<arguments.length;i++){
+arg=arguments[i]
+if(arg &&(arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
+args.push(arg.js)
+}else{
+args.push(arg)
+}
+}
 var res=obj.js[attr].apply(obj.js,args)
 if(typeof res=='object'){return JSObject(res)}
 else if(res===undefined){return None}
@@ -5520,9 +5527,14 @@ break
 if(res!==undefined){
 if(typeof res==='function'){
 return function(){
-var args=[obj]
+var args=[obj],arg
 for(var i=0;i<arguments.length;i++){
-args.push(arguments[i])
+arg=arguments[i]
+if(arg &&(arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
+args.push(arg.js)
+}else{
+args.push(arg)
+}
 }
 return res.apply(obj,args)
 }
@@ -7435,15 +7447,18 @@ $AjaxDict.open=function(self,method,url,async){
 self.$xmlhttp.open(method,url,async)
 }
 $AjaxDict.send=function(self,params){
-if(!params || params.$keys.length==0){self.$xmlhttp.send();return}
-if(!isinstance(params,dict)){
-throw TypeError("send() argument must be dictonary, not '"+str(params.__class__)+"'")
-}
 var res=''
+if(!params || params.$keys.length==0){self.$xmlhttp.send();return}
+else if(isinstance(params,str)){
+res=params
+}else if(isinstance(params,dict)){
 for(i=0;i<params.$keys.length;i++){
 res +=encodeURIComponent(str(params.$keys[i]))+'='+encodeURIComponent(str(params.$values[i]))+'&'
 }
 res=res.substr(0,res.length-1)
+}else{
+throw TypeError("send() argument must be string or dictonary, not '"+str(params.__class__)+"'")
+}
 self.$xmlhttp.send(res)
 }
 $AjaxDict.set_header=function(self,key,value){

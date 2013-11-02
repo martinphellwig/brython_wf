@@ -78,8 +78,15 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
     }else if(obj.js[attr] !== undefined){
         if(typeof obj.js[attr]=='function'){
             var res = function(){
-                var args = []
-                for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+                var args = [],arg
+                for(var i=0;i<arguments.length;i++){
+                    arg = arguments[i]
+                    if(arg && (arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
+                        args.push(arg.js)
+                    }else{
+                        args.push(arg)
+                    }
+                }
                 var res = obj.js[attr].apply(obj.js,args)
                 if(typeof res == 'object'){return JSObject(res)}
                 else if(res===undefined){return None}
@@ -112,9 +119,14 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
             // res is the function in one of parent classes
             // return a function that takes obj as first argument
             return function(){
-                var args = [obj]
+                var args = [obj],arg
                 for(var i=0;i<arguments.length;i++){
-                    args.push(arguments[i])
+                    arg = arguments[i]
+                    if(arg && (arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
+                        args.push(arg.js)
+                    }else{
+                        args.push(arg)
+                    }
                 }
                 return res.apply(obj,args)
             }
