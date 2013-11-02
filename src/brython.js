@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131101-232431
+// version 1.1.20131102-075307
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20131101-232431"]
+__BRYTHON__.version_info=[1,1,"20131102-075307"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -5427,28 +5427,20 @@ var $warnings=['Warning', 'DeprecationWarning', 'PendingDeprecationWarning',
 'BytesWarning', 'ResourceWarning']
 for(var $i=0;$i<$warnings.length;$i++){$make_exc($warnings[$i])}
 
-function JSConstructor(obj){
-return new $JSConstructor(obj)
-}
-JSConstructor.__class__=$type
-JSConstructor.__str__=function(){return "<class 'JSConstructor'>"}
-JSConstructor.toString=JSConstructor.__str__
-function $JSConstructor(js){
-this.js=js
-this.__class__=JSConstructor
-this.__str__=function(){return "<object 'JSConstructor' wraps "+this.js+">"}
-this.toString=this.__str__
-}
 function $applyToConstructor(constructor, argArray){
 var args=[null].concat(argArray)
 var factoryFunction=constructor.bind.apply(constructor, args)
 return new factoryFunction()
 }
-$JSConstructor.prototype.__call__=function(){
+$JSConstructorDict={
+__class__:$type,
+__name__:'JSConstructor'
+}
+$JSConstructorDict.__call__=function(self){
 var args=[]
-for(var i=0;i<arguments.length;i++){
+for(var i=1;i<arguments.length;i++){
 var arg=arguments[i]
-if(isinstance(arg,[JSObject,JSConstructor])){
+if(arg &&(arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
 args.push(arg.js)
 }
 else if(isinstance(arg,dict)){
@@ -5459,9 +5451,18 @@ obj[arg.$keys[j]]=arg.$values[j]
 args.push(obj)
 }else{args.push(arg)}
 }
-var res=$applyToConstructor(this.js,args)
+var res=$applyToConstructor(self.js,args)
 return JSObject(res)
 }
+$JSConstructorDict.__mro__=[$JSConstructorDict,$ObjectDict]
+function JSConstructor(obj){
+return{
+__class__:$JSConstructorDict,
+js:obj
+}
+}
+JSConstructor.__class__=$factory
+JSConstructor.$dict=$JSConstructorDict
 function $JSObject(js){
 this.js=js
 this.$dict=js
