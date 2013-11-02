@@ -22,7 +22,6 @@ $ObjectDict.__ge__ = $ObjectNI('__ge__','>=')
 $ObjectDict.__getattribute__ = function(obj,attr){
     //if(attr=='$$delete'){console.log('object getattr '+attr+' of obj '+obj)}
     if(attr==='__class__'){
-        console.log('object getattribute '+attr+' obj '+obj)
         return obj.__class__.$factory
     }
     var res = obj[attr],args=[]

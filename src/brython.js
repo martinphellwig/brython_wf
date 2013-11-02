@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131102-083708
+// version 1.1.20131102-160403
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20131102-083708"]
+__BRYTHON__.version_info=[1,1,"20131102-160403"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -3936,7 +3936,6 @@ return self===other
 $ObjectDict.__ge__=$ObjectNI('__ge__','>=')
 $ObjectDict.__getattribute__=function(obj,attr){
 if(attr==='__class__'){
-console.log('object getattribute '+attr+' obj '+obj)
 return obj.__class__.$factory
 }
 var res=obj[attr],args=[]
@@ -4444,16 +4443,26 @@ return res
 frozenset.__class__=$factory
 frozenset.$dict=$FrozensetDict
 function getattr(obj,attr,_default){
-if(obj===undefined){console.log('object is undefined !')}
-if(obj.__class__===undefined){
+var klass=obj.__class__
+if(klass===undefined){
 if(obj[attr]!==undefined){return obj[attr]}
 else if(_default!==undefined){return _default}
 else{throw AttributeError('object has no attribute '+attr)}
 }
 if(attr=='__class__'){
-return obj.__class__.$factory
+return klass.$factory
 }
 if(attr==='__call__' &&(typeof obj=='function')){return obj}
+if(klass===$IntDict || klass===$ListDict){
+if(klass[attr]===undefined){
+throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
+}
+return function(){
+var args=[obj]
+for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+return klass[attr].apply(null,args)
+}
+}
 if(obj.__class__===$ModuleDict){
 var res=obj[attr]
 if(res!==undefined){return res}
@@ -6473,7 +6482,6 @@ $list_iterator.$factory=$list_iterator
 str=function(){
 $StringDict={}
 $StringDict.__name__='str'
-$StringDict.toString=function(){return '$StringDict'}
 $StringDict.__add__=function(self,other){
 if(!(typeof other==="string")){
 try{return getattr(other,'__radd__')(self)}
@@ -6770,6 +6778,7 @@ $StringDict.__str__=function(self){
 if(self===undefined){return "<class 'str'>"}
 else{return self.toString()}
 }
+$StringDict.toString=$StringDict.__str__
 var $comp_func=function(self,other){
 if(typeof other !=="string"){throw TypeError(
 "unorderable types: 'str' > "+other.__class__+"()")}
@@ -7173,7 +7182,8 @@ return Array(width - self.length +1).join('0')
 }
 String.prototype.__class__=$StringDict
 String.prototype.$dict={}
-for(var $attr in $StringDict){String.prototype.$dict[$attr]=$StringDict[$attr]}
+for(var $attr in $StringDict){
+}
 function str(arg){
 if(arg===undefined){return '<undefined>'}
 else{
@@ -7408,98 +7418,6 @@ throw TypeError("set expected at most 1 argument, got "+arguments.length)
 set.__class__=$factory
 set.$dict=$SetDict
 $SetDict.$factory=set
-
-$XMLHttpDict={
-__class__:$type,
-__name__:'XMLHttp'
-}
-$XMLHttpDict.__getattribute__=function(self,attr){
-if(['headers','text','xml'].indexOf(attr)>-1){
-return $XMLHttpDict[attr](self)
-}
-return $ObjectDict.__getattribute__(self,attr)
-}
-$XMLHttpDict.__mro__=[$XMLHttpDict,$ObjectDict]
-$XMLHttpDict.__repr__=function(self){return '<object XMLHttp>'}
-$XMLHttpDict.__str__=$XMLHttpDict.toString=$XMLHttpDict.__repr__
-$XMLHttpDict.text=function(self){return self.responseText}
-$XMLHttpDict.xml=function(self){return $DomObject(self.responseXML)}
-$XMLHttpDict.headers=function(self){
-return list(self.getAllResponseHeaders().split('\n'))
-}
-$XMLHttpDict.get_header=function(){
-var reqobj=self
-return function(header){return reqobj.getResponseHeader(header)}
-}
-$AjaxDict={
-__class__:$type,
-__name__:'ajax'
-}
-$AjaxDict.__mro__=[$AjaxDict,$ObjectDict]
-$AjaxDict.__repr__=function(self){
-return '<object Ajax>'
-}
-$AjaxDict.__str__=$AjaxDict.toString=$AjaxDict.__repr__
-$AjaxDict.bind=function(self,evt,func){
-self['on_'+evt]=func
-}
-$AjaxDict.open=function(self,method,url,async){
-self.$xmlhttp.open(method,url,async)
-}
-$AjaxDict.send=function(self,params){
-var res=''
-if(!params || params.$keys.length==0){self.$xmlhttp.send();return}
-else if(isinstance(params,str)){
-res=params
-}else if(isinstance(params,dict)){
-for(i=0;i<params.$keys.length;i++){
-res +=encodeURIComponent(str(params.$keys[i]))+'='+encodeURIComponent(str(params.$values[i]))+'&'
-}
-res=res.substr(0,res.length-1)
-}else{
-throw TypeError("send() argument must be string or dictonary, not '"+str(params.__class__)+"'")
-}
-self.$xmlhttp.send(res)
-}
-$AjaxDict.set_header=function(self,key,value){
-self.$xmlhttp.setRequestHeader(key,value)
-}
-$AjaxDict.set_timeout=function(self,seconds,func){
-self.$xmlhttp.$requestTimer=setTimeout(
-function(){self.$xmlhttp.abort();func()}, 
-seconds*1000);
-}
-function ajax(){
-var res={
-__class__:$AjaxDict
-}
-if(window.XMLHttpRequest){
-var $xmlhttp=new XMLHttpRequest()
-}else{
-var $xmlhttp=new ActiveXObject("Microsoft.XMLHTTP")
-}
-$xmlhttp.$requestTimer=null
-$xmlhttp.__class__=$XMLHttpDict
-$xmlhttp.onreadystatechange=function(){
-var state=this.readyState
-var req=this.$ajax
-var timer=this.$requestTimer
-var obj=this
-if(state===0 && 'on_uninitialized' in req){req.on_uninitialized(obj)}
-else if(state===1 && 'on_loading' in req){req.on_loading(obj)}
-else if(state===2 && 'on_loaded' in req){req.on_loaded(obj)}
-else if(state===3 && 'on_interactive' in req){req.on_interactive(obj)}
-else if(state===4 && 'on_complete' in req){
-if(timer !==null){window.clearTimeout(timer)}
-req.on_complete(obj)
-}
-}
-$xmlhttp.$ajax=res
-res.$xmlhttp=$xmlhttp
-return res
-}
-ajax.__class__=$factory
-ajax.$dict=$AjaxDict
 
 function $getMouseOffset(target, ev){
 ev=ev || window.event
@@ -8425,48 +8343,4 @@ for(var i=0;i<msg.__len__();i++){temp[msg.$keys[i]]=msg.$values[i]}
 msg=temp
 }
 return window.postMessage(msg,targetOrigin)
-}
-
-function Websocket(){}
-Websocket.__class__=$type
-Websocket.__str__=function(){return "<class 'Websocket'>"}
-function $WebSocketClass(host){
-var has_ws=(function(){try{var x=window.WebSocket;return x!==undefined}
-catch(err){return false}})()
-if(!has_ws){
-throw NotImplementedError('WebSocket are not supported by the browser')
-}
-else{
-var $socket=new WebSocket(host)
-$socket.onopen=function(){
-var req=this.$websocket
-if('on_open' in req){req.on_open()}
-}
-$socket.onclose=function(close){
-var req=this.$websocket
-if('on_close' in req){req.on_close(JSObject(close))}
-}
-$socket.onerror=function(){
-var req=this.$websocket
-if('on_error' in req){req.on_error()}
-}
-$socket.onmessage=function(message){
-var req=this.$websocket
-if('on_message' in req){req.on_message(JSObject(message))}
-}
-}
-$socket.$websocket=this
-this.__class__=Websocket
-this.__getattr__=function(attr){return $getattr(this,attr)}
-this.__setattr__=function(attr,value){setattr(this,attr,value)}
-this.__str__=function(){return "<object 'Websocket'>"}
-this.send=function(data){
-$socket.send(data)
-}
-this.close=function(){
-$socket.close()
-}
-}
-function websocket(host){
-return new $WebSocketClass(host)
 }

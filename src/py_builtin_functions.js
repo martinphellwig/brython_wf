@@ -477,8 +477,8 @@ frozenset.$dict = $FrozensetDict
 
 function getattr(obj,attr,_default){
 
-    if(obj===undefined){console.log('object is undefined !')}
-    if(obj.__class__===undefined){
+    var klass = obj.__class__
+    if(klass===undefined){
         // for native JS objects used in Python code
         if(obj[attr]!==undefined){return obj[attr]}
         else if(_default!==undefined){return _default}
@@ -488,11 +488,22 @@ function getattr(obj,attr,_default){
     // attribute __class__ is set for all Python objects
     if(attr=='__class__'){
         // return the factory function
-        return obj.__class__.$factory
+        return klass.$factory
     }
     
     // __call__ on a function returns the function itself
     if(attr==='__call__' && (typeof obj=='function')){return obj}
+    
+    if(klass===$IntDict || klass===$ListDict){
+        if(klass[attr]===undefined){
+            throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
+        }
+        return function(){
+            var args = [obj]
+            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+            return klass[attr].apply(null,args)
+        }
+    }
     
     // module attribute are returned unmodified
     if(obj.__class__===$ModuleDict){

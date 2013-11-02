@@ -3,7 +3,7 @@ str = function(){
 $StringDict = {}
 
 $StringDict.__name__ = 'str'
-$StringDict.toString = function(){return '$StringDict'}
+//$StringDict.toString = function(){return '$StringDict'}
 
 // add Brython attributes to Javascript String
 
@@ -338,6 +338,7 @@ $StringDict.__str__ = function(self){
     if(self===undefined){return "<class 'str'>"}
     else{return self.toString()}
 }
+$StringDict.toString = $StringDict.__str__
 
 // generate comparison methods
 var $comp_func = function(self,other){
@@ -835,7 +836,10 @@ $StringDict.zfill = function(self, width) {
 // set String.prototype attributes
 String.prototype.__class__ = $StringDict
 String.prototype.$dict = {}
-for(var $attr in $StringDict){String.prototype.$dict[$attr]=$StringDict[$attr]}
+for(var $attr in $StringDict){
+
+    //String.prototype.$dict[$attr]=$StringDict[$attr]
+}
 
 function str(arg){
     if(arg===undefined){return '<undefined>'}
