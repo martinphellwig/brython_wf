@@ -74,7 +74,10 @@ $SetDict.__hash__ = function(self) {throw TypeError("unhashable type: 'set'");}
 
 $SetDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
 
-$SetDict.__iter__ = function(self){return new $iterator_getitem(self.items)}
+$SetDict.__iter__ = function(self){
+    var items=self.items,klass=$set_iterator
+    return $iterator(items,klass)
+}
 
 $SetDict.__le__ = function(self,other){
     for(var i=0;i<self.items.length;i++){
@@ -243,3 +246,5 @@ function set(){
 set.__class__ = $factory
 set.$dict = $SetDict
 $SetDict.$factory = set
+
+$set_iterator = $iterator_class('set iterator')
