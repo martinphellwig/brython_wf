@@ -91,23 +91,8 @@ $DictDict.__hash__ = function(self) {throw TypeError("unhashable type: 'dict'");
 $DictDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
 
 $DictDict.__iter__ = function(self){
-    // iterator on dictionary keys
-    var res = {
-        __class__:$dict_iterator,
-        __iter__:function(){return res},
-        __len__:function(){return self.$keys.length},
-        __name__:'dict iterator',
-        __next__:function(){
-            res.counter++
-            if(res.counter<self.$keys.length){return self.$keys[res.counter]}
-            else{throw StopIteration("StopIteration")}
-        },
-        __repr__:function(){return "<dict iterator object>"},
-        __str__:function(){return "<dict iterator object>"},
-        toString:function(){return "dict iterator"},
-        counter:-1
-    }
-    return res
+    var items=self.$keys,klass=$dict_iterator
+    return $iterator(items,klass)
 }
 
 $DictDict.__len__ = function(self) {return self.$keys.length}
@@ -290,11 +275,4 @@ dict.__class__ = $factory
 dict.$dict = $DictDict
 $DictDict.$factory = dict
 
-$dict_iterator = {
-    __class__:$type,
-    __name__:'list iterator',
-    __repr__:function(){return "<class 'dict_iterator'>"},
-    __str__:function(){return "<class 'dict_iterator'>"},
-    toString:function(){return 'dict iterator'}
-}
-$dict_iterator.__mro__ = [$dict_iterator,$ObjectDict]
+$dict_iterator = $iterator_class('dict iterator')

@@ -853,24 +853,32 @@ function iter(obj){
     }
 }
 
-function $iterator_getitem(obj){
-    this.counter = -1
-    this.__getattr__ = function(attr){
-        if(attr==='__next__'){return $bind(this[attr],this)}
+function $iterator(items,klass){
+    var res = {
+        __class__:klass,
+        __iter__:function(){return res},
+        __len__:function(){return items.length},
+        __next__:function(){
+            res.counter++
+            if(res.counter<items.length){return items[res.counter]}
+            else{throw StopIteration("StopIteration")}
+        },
+        __repr__:function(){return "<"+klass.__name__+" object>"},
+        counter:-1
     }
-    this.__iter__ = function(rank){return $iterator_getitem(obj)}
-    this.__len__ = function(){return obj.length}
-    this.__name__ = 'iterator'
-    this.__next__ = function(){
-        this.counter++
-        if(this.counter<getattr(obj,'__len__')()){
-            return getattr(obj,'__getitem__')(this.counter)
-        }
-        else{throw StopIteration("")}
+    res.__str__ = res.toString = res.__repr__
+    return res
+}
+
+function $iterator_class(name){
+    var res = {
+        __class__:$type,
+        __name__:name
     }
-    if (obj.__class__ !== undefined) {
-       this.__class__=obj.__class__
-    }
+    res.__str__ = res.toString = res.__repr__
+    res.__mro__ = [res,$ObjectDict]
+    res.$factory = res
+    return res
 }
 
 function len(obj){
@@ -1408,34 +1416,13 @@ function $tuple(arg){return arg} // used for parenthesed expressions
 $TupleDict = {__class__:$type,__name__:'tuple'}
 
 $TupleDict.__iter__ = function(self){
-    var res = {
-        __class__:$tuple_iterator,
-        __getattr__:function(attr){return res[attr]},
-        __iter__:function(){return res},
-        __len__:function(){return self.length},
-        __name__:'tuple iterator',
-        __next__:function(){
-            res.counter++
-            if(res.counter<self.length){return self[res.counter]}
-            else{throw StopIteration("StopIteration")}
-        },
-        __repr__:function(){return "<tuple iterator object>"},
-        __str__:function(){return "<tuple iterator object>"},
-        counter:-1
-    }
-    return res
+    return $iterator(self,$tuple_iterator)
 }
 $TupleDict.__new__ = function(arg){return tuple(arg)}
 // other attributes are defined in py_list.js, once list is defined
 
-$tuple_iterator = {
-    __class__:$type,
-    __getattr__:function(){return $tuple_iterator[attr]},
-    __name__:'tuple iterator',
-    __repr__:function(){return "<class 'tuple_iterator'>"},
-    __str__:function(){return "<class 'tuple_iterator'>"}
-}
-$tuple_iterator.__mro__=[$tuple_iterator,$type]
+$tuple_iterator = $iterator_class('tuple_iterator')
+
 // type() is implemented in py_utils
 
 function tuple(){

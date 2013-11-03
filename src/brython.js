@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131103-212711
+// version 1.1.20131103-220344
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -1902,7 +1902,6 @@ return res+'$'+this.func_name+'.$iter.push('+$to_js(this.tree)+')'
 var $loop_num=0
 var $iter_num=0 
 function $add_line_num(node,rank){
-console.log('add line num')
 if(node.type==='module'){
 var i=0
 while(i<node.children.length){
@@ -6526,21 +6525,8 @@ return hash
 }
 $StringDict.__in__=function(self,item){return getattr(item,'__contains__')(self.valueOf())}
 $StringDict.__iter__=function(self){
-var res={
-__class__:$str_iterator,
-__iter__:function(){return res},
-__len__:function(){return self.length},
-__name__:'string iterator',
-__next__:function(){
-res.counter++
-if(res.counter<self.length){return self.charAt(res.counter)}
-else{throw StopIteration("StopIteration")}
-},
-__repr__:function(){return "<str_iterator object>"},
-__str__:function(){return "<str_iterator object>"},
-counter:-1
-}
-return res
+var items=self.split('')
+return $iterator(items,$str_iterator)
 }
 $StringDict.__len__=function(self){return self.length}
 $StringDict.__mod__=function(self,args){
@@ -7072,10 +7058,14 @@ var a=l.splice(0, maxsplit)
 var b=l.splice(maxsplit-1, l.length)
 a.push(b.join(sep))
 }
-return a
+return list(a)
 }
 }
-$StringDict.splitlines=function(self){return $StringDict.split(self,'\n')}
+$StringDict.splitlines=function(self){
+var res=$StringDict.split(self,'\n')
+console.log('res '+res)
+return res
+}
 $StringDict.startswith=function(self){
 $ns=$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
 {'start':null,'end':null},null,null)
@@ -7153,13 +7143,7 @@ str.$dict=$StringDict
 $StringDict.$factory=str
 return str
 }()
-$str_iterator={
-__class__:$type,
-__getattr__:function(){return $str_iterator[attr]},
-__repr__:function(){return "<class 'str_iterator'>"},
-__str__:function(){return "<class 'str_iterator'>"}
-}
-$str_iterator.__mro__=[$str_iterator,$ObjectDict]
+$str_iterator=$iterator_class('str_iterator')
 
 $SetDict={
 __class__:$type,

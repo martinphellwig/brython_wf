@@ -174,22 +174,8 @@ $ListDict.__init__ = function(self,arg){
 }
 
 $ListDict.__iter__ = function(self){
-    var res = {
-        __class__:$list_iterator,
-        __iter__:function(){return res},
-        __len__:function(){return self.length},
-        __name__:'list iterator',
-        __next__:function(){
-            res.counter++
-            if(res.counter<self.length){return self[res.counter]}
-            else{throw StopIteration("StopIteration")}
-        },
-        __repr__:function(){return "<list iterator object>"},
-        __str__:function(){return "<list iterator object>"},
-        toString:function(){return "<list iterator object>"},
-        counter:-1
-    }
-    return res
+    var items=self,klass=$list_iterator
+    return $iterator(items,klass)
 }
 
 $ListDict.__le__ = function(self,other){
@@ -460,13 +446,4 @@ $TupleDict.__name__ = 'tuple'
 
 return list
 }()
-$list_iterator = {
-    __class__:$type,
-    __getattr__:function(){return $list_iterator[attr]},
-    __name__:'list_iterator',
-    __repr__:function(){return "<class 'list_iterator'>"},
-    __str__:function(){return "<class 'list_iterator'>"},
-    toString:function(){return 'list iterator'}
-}
-$list_iterator.__mro__ = [$list_iterator,$ObjectDict]
-$list_iterator.$factory = $list_iterator
+$list_iterator = $iterator_class('list_iterator')

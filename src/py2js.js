@@ -2130,7 +2130,6 @@ var $loop_num = 0
 var $iter_num = 0 
 
 function $add_line_num(node,rank){
-    console.log('add line num')
     if(node.type==='module'){
         var i=0
         while(i<node.children.length){
