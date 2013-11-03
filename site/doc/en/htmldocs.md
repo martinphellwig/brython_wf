@@ -34,7 +34,8 @@ You can also create an object without argument, then build it up:
 - to add attributes, use the classic Python syntax : `object.attribute = value`
 Example :    
 >    link = A()
->    link <= B('connexion')    link.href = 'http://example.com'
+>    link <= B('connexion')
+>    link.href = 'http://example.com'
 
 You can also create multiple elements at the same level by using the plus (+) sign :
 
@@ -52,7 +53,7 @@ It is important to note that the creation of an instance of a class involves cre
 
 >    link = A('Python', href='http://www.python.org')
 >    doc <= 'Official Python Website: ' + link
->    doc <= P( + 'I repeat: the site is ' + link
+>    doc <= P() + 'I repeat: the site is ' + link
 
 the link will only show in the second line. One solution is to clone the original object :
 

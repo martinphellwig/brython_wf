@@ -34,7 +34,7 @@ Les instances de `JSObject` sont utilisées comme des objets Python ordinaires ;
 
 ### Utilisation d'objets Javascript
 
-Un document HTML peut utiliser des scripts ou des librairies Javascript, et des scripts ou des librairies Python. Brython ne peut pas exploiter directement les objets Javascript : par exemple les attributs d'un objet sont récupérés par la méthode _\_\_getattr\_\__ de l'objet, qui n'existe pas pour les objets Javascript
+Un document HTML peut utiliser des scripts ou des librairies Javascript, et des scripts ou des librairies Python. Brython ne peut pas exploiter directement les objets Javascript : par exemple la recherche des attributs d'un objet utilise l'attribut _\_\_class\_\__ de l'objet, qui n'existe pas pour les objets Javascript
 
 Pour les utiliser dans un script Python, il faut les transformer explicitement par la fonction intégrée `JSObject()`
 
