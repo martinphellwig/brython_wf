@@ -25,18 +25,24 @@ except StopIteration:
 x = {'a':1,'b':2}
 z = iter(x)
 
-assert next(z)=='a'
-assert next(z)=='b'
+# in python 3 these are not always in the order of a then b
+i=next(z)
+assert i in ('a', 'b')
+j=next(z)
+assert j in ('a', 'b') and j != i
 
 x = {'a',1}
 z = iter(x)
 
-assert next(z)=='a'
-assert next(z)==1
+#from python3 1 comes first, then 'a' (but lets not assume order)
+i=next(z)
+assert i in (1, 'a')
+j=next(z)
+assert j in (1, 'a') and j != i
 
 x = {'a':1}.items()
 y = iter(x)
-assert next(y)==['a',1]
+assert next(y)==('a',1)   #python3 returns this as a tuple and not a list
 try:
     next(y)
 except StopIteration:
