@@ -26,6 +26,7 @@ def process(filename):
   _flag=False
   for _mydir in ("libs", "Lib"):
     for _root, _dir, _files in os.walk(os.path.join(_main_root, _mydir)):
+        if _root.endswith('lib_migration'): continue  #skip these modules
         for _file in _files:
             if _file.endswith('.py'):
                # we only want to include a .py file if a compiled javascript
