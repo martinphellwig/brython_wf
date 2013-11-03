@@ -171,10 +171,10 @@ $DictDict.get = function(self,key,_default){
     }
 }
 
+$dict_itemsDict = $iterator_class('dict_itemiterator')
+
 $DictDict.items = function(self){
-    var res = $ListDict.__iter__(zip(self.$keys,self.$values))
-    res.__repr__ = res.__str__ = function(){return 'dict_items'+str(zip(self.$keys,self.$values))}
-    return res
+    return $iterator(zip(self.$keys,self.$values),$dict_itemsDict)
 }
 
 $DictDict.keys = function(self){
