@@ -31,7 +31,7 @@ class dialog(BaseUI.BaseUI):
       self._title_button.role="button"  
 
       def dialog_close(e):
-          _obj=JSObject(e.target.get_parent().get_parent())
+          _obj=JSObject(e.target.elt.parentElement.parentElement)
           _obj.style.display='none'
 
       self._title_button.addEventListener('click', dialog_close, False)
