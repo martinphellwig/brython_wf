@@ -74,13 +74,13 @@ $SetDict.__hash__ = function(self) {throw TypeError("unhashable type: 'set'");}
 
 $SetDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
 
-$SetDict.__iter__ = function(self){return new $iterator_getitem(self.items)}
+$SetDict.__iter__ = function(self){return iter(self.items)}
 
 $SetDict.__le__ = function(self,other){
     for(var i=0;i<self.items.length;i++){
         if(!getattr(other,'__contains__')(self.items[i])){return false}
     }
-    return true    
+    return true
 }
 
 $SetDict.__len__ = function(self){return int(self.items.length)}
