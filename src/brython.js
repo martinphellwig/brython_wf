@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131103-173348
+// version 1.1.20131103-224611
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -244,6 +244,9 @@ C.parent.tree.pop()
 C.parent.tree.push(this)
 this.parent=C.parent
 this.tree=[C]
+if(C.type=='expr' && C.tree[0].type=='call'){
+$_SyntaxError(C,["can't assign to function call "])
+}
 if(C.type=='list_or_tuple'){
 for(var i=0;i<C.tree.length;i++){
 var assigned=C.tree[i].tree[0]
@@ -252,6 +255,8 @@ var scope=$get_scope(this)
 if(scope.ntype=='def' || scope.ntype=='generator'){
 $check_unbound(assigned,scope,assigned.value)
 }
+}else if(assigned.type=='call'){
+$_SyntaxError(C,["can't assign to function call"])
 }
 }
 }else if(C.type=='assign'){
@@ -422,7 +427,8 @@ if(locals.indexOf(left.to_js())===-1){
 locals.push(left.to_js())
 }
 var res='var '+left.to_js()+'='
-res +='$locals["'+left.to_js()+'"]='+right.to_js()
+res +='$locals["'+left.to_js()+'"]='
+res +=right.to_js()
 return res
 }
 }else if(scope.ntype==='class'){
@@ -4742,24 +4748,31 @@ $pop_exc()
 throw TypeError("'"+obj.__class__.__name__+"' object is not iterable")
 }
 }
-function $iterator_getitem(obj){
-this.counter=-1
-this.__getattr__=function(attr){
-if(attr==='__next__'){return $bind(this[attr],this)}
+function $iterator(items,klass){
+var res={
+__class__:klass,
+__iter__:function(){return res},
+__len__:function(){return items.length},
+__next__:function(){
+res.counter++
+if(res.counter<items.length){return items[res.counter]}
+else{throw StopIteration("StopIteration")}
+},
+__repr__:function(){return "<"+klass.__name__+" object>"},
+counter:-1
 }
-this.__iter__=function(rank){return $iterator_getitem(obj)}
-this.__len__=function(){return obj.length}
-this.__name__='iterator'
-this.__next__=function(){
-this.counter++
-if(this.counter<getattr(obj,'__len__')()){
-return getattr(obj,'__getitem__')(this.counter)
+res.__str__=res.toString=res.__repr__
+return res
 }
-else{throw StopIteration("")}
+function $iterator_class(name){
+var res={
+__class__:$type,
+__name__:name
 }
-if(obj.__class__ !==undefined){
-this.__class__=obj.__class__
-}
+res.__str__=res.toString=res.__repr__
+res.__mro__=[res,$ObjectDict]
+res.$factory=res
+return res
 }
 function len(obj){
 try{return getattr(obj,'__len__')()}
@@ -5216,32 +5229,10 @@ return res
 function $tuple(arg){return arg}
 $TupleDict={__class__:$type,__name__:'tuple'}
 $TupleDict.__iter__=function(self){
-var res={
-__class__:$tuple_iterator,
-__getattr__:function(attr){return res[attr]},
-__iter__:function(){return res},
-__len__:function(){return self.length},
-__name__:'tuple iterator',
-__next__:function(){
-res.counter++
-if(res.counter<self.length){return self[res.counter]}
-else{throw StopIteration("StopIteration")}
-},
-__repr__:function(){return "<tuple iterator object>"},
-__str__:function(){return "<tuple iterator object>"},
-counter:-1
-}
-return res
+return $iterator(self,$tuple_iterator)
 }
 $TupleDict.__new__=function(arg){return tuple(arg)}
-$tuple_iterator={
-__class__:$type,
-__getattr__:function(){return $tuple_iterator[attr]},
-__name__:'tuple iterator',
-__repr__:function(){return "<class 'tuple_iterator'>"},
-__str__:function(){return "<class 'tuple_iterator'>"}
-}
-$tuple_iterator.__mro__=[$tuple_iterator,$type]
+$tuple_iterator=$iterator_class('tuple_iterator')
 function tuple(){
 var obj=list.apply(null,arguments)
 obj.__class__=$TupleDict
@@ -5277,7 +5268,7 @@ else{throw err}
 }
 }
 if(!flag){return res}
-res.push(line)
+res.push(tuple(line))
 rank++
 }
 }
@@ -5892,22 +5883,8 @@ throw KeyError(str(arg))
 $DictDict.__hash__=function(self){throw TypeError("unhashable type: 'dict'");}
 $DictDict.__in__=function(self,item){return getattr(item,'__contains__')(self)}
 $DictDict.__iter__=function(self){
-var res={
-__class__:$dict_iterator,
-__iter__:function(){return res},
-__len__:function(){return self.$keys.length},
-__name__:'dict iterator',
-__next__:function(){
-res.counter++
-if(res.counter<self.$keys.length){return self.$keys[res.counter]}
-else{throw StopIteration("StopIteration")}
-},
-__repr__:function(){return "<dict iterator object>"},
-__str__:function(){return "<dict iterator object>"},
-toString:function(){return "dict iterator"},
-counter:-1
-}
-return res
+var items=self.$keys,klass=$dict_iterator
+return $iterator(items,klass)
 }
 $DictDict.__len__=function(self){return self.$keys.length}
 $DictDict.__mro__=[$DictDict,$ObjectDict]
@@ -5969,10 +5946,9 @@ if(_default!==undefined){return _default}
 else{return None}
 }
 }
+$dict_itemsDict=$iterator_class('dict_itemiterator')
 $DictDict.items=function(self){
-var res=$ListDict.__iter__(zip(self.$keys,self.$values))
-res.__repr__=res.__str__=function(){return 'dict_items'+str(zip(self.$keys,self.$values))}
-return res
+return $iterator(zip(self.$keys,self.$values),$dict_itemsDict)
 }
 $DictDict.keys=function(self){
 var res=$ListDict.__iter__(self.$keys)
@@ -6063,14 +6039,7 @@ return kw
 dict.__class__=$factory
 dict.$dict=$DictDict
 $DictDict.$factory=dict
-$dict_iterator={
-__class__:$type,
-__name__:'list iterator',
-__repr__:function(){return "<class 'dict_iterator'>"},
-__str__:function(){return "<class 'dict_iterator'>"},
-toString:function(){return 'dict iterator'}
-}
-$dict_iterator.__mro__=[$dict_iterator,$ObjectDict]
+$dict_iterator=$iterator_class('dict iterator')
 list=function(){
 function $list(){
 var args=new Array()
@@ -6227,22 +6196,8 @@ catch(err){if(err.__name__=='StopIteration'){$pop_exc()};break}
 }
 }
 $ListDict.__iter__=function(self){
-var res={
-__class__:$list_iterator,
-__iter__:function(){return res},
-__len__:function(){return self.length},
-__name__:'list iterator',
-__next__:function(){
-res.counter++
-if(res.counter<self.length){return self[res.counter]}
-else{throw StopIteration("StopIteration")}
-},
-__repr__:function(){return "<list iterator object>"},
-__str__:function(){return "<list iterator object>"},
-toString:function(){return "<list iterator object>"},
-counter:-1
-}
-return res
+var items=self,klass=$list_iterator
+return $iterator(items,klass)
 }
 $ListDict.__le__=function(self,other){
 return !$ListDict.__gt__(self,other)
@@ -6469,16 +6424,7 @@ $TupleDict.__mro__=[$TupleDict,$ObjectDict]
 $TupleDict.__name__='tuple'
 return list
 }()
-$list_iterator={
-__class__:$type,
-__getattr__:function(){return $list_iterator[attr]},
-__name__:'list_iterator',
-__repr__:function(){return "<class 'list_iterator'>"},
-__str__:function(){return "<class 'list_iterator'>"},
-toString:function(){return 'list iterator'}
-}
-$list_iterator.__mro__=[$list_iterator,$ObjectDict]
-$list_iterator.$factory=$list_iterator
+$list_iterator=$iterator_class('list_iterator')
 str=function(){
 $StringDict={}
 $StringDict.__name__='str'
@@ -6572,21 +6518,8 @@ return hash
 }
 $StringDict.__in__=function(self,item){return getattr(item,'__contains__')(self.valueOf())}
 $StringDict.__iter__=function(self){
-var res={
-__class__:$str_iterator,
-__iter__:function(){return res},
-__len__:function(){return self.length},
-__name__:'string iterator',
-__next__:function(){
-res.counter++
-if(res.counter<self.length){return self.charAt(res.counter)}
-else{throw StopIteration("StopIteration")}
-},
-__repr__:function(){return "<str_iterator object>"},
-__str__:function(){return "<str_iterator object>"},
-counter:-1
-}
-return res
+var items=self.split('')
+return $iterator(items,$str_iterator)
 }
 $StringDict.__len__=function(self){return self.length}
 $StringDict.__mod__=function(self,args){
@@ -7121,7 +7054,9 @@ a.push(b.join(sep))
 return a
 }
 }
-$StringDict.splitlines=function(self){return $StringDict.split(self,'\n')}
+$StringDict.splitlines=function(self){
+return $StringDict.split(self,'\n')
+}
 $StringDict.startswith=function(self){
 $ns=$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
 {'start':null,'end':null},null,null)
@@ -7199,13 +7134,7 @@ str.$dict=$StringDict
 $StringDict.$factory=str
 return str
 }()
-$str_iterator={
-__class__:$type,
-__getattr__:function(){return $str_iterator[attr]},
-__repr__:function(){return "<class 'str_iterator'>"},
-__str__:function(){return "<class 'str_iterator'>"}
-}
-$str_iterator.__mro__=[$str_iterator,$ObjectDict]
+$str_iterator=$iterator_class('str_iterator')
 
 $SetDict={
 __class__:$type,
@@ -7271,7 +7200,10 @@ return !$SetDict.__le__(self,other)
 }
 $SetDict.__hash__=function(self){throw TypeError("unhashable type: 'set'");}
 $SetDict.__in__=function(self,item){return getattr(item,'__contains__')(self)}
-$SetDict.__iter__=function(self){return new $iterator_getitem(self.items)}
+$SetDict.__iter__=function(self){
+var items=self.items,klass=$set_iterator
+return $iterator(items,klass)
+}
 $SetDict.__le__=function(self,other){
 for(var i=0;i<self.items.length;i++){
 if(!getattr(other,'__contains__')(self.items[i])){return false}
@@ -7418,6 +7350,7 @@ throw TypeError("set expected at most 1 argument, got "+arguments.length)
 set.__class__=$factory
 set.$dict=$SetDict
 $SetDict.$factory=set
+$set_iterator=$iterator_class('set iterator')
 
 function $getMouseOffset(target, ev){
 ev=ev || window.event

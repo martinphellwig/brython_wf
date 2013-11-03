@@ -110,21 +110,8 @@ $StringDict.__hash__ = function(self) {
 $StringDict.__in__ = function(self,item){return getattr(item,'__contains__')(self.valueOf())}
 
 $StringDict.__iter__ = function(self){
-    var res = {
-        __class__:$str_iterator,
-        __iter__:function(){return res},
-        __len__:function(){return self.length},
-        __name__:'string iterator',
-        __next__:function(){
-            res.counter++
-            if(res.counter<self.length){return self.charAt(res.counter)}
-            else{throw StopIteration("StopIteration")}
-        },
-        __repr__:function(){return "<str_iterator object>"},
-        __str__:function(){return "<str_iterator object>"},
-        counter:-1
-    }
-    return res
+    var items = self.split('') // list of all characters in string
+    return $iterator(items,$str_iterator)
 }
 
 $StringDict.__len__ = function(self){return self.length}
@@ -751,11 +738,13 @@ $StringDict.split = function(self){
             var b=l.splice(maxsplit-1, l.length)
             a.push(b.join(sep))
         }
-        return a;
+        return a
     }
 }
 
-$StringDict.splitlines = function(self){return $StringDict.split(self,'\n')}
+$StringDict.splitlines = function(self){
+    return $StringDict.split(self,'\n')
+}
 
 $StringDict.startswith = function(self){
     // Return True if string starts with the prefix, otherwise return False. 
@@ -857,10 +846,4 @@ $StringDict.$factory = str
 
 return str
 }()
-$str_iterator = {
-    __class__:$type,
-    __getattr__:function(){return $str_iterator[attr]},
-    __repr__:function(){return "<class 'str_iterator'>"},
-    __str__:function(){return "<class 'str_iterator'>"}
-}
-$str_iterator.__mro__ = [$str_iterator,$ObjectDict]
+$str_iterator = $iterator_class('str_iterator')
