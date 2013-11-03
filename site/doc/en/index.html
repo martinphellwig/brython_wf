@@ -13,31 +13,19 @@
 import markdown
 import time
 
-target = None
-
-class Loader:
-
-    def __init__(self,url):
-        self.url = url
-    
-    def load(self,target):
-        self.target = target
-        req = ajax()
-        req.on_complete = self.fill
-        req.open('GET',self.url,False)
-        req.send()
-
-    def fill(self,req):
-        if req.status == 200:
-            mk,scripts = markdown.mark(req.text)
-            doc[self.target].html = mk
-            for script in scripts:
-                exec(script,globals())
-
 def load(url,target):
-    Loader(url+'?foo=%s' %time.time()).load(target)
+    # fake query string to bypass browser cache
+    qs = '?foo=%s' %time.time()
+    try:
+        mk,scripts = markdown.mark(open(url+qs).read())
+    except IOError:
+        doc[target].html = "Page %s not found" %url
+        return False
+    doc[target].html = mk
+    for script in scripts:
+        exec(script,globals())
     return False
-
+    
 language = "en"
 </script>
 
