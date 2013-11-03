@@ -210,7 +210,12 @@ function $AssignCtx(context){
     context.parent.tree.push(this)
     this.parent = context.parent
     this.tree = [context]
-
+    
+    
+    if(context.type=='expr' && context.tree[0].type=='call'){
+        $_SyntaxError(context,["can't assign to function call "])
+    }
+    
     // An assignment in a function creates a local variable. If it was
     // referenced before, replace the statement where it was defined by an
     // UnboundLocalError
@@ -222,6 +227,8 @@ function $AssignCtx(context){
                 if(scope.ntype=='def' || scope.ntype=='generator'){
                     $check_unbound(assigned,scope,assigned.value)
                 }
+            }else if(assigned.type=='call'){
+                $_SyntaxError(context,["can't assign to function call"])
             }
         }
     }else if(context.type=='assign'){
@@ -404,7 +411,11 @@ function $AssignCtx(context){
                 // assignment in a function : depends if variable is local
                 // or global
                 if(scope.globals && scope.globals.indexOf(left.value)>-1){
-                    return left.to_js()+'=$globals["'+left.to_js()+'"]='+right.to_js()
+                    if(left.type==='expr'){
+                        return left.to_js()+'=$globals["'+left.to_js()+'"]='+right.to_js()
+                    }else{
+                        return left.to_js()+'='+right.to_js()
+                    }
                 }else{ // local to scope : prepend 'var'
                     var scope_id = scope.context.tree[0].id
                     var locals = __BRYTHON__.scope[scope_id].locals
@@ -412,7 +423,10 @@ function $AssignCtx(context){
                         locals.push(left.to_js())
                     }
                     var res = 'var '+left.to_js()+'='
-                    res += '$locals["'+left.to_js()+'"]='+right.to_js()
+                    if(left.type=='expr'){
+                        res += '$locals["'+left.to_js()+'"]='
+                    }
+                    res += right.to_js()
                     return res
                 }
             }else if(scope.ntype==='class'){
@@ -2116,6 +2130,7 @@ var $loop_num = 0
 var $iter_num = 0 
 
 function $add_line_num(node,rank){
+    console.log('add line num')
     if(node.type==='module'){
         var i=0
         while(i<node.children.length){
