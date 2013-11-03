@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131103-220344
+// version 1.1.20131103-224611
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -419,11 +419,7 @@ res +='='+right.to_js()
 return res
 }else if(scope.ntype==='def'||scope.ntype==="generator"){
 if(scope.globals && scope.globals.indexOf(left.value)>-1){
-if(left.type==='expr'){
 return left.to_js()+'=$globals["'+left.to_js()+'"]='+right.to_js()
-}else{
-return left.to_js()+'='+right.to_js()
-}
 }else{
 var scope_id=scope.C.tree[0].id
 var locals=__BRYTHON__.scope[scope_id].locals
@@ -431,9 +427,7 @@ if(locals.indexOf(left.to_js())===-1){
 locals.push(left.to_js())
 }
 var res='var '+left.to_js()+'='
-if(left.type=='expr'){
 res +='$locals["'+left.to_js()+'"]='
-}
 res +=right.to_js()
 return res
 }
@@ -5274,7 +5268,7 @@ else{throw err}
 }
 }
 if(!flag){return res}
-res.push(line)
+res.push(tuple(line))
 rank++
 }
 }
@@ -5952,10 +5946,9 @@ if(_default!==undefined){return _default}
 else{return None}
 }
 }
+$dict_itemsDict=$iterator_class('dict_itemiterator')
 $DictDict.items=function(self){
-var res=$ListDict.__iter__(zip(self.$keys,self.$values))
-res.__repr__=res.__str__=function(){return 'dict_items'+str(zip(self.$keys,self.$values))}
-return res
+return $iterator(zip(self.$keys,self.$values),$dict_itemsDict)
 }
 $DictDict.keys=function(self){
 var res=$ListDict.__iter__(self.$keys)
@@ -7058,13 +7051,11 @@ var a=l.splice(0, maxsplit)
 var b=l.splice(maxsplit-1, l.length)
 a.push(b.join(sep))
 }
-return list(a)
+return a
 }
 }
 $StringDict.splitlines=function(self){
-var res=$StringDict.split(self,'\n')
-console.log('res '+res)
-return res
+return $StringDict.split(self,'\n')
 }
 $StringDict.startswith=function(self){
 $ns=$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
