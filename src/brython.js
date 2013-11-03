@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131102-160403
+// version 1.1.20131103-093123
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,1,"20131102-160403"]
+__BRYTHON__.version_info=[1,1,"20131103-093123"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -890,7 +890,7 @@ js +='delete '+expr.to_js()+'};'
 if(scope.ntype==='module'){
 js+='delete $globals["'+expr.to_js()+'"]'
 }else if(scope.ntype==="def"||scope.ntype==="generator"){
-if(scope.globals.indexOf(expr.to_js())>-1){
+if(scope.globals && scope.globals.indexOf(expr.to_js())>-1){
 js+='delete $globals["'+expr.to_js()+'"]'
 }else{
 js+='delete $locals["'+expr.to_js()+'"]'
