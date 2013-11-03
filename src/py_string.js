@@ -738,14 +738,12 @@ $StringDict.split = function(self){
             var b=l.splice(maxsplit-1, l.length)
             a.push(b.join(sep))
         }
-        return list(a)
+        return a
     }
 }
 
 $StringDict.splitlines = function(self){
-    var res = $StringDict.split(self,'\n')
-    console.log('res '+res)
-    return res
+    return $StringDict.split(self,'\n')
 }
 
 $StringDict.startswith = function(self){

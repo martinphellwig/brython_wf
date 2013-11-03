@@ -411,11 +411,7 @@ function $AssignCtx(context){
                 // assignment in a function : depends if variable is local
                 // or global
                 if(scope.globals && scope.globals.indexOf(left.value)>-1){
-                    if(left.type==='expr'){
-                        return left.to_js()+'=$globals["'+left.to_js()+'"]='+right.to_js()
-                    }else{
-                        return left.to_js()+'='+right.to_js()
-                    }
+                    return left.to_js()+'=$globals["'+left.to_js()+'"]='+right.to_js()
                 }else{ // local to scope : prepend 'var'
                     var scope_id = scope.context.tree[0].id
                     var locals = __BRYTHON__.scope[scope_id].locals
@@ -423,9 +419,7 @@ function $AssignCtx(context){
                         locals.push(left.to_js())
                     }
                     var res = 'var '+left.to_js()+'='
-                    if(left.type=='expr'){
-                        res += '$locals["'+left.to_js()+'"]='
-                    }
+                    res += '$locals["'+left.to_js()+'"]='
                     res += right.to_js()
                     return res
                 }

@@ -1464,7 +1464,7 @@ function zip(){
             }
         }
         if(!flag){return res}
-        res.push(line)
+        res.push(tuple(line))
         rank++
     }
 }
