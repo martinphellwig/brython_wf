@@ -958,7 +958,7 @@ function $DelCtx(context){
                 if(scope.ntype==='module'){
                     js+='delete $globals["'+expr.to_js()+'"]'
                 }else if(scope.ntype==="def"||scope.ntype==="generator"){
-                    if(scope.globals.indexOf(expr.to_js())>-1){
+                    if(scope.globals && scope.globals.indexOf(expr.to_js())>-1){
                         // global variable
                         js+='delete $globals["'+expr.to_js()+'"]'
                     }else{ // local variable
