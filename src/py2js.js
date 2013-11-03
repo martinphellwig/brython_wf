@@ -210,7 +210,12 @@ function $AssignCtx(context){
     context.parent.tree.push(this)
     this.parent = context.parent
     this.tree = [context]
-
+    
+    
+    if(context.type=='expr' && context.tree[0].type=='call'){
+        $_SyntaxError(context,["can't assign to function call "])
+    }
+    
     // An assignment in a function creates a local variable. If it was
     // referenced before, replace the statement where it was defined by an
     // UnboundLocalError
@@ -222,6 +227,8 @@ function $AssignCtx(context){
                 if(scope.ntype=='def' || scope.ntype=='generator'){
                     $check_unbound(assigned,scope,assigned.value)
                 }
+            }else if(assigned.type=='call'){
+                $_SyntaxError(context,["can't assign to function call"])
             }
         }
     }else if(context.type=='assign'){
@@ -412,7 +419,8 @@ function $AssignCtx(context){
                         locals.push(left.to_js())
                     }
                     var res = 'var '+left.to_js()+'='
-                    res += '$locals["'+left.to_js()+'"]='+right.to_js()
+                    res += '$locals["'+left.to_js()+'"]='
+                    res += right.to_js()
                     return res
                 }
             }else if(scope.ntype==='class'){

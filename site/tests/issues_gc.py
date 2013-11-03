@@ -264,7 +264,7 @@ matrix = [
 ]
 
 transposed = zip(*matrix)
-assert transposed[0]==[1,5,9]
+assert transposed[0]==(1,5,9)
 
 # issue 54
 x=[1,2]
