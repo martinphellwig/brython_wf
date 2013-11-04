@@ -184,6 +184,11 @@ $JSObjectDict.__setattr__ = function(self,attr,value){
 
 function JSObject(obj){
     if(obj===null){return new $JSObject(obj)}
+    if(obj.__class__===$ListDict){
+        // JS arrays not created by list() must be wrapped
+        if(obj.__brython__){return obj}
+        else{return new $JSObject(obj)}
+    }
     if(obj.__class__!==undefined && (typeof obj!=='function')){return obj}
     return new $JSObject(obj)
 }
