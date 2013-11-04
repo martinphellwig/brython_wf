@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131104-204740
+// version 1.1.20131104-225347
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -5270,6 +5270,10 @@ self.js[attr]=value
 }
 function JSObject(obj){
 if(obj===null){return new $JSObject(obj)}
+if(obj.__class__===$ListDict){
+if(obj.__brython__){return obj}
+else{return new $JSObject(obj)}
+}
 if(obj.__class__!==undefined &&(typeof obj!=='function')){return obj}
 return new $JSObject(obj)
 }
@@ -7207,7 +7211,7 @@ $SetDict.__le__=function(self,other){
 for(var i=0;i<self.items.length;i++){
 if(!getattr(other,'__contains__')(self.items[i])){return false}
 }
-return true 
+return true
 }
 $SetDict.__len__=function(self){return int(self.items.length)}
 $SetDict.__lt__=function(self,other){
