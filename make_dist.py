@@ -62,7 +62,7 @@ now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
 sources = ['brython_builtins','py2js','py_utils','py_object',
     'py_builtin_functions','js_objects','py_import',
-    'py_dict','py_list','py_string','py_set','py_dom']
+    'py_float','py_int','py_dict','py_list','py_string','py_set','py_dom']
 
 abs_path = lambda path:os.path.join(os.getcwd(),'src',path)
 
