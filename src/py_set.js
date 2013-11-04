@@ -83,7 +83,7 @@ $SetDict.__le__ = function(self,other){
     for(var i=0;i<self.items.length;i++){
         if(!getattr(other,'__contains__')(self.items[i])){return false}
     }
-    return true    
+    return true
 }
 
 $SetDict.__len__ = function(self){return int(self.items.length)}
