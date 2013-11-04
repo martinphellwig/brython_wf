@@ -325,7 +325,7 @@ function getattr(obj,attr,_default){
             return klass[attr].apply(null,args)
         }
     }
-    
+
     // module attribute are returned unmodified
     if(obj.__class__===$ModuleDict){
         var res = obj[attr]
