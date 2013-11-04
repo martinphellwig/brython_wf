@@ -90,9 +90,10 @@ $DictDict.__hash__ = function(self) {throw TypeError("unhashable type: 'dict'");
 
 $DictDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
 
+$dict_iterator = $iterator_class('dict iterator')
+
 $DictDict.__iter__ = function(self){
-    var items=self.$keys,klass=$dict_iterator
-    return $iterator(items,klass)
+    return $iterator(self.$keys,$dict_iterator)
 }
 
 $DictDict.__len__ = function(self) {return self.$keys.length}
@@ -177,10 +178,10 @@ $DictDict.items = function(self){
     return $iterator(zip(self.$keys,self.$values),$dict_itemsDict)
 }
 
+$dict_keysDict = $iterator_class('dict_keys')
+
 $DictDict.keys = function(self){
-    var res = $ListDict.__iter__(self.$keys)
-    res.__repr__ = res.__str__ = function(){return 'dict_keys'+str(self.$keys)}
-    return res
+    return $iterator(self.$keys,$dict_keysDict)
 }
 
 $DictDict.pop = function(self,key,_default){
@@ -230,10 +231,10 @@ $DictDict.update = function(self){
         
 }
 
+$dict_valuesDict = $iterator_class('dict_values')
+
 $DictDict.values = function(self){
-    var res = $ListDict.__iter__(self.$values)
-    res.__repr__ = res.__str__ = function(){return 'dict_values'+str(self.$values)}
-    return res
+    return $iterator(self.$values,$dict_valuesDict)
 }
 
 function dict(){
@@ -274,5 +275,3 @@ function dict(){
 dict.__class__ = $factory
 dict.$dict = $DictDict
 $DictDict.$factory = dict
-
-$dict_iterator = $iterator_class('dict iterator')
