@@ -35,3 +35,8 @@ ws = websocket.websocket()
 - issue 154 : ajax.send() accepts string arguments (supposed to be JSON data)
 
 - issue 155 : JSObject accepts arguments that are themselves instances of JSObject or JSContructor
+
+- split py_classes into files for classes (py_int, py_float, py_dict, py_set) and py_builtin_functions
+
+- use the same base functions $iterator and $iterator_class for iterators on lists, tuples, dicts, sets, dict keys, values and items, etc
+
