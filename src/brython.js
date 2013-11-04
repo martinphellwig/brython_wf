@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131103-224611
+// version 1.1.20131104-204740
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -4289,153 +4289,6 @@ __str__:function(){return "<filter object>"}
 }
 return obj
 }
-$FloatDict={}
-$FloatDict.__bool__=function(self){return bool(self.value)}
-$FloatDict.__class__=$type
-$FloatDict.__eq__=function(self,other){
-if(other===undefined){
-return self===float
-}
-if(isinstance(other,int)){return self.value==other}
-else if(isinstance(other,float)){return self.value==other.value}
-else{return self.valueOf()===other}
-}
-$FloatDict.__floordiv__=function(self,other){
-if(isinstance(other,int)){
-if(other===0){throw ZeroDivisionError('division by zero')}
-else{return float(Math.floor(self.value/other))}
-}else if(isinstance(other,float)){
-if(!other.value){throw ZeroDivisionError('division by zero')}
-else{return float(Math.floor(self.value/other.value))}
-}else{throw TypeError(
-"unsupported operand type(s) for //: 'float' and '"+other.__class__+"'")
-}
-}
-$FloatDict.__hash__=function(){
-frexp=function(re){
-var ex=Math.floor(Math.log(re)/ Math.log(2))+ 1
-var frac=re / Math.pow(2, ex)
-return[frac, ex]
-}
-if(this.value===Infinity || this.value===-Infinity){
-if(this.value < 0.0)return -271828
-return 314159
-}else if(isNaN(this.value)){
-return 0
-}
-var r=frexp(this.value)
-r[0]*=Math.pow(2,31)
-hipart=int(r[0])
-r[0]=(r[0]- hipart)* Math.pow(2,31)
-var x=hipart + int(r[0])+(r[1]<< 15)
-return x & 0xFFFFFFFF
-}
-$FloatDict.__in__=function(self,item){return item.__contains__(self)}
-$FloatDict.__mod__=function(self,other){
-if(isinstance(other,int)){
-return float((self.value%other+other)%other)
-}
-else if(isinstance(other,float)){
-return float(((self.value%other.value)+other.value)%other.value)
-}else if(isinstance(other,bool)){
-var bool_value=0;
-if(other.valueOf())bool_value=1
-return float((self.value%bool_value+bool_value)%bool_value)
-}else{throw TypeError(
-"unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
-}
-}
-$FloatDict.__mro__=[$FloatDict,$ObjectDict]
-$FloatDict.__name__='float'
-$FloatDict.__ne__=function(self,other){return !$FloatDict.__eq__(self,other)}
-$FloatDict.__neg__=function(self,other){return float(-self.value)}
-$FloatDict.__new__=function(cls,arg){return float(arg)}
-$FloatDict.__not_in__=function(self,item){return !(getattr(item,'__contains__')(self))}
-$FloatDict.__repr__=$FloatDict.__str__=function(self){
-if(self===float){return "<class 'float'>"}
-var res=self.value+'' 
-if(res.indexOf('.')==-1){res+='.0'}
-return str(res)
-}
-$FloatDict.__truediv__=function(self,other){
-if(isinstance(other,int)){
-if(other===0){throw ZeroDivisionError('division by zero')}
-else{return float(self.value/other)}
-}else if(isinstance(other,float)){
-if(!other.value){throw ZeroDivisionError('division by zero')}
-else{return float(self.value/other.value)}
-}else{throw TypeError(
-"unsupported operand type(s) for //: 'float' and '"+other.__class__+"'")
-}
-}
-var $op_func=function(self,other){
-if(isinstance(other,int)){return float(self.value-other)}
-else if(isinstance(other,float)){return float(self.value-other.value)}
-else if(isinstance(other,bool)){
-var bool_value=0;
-if(other.valueOf())bool_value=1
-return float(self.value-bool_value)}
-else{throw TypeError(
-"unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
-}
-}
-$op_func +='' 
-var $ops={'+':'add','-':'sub','*':'mul'}
-for($op in $ops){
-eval('$FloatDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
-}
-$FloatDict.__pow__=function(self,other){
-if(isinstance(other,int)){return float(Math.pow(self,other))}
-else if(isinstance(other,float)){return float(Math.pow(self.value,other.value))}
-else{throw TypeError(
-"unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
-}
-}
-var $comp_func=function(self,other){
-if(isinstance(other,int)){return self.value > other.valueOf()}
-else if(isinstance(other,float)){return self.value > other.value}
-else{throw TypeError(
-"unorderable types: "+self.__class__+'() > '+other.__class__+"()")
-}
-}
-$comp_func +='' 
-var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
-for($op in $comps){
-eval("$FloatDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
-}
-var $notimplemented=function(self,other){
-throw TypeError(
-"unsupported operand types for OPERATOR: '"+self.__class__+"' and '"+other.__class__+"'")
-}
-$notimplemented +='' 
-for($op in $operators){
-if(['+=','-=','*=','/=','%='].indexOf($op)>-1)continue
-var $opfunc='__'+$operators[$op]+'__'
-if(!($opfunc in $FloatDict)){
-eval('$FloatDict.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
-}
-}
-function $FloatClass(value){
-this.value=value
-this.__class__=$FloatDict
-this.toString=function(){return this.value}
-this.valueOf=function(){return value}
-}
-float=function(value){
-if(value===undefined){return new $FloatClass(0.0)}
-if(typeof value=="number" ||(typeof value=="string" && !isNaN(value))){
-var res=new $FloatClass(parseFloat(value))
-return res
-}
-if(isinstance(value,float))return value
-if(value=='inf')return new $FloatClass(Infinity)
-if(value=='-inf')return new $FloatClass(-Infinity)
-if(typeof value=='string' && value.toLowerCase()=='nan')return new $FloatClass(Number.NaN)
-throw ValueError("Could not convert to float(): '"+str(value)+"'")
-}
-float.__class__=$factory
-float.$dict=$FloatDict
-$FloatDict.$factory=float
 $FrozensetDict={__class__:$type,
 __name__:'frozenset',
 }
@@ -4544,174 +4397,6 @@ return null
 function input(src){
 return prompt(src)
 }
-$IntDict={__class__:$type,
-__name__:'int',
-toString:function(){return '$IntDict'}
-}
-$IntDict.from_bytes=function(x, byteorder){
-var len=x.length
-var num=x.charCodeAt(len - 1)
-if(type.signed &&(num >=128)){
-num=num - 256
-}
-for(var i=(len - 2);i >=0;i--){
-num=256 * num + x.charCodeAt(i)
-}
-return num
-}
-$IntDict.__and__=function(self,other){return self & other}
-$IntDict.__bool__=function(self){return new Boolean(self.valueOf())}
-$IntDict.__class__=$type
-$IntDict.__eq__=function(self,other){
-if(other===undefined){
-return self===int
-}
-if(isinstance(other,int)){return self.valueOf()==other.valueOf()}
-else if(isinstance(other,float)){return self.valueOf()==other.value}
-else{return self.valueOf()===other}
-}
-$IntDict.__floordiv__=function(self,other){
-if(isinstance(other,int)){
-if(other==0){throw ZeroDivisionError('division by zero')}
-else{return Math.floor(self/other)}
-}else if(isinstance(other,float)){
-if(!other.value){throw ZeroDivisionError('division by zero')}
-else{return float(Math.floor(self/other.value))}
-}else{$UnsupportedOpType("//","int",other.__class__)}
-}
-$IntDict.__hash__=function(self){return self.valueOf()}
-$IntDict.__in__=function(self,item){
-return getattr(item,'__contains__')(self)
-}
-$IntDict.__ior__=function(self,other){return self | other}
-$IntDict.__init__=function(self,value){
-self.toString=function(){return '$'+value+'$'}
-self.valueOf=function(){return value}
-}
-$IntDict.__int__=function(self){return self}
-$IntDict.__invert__=function(self){return ~self}
-$IntDict.__lshift__=function(self,other){return self << other}
-$IntDict.__mod__=function(self,other){
-if(isinstance(other,int)){
-return(self%other+other)%other
-}
-else if(isinstance(other,float)){
-return((self%other)+other)%other
-}else if(isinstance(other,bool)){
-var bool_value=0;
-if(other.valueOf())bool_value=1
-return(self%bool_value+bool_value)%bool_value
-}else{throw TypeError(
-"unsupported operand type(s) for -: "+self+" (int) and '"+other.__class__+"'")
-}
-}
-$IntDict.__mro__=[$IntDict,$ObjectDict]
-$IntDict.__mul__=function(self,other){
-var val=self.valueOf()
-if(isinstance(other,int)){return self*other}
-else if(isinstance(other,float)){return float(self*other.value)}
-else if(isinstance(other,bool)){
-var bool_value=0
-if(other.valueOf())bool_value=1
-return self*bool_value}
-else if(typeof other==="string"){
-var res=''
-for(var i=0;i<val;i++){res+=other}
-return res
-}else if(isinstance(other,[list,tuple])){
-var res=[]
-var $temp=other.slice(0,other.length)
-for(var i=0;i<val;i++){res=res.concat($temp)}
-if(isinstance(other,tuple)){res=tuple(res)}
-return res
-}else{$UnsupportedOpType("*",int,other)}
-}
-$IntDict.__name__='int'
-$IntDict.__ne__=function(self,other){return !$IntDict.__eq__(self,other)}
-$IntDict.__neg__=function(self){return -self}
-$IntDict.__new__=function(cls,value){
-return{__class__:cls}
-}
-$IntDict.__not_in__=function(self,item){
-res=getattr(item,'__contains__')(self)
-return !res
-}
-$IntDict.__or__=function(self,other){return self | other}
-$IntDict.__pow__=function(self,other){
-if(isinstance(other, int)){return int(Math.pow(self.valueOf(),other.valueOf()))}
-else if(isinstance(other, float)){return float(Math.pow(self.valueOf(), other.valueOf()))}
-else{$UnsupportedOpType("**",int,other.__class__)}
-}
-$IntDict.__repr__=function(self){
-if(self===int){return "<class 'int'>"}
-return self.toString()
-}
-$IntDict.__rshift__=function(self,other){return self >> other}
-$IntDict.__setattr__=function(self,attr,value){throw AttributeError(
-"'int' object has no attribute "+attr+"'")}
-$IntDict.__str__=$IntDict.__repr__
-$IntDict.__truediv__=function(self,other){
-if(isinstance(other,int)){
-if(other==0){throw ZeroDivisionError('division by zero')}
-else{return float(self/other)}
-}else if(isinstance(other,float)){
-if(!other.value){throw ZeroDivisionError('division by zero')}
-else{return float(self/other.value)}
-}else{$UnsupportedOpType("//","int",other.__class__)}
-}
-$IntDict.__xor__=function(self,other){return self ^ other}
-var $op_func=function(self,other){
-if(isinstance(other,int)){
-var res=self.valueOf()-other.valueOf()
-if(isinstance(res,int)){return res}
-else{return float(res)}
-}
-else if(isinstance(other,float)){return float(self.valueOf()-other.value)}
-else if(isinstance(other,bool)){
-var bool_value=0
-if(other.valueOf())bool_value=1
-return self.valueOf()-bool_value}
-else{throw TypeError(
-"unsupported operand type(s) for -: "+self.valueOf()+" and '"+str(other.__class__)+"'")
-}
-}
-$op_func +='' 
-var $ops={'+':'add','-':'sub'}
-for($op in $ops){
-eval('$IntDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
-}
-var $comp_func=function(self,other){
-if(isinstance(other,int)){return self.valueOf()> other.valueOf()}
-else if(isinstance(other,float)){return self.valueOf()> other.value}
-else{throw TypeError(
-"unorderable types: "+str(self.__class__)+'() > '+str(other.__class__)+"()")}
-}
-$comp_func +='' 
-var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
-for($op in $comps){
-eval("$IntDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
-}
-Number.prototype.__class__=$IntDict
-$IntDict.$dict=$IntDict
-int=function(value){
-var res
-if(value===undefined){res=Number(0)}
-else if(isinstance(value,int)){res=Number(value)}
-else if(value===True){res=Number(1)}
-else if(value===False){res=Number(0)}
-else if(typeof value=="number"){res=Number(parseInt(value))}
-else if(typeof value=="string" &&(new RegExp(/^[+-]?\d+$/)).test(value)){
-res=Number(parseInt(value))
-}else if(isinstance(value,float)){
-res=Number(parseInt(value.value))
-}else{throw ValueError(
-"Invalid literal for int() with base 10: '"+str(value)+"'")
-}
-return res
-}
-int.$dict=$IntDict
-int.__class__=$factory
-$IntDict.$factory=int
 function isinstance(obj,arg){
 if(obj===null){return arg===None}
 if(obj===undefined){return false}
@@ -5320,6 +5005,7 @@ __str__ : function(){return 'None'},
 toString : function(){return 'None'}
 }
 var $comp_ops=['ge','gt','le','lt']
+var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
 for(var key in $comps){
 if($comp_ops.indexOf($comps[key])>-1){
 None['__'+$comps[key]+'__']=(function(k){
@@ -5807,6 +5493,322 @@ return $import_single(modules,alias,names)
 return $import_single(modules,names,names)
 }
 
+$FloatDict={}
+$FloatDict.__bool__=function(self){return bool(self.value)}
+$FloatDict.__class__=$type
+$FloatDict.__eq__=function(self,other){
+if(other===undefined){
+return self===float
+}
+if(isinstance(other,int)){return self.value==other}
+else if(isinstance(other,float)){return self.value==other.value}
+else{return self.valueOf()===other}
+}
+$FloatDict.__floordiv__=function(self,other){
+if(isinstance(other,int)){
+if(other===0){throw ZeroDivisionError('division by zero')}
+else{return float(Math.floor(self.value/other))}
+}else if(isinstance(other,float)){
+if(!other.value){throw ZeroDivisionError('division by zero')}
+else{return float(Math.floor(self.value/other.value))}
+}else{throw TypeError(
+"unsupported operand type(s) for //: 'float' and '"+other.__class__+"'")
+}
+}
+$FloatDict.__hash__=function(){
+frexp=function(re){
+var ex=Math.floor(Math.log(re)/ Math.log(2))+ 1
+var frac=re / Math.pow(2, ex)
+return[frac, ex]
+}
+if(this.value===Infinity || this.value===-Infinity){
+if(this.value < 0.0)return -271828
+return 314159
+}else if(isNaN(this.value)){
+return 0
+}
+var r=frexp(this.value)
+r[0]*=Math.pow(2,31)
+hipart=int(r[0])
+r[0]=(r[0]- hipart)* Math.pow(2,31)
+var x=hipart + int(r[0])+(r[1]<< 15)
+return x & 0xFFFFFFFF
+}
+$FloatDict.__in__=function(self,item){return item.__contains__(self)}
+$FloatDict.__mod__=function(self,other){
+if(isinstance(other,int)){
+return float((self.value%other+other)%other)
+}
+else if(isinstance(other,float)){
+return float(((self.value%other.value)+other.value)%other.value)
+}else if(isinstance(other,bool)){
+var bool_value=0;
+if(other.valueOf())bool_value=1
+return float((self.value%bool_value+bool_value)%bool_value)
+}else{throw TypeError(
+"unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
+}
+}
+$FloatDict.__mro__=[$FloatDict,$ObjectDict]
+$FloatDict.__name__='float'
+$FloatDict.__ne__=function(self,other){return !$FloatDict.__eq__(self,other)}
+$FloatDict.__neg__=function(self,other){return float(-self.value)}
+$FloatDict.__new__=function(cls,arg){return float(arg)}
+$FloatDict.__not_in__=function(self,item){return !(getattr(item,'__contains__')(self))}
+$FloatDict.__repr__=$FloatDict.__str__=function(self){
+if(self===float){return "<class 'float'>"}
+var res=self.value+'' 
+if(res.indexOf('.')==-1){res+='.0'}
+return str(res)
+}
+$FloatDict.__truediv__=function(self,other){
+if(isinstance(other,int)){
+if(other===0){throw ZeroDivisionError('division by zero')}
+else{return float(self.value/other)}
+}else if(isinstance(other,float)){
+if(!other.value){throw ZeroDivisionError('division by zero')}
+else{return float(self.value/other.value)}
+}else{throw TypeError(
+"unsupported operand type(s) for //: 'float' and '"+other.__class__+"'")
+}
+}
+var $op_func=function(self,other){
+if(isinstance(other,int)){return float(self.value-other)}
+else if(isinstance(other,float)){return float(self.value-other.value)}
+else if(isinstance(other,bool)){
+var bool_value=0;
+if(other.valueOf())bool_value=1
+return float(self.value-bool_value)}
+else{throw TypeError(
+"unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
+}
+}
+$op_func +='' 
+var $ops={'+':'add','-':'sub','*':'mul'}
+for($op in $ops){
+eval('$FloatDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
+}
+$FloatDict.__pow__=function(self,other){
+if(isinstance(other,int)){return float(Math.pow(self,other))}
+else if(isinstance(other,float)){return float(Math.pow(self.value,other.value))}
+else{throw TypeError(
+"unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
+}
+}
+var $comp_func=function(self,other){
+if(isinstance(other,int)){return self.value > other.valueOf()}
+else if(isinstance(other,float)){return self.value > other.value}
+else{throw TypeError(
+"unorderable types: "+self.__class__+'() > '+other.__class__+"()")
+}
+}
+$comp_func +='' 
+var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
+for($op in $comps){
+eval("$FloatDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
+}
+var $notimplemented=function(self,other){
+throw TypeError(
+"unsupported operand types for OPERATOR: '"+self.__class__+"' and '"+other.__class__+"'")
+}
+$notimplemented +='' 
+for($op in $operators){
+if(['+=','-=','*=','/=','%='].indexOf($op)>-1)continue
+var $opfunc='__'+$operators[$op]+'__'
+if(!($opfunc in $FloatDict)){
+eval('$FloatDict.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
+}
+}
+function $FloatClass(value){
+this.value=value
+this.__class__=$FloatDict
+this.toString=function(){return this.value}
+this.valueOf=function(){return value}
+}
+float=function(value){
+if(value===undefined){return new $FloatClass(0.0)}
+if(typeof value=="number" ||(typeof value=="string" && !isNaN(value))){
+var res=new $FloatClass(parseFloat(value))
+return res
+}
+if(isinstance(value,float))return value
+if(value=='inf')return new $FloatClass(Infinity)
+if(value=='-inf')return new $FloatClass(-Infinity)
+if(typeof value=='string' && value.toLowerCase()=='nan')return new $FloatClass(Number.NaN)
+throw ValueError("Could not convert to float(): '"+str(value)+"'")
+}
+float.__class__=$factory
+float.$dict=$FloatDict
+$FloatDict.$factory=float
+$IntDict={__class__:$type,
+__name__:'int',
+toString:function(){return '$IntDict'}
+}
+$IntDict.from_bytes=function(x, byteorder){
+var len=x.length
+var num=x.charCodeAt(len - 1)
+if(type.signed &&(num >=128)){
+num=num - 256
+}
+for(var i=(len - 2);i >=0;i--){
+num=256 * num + x.charCodeAt(i)
+}
+return num
+}
+$IntDict.__and__=function(self,other){return self & other}
+$IntDict.__bool__=function(self){return new Boolean(self.valueOf())}
+$IntDict.__class__=$type
+$IntDict.__eq__=function(self,other){
+if(other===undefined){
+return self===int
+}
+if(isinstance(other,int)){return self.valueOf()==other.valueOf()}
+else if(isinstance(other,float)){return self.valueOf()==other.value}
+else{return self.valueOf()===other}
+}
+$IntDict.__floordiv__=function(self,other){
+if(isinstance(other,int)){
+if(other==0){throw ZeroDivisionError('division by zero')}
+else{return Math.floor(self/other)}
+}else if(isinstance(other,float)){
+if(!other.value){throw ZeroDivisionError('division by zero')}
+else{return float(Math.floor(self/other.value))}
+}else{$UnsupportedOpType("//","int",other.__class__)}
+}
+$IntDict.__hash__=function(self){return self.valueOf()}
+$IntDict.__in__=function(self,item){
+return getattr(item,'__contains__')(self)
+}
+$IntDict.__ior__=function(self,other){return self | other}
+$IntDict.__init__=function(self,value){
+self.toString=function(){return '$'+value+'$'}
+self.valueOf=function(){return value}
+}
+$IntDict.__int__=function(self){return self}
+$IntDict.__invert__=function(self){return ~self}
+$IntDict.__lshift__=function(self,other){return self << other}
+$IntDict.__mod__=function(self,other){
+if(isinstance(other,int)){
+return(self%other+other)%other
+}
+else if(isinstance(other,float)){
+return((self%other)+other)%other
+}else if(isinstance(other,bool)){
+var bool_value=0;
+if(other.valueOf())bool_value=1
+return(self%bool_value+bool_value)%bool_value
+}else{throw TypeError(
+"unsupported operand type(s) for -: "+self+" (int) and '"+other.__class__+"'")
+}
+}
+$IntDict.__mro__=[$IntDict,$ObjectDict]
+$IntDict.__mul__=function(self,other){
+var val=self.valueOf()
+if(isinstance(other,int)){return self*other}
+else if(isinstance(other,float)){return float(self*other.value)}
+else if(isinstance(other,bool)){
+var bool_value=0
+if(other.valueOf())bool_value=1
+return self*bool_value}
+else if(typeof other==="string"){
+var res=''
+for(var i=0;i<val;i++){res+=other}
+return res
+}else if(isinstance(other,[list,tuple])){
+var res=[]
+var $temp=other.slice(0,other.length)
+for(var i=0;i<val;i++){res=res.concat($temp)}
+if(isinstance(other,tuple)){res=tuple(res)}
+return res
+}else{$UnsupportedOpType("*",int,other)}
+}
+$IntDict.__name__='int'
+$IntDict.__ne__=function(self,other){return !$IntDict.__eq__(self,other)}
+$IntDict.__neg__=function(self){return -self}
+$IntDict.__new__=function(cls,value){
+return{__class__:cls}
+}
+$IntDict.__not_in__=function(self,item){
+res=getattr(item,'__contains__')(self)
+return !res
+}
+$IntDict.__or__=function(self,other){return self | other}
+$IntDict.__pow__=function(self,other){
+if(isinstance(other, int)){return int(Math.pow(self.valueOf(),other.valueOf()))}
+else if(isinstance(other, float)){return float(Math.pow(self.valueOf(), other.valueOf()))}
+else{$UnsupportedOpType("**",int,other.__class__)}
+}
+$IntDict.__repr__=function(self){
+if(self===int){return "<class 'int'>"}
+return self.toString()
+}
+$IntDict.__rshift__=function(self,other){return self >> other}
+$IntDict.__setattr__=function(self,attr,value){throw AttributeError(
+"'int' object has no attribute "+attr+"'")}
+$IntDict.__str__=$IntDict.__repr__
+$IntDict.__truediv__=function(self,other){
+if(isinstance(other,int)){
+if(other==0){throw ZeroDivisionError('division by zero')}
+else{return float(self/other)}
+}else if(isinstance(other,float)){
+if(!other.value){throw ZeroDivisionError('division by zero')}
+else{return float(self/other.value)}
+}else{$UnsupportedOpType("//","int",other.__class__)}
+}
+$IntDict.__xor__=function(self,other){return self ^ other}
+var $op_func=function(self,other){
+if(isinstance(other,int)){
+var res=self.valueOf()-other.valueOf()
+if(isinstance(res,int)){return res}
+else{return float(res)}
+}
+else if(isinstance(other,float)){return float(self.valueOf()-other.value)}
+else if(isinstance(other,bool)){
+var bool_value=0
+if(other.valueOf())bool_value=1
+return self.valueOf()-bool_value}
+else{throw TypeError(
+"unsupported operand type(s) for -: "+self.valueOf()+" and '"+str(other.__class__)+"'")
+}
+}
+$op_func +='' 
+var $ops={'+':'add','-':'sub'}
+for($op in $ops){
+eval('$IntDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
+}
+var $comp_func=function(self,other){
+if(isinstance(other,int)){return self.valueOf()> other.valueOf()}
+else if(isinstance(other,float)){return self.valueOf()> other.value}
+else{throw TypeError(
+"unorderable types: "+str(self.__class__)+'() > '+str(other.__class__)+"()")}
+}
+$comp_func +='' 
+var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
+for($op in $comps){
+eval("$IntDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
+}
+Number.prototype.__class__=$IntDict
+$IntDict.$dict=$IntDict
+int=function(value){
+var res
+if(value===undefined){res=Number(0)}
+else if(isinstance(value,int)){res=Number(value)}
+else if(value===True){res=Number(1)}
+else if(value===False){res=Number(0)}
+else if(typeof value=="number"){res=Number(parseInt(value))}
+else if(typeof value=="string" &&(new RegExp(/^[+-]?\d+$/)).test(value)){
+res=Number(parseInt(value))
+}else if(isinstance(value,float)){
+res=Number(parseInt(value.value))
+}else{throw ValueError(
+"Invalid literal for int() with base 10: '"+str(value)+"'")
+}
+return res
+}
+int.$dict=$IntDict
+int.__class__=$factory
+$IntDict.$factory=int
+
 function $DictClass($keys,$values){
 this.iter=null
 this.__class__=$DictDict
@@ -5882,9 +5884,9 @@ throw KeyError(str(arg))
 }
 $DictDict.__hash__=function(self){throw TypeError("unhashable type: 'dict'");}
 $DictDict.__in__=function(self,item){return getattr(item,'__contains__')(self)}
+$dict_iterator=$iterator_class('dict iterator')
 $DictDict.__iter__=function(self){
-var items=self.$keys,klass=$dict_iterator
-return $iterator(items,klass)
+return $iterator(self.$keys,$dict_iterator)
 }
 $DictDict.__len__=function(self){return self.$keys.length}
 $DictDict.__mro__=[$DictDict,$ObjectDict]
@@ -5950,10 +5952,9 @@ $dict_itemsDict=$iterator_class('dict_itemiterator')
 $DictDict.items=function(self){
 return $iterator(zip(self.$keys,self.$values),$dict_itemsDict)
 }
+$dict_keysDict=$iterator_class('dict_keys')
 $DictDict.keys=function(self){
-var res=$ListDict.__iter__(self.$keys)
-res.__repr__=res.__str__=function(){return 'dict_keys'+str(self.$keys)}
-return res
+return $iterator(self.$keys,$dict_keysDict)
 }
 $DictDict.pop=function(self,key,_default){
 try{
@@ -5997,10 +5998,9 @@ for(var i=0;i<keys.length;i++){
 $DictDict.__setitem__(self,keys[i],kw.$values(keys[i]))
 }
 }
+$dict_valuesDict=$iterator_class('dict_values')
 $DictDict.values=function(self){
-var res=$ListDict.__iter__(self.$values)
-res.__repr__=res.__str__=function(){return 'dict_values'+str(self.$values)}
-return res
+return $iterator(self.$values,$dict_valuesDict)
 }
 function dict(){
 if(arguments.length==0){return new $DictClass([],[])}
@@ -6039,7 +6039,6 @@ return kw
 dict.__class__=$factory
 dict.$dict=$DictDict
 $DictDict.$factory=dict
-$dict_iterator=$iterator_class('dict iterator')
 list=function(){
 function $list(){
 var args=new Array()
