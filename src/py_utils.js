@@ -555,6 +555,7 @@ $type.__getattribute__=function(klass,attr){
     else if(attr==='__repr__'){return function(){return "<class '"+klass.__name__+"'>"}}
     else if(attr==='__str__'){return function(){return "<class '"+klass.__name__+"'>"}}
     else if(attr==='__class__'){return klass.__class__}
+    else if(attr==='__doc__'){return klass.__doc__}
     else if(attr==='__setattr__'){
         return function(key,value){
             if(typeof value=='function'){
