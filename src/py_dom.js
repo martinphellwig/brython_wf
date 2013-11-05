@@ -537,8 +537,10 @@ DOMNode.__setattr__ = function(self,attr,value){
             DOMNode.bind(self,attr.substr(2),value)
         }
     }else{
-        var attr1 = attr.replace('_','-')
-        if(DOMNode['set_'+attr1]!==undefined){return DOMNode['set_'+attr1](self,value)}
+        var attr1 = attr.replace('_','-').toLowerCase()
+        if(DOMNode['set_'+attr1]!==undefined){
+            return DOMNode['set_'+attr1](self,value)
+        }
         if(self.elt[attr1]!==undefined){self.elt[attr1]=value;return}
         var res = self.elt.getAttribute(attr1)
         if(res!==undefined&&res!==null){self.elt.setAttribute(attr1,value)}
@@ -774,7 +776,7 @@ DOMNode.html = function(self){return self.elt.innerHTML}
 
 DOMNode.value = function(self){return self.elt.value}
 
-DOMNode.set_class = function(self,arg){self.elt.className == arg}
+DOMNode.set_class = function(self,arg){self.elt.setAttribute('class',arg)}
 
 DOMNode.set_html = function(self,value){
     self.elt.innerHTML=str(value)
@@ -807,7 +809,7 @@ DOMNode.toString = function(self){
 DOMNode.unbind = function(self,event){
     // unbind functions from the event (event = "click", "mouseover" etc.)
     // if no function is specified, remove all callback functions
-    if(arguments.length===1){
+    if(arguments.length===2){
         for(var i=0;i<self.events[event].length;i++){
             var callback = self.events[event][i][1]
             if(window.removeEventListener){
