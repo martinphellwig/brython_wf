@@ -1,11 +1,9 @@
 str = function(){
 
-$StringDict = {}
-
-$StringDict.__name__ = 'str'
-//$StringDict.toString = function(){return '$StringDict'}
-
-// add Brython attributes to Javascript String
+$StringDict = {__class:$type,
+    __name__:'str',
+    $native:true
+}
 
 $StringDict.__add__ = function(self,other){
     if(!(typeof other==="string")){
@@ -16,8 +14,6 @@ $StringDict.__add__ = function(self,other){
         return self+other
     }
 }
-
-$StringDict.__class__ = $type
 
 $StringDict.__contains__ = function(self,item){
     if(!(typeof item==="string")){throw TypeError(

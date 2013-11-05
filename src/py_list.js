@@ -9,7 +9,7 @@ function $list(){
     return new $ListDict(args)
 }
 
-$ListDict = {}
+$ListDict = {$native:true}
 
 $ListDict.__add__ = function(self,other){
     var res = self.valueOf().concat(other.valueOf())

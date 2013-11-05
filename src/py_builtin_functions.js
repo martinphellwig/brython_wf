@@ -315,7 +315,7 @@ function getattr(obj,attr,_default){
     // __call__ on a function returns the function itself
     if(attr==='__call__' && (typeof obj=='function')){return obj}
     
-    if(klass===$IntDict || klass===$ListDict){
+    if(klass.$native){
         if(klass[attr]===undefined){
             throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
         }

@@ -2,7 +2,8 @@
 
 $SetDict = {
     __class__:$type,
-    __name__:'set'
+    __name__:'set',
+    $native:true
 }
 
 $SetDict.__add__ = function(self,other){

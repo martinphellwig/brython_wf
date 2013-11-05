@@ -1,6 +1,7 @@
 $IntDict = {__class__:$type,
     __name__:'int',
-    toString:function(){return '$IntDict'}
+    toString:function(){return '$IntDict'},
+    $native:true
 }
 // Pierre, this probably isn't correct, but may work for now.
 // do we need to create a $IntDict, like what we did for Float?
