@@ -1,5 +1,5 @@
 // dictionary for built-in class 'float'
-$FloatDict = {}
+$FloatDict = {$native:true}
 
 $FloatDict.__bool__ = function(self){return bool(self.value)}
 

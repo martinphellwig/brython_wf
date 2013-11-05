@@ -11,9 +11,7 @@ function $DictClass($keys,$values){
 
 $DictDict = {__class__:$type,
     __name__ : 'dict',
-    __repr__ : function(){return "<class 'dict'>"},
-    __str__ : function(){return "<class 'dict'>"},
-    toString : function(){return "$DictDict"}
+    $native:true
 }
 
 $DictDict.__add__ = function(self,other){

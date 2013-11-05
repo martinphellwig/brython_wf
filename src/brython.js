@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131104-225347
+// version 1.1.20131105-091252
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -4312,7 +4312,7 @@ if(attr=='__class__'){
 return klass.$factory
 }
 if(attr==='__call__' &&(typeof obj=='function')){return obj}
-if(klass===$IntDict || klass===$ListDict){
+if(klass.$native){
 if(klass[attr]===undefined){
 throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
 }
@@ -5497,7 +5497,7 @@ return $import_single(modules,alias,names)
 return $import_single(modules,names,names)
 }
 
-$FloatDict={}
+$FloatDict={$native:true}
 $FloatDict.__bool__=function(self){return bool(self.value)}
 $FloatDict.__class__=$type
 $FloatDict.__eq__=function(self,other){
@@ -5646,7 +5646,8 @@ float.$dict=$FloatDict
 $FloatDict.$factory=float
 $IntDict={__class__:$type,
 __name__:'int',
-toString:function(){return '$IntDict'}
+toString:function(){return '$IntDict'},
+$native:true
 }
 $IntDict.from_bytes=function(x, byteorder){
 var len=x.length
@@ -5821,9 +5822,7 @@ this.$values=$values
 }
 $DictDict={__class__:$type,
 __name__ : 'dict',
-__repr__ : function(){return "<class 'dict'>"},
-__str__ : function(){return "<class 'dict'>"},
-toString : function(){return "$DictDict"}
+$native:true
 }
 $DictDict.__add__=function(self,other){
 var msg="unsupported operand types for +:'dict' and "
@@ -6049,7 +6048,7 @@ var args=new Array()
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 return new $ListDict(args)
 }
-$ListDict={}
+$ListDict={$native:true}
 $ListDict.__add__=function(self,other){
 var res=self.valueOf().concat(other.valueOf())
 if(isinstance(self,tuple)){res=tuple(res)}
@@ -6429,8 +6428,10 @@ return list
 }()
 $list_iterator=$iterator_class('list_iterator')
 str=function(){
-$StringDict={}
-$StringDict.__name__='str'
+$StringDict={__class:$type,
+__name__:'str',
+$native:true
+}
 $StringDict.__add__=function(self,other){
 if(!(typeof other==="string")){
 try{return getattr(other,'__radd__')(self)}
@@ -6440,7 +6441,6 @@ catch(err){throw TypeError(
 return self+other
 }
 }
-$StringDict.__class__=$type
 $StringDict.__contains__=function(self,item){
 if(!(typeof item==="string")){throw TypeError(
 "'in <string>' requires string as left operand, not "+item.__class__)}
@@ -7141,7 +7141,8 @@ $str_iterator=$iterator_class('str_iterator')
 
 $SetDict={
 __class__:$type,
-__name__:'set'
+__name__:'set',
+$native:true
 }
 $SetDict.__add__=function(self,other){
 return set(self.items.concat(other.items))
@@ -8034,7 +8035,7 @@ if(self===undefined){return 'DOMNode'}
 return self.elt.nodeName
 }
 DOMNode.unbind=function(self,event){
-if(arguments.length===1){
+if(arguments.length===2){
 for(var i=0;i<self.events[event].length;i++){
 var callback=self.events[event][i][1]
 if(window.removeEventListener){
