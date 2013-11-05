@@ -9,10 +9,8 @@ import traceback
 import pydom
 _height=doc.documentElement.clientHeight
 _s=pydom.Selector('#container')
-print('selector : ',_s)
 #set height of container to 66% of screen
 _s.get().height('%spx' % int(_height*0.66))
-print('ok selector')
 
 _rand=random.random()
 has_ace = True
