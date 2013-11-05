@@ -1,5 +1,5 @@
-Ajax
-----
+module ajax
+-----------
 
 The `ajax` module exposes a function `ajax()` that returns an object able to run Ajax requests. It has the following methods :
 

@@ -1,18 +1,15 @@
 module time
 -----------
 
-Implémente une partie des méthodes du module `time` de la distribution standard CPython
+Implements a part of the methods in the module `time` of Python standard distribution
 
-Trois méthodes sont ajoutées pour permettre l'exécution différée ou répétitive de fonctions :
+Three methods are added to allow differed or repetitive execution of functions :
 
-- <code>set\_timeout(*fonction,ms*)</code> : exécute la *function* après *ms* millisecondes. *fonction* ne prend aucun argument
+- <code>set\_timeout(*function,ms*)</code> : runs the *function* after *ms* milliseconds. *function* takes no argument
 
-- <code>set\_interval(*fonction,ms*)</code> lance l'exécution répétée de la *fonction* toutes les *ms* millisecondes. Cette fonction renvoie un objet utilisable dans la fonction suivante
+- <code>set\_interval(*fonction,ms*)</code> lauched repeated execution of the *function* every *ms* milliseconds. This function returns an object usable in the following function
 
-- <code>clear_interval(*timer*)</code> : termine l'exécution répétée définie par <code>set\_interval()</code>
-
-Example
-=======
+- <code>clear_interval(*timer*)</code> : stops the repeated execution of the function defined by <code>set\_interval()</code>
 
 <div id="py_source">
     import time
@@ -28,16 +25,16 @@ Example
         if timer is None:
             counter = time.time()
             timer = time.set_interval(show,10)
-            doc['start'].text = 'Pause'
+            doc['start'].text = 'Hold'
         elif timer == 'hold': # restart
             # restart timer
             counter = time.time()-float(doc['timer'].text)
             timer = time.set_interval(show,10)
-            doc['start'].text = 'Départ'
+            doc['start'].text = 'Hold'
         else: # hold
             time.clear_interval(timer)
             timer = 'hold'
-            doc['start'].text = 'Redémarrer'
+            doc['start'].text = 'Restart'
     
     def stop_timer():
         global timer
@@ -45,7 +42,7 @@ Example
         timer = None
         t = 0
         doc['timer'].text = '%.2f' %0
-        doc['start'].text = 'Départ'
+        doc['start'].text = 'Start'
 
 </div>
 
@@ -56,8 +53,8 @@ exec(doc['py_source'].text)
 <table cellpadding=10>
 <tr>
 <td style="width:100px;">
-<button id="start" onclick="start_timer()">Départ</button>
-<br><button id="stop" onclick="stop_timer()">Arrêt</button>
+<button id="start" onclick="start_timer()">Start</button>
+<br><button id="stop" onclick="stop_timer()">Stop</button>
 </td>
 <td>
 <div id="timer" style="background-color:black;color:#0F0;padding:15px;font-family:courier;font-weight:bold;font-size:23px;">0.00</div>
