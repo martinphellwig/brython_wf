@@ -1,8 +1,9 @@
-## Web Sockets
+module websocket
+----------------
 
 Web sockets are a way to handle bi directional communication between client and server. They have been specified in HTML5
 
-If so, the communication with the server is established using the module `websocket` that exposes a function <code>websocket(_host_)</code> where _host_ is the location of a server that supports the WebSocket protocol
+The communication with the server is established using the module `websocket` that exposes a function <code>websocket(_host_)</code> where _host_ is the location of a server that supports the WebSocket protocol
 
 If your browser doesn't support WebSocket, a `NotImplementedError` will be raised
 

@@ -1,18 +1,16 @@
-## Handling of HTML documents
+module html
+-----------
 
-An HTML page is seen as a tree whose root node is represented by the tag `doc`. Subsequent nodes are either built-in Python objects (strings, integers ...) or objects created by the functions corresponding to their HTML tags
-
-These functions stand in the built-in module `html` that must be imported. The tag name is in uppercase letters. As for all Python modules, you can 
+This module exposes the HTML tags. The tag name is in uppercase letters. As for all Python modules, you can 
 
 - either only import the module name : `import html`, then reference the tags by `html.DIV`
 - or import the names required in the programe : `from html import A,B,DIV`, or if there is no risk of naming conflicts : `from html import *`
 
 The syntax to create an object (eg a hyperlink) is :
-> `A(<i>[content,[attributes]]</i>)`
+><code>A(_[content,[attributes]]_)</code>
 
-> _content_ is the child node of the the object ; _attributes_ is a sequence of keywords corresponding to the attributes of the HTML tag
-
-These attributes must be provided as Javascript syntax, not CSS: _backgroundColor_ instead of _background-color_
+- _content_ is the child node of the the object ; it can be a Python object such as a string, a number, a list etc., or an instance of another class in the `html` module
+- _attributes_ is a sequence of keywords corresponding to the attributes of the HTML tag. These attributes must be provided as Javascript syntax, not CSS: *backgroundColor* instead of *background-color*
 </dl>
 Example :
 
@@ -62,30 +60,6 @@ the link will only show in the second line. One solution is to clone the origina
 >    doc <= P() + 'I repeat: the site is ' + link.clone()
 
 As a rule of thumb, instances of classes HTML attributes have the same name as the corresponding DOM objects. It can for example retrieve the option selected by the `selectedIndex` attribute of the `SELECT` object. Brython adds a few things to make the manipulation a bit more Pythonic
-
-- To search for objects by identifier or by their tag name, use the following syntax :
-
- - `doc[obj_id]`  returns the object from its identifier, or throws a `KeyError`
- - `doc[A]`  returns a list of all objects of type A (hyperlink) in the document
- - the `get()` method can be used to search for elements :
-
-  - `elt.get(name=N)` returns a list of all the elements within _elt_ whose attribute `name` is equal to `N`
-  - `elt.get(selector=S)` returns a list of all the elements within _elt_ that match the specified selector
-
-
-- the content of a DOM node can be read or modified by the _text_ or _html_ attributes, corresponding to _innerText_ (or _textContent_) and _innerHTML_ respectively for DOM objects
-
-- The `options` collection associated with a SELECT object has an interface of a Python list :
-
- - access to an option by its index : `option = elt.options[index]`
- - insertion of an option at the _index_ position : `elt.options.insert(index,option)`
- - insertion of an option at the end of the list : `elt.options.append(option)`
- - deleting an option : `del elt.options[index]`
-
-- it is possible to iterate the object's children using the typical Python syntax : 
-
->    for child in dom_object:
->       (...)
 
 
 
