@@ -135,6 +135,8 @@ function $Node(type){
     this.transform = function(rank){
         var res = ''
         if(this.type==='module'){
+            // module doc string
+            this.doc_string = $get_docstring(this)
             var i=0
             while(i<this.children.length){
                 var node = this.children[i]
@@ -611,6 +613,10 @@ function $ClassCtx(context){
     this.expect = 'id'
     this.toString = function(){return '(class) '+this.name+' '+this.tree}
     this.transform = function(node,rank){
+
+        // doc string
+        this.doc_string = $get_docstring(node)
+
         // insert "$class = new Object"
         var instance_decl = new $Node('expression')
         new $NodeJSCtx(instance_decl,'var $class = new Object()')
@@ -625,6 +631,13 @@ function $ClassCtx(context){
         var run_func = new $Node('expression')
         new $NodeJSCtx(run_func,')()')
         node.parent.insert(rank+1,run_func)
+
+        // add doc string
+        rank++
+        js = '$'+this.name+'.__doc__='+(this.doc_string || 'None')
+        var ds_node = new $Node('expression')
+        new $NodeJSCtx(ds_node,js)
+        node.parent.insert(rank+1,ds_node)            
 
         // class constructor
         var scope = $get_scope(this)
@@ -656,8 +669,10 @@ function $ClassCtx(context){
             js += this.name+'"]='+this.name
             var w_decl = new $Node('expression')
             new $NodeJSCtx(w_decl,js)
-            node.parent.insert(rank+3,w_decl)            
+            node.parent.insert(rank+3,w_decl)
+            rank++         
         }
+                
     }
     this.to_js = function(){
         return 'var $'+this.name+'=(function()'
@@ -800,6 +815,8 @@ function $DefCtx(context){
     this.transform = function(node,rank){
         // already transformed ?
         if(this.transformed!==undefined){return}
+        // search doc string
+        this.doc_string = $get_docstring(node)
         this.rank = rank // save rank if we must add generator declaration
         // if function inside a class, the first argument represents
         // the instance
@@ -901,7 +918,14 @@ function $DefCtx(context){
             new $NodeJSCtx(new_node,js)
             node.parent.children.splice(rank+offset,0,new_node)
             offset++
-        }    
+        }
+        // if doc string, add it as attribute __doc__
+        js = scope.ntype=='class' ? '$class.' : ''
+        js += this.name+'.__doc__='+(this.doc_string || 'None')
+        new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        node.parent.children.splice(rank+offset,0,new_node)
+        offset++
         this.transformed = true
     }
     this.add_generator_declaration = function(){
@@ -2244,6 +2268,17 @@ function $comp_env(context,attr,src){
     }
 }
 
+function $get_docstring(node){
+    var doc_string=null
+    if(node.children){
+        var firstchild = node.children[0]
+        if(firstchild.context.tree && firstchild.context.tree[0].type=='expr'){
+            if(firstchild.context.tree[0].tree[0].type=='str')
+            doc_string = firstchild.context.tree[0].tree[0].to_js()
+        }
+    }
+    return doc_string
+}
 function $get_scope(context){
     // return the $Node indicating the scope of context
     // null for the script or a def $Node
@@ -3223,6 +3258,19 @@ __BRYTHON__.py2js = function(src,module,parent){
     var new_node = new $Node('expression')
     new $NodeJSCtx(new_node,js)
     root.insert(0,new_node)
+    // module doc string
+    var ds_node = new $Node('expression')
+    new $NodeJSCtx(ds_node,'__doc__='+root.doc_string)
+    root.insert(1,ds_node)
+    // name
+    var name_node = new $Node('expression')
+    new $NodeJSCtx(name_node,'__name__="'+module+'"')
+    root.insert(2,name_node)
+    // file
+    var file_node = new $Node('expression')
+    new $NodeJSCtx(file_node,'__file__="'+__BRYTHON__.$py_module_path[module]+'"')
+    root.insert(3,file_node)
+        
     if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
     __BRYTHON__.modules[module] = root
     return root
