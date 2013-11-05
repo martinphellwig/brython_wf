@@ -1,11 +1,11 @@
 // brython.js www.brython.info
-// version 1.1.20131105-105324
+// version 1.1.20131105-173201
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
 __BRYTHON__.__setattr__=function(attr,value){
-if(['debug'].indexOf(attr)>-1){this[attr]=value}
+if(['debug'].indexOf(attr)>-1){__BRYTHON__[attr]=value}
 else{throw AttributeError('__BRYTHON__ object has no attribute '+attr)}
 }
 __BRYTHON__.language=window.navigator.userLanguage || window.navigator.language
@@ -178,6 +178,7 @@ return this.res.join('')
 this.transform=function(rank){
 var res=''
 if(this.type==='module'){
+this.doc_string=$get_docstring(this)
 var i=0
 while(i<this.children.length){
 var node=this.children[i]
@@ -585,6 +586,7 @@ C.tree.push(this)
 this.expect='id'
 this.toString=function(){return '(class) '+this.name+' '+this.tree}
 this.transform=function(node,rank){
+this.doc_string=$get_docstring(node)
 var instance_decl=new $Node('expression')
 new $NodeJSCtx(instance_decl,'var $class = new Object()')
 node.insert(0,instance_decl)
@@ -594,6 +596,11 @@ node.insert(node.children.length,ret_obj)
 var run_func=new $Node('expression')
 new $NodeJSCtx(run_func,')()')
 node.parent.insert(rank+1,run_func)
+rank++
+js='$'+this.name+'.__doc__='+(this.doc_string || 'None')
+var ds_node=new $Node('expression')
+new $NodeJSCtx(ds_node,js)
+node.parent.insert(rank+1,ds_node)
 var scope=$get_scope(this)
 if(scope.ntype==="module"||scope.ntype!=='class'){
 js='var '+this.name
@@ -622,6 +629,7 @@ js +=this.name+'"]='+this.name
 var w_decl=new $Node('expression')
 new $NodeJSCtx(w_decl,js)
 node.parent.insert(rank+3,w_decl)
+rank++ 
 }
 }
 this.to_js=function(){
@@ -750,6 +758,7 @@ scope.C.tree[0].locals.push(name)
 this.toString=function(){return 'def '+this.name+'('+this.tree+')'}
 this.transform=function(node,rank){
 if(this.transformed!==undefined){return}
+this.doc_string=$get_docstring(node)
 this.rank=rank 
 var scope=$get_scope(this)
 var required=''
@@ -836,6 +845,12 @@ new $NodeJSCtx(new_node,js)
 node.parent.children.splice(rank+offset,0,new_node)
 offset++
 }
+js=scope.ntype=='class' ? '$class.' : ''
+js +=this.name+'.__doc__='+(this.doc_string || 'None')
+new_node=new $Node('expression')
+new $NodeJSCtx(new_node,js)
+node.parent.children.splice(rank+offset,0,new_node)
+offset++
 this.transformed=true
 }
 this.add_generator_declaration=function(){
@@ -1985,6 +2000,17 @@ ctx[attr].push(ids[i])
 ctx=ctx.parent
 }
 }
+function $get_docstring(node){
+var doc_string=null
+if(node.children){
+var firstchild=node.children[0]
+if(firstchild.C.tree && firstchild.C.tree[0].type=='expr'){
+if(firstchild.C.tree[0].tree[0].type=='str')
+doc_string=firstchild.C.tree[0].tree[0].to_js()
+}
+}
+return doc_string
+}
 function $get_scope(C){
 var ctx_node=C.parent
 while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
@@ -2815,6 +2841,15 @@ js='var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $glob
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 root.insert(0,new_node)
+var ds_node=new $Node('expression')
+new $NodeJSCtx(ds_node,'__doc__='+root.doc_string)
+root.insert(1,ds_node)
+var name_node=new $Node('expression')
+new $NodeJSCtx(name_node,'__name__="'+module+'"')
+root.insert(2,name_node)
+var file_node=new $Node('expression')
+new $NodeJSCtx(file_node,'__file__="'+__BRYTHON__.$py_module_path[module]+'"')
+root.insert(3,file_node)
 if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
 __BRYTHON__.modules[module]=root
 return root
@@ -3720,6 +3755,7 @@ else if(attr==='__eq__'){return function(other){return klass==other.$dict}}
 else if(attr==='__repr__'){return function(){return "<class '"+klass.__name__+"'>"}}
 else if(attr==='__str__'){return function(){return "<class '"+klass.__name__+"'>"}}
 else if(attr==='__class__'){return klass.__class__}
+else if(attr==='__doc__'){return klass.__doc__}
 else if(attr==='__setattr__'){
 return function(key,value){
 if(typeof value=='function'){
@@ -3956,6 +3992,10 @@ if(v!==undefined){
 res=v
 break
 }
+}
+}else{
+if(res.__set__===undefined){
+return res
 }
 }
 if(res!==undefined){
