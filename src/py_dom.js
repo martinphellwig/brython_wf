@@ -397,7 +397,7 @@ DOMNode.__getattribute__ = function(self,attr){
         return DOMNode[attr](self)
     }
     if(attr=='remove'){
-        return DOMNode[attr](self,attr)
+        return function(){DOMNode[attr](self,arguments[0])}
     }
     if(attr=='$$location'){attr='location'}
     if(self.elt.getAttribute!==undefined){
@@ -727,7 +727,19 @@ DOMNode.parent = function(self){
 }
 
 DOMNode.remove = function(self,child){
-    return function(child){self.elt.removeChild(child.elt)}
+    // Remove child from self
+    // If child is not inside self, throw ValueError
+    var elt=self.elt,flag=false,ch_elt=child.elt
+    if(self.elt.nodeType==9){elt=self.elt.body}
+    
+    while(ch_elt.parentElement){
+        if(ch_elt.parentElement===elt){
+            elt.removeChild(ch_elt)
+            flag = true
+            break
+        }else{ch_elt = ch_elt.parentElement}
+    }
+    if(!flag){throw ValueError('element '+child+' is not inside '+self)}
 }
 
 DOMNode.top = function(self){
