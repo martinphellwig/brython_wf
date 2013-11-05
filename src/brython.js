@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131105-091252
+// version 1.1.20131105-105324
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -7684,7 +7684,7 @@ if(['children','html','left','parent','query','text','top','value'].indexOf(attr
 return DOMNode[attr](self)
 }
 if(attr=='remove'){
-return DOMNode[attr](self,attr)
+return function(){DOMNode[attr](self,arguments[0])}
 }
 if(attr=='$$location'){attr='location'}
 if(self.elt.getAttribute!==undefined){
@@ -7806,8 +7806,10 @@ DOMNode.unbind(self,attr.substr(2))
 DOMNode.bind(self,attr.substr(2),value)
 }
 }else{
-var attr1=attr.replace('_','-')
-if(DOMNode['set_'+attr1]!==undefined){return DOMNode['set_'+attr1](self,value)}
+var attr1=attr.replace('_','-').toLowerCase()
+if(DOMNode['set_'+attr1]!==undefined){
+return DOMNode['set_'+attr1](self,value)
+}
 if(self.elt[attr1]!==undefined){self.elt[attr1]=value;return}
 var res=self.elt.getAttribute(attr1)
 if(res!==undefined&&res!==null){self.elt.setAttribute(attr1,value)}
@@ -7972,7 +7974,16 @@ if(self.elt.parentElement){return $DOMNode(self.elt.parentElement)}
 else{return None}
 }
 DOMNode.remove=function(self,child){
-return function(child){self.elt.removeChild(child.elt)}
+var elt=self.elt,flag=false,ch_elt=child.elt
+if(self.elt.nodeType==9){elt=self.elt.body}
+while(ch_elt.parentElement){
+if(ch_elt.parentElement===elt){
+elt.removeChild(ch_elt)
+flag=true
+break
+}else{ch_elt=ch_elt.parentElement}
+}
+if(!flag){throw ValueError('element '+child+' is not inside '+self)}
 }
 DOMNode.top=function(self){
 return int($getPosition(self.elt)["top"])
@@ -8011,7 +8022,7 @@ return self.elt.innerText || self.elt.textContent
 }
 DOMNode.html=function(self){return self.elt.innerHTML}
 DOMNode.value=function(self){return self.elt.value}
-DOMNode.set_class=function(self,arg){self.elt.className==arg}
+DOMNode.set_class=function(self,arg){self.elt.setAttribute('class',arg)}
 DOMNode.set_html=function(self,value){
 self.elt.innerHTML=str(value)
 }
