@@ -38,9 +38,15 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                 break
             }
         }
+    }else{
+        if(res.__set__===undefined){
+            // For non-data descriptors, the attribute found in object 
+            // dictionary takes precedence
+            return res
+        }
     }
+        
     if(res!==undefined){
-        //if(attr=='calc_v'){console.log('found res '+res+' descriptor '+(res.__get__!==undefined))}
         if(res.__get__!==undefined){ // descriptor
             res.__name__ = attr
             // __new__ is a static method
