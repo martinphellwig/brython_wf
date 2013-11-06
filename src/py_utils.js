@@ -339,9 +339,14 @@ function $src_error(name,module,msg,pos) {
     var lib_module = module
     if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
 
-    info = "module '"+lib_module+"' line "+line_num
-    info += '\n'+lines[line_num-1]+'\n'
+    info = "  module '"+lib_module+"' line "+line_num
+    var line = lines[line_num-1]
     var lpos = pos-line_pos[line_num]
+    while(line && line.charAt(0)==' '){
+     line=line.substr(1)
+     lpos--
+    }
+    info += '\n    '+line+'\n'
     for(var i=0;i<lpos;i++){info+=' '}
     info += '^'
     err = new Error()
