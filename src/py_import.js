@@ -171,7 +171,8 @@ function $import_py_module(module,path,module_contents) {
     }catch(err){
         console.log('error running module '+module.name)
         console.log(''+err)
-        eval('throw '+err.name+'(err.message)')
+        throw err
+        //eval('throw '+err.name+'(err.message)')
     }
 }
 
