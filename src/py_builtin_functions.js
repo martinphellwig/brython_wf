@@ -313,7 +313,17 @@ function getattr(obj,attr,_default){
     }
     
     // __call__ on a function returns the function itself
-    if(attr==='__call__' && (typeof obj=='function')){return obj}
+    if(attr==='__call__' && (typeof obj=='function')){
+        if(__BRYTHON__.debug>0){
+            return function(){
+                __BRYTHON__.call_stack.push(document.$line_info)
+                try{return obj.apply(null,arguments)}
+                catch(err){throw err}
+                finally{__BRYTHON__.call_stack.pop()}
+            }
+        }
+        return obj
+    }
     
     if(klass.$native){
         if(klass[attr]===undefined){
@@ -333,7 +343,6 @@ function getattr(obj,attr,_default){
         else{throw AttributeError('module '+obj.__name__+" has no attribute '"+attr+"'")}
     }
     var is_class = obj.__class__===$factory, mro, attr_func
-    //if(attr=='$$delete'){console.log('get attr '+attr+', is class '+is_class)}
     //if(attr=='calc_v'){console.log('2 ! getattr '+attr+' of '+obj+' ('+type(obj)+') '+' class '+is_class)}
     if(is_class){
         attr_func=$type.__getattribute__
@@ -1180,7 +1189,7 @@ Function.prototype.__get__ = function(self,obj,objtype){
 
 Exception = function (msg,js_exc){
     var err = Error()
-    err.info = ''
+    err.info = 'Traceback (most recent call last):'
     if(msg===undefined){msg='Exception'}
     
     if(__BRYTHON__.debug && !msg.info){
@@ -1190,14 +1199,25 @@ Exception = function (msg,js_exc){
                 try{err.info += '\n    '+attr+' : '+js_exc[attr]}
                 catch(_err){void(0)}
             }
-            err.info+='\n\n'        
+            err.info+='\n'        
+        }
+        // call stack
+        for(var i=0;i<__BRYTHON__.call_stack.length;i++){
+            var call_info = __BRYTHON__.call_stack[i]
+            var lib_module = call_info[1]
+            if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
+            var lines = document.$py_src[call_info[1]].split('\n')
+            err.info += '\n  module '+lib_module+' line '+call_info[0]
+            var line = lines[call_info[0]-1]
+            while(line && line.charAt(0)==' '){line=line.substr(1)}
+            err.info += '\n    '+line
         }
         var module = document.$line_info[1]
         var line_num = document.$line_info[0]
         var lines = document.$py_src[module].split('\n')
         var lib_module = module
         if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-        err.info += "module '"+lib_module+"' line "+line_num
+        err.info += "\n  module '"+lib_module+"' line "+line_num
         err.info += '\n'+lines[line_num-1]
     }
     err.message = msg
@@ -1235,7 +1255,7 @@ __BRYTHON__.exception = function(js_exc){
                 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
                 var line_num = document.$line_info[0]
                 var lines = document.$py_src[mod_name].split('\n')
-                js_exc.message += "\nmodule '"+lib_module+"' line "+line_num
+                js_exc.message += "\n  module '"+lib_module+"' line "+line_num
                 js_exc.message += '\n'+lines[line_num-1]
                 js_exc.info_in_msg = true
             }
