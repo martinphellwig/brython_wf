@@ -257,7 +257,10 @@ function $AssignCtx(context){
     this.transform = function(node,rank){
         // rank is the rank of this line in node
         var left = this.tree[0]
-        while(left.type==='assign'){ // chained assignment : x=y=z
+        while(left.type==='assign'){ 
+            // chained assignment : x=y=z
+            // transform current node to "y=z"
+            // and add a new node "x=y"
             var new_node = new $Node('expression')
             var node_ctx = new $NodeCtx(new_node)
             node_ctx.tree = [left]
@@ -276,10 +279,10 @@ function $AssignCtx(context){
         }else if(left.type==='list_or_tuple'){
             var left_items = left.tree
         }
+        var right = this.tree[1]
         if(left_items===null){
             return
         }
-        var right = this.tree[1]
         var right_items = null
         if(right.type==='list'||right.type==='tuple'||
             (right.type==='expr' && right.tree.length>1)){
@@ -383,6 +386,9 @@ function $AssignCtx(context){
                 left=left.tree[0]
             }
             var right = this.tree[1]
+            if(right.chained){
+                //console.log('right is chained '+right.chained.to_js()+' is left '+right.is_left)
+            }
             if(left.type==='attribute'){ // assign to attribute or item ?
                 left.func = 'setattr'
                 var res = left.to_js()
@@ -429,6 +435,14 @@ function $AssignCtx(context){
                 // assignment in a class : creates a class attribute
                 left.is_left = true // used in to_js() for ids
                 var attr = left.to_js()
+                // Store the JS code in attribute 'in_class'
+                // In the case of a chained assignment inside a class, eg
+                //    class foo:
+                //        a = b = 0
+                // the assignment is split into "b = 0" then "a = b"
+                // In the second assignment, the JS rendering of b must be
+                // the same as in the first assignment, ie "$class.b"
+                left.in_class = '$class.'+attr
                 return '$class.'+attr+'='+right.to_js()
             }
         }
@@ -879,7 +893,8 @@ function $DefCtx(context){
 
         var txt = ')('
         for(var i=0;i<this.env.length;i++){
-            txt += this.env[i]
+            txt += '$class.'+this.env[i]+' != undefined ? '
+            txt += '$class.'+this.env[i]+' : '+this.env[i]
             if(i<this.env.length-1){txt += ','}
         }
         new $NodeJSCtx(ret_node,txt+')')
@@ -1322,6 +1337,20 @@ function $FuncStarArgCtx(context,op){
     if(op=='*'){context.has_star_arg=true}
     else if(op=='**'){context.has_kw_arg=true}
     context.tree.push(this)
+    this.set_name = function(name){
+        this.name = name
+        if(name=='$dummy'){return}
+        // add to locals of function
+        var ctx = context
+        while(ctx.parent!==undefined){
+            if(ctx.type==='def'){
+                ctx.locals.push(name)
+                break
+            }
+            ctx = ctx.parent
+        }    
+        
+    }
     this.toString = function(){return '(func star arg '+this.op+') '+this.name}
 }
 
@@ -1501,6 +1530,13 @@ function $IdCtx(context,value,minus){
             }
         }
         var scope = $get_scope(this)
+        if(scope.ntype=='class' && this.in_class){
+            // If the id is used in a chained assignment inside a class body,
+            // this instance is referenced in several assign nodes
+            // If it the left part of an assignment, an attribute 'in_class'
+            // has been set in method $to_js of $AssignCtx
+            return this.in_class
+        }
         if(scope.ntype==='class' && !this.is_left){
             // ids used in a class body (not inside a method) are resolved
             // in a specific way :
@@ -1531,7 +1567,6 @@ function $IdCtx(context,value,minus){
                     return val+$to_js(this.tree,'')
                 }
             }
-            var class_name = scope.context.tree[0].name
             return '($class["'+val+'"] !==undefined ? $class["'+val+'"] : '+val+')'
         }
         
@@ -2858,17 +2893,17 @@ function $transition(context,token){
             if(context.parent.names.indexOf(arguments[2])>-1){
                 $_SyntaxError(context,['duplicate argument '+arguments[2]+' in function definition'])
             }
-            context.name = arguments[2]
+            context.set_name(arguments[2])
             context.parent.names.push(arguments[2])
             return context.parent
         }else if(token==',' && context.name===undefined){
             // anonymous star arg - found in configparser
-            context.name = '$dummy'
+            context.set_name('$dummy')
             context.parent.names.push('$dummy')
             return $transition(context.parent,token)
         }else if(token==')'){
             // anonymous star arg - found in configparser
-            context.name = '$dummy'
+            context.set_name('$dummy')
             context.parent.names.push('$dummy')
             return $transition(context.parent,token)
         }else{$_SyntaxError(context,'token '+token+' after '+context)}
@@ -3682,6 +3717,7 @@ function brython(options){
 
     __BRYTHON__.$options=options
     __BRYTHON__.exception_stack = []
+    __BRYTHON__.call_stack = []
     __BRYTHON__.scope = {}
     var $elts = document.getElementsByTagName("script")
     var $href = window.location.href
