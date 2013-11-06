@@ -578,9 +578,10 @@ function $CallCtx(context){
             // execute the Python code and return its result
             // the namespace built inside the function will be in
             // __BRYTHON__.scope[_name].__dict__
-            res += 'var $res = eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js());'
+            res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
+            res += 'var $res = eval($jscode);'
             res += 'if($res===undefined){return None};return $res'
-            res += '}catch(err){throw __BRYTHON__.exception(err)}'
+            res += '}catch(err){console.log($jscode);throw __BRYTHON__.exception(err)}'
             res += '})()'
             if(ns==='globals'){
                 // copy the execution namespace in module and global namespace
@@ -594,8 +595,10 @@ function $CallCtx(context){
                 res += '{'+ns+'.__setitem__($attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
             }else{
                 // copy the execution namespace in module namespace
-                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{eval("var "+$attr+"='
+                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
+                // check that $attr is a valid identifier
+                res += 'if($attr.search(/[\.]/)>-1){continue};'
+                res += 'eval("var "+$attr+"='
                 res += '$globals[$attr]='
                 res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
             }
@@ -2305,7 +2308,7 @@ function $comp_env(context,attr,src){
 
 function $get_docstring(node){
     var doc_string=null
-    if(node.children){
+    if(node.children.length>0){
         var firstchild = node.children[0]
         if(firstchild.context.tree && firstchild.context.tree[0].type=='expr'){
             if(firstchild.context.tree[0].tree[0].type=='str')
@@ -3693,7 +3696,7 @@ function $tokenize(src,module,parent){
         $pos = br_err[1]
         $_SyntaxError(br_err[0],"Unbalanced bracket "+br_stack.charAt(br_stack.length-1))
     }
-    if($indented.indexOf(context.tree[0].type)>-1){
+    if(context!==null && $indented.indexOf(context.tree[0].type)>-1){
         $pos = pos-1
         $_SyntaxError(context,'expected an indented block',pos)    
     }
