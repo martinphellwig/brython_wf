@@ -1187,6 +1187,12 @@ Function.prototype.__get__ = function(self,obj,objtype){
 
 // built-in exceptions
 
+$ExceptionDict = {
+    __class__:$type,
+    __name__:'Exception'
+}
+$ExceptionDict.__mro__ = [$ExceptionDict,$ObjectDict]
+
 Exception = function (msg,js_exc){
     var err = Error()
     err.info = 'Traceback (most recent call last):'
@@ -1212,13 +1218,16 @@ Exception = function (msg,js_exc){
             while(line && line.charAt(0)==' '){line=line.substr(1)}
             err.info += '\n    '+line
         }
+        // error line
         var module = document.$line_info[1]
         var line_num = document.$line_info[0]
         var lines = document.$py_src[module].split('\n')
         var lib_module = module
         if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-        err.info += "\n  module '"+lib_module+"' line "+line_num
-        err.info += '\n'+lines[line_num-1]
+        err.info += "\n  module "+lib_module+" line "+line_num
+        var line = lines[line_num-1]
+        while(line && line.charAt(0)==' '){line = line.substr(1)}
+        err.info += '\n    '+line
     }
     err.message = msg
     err.args = msg
@@ -1233,7 +1242,8 @@ Exception = function (msg,js_exc){
 }
 
 Exception.__name__ = 'Exception'
-Exception.__class__ = $type
+Exception.__class__ = $factory
+Exception.$dict = $ExceptionDict
 
 __BRYTHON__.exception = function(js_exc){
     // thrown by eval(), exec() or by a function
