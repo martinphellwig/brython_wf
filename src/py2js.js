@@ -3467,12 +3467,13 @@ function $tokenize(src,module,parent){
                         found = true
                         // end of string
                         $pos = pos
-                        // escape quotes inside string, except if they are already escaped
+                        // Escape quotes inside string, except if they are already escaped
+                        // In raw mode, always escape
                         var $string = zone.substr(1),string=''
                         for(var i=0;i<$string.length;i++){
                             var $car = $string.charAt(i)
                             if($car==car &&
-                                (i==0 || $string.charAt(i-1)!=='\\')){
+                                (raw || (i==0 || $string.charAt(i-1)!=='\\'))){
                                     string += '\\'
                             }
                             string += $car
