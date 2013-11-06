@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131105-173201
+// version 1.1.20131106-181508
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -301,10 +301,10 @@ var left_items=left.tree
 }else if(left.type==='list_or_tuple'){
 var left_items=left.tree
 }
+var right=this.tree[1]
 if(left_items===null){
 return
 }
-var right=this.tree[1]
 var right_items=null
 if(right.type==='list'||right.type==='tuple'||
 (right.type==='expr' && right.tree.length>1)){
@@ -394,6 +394,8 @@ if(left.type==='expr'){
 left=left.tree[0]
 }
 var right=this.tree[1]
+if(right.chained){
+}
 if(left.type==='attribute'){
 left.func='setattr'
 var res=left.to_js()
@@ -435,6 +437,7 @@ return res
 }else if(scope.ntype==='class'){
 left.is_left=true 
 var attr=left.to_js()
+left.in_class='$class.'+attr
 return '$class.'+attr+'='+right.to_js()
 }
 }
@@ -541,9 +544,10 @@ var res='(function(){try{'
 res +='for(var $attr in __BRYTHON__.scope["'+module+'"].__dict__){'
 res +='eval("var "+$attr+"=__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]")'
 res +='};'
-res +='var $res = eval(__BRYTHON__.py2js('+arg+',"'+_name+'").to_js());'
+res +='var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
+res +='var $res = eval($jscode);'
 res +='if($res===undefined){return None};return $res'
-res +='}catch(err){throw __BRYTHON__.exception(err)}'
+res +='}catch(err){console.log($jscode);throw __BRYTHON__.exception(err)}'
 res +='})()'
 if(ns==='globals'){
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
@@ -554,8 +558,9 @@ res +='__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
 res +='{'+ns+'.__setitem__($attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}' 
 }else{
-res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-res +='{eval("var "+$attr+"='
+res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
+res +='if($attr.search(/[\.]/)>-1){continue};'
+res +='eval("var "+$attr+"='
 res +='$globals[$attr]='
 res +='__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
 }
@@ -812,7 +817,8 @@ def_func_node.add(catch_node)
 node.add(def_func_node)
 var txt=')('
 for(var i=0;i<this.env.length;i++){
-txt +=this.env[i]
+txt +='$class.'+this.env[i]+' != undefined ? '
+txt +='$class.'+this.env[i]+' : '+this.env[i]
 if(i<this.env.length-1){txt +=','}
 }
 new $NodeJSCtx(ret_node,txt+')')
@@ -1201,6 +1207,18 @@ this.parent=C
 if(op=='*'){C.has_star_arg=true}
 else if(op=='**'){C.has_kw_arg=true}
 C.tree.push(this)
+this.set_name=function(name){
+this.name=name
+if(name=='$dummy'){return}
+var ctx=C
+while(ctx.parent!==undefined){
+if(ctx.type==='def'){
+ctx.locals.push(name)
+break
+}
+ctx=ctx.parent
+}
+}
 this.toString=function(){return '(func star arg '+this.op+') '+this.name}
 }
 function $GlobalCtx(C){
@@ -1355,6 +1373,9 @@ new $StringCtx(this.parent,res+'}')
 }
 }
 var scope=$get_scope(this)
+if(scope.ntype=='class' && this.in_class){
+return this.in_class
+}
 if(scope.ntype==='class' && !this.is_left){
 var parent=this.parent
 while(parent){parent=parent.parent}
@@ -1363,7 +1384,6 @@ if(this.parent.parent.tree[0].type=='kwarg'){
 return val+$to_js(this.tree,'')
 }
 }
-var class_name=scope.C.tree[0].name
 return '($class["'+val+'"] !==undefined ? $class["'+val+'"] : '+val+')'
 }
 return val+$to_js(this.tree,'')
@@ -2002,7 +2022,7 @@ ctx=ctx.parent
 }
 function $get_docstring(node){
 var doc_string=null
-if(node.children){
+if(node.children.length>0){
 var firstchild=node.children[0]
 if(firstchild.C.tree && firstchild.C.tree[0].type=='expr'){
 if(firstchild.C.tree[0].tree[0].type=='str')
@@ -2511,15 +2531,15 @@ if(token==='id' && C.name===undefined){
 if(C.parent.names.indexOf(arguments[2])>-1){
 $_SyntaxError(C,['duplicate argument '+arguments[2]+' in function definition'])
 }
-C.name=arguments[2]
+C.set_name(arguments[2])
 C.parent.names.push(arguments[2])
 return C.parent
 }else if(token==',' && C.name===undefined){
-C.name='$dummy'
+C.set_name('$dummy')
 C.parent.names.push('$dummy')
 return $transition(C.parent,token)
 }else if(token==')'){
-C.name='$dummy'
+C.set_name('$dummy')
 C.parent.names.push('$dummy')
 return $transition(C.parent,token)
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
@@ -2992,7 +3012,7 @@ var $string=zone.substr(1),string=''
 for(var i=0;i<$string.length;i++){
 var $car=$string.charAt(i)
 if($car==car &&
-(i==0 || $string.charAt(i-1)!=='\\')){
+(raw ||(i==0 || $string.charAt(i-1)!=='\\'))){
 string +='\\'
 }
 string +=$car
@@ -3203,7 +3223,7 @@ var br_err=br_pos[0]
 $pos=br_err[1]
 $_SyntaxError(br_err[0],"Unbalanced bracket "+br_stack.charAt(br_stack.length-1))
 }
-if($indented.indexOf(C.tree[0].type)>-1){
+if(C!==null && $indented.indexOf(C.tree[0].type)>-1){
 $pos=pos-1
 $_SyntaxError(C,'expected an indented block',pos)
 }
@@ -3220,6 +3240,7 @@ if(typeof options==='number'){options={'debug':options}}
 __BRYTHON__.debug=options.debug
 __BRYTHON__.$options=options
 __BRYTHON__.exception_stack=[]
+__BRYTHON__.call_stack=[]
 __BRYTHON__.scope={}
 var $elts=document.getElementsByTagName("script")
 var $href=window.location.href
@@ -3595,9 +3616,14 @@ var line_num=pos2line[pos]
 var lines=src.split('\n')
 var lib_module=module
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-info="module '"+lib_module+"' line "+line_num
-info +='\n'+lines[line_num-1]+'\n'
+info="  module '"+lib_module+"' line "+line_num
+var line=lines[line_num-1]
 var lpos=pos-line_pos[line_num]
+while(line && line.charAt(0)==' '){
+line=line.substr(1)
+lpos--
+}
+info +='\n    '+line+'\n'
 for(var i=0;i<lpos;i++){info+=' '}
 info +='^'
 err=new Error()
@@ -4351,7 +4377,17 @@ else{throw AttributeError('object has no attribute '+attr)}
 if(attr=='__class__'){
 return klass.$factory
 }
-if(attr==='__call__' &&(typeof obj=='function')){return obj}
+if(attr==='__call__' &&(typeof obj=='function')){
+if(__BRYTHON__.debug>0){
+return function(){
+__BRYTHON__.call_stack.push(document.$line_info)
+try{return obj.apply(null,arguments)}
+catch(err){throw err}
+finally{__BRYTHON__.call_stack.pop()}
+}
+}
+return obj
+}
 if(klass.$native){
 if(klass[attr]===undefined){
 throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
@@ -5071,9 +5107,14 @@ Function.prototype.__class__=Function
 Function.prototype.__get__=function(self,obj,objtype){
 return self
 }
+$ExceptionDict={
+__class__:$type,
+__name__:'Exception'
+}
+$ExceptionDict.__mro__=[$ExceptionDict,$ObjectDict]
 Exception=function(msg,js_exc){
 var err=Error()
-err.info=''
+err.info='Traceback (most recent call last):'
 if(msg===undefined){msg='Exception'}
 if(__BRYTHON__.debug && !msg.info){
 if(js_exc!==undefined){
@@ -5082,15 +5123,27 @@ if(attr==='message'){continue}
 try{err.info +='\n    '+attr+' : '+js_exc[attr]}
 catch(_err){void(0)}
 }
-err.info+='\n\n' 
+err.info+='\n' 
+}
+for(var i=0;i<__BRYTHON__.call_stack.length;i++){
+var call_info=__BRYTHON__.call_stack[i]
+var lib_module=call_info[1]
+if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
+var lines=document.$py_src[call_info[1]].split('\n')
+err.info +='\n  module '+lib_module+' line '+call_info[0]
+var line=lines[call_info[0]-1]
+while(line && line.charAt(0)==' '){line=line.substr(1)}
+err.info +='\n    '+line
 }
 var module=document.$line_info[1]
 var line_num=document.$line_info[0]
 var lines=document.$py_src[module].split('\n')
 var lib_module=module
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-err.info +="module '"+lib_module+"' line "+line_num
-err.info +='\n'+lines[line_num-1]
+err.info +="\n  module "+lib_module+" line "+line_num
+var line=lines[line_num-1]
+while(line && line.charAt(0)==' '){line=line.substr(1)}
+err.info +='\n    '+line
 }
 err.message=msg
 err.args=msg
@@ -5104,7 +5157,8 @@ __BRYTHON__.exception_stack.push(err)
 return err
 }
 Exception.__name__='Exception'
-Exception.__class__=$type
+Exception.__class__=$factory
+Exception.$dict=$ExceptionDict
 __BRYTHON__.exception=function(js_exc){
 if(!js_exc.py_error){
 if(__BRYTHON__.debug>0 && js_exc.info===undefined){
@@ -5119,7 +5173,7 @@ var lib_module=mod_name
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
 var line_num=document.$line_info[0]
 var lines=document.$py_src[mod_name].split('\n')
-js_exc.message +="\nmodule '"+lib_module+"' line "+line_num
+js_exc.message +="\n  module '"+lib_module+"' line "+line_num
 js_exc.message +='\n'+lines[line_num-1]
 js_exc.info_in_msg=true
 }
@@ -5460,7 +5514,7 @@ return $module
 }catch(err){
 console.log('error running module '+module.name)
 console.log(''+err)
-eval('throw '+err.name+'(err.message)')
+throw err
 }
 }
 function $import_single(module){
@@ -8132,7 +8186,6 @@ res.__setitem__(header.substr(0,pos),header.substr(pos+1).lstrip())
 }
 return res
 }
-DOMNode.query=function(self){
 $QueryDict={__class__:$type,__name__:'query'}
 $QueryDict.__contains__=function(self,key){
 return self._keys.indexOf(key)>-1
@@ -8142,6 +8195,10 @@ var result=self._values[key]
 if(result===undefined){throw KeyError(key)}
 else if(result.length==1){return result[0]}
 return result
+}
+$QueryDict_iterator=$iterator_class('query string iterator')
+$QueryDict.__iter__=function(self){
+return $iterator(self._keys,$QueryDict_iterator)
 }
 $QueryDict.__mro__=[$QueryDict,$ObjectDict]
 $QueryDict.getfirst=function(self,key,_default){
@@ -8166,6 +8223,7 @@ else{return _default}
 }
 }
 $QueryDict.keys=function(self){return self._keys}
+DOMNode.query=function(self){
 var res={__class__:$QueryDict,
 _keys :[],
 _values :{}
@@ -8177,7 +8235,10 @@ var elts=[qs[i].substr(0,pos),qs[i].substr(pos+1)]
 var key=decodeURIComponent(elts[0])
 var value=decodeURIComponent(elts[1])
 if(res._keys.indexOf(key)>-1){res._values[key].push(value)}
-else{res._values[key]=[value]}
+else{
+res._keys.push(key)
+res._values[key]=[value]
+}
 }
 return res
 }
