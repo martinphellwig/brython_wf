@@ -54,7 +54,6 @@ Minor implementation changes
 New features
 ============
 - implement __doc__ attribute for modules, functions and classes
-
 - implement __name__ and __file__ for modules
-
+- manage call stack and use it in error reporting
 
