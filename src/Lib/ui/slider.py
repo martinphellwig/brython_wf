@@ -1,41 +1,60 @@
 import BaseUI
+from brython import doc, html
+#import math
 
 class slider(BaseUI.BaseUI):
   def __init__(self, id=None, document=doc, label=False):
-      self._div_shell=document.createElement("DIV")
+      self._div_shell=html.DIV(Class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all")
+
       BaseUI.BaseUI.__init__(self, self._div_shell, 'slider', id)
 
-
-      self._div_shell.setAttribute('class', "ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all")
-
-      self._handle=document.createElement("a")
-      self._handle.setAttribute('class', "ui-slider-handle ui-state-default ui-corner-all")
-      self._handle.setAttribute('href', '#')
-      self._handle.style.left='0px'
+      self._handle=html.A(Class="ui-slider-handle ui-state-default ui-corner-all",
+                          'href'='#', style={'left': '0px'})
       self._value=0
 
-      def drag(e):
-          print("%s" % (e.clientX)) # - deltaX))
-          #self._element.style.top='%spx' % (e.clientY - self._deltaY)
-          if e.clientX >= deltaX:
-             e.target.style.left='%spx' % e.clientX #(e.clientX - deltaX)
+      def startSlide(e):
+          global startMouseX, lastElementLeft, isMouseDown, sliderWidth, handleWidth
+          isMouseDown=True
+          sliderWidth=e.target.elt.parentElement.offsetWidth
+          handleWidth=e.target.elt.offsetWidth
+          
+          print('sliderWidth:%s' % sliderWidth)
+          print('handleWidth:%s' % handleWidth)
+          pos = BaseUI.getMousePosition(e)
+          startMouseX=pos['x']
 
-      def mouseDown(e):
-          global deltaX
-          #e.target.style.position='relative'
-          #e.target.get_parent().width
-          deltaX=e.target.get_parent().offsetLeft
-          #self._deltaY=e.clientY - self._element.offsetTop
-          e.target.addEventListener('mousemove', drag, true)
+          lastElementLeft = int(e.target.elt.offsetLeft) - int(e.target.elt.parentElement.offsetLeft)
+          print(e.target.elt.offsetLeft)
+          print(e.target.elt.parentElement.offsetLeft)
+          lastElementLeft=max(0, lastElementLeft)
+          print('lastElementLeft:%s' % lastElementLeft)
 
-          _class=e.target.getAttribute('class')
-          e.target.setAttribute('class', _class.replace('ui-state-hover', ''))
+      def updatePosition(e):
+          print("updatePosition")
+          pos = BaseUI.getMousePosition(e)
+          print(pos['x'])
+          print(startMouseX)
+          #print(lastElementLeft, pos['x'], startMouseX)
+          _newPos = lastElementLeft + pos['x'] - startMouseX
+          
+          _upperBound = sliderWidth - handleWidth
+          _newPos = max(0, _newPos)
+          _newPos = min(_newPos, _upperBound)
+          print('newPos:%s' % _newPos)
+          
+          e.target.elt.style.left = '%spx' % _newPos
 
-      def mouseUp(e):
-          e.target.removeEventListener('mousemove', drag, true)
+      def moving(e):
+          if isMouseDown:
+             updatePosition(e)
 
-      self._handle.addEventListener('mousedown', mouseDown)
-      self._handle.addEventListener('mouseup', mouseUp)
+      def dropCallback(e):
+          isMouseDown=False
+
+      isMouseDown=False
+      self._handle.bind('mousemove', moving)
+      self._handle.bind('mouseup', dropCallback)
+      self._handle.bind('mousedown', startSlide)
 
       def mouseover(e):
           _class=e.target.getAttribute('class')
@@ -45,10 +64,10 @@ class slider(BaseUI.BaseUI):
           _class=e.target.getAttribute('class')
           e.target.setAttribute('class', _class.replace('ui-state-hover', ''))
 
-      self._handle.addEventListener('mouseover', mouseover)
-      self._handle.addEventListener('mouseout', mouseout)
+      self._handle.bind('mouseover', mouseover)
+      self._handle.bind('mouseout', mouseout)
 
-      self._div_shell.appendChild(self._handle)
+      self._div_shell <= self._handle
 
   def get_value(self):
       return self._value
