@@ -872,51 +872,57 @@ doc.$dict.headers = function(){
 
 // return query string as an object with methods to access keys and values
 // same interface as cgi.FieldStorage, with getvalue / getlist / getfirst
+$QueryDict = {__class__:$type,__name__:'query'}
+
+$QueryDict.__contains__ = function(self,key){
+    return self._keys.indexOf(key)>-1
+}
+
+$QueryDict.__getitem__ = function(self,key){
+    // returns a single value or a list of values 
+    // associated with key, or raise KeyError
+    var result = self._values[key]
+    if(result===undefined){throw KeyError(key)}
+    else if(result.length==1){return result[0]}
+    return result
+}
+
+$QueryDict_iterator = $iterator_class('query string iterator')
+$QueryDict.__iter__ = function(self){
+    return $iterator(self._keys,$QueryDict_iterator)
+}
+
+$QueryDict.__mro__ = [$QueryDict,$ObjectDict]
+
+$QueryDict.getfirst = function(self,key,_default){
+    // returns the first value associated with key
+    var result = self._values[key]
+    if(result===undefined){
+        if(_default===undefined){return None}
+        return _default
+    }
+    return result[0]
+}
+
+$QueryDict.getlist = function(self,key){
+    // always return a list
+    var result = self._values[key]
+    if(result===undefined){return []}
+    return result
+}
+
+$QueryDict.getvalue = function(self,key,_default){
+    try{return self.__getitem__(key)}
+    catch(err){
+        $pop_exc()
+        if(_default===undefined){return None}
+        else{return _default}
+    }
+}
+
+$QueryDict.keys = function(self){return self._keys}
+
 DOMNode.query = function(self){
-    $QueryDict = {__class__:$type,__name__:'query'}
-    
-    $QueryDict.__contains__ = function(self,key){
-        return self._keys.indexOf(key)>-1
-    }
-
-    $QueryDict.__getitem__ = function(self,key){
-        // returns a single value or a list of values 
-        // associated with key, or raise KeyError
-        var result = self._values[key]
-        if(result===undefined){throw KeyError(key)}
-        else if(result.length==1){return result[0]}
-        return result
-    }
-
-    $QueryDict.__mro__ = [$QueryDict,$ObjectDict]
-
-    $QueryDict.getfirst = function(self,key,_default){
-        // returns the first value associated with key
-        var result = self._values[key]
-        if(result===undefined){
-            if(_default===undefined){return None}
-            return _default
-        }
-        return result[0]
-    }
-
-    $QueryDict.getlist = function(self,key){
-        // always return a list
-        var result = self._values[key]
-        if(result===undefined){return []}
-        return result
-    }
-
-    $QueryDict.getvalue = function(self,key,_default){
-        try{return self.__getitem__(key)}
-        catch(err){
-            $pop_exc()
-            if(_default===undefined){return None}
-            else{return _default}
-        }
-    }
-
-    $QueryDict.keys = function(self){return self._keys}
 
     var res = {__class__:$QueryDict,
         _keys : [],
@@ -929,7 +935,10 @@ DOMNode.query = function(self){
         var key = decodeURIComponent(elts[0])
         var value = decodeURIComponent(elts[1])
         if(res._keys.indexOf(key)>-1){res._values[key].push(value)}
-        else{res._values[key] = [value]}
+        else{
+            res._keys.push(key)
+            res._values[key] = [value]
+        }
     }
 
     return res
