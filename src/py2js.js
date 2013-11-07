@@ -1681,13 +1681,17 @@ function $KwArgCtx(context){
     var scope = $get_scope(this)
     if(scope.ntype=='def' || scope.ntype=='generator'){
         var ix = null,varname=context.tree[0].value
-        for(var i=0;i<scope.var2node[varname].length;i++){
-            if(scope.var2node[varname][i]==context.tree[0]){
+        //ui slider caused an issue in which scope.var2node[varname] is undefined
+        // so lets check for that.
+        if (scope.var2node[varname] !== undefined) {
+           for(var i=0;i<scope.var2node[varname].length;i++){
+             if(scope.var2node[varname][i]==context.tree[0]){
                 ix = i
                 break
-            }
+             }
+           }
+           scope.var2node[varname].splice(ix,1)
         }
-        scope.var2node[varname].splice(ix,1)
     }
 
     this.to_js = function(){
