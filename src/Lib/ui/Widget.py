@@ -15,7 +15,7 @@ def getMousePosition(e):
       
     return {'x': 0, 'y': 0}
 
-class BaseUI:
+class Widget:
   def __init__(self, element, type, id=None):
       self._element=element
 
@@ -39,9 +39,9 @@ class BaseUI:
   def hide(self):
       self._element.display='none'
 
-class draggable(BaseUI):
+class DraggableWidget(Widget):
   def __init__(self, element, type, id=None):
-      BaseUI.__init__(self, element, type, id)
+      Widget.__init__(self, element, type, id)
 
       def drag(e):
           self._element.style.top='%spx' % (e.clientY - self._deltaY)

@@ -1,14 +1,14 @@
-import BaseUI
+import Widget
 from browser import html, doc as document
 
-class dialog(BaseUI.draggable):
+class Dialog(Widget.DraggableWidget):
   def __init__(self, id=None):
       self._div_shell=html.DIV(
          Class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-draggable ui-resizable",
          style={'position': 'absolute', 'height': 'auto', 'width': '300px',
                 'top': '98px', 'left': '140px', 'display': 'block'})
 
-      BaseUI.draggable.__init__(self, self._div_shell, 'dialog', id)
+      Widget.DraggableWidget.__init__(self, self._div_shell, 'dialog', id)
 
       _div_titlebar=html.DIV(Id="titlebar",
            Class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix")
@@ -46,10 +46,8 @@ class dialog(BaseUI.draggable):
           else:
              _class="ui-resizable-handle ui-resizable-%s" % _i
 
-          #self._div_shell <= html.DIV(Class=_class, style={'z-index': '90'})
+          self._div_shell <= html.DIV(Class=_class, style={'z-index': '90'})
 
-      #document <= self._div_shell   #this doesn't work :(
-      #doc.get(tag='body')[0].appendChild(self._div_shell)
       doc <= self._div_shell
 
   def set_title(self, title):
