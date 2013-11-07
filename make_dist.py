@@ -85,7 +85,8 @@ out.close()
 
 res = '// brython.js www.brython.info\n'
 res += '// version 1.1.%s\n' %now
-res += '// version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src\n'
+res += '// version compiled from commented, indented source files '
+res += 'at https://bitbucket.org/olemis/brython/src\n'
 src_size = 0
 for fname in sources:
     src = open(abs_path(fname)+'.js').read()+'\n'
