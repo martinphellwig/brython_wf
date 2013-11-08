@@ -299,6 +299,7 @@ frozenset.$dict = $FrozensetDict
 function getattr(obj,attr,_default){
 
     var klass = obj.__class__
+    //if(attr=='show'){console.log('-- getattr '+attr+' of obj '+obj+' native '+klass.$native)}
     if(klass===undefined){
         // for native JS objects used in Python code
         if(obj[attr]!==undefined){return obj[attr]}
@@ -329,11 +330,18 @@ function getattr(obj,attr,_default){
         if(klass[attr]===undefined){
             throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
         }
-        return function(){
-            var args = [obj]
-            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-            return klass[attr].apply(null,args)
+        if(typeof klass[attr]=='function'){
+            if(attr=='__new__'){ // new is a static method
+                return klass[attr].apply(null,arguments)
+            }else{
+                return function(){
+                    var args = [obj]
+                    for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+                    return klass[attr].apply(null,args)
+                }        
+            }
         }
+        return klass[attr]
     }
 
     // module attribute are returned unmodified
