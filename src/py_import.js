@@ -123,6 +123,7 @@ function $import_py(module,path){
 }
 
 function $import_py_module(module,path,module_contents) {
+    console.log('path' + path)
     __BRYTHON__.$py_module_path[module.name]=path
 
     var root = __BRYTHON__.py2js(module_contents,module.name)
@@ -236,11 +237,11 @@ function $import_list_intra(modules){
         if(mod_name.substr(0,2)=='$$'){mod_name=module.substr(2)}
         var mod;
         if(__BRYTHON__.modules[mod_name]===undefined){
-            var module = {'name':mod_name}
+           var module = {'name':mod_name}
            mod = $import_module_search_path_list(module,[search_path])
            __BRYTHON__.modules[mod_name]=mod
         } else{
-            console.log('module '+mod_name+' found in __BRYTHON__ : '+__BRYTHON__.modules[mod_name])
+           console.log('module '+mod_name+' found in __BRYTHON__ : '+__BRYTHON__.modules[mod_name])
            mod=__BRYTHON__.modules[mod_name]
         }
         res.push(mod)
