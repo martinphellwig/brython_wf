@@ -32,26 +32,6 @@ $StringDict.__eq__ = function(self,other){
     return other===self.valueOf()
 }
 
-$StringDict.__getattr__ = function(attr){return this[attr]}
-
-$StringDict.__getattribute__ = function(self,attr){
-    var res = $StringDict[attr]
-    if(res===undefined){
-        throw AttributeError("'str' object has no attribute '"+attr+"'")
-    }else if(typeof res==='function'){
-        var method = function(){
-            var args = [self]
-            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-            return res.apply(null,args)
-        }
-        method.__repr__ = function(){return '<built-in method '+attr+' of str object>'}
-        method.__str__ = method.toString = method.__repr__
-        return method
-    }else{
-        return res
-    }
-}
-
 $StringDict.__getitem__ = function(self,arg){
     if(isinstance(arg,int)){
         var pos = arg
@@ -105,6 +85,12 @@ $StringDict.__hash__ = function(self) {
 
 $StringDict.__in__ = function(self,item){return getattr(item,'__contains__')(self.valueOf())}
 
+$StringDict.__init__ = function(self,arg){
+    self.valueOf = function(){return arg}
+    self.toString = function(){return arg}
+}
+
+$str_iterator = $iterator_class('str_iterator')
 $StringDict.__iter__ = function(self){
     var items = self.split('') // list of all characters in string
     return $iterator(items,$str_iterator)
@@ -294,13 +280,6 @@ $StringDict.__mul__ = function(self,other){
 
 $StringDict.__ne__ = function(self,other){return other!==self.valueOf()}
 
-$StringDict.__new__ = function(arg){
-    // used in subclasses of str
-    // return an instance of String, not a native string object
-    // otherwise other attributes could not be set in subclasses
-    return new String($StringDict.apply(null,arguments))
-}
-
 $StringDict.__not_in__ = function(self,item){return !$StringDict.__in__(self,item)}
 
 $StringDict.__repr__ = function(self){
@@ -321,7 +300,7 @@ $StringDict.__str__ = function(self){
     if(self===undefined){return "<class 'str'>"}
     else{return self.toString()}
 }
-$StringDict.toString = $StringDict.__str__
+$StringDict.toString = function(){return 'string!'}
 
 // generate comparison methods
 var $comp_func = function(self,other){
@@ -820,14 +799,10 @@ $StringDict.zfill = function(self, width) {
 
 // set String.prototype attributes
 String.prototype.__class__ = $StringDict
-String.prototype.$dict = {}
-for(var $attr in $StringDict){
 
-    //String.prototype.$dict[$attr]=$StringDict[$attr]
-}
 
 function str(arg){
-    if(arg===undefined){return '<undefined>'}
+    if(arg===undefined){return ''}
     else{
         try{
             var f = getattr(arg,'__str__')
@@ -839,7 +814,46 @@ function str(arg){
 str.__class__ = $factory
 str.$dict = $StringDict
 $StringDict.$factory = str
+$StringDict.__new__ = function(cls){
+    if(cls===undefined){
+        throw TypeError('str.__new__(): not enough arguments')
+    }
+    var res = {__class__:cls.$dict}
+    return res
+}
+
+// dictionary and factory for subclasses of string
+$StringSubclassDict = {
+    __class__:$type,
+    __name__:'str'
+}
+
+// the methods in subclass apply the methods in $StringDict to the
+// result of instance.valueOf(), which is a Javascript string
+for(var $attr in $StringDict){
+    if(typeof $StringDict[$attr]=='function'){
+        $StringSubclassDict[$attr]=(function(attr){
+            return function(){
+                var args = []
+                if(arguments.length>0){
+                    var args = [arguments[0].valueOf()]
+                    for(var i=1;i<arguments.length;i++){
+                        args.push(arguments[i])
+                    }
+                }
+                return $StringDict[attr].apply(null,args)
+            }
+        })($attr)
+    }
+}
+$StringSubclassDict.__mro__ = [$StringSubclassDict,$ObjectDict]
+
+// factory for str subclasses
+$StringSubclassFactory = {
+    __class__:$factory,
+    $dict:$StringSubclassDict
+}
+
 
 return str
 }()
-$str_iterator = $iterator_class('str_iterator')

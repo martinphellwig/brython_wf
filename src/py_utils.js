@@ -443,6 +443,7 @@ function type(name,bases,cl_dict){
     for(var i=0;i<bases.length;i++){
         // we can't simply push bases[i].__mro__ 
         // because it would be modified in the algorithm
+        if(bases[i]===str){bases[i] = $StringSubclassFactory}
         var bmro = []
         for(var k=0;k<bases[i].$dict.__mro__.length;k++){
             bmro.push(bases[i].$dict.__mro__[k])
@@ -536,7 +537,7 @@ function $instance_creator(klass){
             new_func = getattr(klass,'__new__')
         }catch(err){$pop_exc()}
         if(new_func!==null){
-            var args = [klass]
+            var args = [klass.$factory]
             for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
             obj = new_func.apply(null,args)
         }
@@ -562,6 +563,7 @@ $type.__getattribute__=function(klass,attr){
     else if(attr==='__class__'){return klass.__class__}
     else if(attr==='__doc__'){return klass.__doc__}
     else if(attr==='__setattr__'){
+        if(klass['__setattr__']!==undefined){return klass['__setattr__']}
         return function(key,value){
             if(typeof value=='function'){
                 klass[key]=function(){return value.apply(null,arguments)}

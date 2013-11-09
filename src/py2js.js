@@ -581,7 +581,7 @@ function $CallCtx(context){
             res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
             res += 'var $res = eval($jscode);'
             res += 'if($res===undefined){return None};return $res'
-            res += '}catch(err){console.log($jscode);throw __BRYTHON__.exception(err)}'
+            res += '}catch(err){throw __BRYTHON__.exception(err)}'
             res += '})()'
             if(ns==='globals'){
                 // copy the execution namespace in module and global namespace
@@ -1250,9 +1250,7 @@ function $FromCtx(context){
             if(mod){
                search_path_parts.push(mod)
             }
-            // invalid use of join in javascript
-            //var search_path = '/'.join(search_path_parts)
-            var search_path = search_path_parts.join('/')
+            var search_path = '/'.join(search_path_parts)
             res +="$mods=$import_list_intra(["
             var _mods = []
             for(var i=0;i<this.names.length;i++){
