@@ -76,7 +76,7 @@ $DictDict.__init__ = function(self){
     self.$keys = []
     self.$values = []
     if(args.length==0){return}
-    else if(arg.length===1){
+    else if(args.length===1){
         var obj = args[0]
         if(isinstance(obj,dict)){
             self.$keys = obj.$keys
