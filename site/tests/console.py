@@ -95,7 +95,7 @@ def run():
 
 # load a Python script
 def load(evt):
-    _name=evt.target.value
+    _name=evt.target.value+'?foo=%s' %time.time()
     editor.setValue(open(_name).read())
 
 def show_js():

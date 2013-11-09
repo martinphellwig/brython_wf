@@ -15,4 +15,14 @@ y.clear()
 assert len(y)==0
 assert len(x)==4
 
+# subclass
+class foo(dict):
+    def show(self):
+        return 'show'
+
+x = foo({1:2})
+assert x.show() == 'show'
+assert str(x)=="{1:2}"
+assert isinstance(x,dict)
+
 print("passed all tests..")

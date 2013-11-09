@@ -201,8 +201,6 @@ $ListDict.__name__ = 'list'
 
 $ListDict.__ne__ = function(self,other){return !$ListDict.__eq__(self,other)}
 
-$ListDict.__new__ = function(cls){var res = [];res.__class__=cls;return res}
-
 $ListDict.__not_in__ = function(self,item){return !$ListDict.__in__(self,item)}
 
 $ListDict.__repr__ = function(self){
@@ -447,3 +445,4 @@ $TupleDict.__name__ = 'tuple'
 return list
 }()
 $list_iterator = $iterator_class('list_iterator')
+$ListDict.__new__ = $__new__(list)

@@ -299,6 +299,7 @@ frozenset.$dict = $FrozensetDict
 function getattr(obj,attr,_default){
 
     var klass = obj.__class__
+    //if(attr=='show'){console.log('-- getattr '+attr+' of obj '+obj+' native '+klass.$native)}
     if(klass===undefined){
         // for native JS objects used in Python code
         if(obj[attr]!==undefined){return obj[attr]}
@@ -329,11 +330,20 @@ function getattr(obj,attr,_default){
         if(klass[attr]===undefined){
             throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
         }
-        return function(){
-            var args = [obj]
-            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-            return klass[attr].apply(null,args)
+        if(typeof klass[attr]=='function'){
+            if(attr=='__new__'){ // new is a static method
+                return klass[attr].apply(null,arguments)
+            }else{
+                var method = function(){
+                    var args = [obj]
+                    for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+                    return klass[attr].apply(null,args)
+                }
+                method.__name__ = 'method '+attr+' of built-in '+klass.__name__
+                return method
+            }
         }
+        return klass[attr]
     }
 
     // module attribute are returned unmodified
@@ -502,7 +512,6 @@ function $iterator_class(name){
 function len(obj){
     try{return getattr(obj,'__len__')()}
     catch(err){
-        console.log('len error '+err)
         throw TypeError("object of type '"+obj.__class__.__name__+"' has no len()")}
 }
 
@@ -937,9 +946,13 @@ function round(arg,n){
 function setattr(obj,attr,value){
     if(!isinstance(attr,str)){throw TypeError("setattr(): attribute name must be string")}
     try{
-        getattr(obj,'__setattr__')(attr,value)
+        var f = getattr(obj,'__setattr__')
     }
-    catch(err){$pop_exc();obj[attr]=value}
+    catch(err){
+        $pop_exc()
+        obj[attr]=value
+    }
+    f(attr,value)
 }
 
 // slice

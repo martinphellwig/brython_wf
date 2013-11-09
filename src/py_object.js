@@ -1,5 +1,9 @@
 // class object for the built-in class 'object'
-$ObjectDict = {}
+$ObjectDict = {
+    __class__:$type,
+    __name__:'object',
+    $native:true
+}
 
 // function used to generate the methods that return 'unorderable types'
 var $ObjectNI = function(name,op){
@@ -7,8 +11,6 @@ var $ObjectNI = function(name,op){
         throw TypeError('unorderable types: object() '+op+' '+str(other.__class__.__name__)+'()')
     }
 }
-
-$ObjectDict.__class__ = $type
 
 $ObjectDict.__delattr__ = function(self,attr){delete self[attr]}
 
@@ -20,7 +22,6 @@ $ObjectDict.__eq__ = function(self,other){
 $ObjectDict.__ge__ = $ObjectNI('__ge__','>=')
 
 $ObjectDict.__getattribute__ = function(obj,attr){
-    //if(attr=='$$delete'){console.log('object getattr '+attr+' of obj '+obj)}
     if(attr==='__class__'){
         return obj.__class__.$factory
     }
@@ -30,6 +31,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
     }
     if(res===undefined){
         // search in classes hierarchy, following method resolution order
+        //if(attr=='show'){console.log('object getattr '+attr+' of obj '+obj)}
         var mro = type(obj).__mro__
         for(var i=0;i<mro.length;i++){
             var v=mro[i][attr]
@@ -62,8 +64,8 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                     __self__ = obj
                     __func__ = res1
                     __repr__ = __str__ = function(){
-                        var x = '<bound method '+type(obj).__name__+'.'+attr
-                        x += ' of '+str(obj)+'>'
+                        var x = '<bound method '+attr
+                        x += " of '"+obj.__class__.__name__+"' object>"
                         return x
                     }
                 }else if(res.$type==='function'){
@@ -96,10 +98,10 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                         var x = res.apply(obj,local_args)
                         if(x===undefined){return None}else{return x}
                     }})(args)
-                    method.__class__ = {
+                method.__class__ = {
                     __class__:$type,
                     __name__:'method',
-                    __mro__:[object]
+                    __mro__:[$ObjectDict]
                 }
                 method.__func__ = __func__
                 method.__repr__ = __repr__
@@ -150,12 +152,22 @@ $ObjectDict.__lt__ = $ObjectNI('__lt__','<')
 
 $ObjectDict.__mro__ = [$ObjectDict]
 
-$ObjectDict.__name__ = 'object'
+// A funtion that builds the __new__ method for the factory function
+function $__new__(factory){
+    return function(cls){
+        if(cls===undefined){
+            throw TypeError(factory.$dict.__name__+'.__new__(): not enough arguments')
+        }
+        var res = factory.apply(null,[])
+        res.__class__ = cls.$dict
+        return res
+    }
+}
 
 $ObjectDict.__new__ = function(cls){
-    //console.log('new object of type '+cls.__name__)
+    if(cls===undefined){throw TypeError('object.__new__(): not enough arguments')}
     var obj = new Object()
-    obj.__class__ = cls
+    obj.__class__ = cls.$dict
     return obj
 }
 
@@ -163,22 +175,36 @@ $ObjectDict.__ne__ = function(self,other){return self!==other}
 
 $ObjectDict.__repr__ = function(self){
     if(self===object){return "<class 'object'>"}
+    else if(self===undefined){return "<class 'object'>"}
     else if(self.__class__===$type){return "<class '"+self.__class__.__name__+"'>"}
     else{return "<"+self.__class__.__name__+" object>"}
 }
 
-//$ObjectDict.__setattr__ = function(self,attr,val){console.log('object setattr');self[attr]=val}
+$ObjectDict.__setattr__ = function(self,attr,val){
+    if(val===undefined){ // setting an attribute to 'object' type is not allowed
+        throw TypeError("can't set attributes of built-in/extension type 'object'")
+    }else if(self.__class__===$ObjectDict){
+        // setting an attribute to object() is not allowed
+        if($ObjectDict[attr]===undefined){
+            throw AttributeError("'object' object has no attribute '"+attr+"'")
+        }else{
+            throw AttributeError("'object' object attribute '"+attr+"' is read-only")
+        }
+    }
+    self[attr]=val
+}
+$ObjectDict.__setattr__.__str__ = function(){return 'method object.setattr'}
 
 $ObjectDict.__str__ = $ObjectDict.__repr__
 
-$ObjectDict.toString = function(){return '$ObjectDict'}
+$ObjectDict.toString = $ObjectDict.__repr__ //function(){return '$ObjectDict'}
+
 
 // constructor of the built-in class 'object'
 function object(){
-    var obj = new Object()
-    obj.__class__ = $ObjectDict
-    return obj
+    return {__class__:$ObjectDict}
 }
 object.$dict = $ObjectDict
 object.__class__ = $factory
+$ObjectDict.$factory = object
 
