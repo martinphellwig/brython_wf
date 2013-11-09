@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131109-134137
+// version 1.1.20131109-144045
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131109-134137"]
+__BRYTHON__.version_info=[1,2,"20131109-144045"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -4990,24 +4990,25 @@ return res
 }
 slice.__class__=$factory
 slice.$dict=$SliceDict
-function sorted(iterable, key, reverse){
-if(reverse===undefined){reverse=False}
-var obj=new $list()
+function sorted(){
+var $ns=$MakeArgs('sorted',arguments,['iterable'],{},null,'kw')
+if($ns['iterable']===undefined){throw TypeError("sorted expected 1 positional argument, got 0")}
+else{iterable=$ns['iterable']}
+var key=$DictDict.get($ns['kw'],'key',None)
+var reverse=$DictDict.get($ns['kw'],'reverse',false)
+var obj=[]
 iterable=iter(iterable)
 while(true){
-try{obj.append(next(iterable))}
+try{obj.push(next(iterable))}
 catch(err){
 if(err.__name__==='StopIteration'){$pop_exc();break}
 else{throw err}
 }
 }
-if(key !==undefined){
-var d=$DictClass(('key', key),('reverse', reverse))
-obj.sort(d)
-}else{
-var d=$DictClass(('reverse', reverse))
-obj.sort(d)
-}
+var args=[obj]
+if(key !==None){args.push($Kw('key',key))}
+if(reverse){args.push($Kw('reverse',true))}
+$ListDict.sort.apply(null,args)
 return obj
 }
 function staticmethod(func){
@@ -5124,13 +5125,13 @@ toString : function(){return 'None'}
 }
 var $comp_ops=['ge','gt','le','lt']
 var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
-for(var key in $comps){
-if($comp_ops.indexOf($comps[key])>-1){
-None['__'+$comps[key]+'__']=(function(k){
+for(var $key in $comps){
+if($comp_ops.indexOf($comps[$key])>-1){
+None['__'+$comps[$key]+'__']=(function(k){
 return function(other){
 throw TypeError("unorderable types: NoneType() "+$comps[k]+" "+
 other.__class__.__name__)}
-})(key)
+})($key)
 }
 }
 for(var $func in None){
