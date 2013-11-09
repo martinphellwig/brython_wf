@@ -84,7 +84,7 @@ out.write(loader_src)
 out.close()
 
 res = '// brython.js www.brython.info\n'
-res += '// version 1.1.%s\n' %now
+res += '// version 1.2.%s\n' %now
 res += '// version compiled from commented, indented source files '
 res += 'at https://bitbucket.org/olemis/brython/src\n'
 src_size = 0
@@ -119,7 +119,7 @@ import zipfile
 dest_dir = os.path.join(os.getcwd(),'dist')
 if not os.path.exists(dest_dir):
     os.mkdir(dest_dir)
-name = 'Brython_site_mirror-%s' %now
+name = 'Brython1.2_site_mirror-%s' %now
 dest_path = os.path.join(dest_dir,name)
 
 def is_valid(filename):
@@ -168,7 +168,7 @@ dist_zip.close()
 print('end of mirror')
 
 # minimum package
-name = 'Brython-%s' %now
+name = 'Brython1.2-%s' %now
 dest_path = os.path.join(dest_dir,name)
 dist1 = tarfile.open(dest_path+'.gz',mode='w:gz')
 dist2 = tarfile.open(dest_path+'.bz2',mode='w:bz2')

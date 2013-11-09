@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131109-145740
+// version 1.2.20131109-150256
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131109-145740"]
+__BRYTHON__.version_info=[1,2,"20131109-150256"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
