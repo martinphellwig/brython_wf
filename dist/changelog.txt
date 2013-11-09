@@ -1,3 +1,16 @@
+Hi,
+
+It is with a great pleasure that I announce the release of Brython 1.2, which is now available for download on the development site, and uploaded to the Brython site at www.brython.info
+
+The changes are detailed in the changelog below
+
+This version brings minor backwards-incompatible changes : ajax and websocket must be imported as modules, the query string is an attribute of doc and not a method, objects created by object() can no longer receive attributes
+
+It fixes some of the issues reported on the development site. All the internal tests work, but it's highly probable that this version brings a few regressions compared to the last stable release. In this case, please report them on the Bitbucket tracker
+
+Many thanks to the developer team and to you all for your inputs and support
+- Pierre
+
 Changelog for Brython 1.2
 -------------------------
 
@@ -43,6 +56,8 @@ Backwards-incompatible changes
 Bug fixes
 =========
 - issue 142 : isinstance(obj,klass) checks parent classes of obj
+- issue 143 : Brython site mirror available at zip format
+- issue 149 : raise UnboundLocalError for local variables referenced before assignment
 - issue 154 : ajax.send() accepts string arguments (supposed to be JSON data)
 - issue 155 : JSObject accepts arguments that are themselves instances of JSObject or JSContructor
 - attributes can no longer be set to instances created by object()
