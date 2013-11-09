@@ -39,7 +39,7 @@ function _js(obj){
     }else if(isinstance(obj,dict)){
         var res = new Object()
         for(var i=0;i<obj.$keys.length;i++){
-            res[obj.$keys[i]]=obj.$values[i]
+            res[_js(obj.$keys[i])]=_js(obj.$values[i])
         }
         return res
     }else{
@@ -53,5 +53,5 @@ $module =  {
 
     loads : function(json_obj){return _py(JSON.parse(json_obj))},
 
-    dumps : function(obj){return JSON.stringify(_js(obj))},
+    dumps : function(obj){console.log('dumps');return JSON.stringify(_js(obj))},
 }
