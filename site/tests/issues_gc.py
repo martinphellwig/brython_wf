@@ -73,12 +73,13 @@ def setx(o, v):
    setattr(o, "x", v)
 
 o = object()
-setattr(o, "x", 1)
-assert o.x == 1 # direct setattr
+try:
+    setattr(o, "x", 1)
+    raise Exception("setting attribute to object() should fail")
+except:
+    pass
+#assert o.x == 1 # direct setattr
 
-o = object()
-setx(o, 1)
-assert o.x == 1 # indirect setattr
 
 # issue 23
 l = [ "A", "B" ]
@@ -182,8 +183,9 @@ def f_35_2(n):
 assert f_35_2(10)==[0,2,4,6,8]
 
 # issue 36
+class foo:pass
 def instance(i):
-    o = object()
+    o = foo()
     o.id = i
     return o
 
@@ -200,7 +202,7 @@ y = False
 res = x and not y
 assert res==True
 
-o = object()
+o = foo()
 o.res = res
 assert o.res==True
 
