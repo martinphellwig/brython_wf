@@ -1,5 +1,5 @@
-SVG graphics
-------------
+module svg
+----------
 
 To create graphics in the SVG format, supported by most browsers, use the built-in module `svg`. It holds the name of the components available to draw forms or write text
 
@@ -16,8 +16,10 @@ you can insert forms and text by :
 <tr>
 <td>
     import svg
-    title = svg.text('Title',x=70,y=25,font_size=22,text_anchor="middle")
-    circle = svg.circle(cx="70",cy="120",r="40",stroke="black",stroke_width="2",fill="red")
+    title = svg.text('Title',x=70,y=25,font_size=22,
+        text_anchor="middle")
+    circle = svg.circle(cx="70",cy="120",r="40",
+        stroke="black",stroke_width="2",fill="red")
     
     panel = doc['panel']
     panel <= title
@@ -31,8 +33,10 @@ you can insert forms and text by :
 <script type="text/python">
 def run_svg():
     import svg
-    title = svg.text('Title',x=70,y=25,font_size=22,text_anchor="middle")
-    circle = svg.circle(cx=70,cy=120,r=40,stroke="black",stroke_width=2,fill="red")
+    title = svg.text('Title',x=70,y=25,font_size=22,
+        text_anchor="middle")
+    circle = svg.circle(cx=70,cy=120,r=40,stroke="black",
+        stroke_width=2,fill="red")
     
     panel = doc['panel']
     panel <= title

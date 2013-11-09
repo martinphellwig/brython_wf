@@ -36,7 +36,7 @@ Instances of `JSObject` are used as ordinary Python objects ; here, the value of
 
 ### Objects in Javascript programs
 
-An HTML document can use Javascript scripts or libraries, and Python scripts or libraries. Brython can't use Javascript objects directly : for instance attribute lookup is done by the method _\_\_getattr\_\__, which doesn't exist for Javascript objects
+An HTML document can use Javascript scripts or libraries, and Python scripts or libraries. Brython can't use Javascript objects directly : for instance attribute lookup uses the attribute _\_\_class\_\__, which doesn't exist for Javascript objects
 
 To be able to use them in a Python script, they must be explicitely transformed by the built-in function `JSObject()`
 
@@ -49,6 +49,31 @@ For instance :
     <script type="text/python">
     doc['result'].value = JSObject(circle).surface(10)
     </script>
+
+### Using Javascript constructors
+
+If a Javascript function is an object constructor, that can be called in Javascript code with the keyword `new`, it can be used in Brython by transforming it with the built-in function `JSConstructor()`
+
+<code>JSConstructor(_constr_)</code> returns a function that, when called with arguments, returns a Python object matching the Javascript object built by the constructor _constr_
+
+For instance :
+
+    <script type="text/javascript">
+    function Rectangle(x0,y0,x1,y1){
+        this.x0 = x0
+        this.y0 = y0
+        this.x1 = x1
+        this.y1 = y1
+        this.surface = function(){return (x1-x0)*(y1-y0)}
+    }
+    </script>
+    
+    <script type="text/python">
+    rectangle = JSConstructor(Rectangle)
+    alert(rectangle(10,10,30,30).surface())
+    </script>
+
+### jQuery example
 
 Here is a more complete example of how you can use the popular library jQuery :
 

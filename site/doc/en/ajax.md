@@ -1,32 +1,39 @@
-Ajax
-----
+module ajax
+-----------
 
-The `ajax()` built-in function returns an object similar to XMLHttpRequest in 
-Javascript, but its interface is slightly different. It has the following methods
+The `ajax` module exposes a function `ajax()` that returns an object able to run Ajax requests. It has the following methods :
 
-- `open(_method, url, async_)` : _method_ is the HTTP method used for the 
-  request (usually GET or POST), _url_ is the url to call, _async_ is a boolean 
-  that indicates whether the call is asynchronous or not
-- `set\_header(_name, value_)` : sets the _value_ of the header _name_
-- `set\_timeout(_duration, function_)` : if the query did not return response 
+- <code>bind(_evt,function_)</code> : attaches the _function_ to the event _evt_. The events match the different request states :
+<blockquote>
+
+<table cellspacing=0 cellpadding=0 border=1>
+<tr><th>
+request state
+</th><th>
+event
+</th></tr>
+<tr><td align="center">0</td><td>`uninitialized`</td></tr>
+<tr><td align="center">1</td><td align="center">`loading`</td></tr>
+<tr><td align="center">2</td><td align="center">`loaded`</td></tr>
+<tr><td align="center">3</td><td align="center">`interactive`</td></tr>
+<tr><td align="center">4</td><td align="center">`complete`</td></tr>
+</table>
+
+The _function_ takes a single argument, the `ajax` object. This object has the following attributes :
+
+- `readyState` : an integer representing the request state (cf table above)
+- `status` : an integer representing the HTTP status of the request
+- `text` : the server response as a string of characters
+- `xml` : the server response as a DOM object
+
+</blockquote>
+
+- <code>open(_method, url, async_)</code> : _method_ is the HTTP method used for the request (usually GET or POST), _url_ is the url to call, _async_ is a boolean that indicates whether the call is asynchronous or not
+- <code>set\_header(_name, value_)</code> : sets the _value_ of the header _name_
+- <code>set\_timeout(_duration, function_)</code> : if the query did not return response 
   within _duration_ in seconds, it will cancel the query and execute the 
   _function_. This function cannot have arguments
 - `send()` : send (starts) the request
-
-To interact with the server, you must set the following attributes corresponding to each state of the _readyState_ attribute of the Ajax object :
-<p><table><tr><th>readyState</th><th>attribute</th></tr>
-<tr><td>0</td><td>`on_uninitialized`</td></tr>
-<tr><td>1</td><td>`on_loading`</td></tr>
-<tr><td>2</td><td>`on_loaded`</td></tr>
-<tr><td>3</td><td>`on_interactive`</td></tr>
-<tr><td>4</td><td>`on_complete`</td></tr>
-</table>
-
-The attribute has to be a function which will take a single argument: the `ajax` object. This object has the following attributes :
-
-- `status` : an integer representing the HTTP status of the request
-- `text` : the server response as a string of characters (this would be _responseText_ in Javascript)
-- `xml` : the server response as a DOM object (this would be _responseXML_ in Javascript)
 
 
 ### Example

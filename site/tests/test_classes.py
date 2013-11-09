@@ -17,7 +17,7 @@ class foo(bar,truc):
    return 'test2'
 
 obj = foo()
-assert str(bar.test)=="<function bar.test>"
+#assert str(bar.test)=="<function bar.test>"
 assert obj.A == 8
 assert obj.x == 0
 assert obj.test()=='test in foo'
@@ -33,9 +33,9 @@ class stack(list):
             self.append(self[-1])
 
 x = stack([1,7])
-assert str(x)=='[1,7]'
+assert str(x)=='[1, 7]'
 x.dup()
-assert str(x)=='[1,7,7]'
+assert str(x)=='[1, 7, 7]'
 
 class foo(list):
     pass
@@ -80,6 +80,7 @@ assert myclass().getx == 7
 
 @property
 def gety(self):
+    print(self.a)
     return self.a + 9
 
 x.gety = gety

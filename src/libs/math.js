@@ -40,7 +40,7 @@ $module = {
     ceil: function(x) {
        var y=float_check(x);
        if (!isNaN(parseFloat(y)) && isFinite(y)) return int(Math.ceil(y));
-       if (y.__ceil__ !== undefined) {return y.__ceil__()}
+       try{return getattr(y,'__ceil__')()}catch(err){$pop_exc()}
        
        $raise('ValueError', 'object is not a number and does not contain __ceil__')
     },
@@ -184,7 +184,7 @@ $module = {
     sin : function(x){return float(Math.sin(float_check(x)))},
     sqrt : function(x){return float(Math.sqrt(float_check(x)))},
     trunc: function(x) {
-       if (x.__trunc__ !== undefined) {return x.__trunc__()}
+       try{return getattr(x,'__trunc__')()}catch(err){$pop_exc()}
        var x1=float_check(x);
        if (!isNaN(parseFloat(x1)) && isFinite(x1)) return int(Math.floor(x1));
        

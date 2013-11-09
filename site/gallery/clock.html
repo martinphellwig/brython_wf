@@ -5,10 +5,11 @@
 <meta name="keywords" content="Python,Brython">
 <meta name="author" content="Pierre Quentel">
 <meta charset="iso-8859-1">
-<script src="/src/brython.js"></script>
+<script type="text/javascript" src="/src/brython.js"></script>
+
 </head>
 
-<body onLoad="brython()">
+<body onLoad="brython(2)">
 <img src="../brython.png">
 <p>
 
@@ -107,8 +108,9 @@ def show_hours():
     # cell for day
     ctx.fillStyle = "#000"
     ctx.fillRect(width*0.65,height*0.47,width*0.1,height*0.06)
-show_hours()
 
+show_hours()
+set_clock()
 </script>
 
 <p>

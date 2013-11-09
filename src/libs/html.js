@@ -1,48 +1,47 @@
 // creation of an HTML element
 $module = (function(){
 function $Tag(tagName,args){
-    // cl
-    var $i = null
-    var elt = null
-    var elt = $DOMNode(document.createElement(tagName))
-    elt.parent = this
+    var obj = $DOMNode(document.createElement(tagName))
+    // obj.elt is the DOM element
+    obj.parent = this
     if(args!=undefined && args.length>0){
         $start = 0
         $first = args[0]
         // if first argument is not a keyword, it's the tag content
-        if(!isinstance($first,$Kw)){
+        if($first.__class__!==$Kw){
             $start = 1
             if(isinstance($first,[str,int,float])){
-                txt = document.createTextNode($first.toString())
-                elt.appendChild(txt)
-            } else if(isinstance($first,$TagSum)){
+                txt = document.createTextNode(str($first))
+                obj.elt.appendChild(txt)
+            } else if($first.__class__===$TagSumDict){
                 for($i=0;$i<$first.children.length;$i++){
-                    elt.appendChild($first.children[$i])
+                    obj.elt.appendChild($first.children[$i].elt)
                 }
-            } else {
-                try{elt.appendChild($first)}
-                catch(err){throw ValueError('wrong element '+$first)}
+            } else { // argument is another DOMNode instance
+                try{obj.elt.appendChild($first.elt)}
+                catch(err){console.log('erreur '+err);throw ValueError('wrong element '+$first)}
             }
         }
         // attributes
-        for($i=$start;$i<args.length;$i++){
+        for(var $i=$start;$i<args.length;$i++){
             // keyword arguments
             $arg = args[$i]
-            if(isinstance($arg,$Kw)){
+            if($arg && $arg.__class__===$Kw){
                 if($arg.name.toLowerCase().substr(0,2)==="on"){ // events
-                    eval('elt.'+$arg.name.toLowerCase()+'=function(){'+$arg.value+'}')
+                    eval('DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
                 }else if($arg.name.toLowerCase()=="style"){
-                    elt.set_style($arg.value)
+                    DOMNode.set_style(obj,$arg.value)
                 } else {
                     if($arg.value!==false){
                         // option.selected=false sets it to true :-)
                         try{
                             var arg = $arg.name.toLowerCase()
-                            elt.setAttribute(arg,$arg.value)
+                            obj.elt.setAttribute(arg,$arg.value)
                             if(arg=="class"){ // for IE
-                                elt.setAttribute("className",$arg.value)
+                                obj.elt.setAttribute("className",$arg.value)
                             }
                         }catch(err){
+                            console.log('erreur '+err)
                             throw ValueError("can't set attribute "+$arg.name)
                         }
                     }
@@ -50,13 +49,16 @@ function $Tag(tagName,args){
             }
         }
     }
-    return elt
+    return obj
 }
 
 // the classes used for tag sums, $TagSUm and $TagSumClass 
 // are defined in py_dom.js
 
-function A(){return $Tag('A',arguments)}
+function A(){
+    var obj = $Tag('A',arguments)
+    return obj
+}
 A.__name__='html.A'
 
 var $src = A+'' // source of function A

@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <script src="/src/brython.js"></script>
+
 </head>
 <body onload="brython(1)">
 <h1>Phonetic cyrillic on QWERTY keyboard</h1>
@@ -22,15 +23,18 @@ CYR =  'АБЦДЕФГЧИЙКЛМНОПЯРСТУВЖХЫЗШЩЭЮЁЬЪабц
 position = 0
 
 
+def printkey_button(ev):
+    letter = ev.target.text
+    printkey(letter)
+
 def printkey(letter):
     global position
     try:
-        span = doc[str(position)]
+        span = doc['x%s' %position]
         span.value = letter
     except KeyError:
-        doc <= SPAN(letter, id = str(position))
+        doc <= SPAN(letter, id = 'x%s' %position)
     position += 1
-
 
 def deletekey():
     global position
@@ -38,7 +42,7 @@ def deletekey():
     if position < 0:
         position = 0
     else:
-        del doc[str(position)]
+        del doc['x%s' %position]
 
 
 def keydown(e):
@@ -70,7 +74,9 @@ def drawkeyboard():
     tbody = TBODY()
     row = TR()
     for letter in CYR:
-        row <= TD(BUTTON(letter, onClick= "printkey('%s')" % letter))
+        b = BUTTON(letter)
+        b.bind('click',printkey_button)
+        row <= TD(b)
         if letter in ('Я','Ъ','я'):
             tbody <= row
             row=TR()

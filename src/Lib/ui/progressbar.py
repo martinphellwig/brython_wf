@@ -1,24 +1,19 @@
-import BaseUI
+import Widget
+from browser import html
 
-class progressbar(BaseUI.BaseUI):
-  def __init__(self, id=None, document=doc, label=False):
-      self._div_shell=document.createElement("DIV")
-      BaseUI.BaseUI.__init__(self, self._div_shell, 'progressbar', id)
-
-      self._div_shell.setAttribute('class', "ui-progressbar ui-widget ui-widget-content ui-corner-all")
-      self._div_shell.role="progressbar"
+class ProgressBar(Widget.Widget):
+  def __init__(self, id=None, label=False):
+      self._div_shell=html.DIV(Class="ui-progressbar ui-widget ui-widget-content ui-corner-all")
+      Widget.Widget.__init__(self, self._div_shell, 'progressbar', id)
 
       self._show_label=label
       if label:
-         self._label=document.createElement("DIV")
-         self._label.setAttribute('class', 'progress-label')
-         #self._label.style.position='relative'
-         self._div_shell.appendChild(self._label)
+         self._label=html.DIV(Class='progress-label')
+         self._div_shell <= self._label
 
-      self._bar=document.createElement("DIV")
-      self._bar.setAttribute('class', "ui-progressbar-value ui-widget-header ui-corner-left")
-      self._bar.style.width="0px"
-      self._div_shell.appendChild(self._bar)
+      self._bar=html.DIV(Class="ui-progressbar-value ui-widget-header ui-corner-left",
+                         style={'width': '0px'})
+      self._div_shell <= self._bar
 
   def set_progress(self, percent):
       self._bar.style.width='%s%%' % percent

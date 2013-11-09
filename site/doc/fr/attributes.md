@@ -22,7 +22,7 @@ Comme le nom des attributs peut être différent d'un navigateur à l'autre, Bry
 <td>*children*</td><td>liste</td><td>les éléments "descendants" de l'élément</td><td>L</td>
 </tr>
 <tr>
-<td>*parent*</td><td>liste</td><td>l'élément parent de l'élément (`None` pour `doc`)</td><td>L</td>
+<td>*parent*</td><td>instance de `DOMNode`</td><td>l'élément parent de l'élément (`None` pour `doc`)</td><td>L</td>
 </tr>
 <tr>
 <td>*class*</td><td>chaine</td><td>le nom de la classe de l'élément (attribut *class* de la balise)</td><td>L/E</td>

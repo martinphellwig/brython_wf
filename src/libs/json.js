@@ -19,7 +19,7 @@ function _py(obj){
         // transform JS object into a Python dict
         var res = dict()
         for(var attr in obj){
-            res.__setitem__(attr,_py(obj[attr]))
+            getattr(res,'__setitem__')(attr,_py(obj[attr]))
         }
         return res
     }

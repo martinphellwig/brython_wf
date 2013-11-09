@@ -24,8 +24,8 @@ import ui
 import time
 
 ui.add_stylesheet()
-_p=ui.progressbar(label=True)
-_p.append("container")
+_p=ui.ProgressBar(label=True)
+_p.attach("container")
 
 def incr_progress():
     global _i
@@ -47,6 +47,7 @@ _process=time.set_interval(incr_progress, 1000)
 <ul>
 <li><a href="dialog.html">Dialog</a></li>
 <li><a href="progressbar.html">ProgressBar</a></li>
+<li><a href="slider.html">Slider</a></li>
 </ul>
 </div> <!-- sidebar -->
 
