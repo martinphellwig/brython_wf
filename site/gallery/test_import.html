@@ -3,8 +3,6 @@
 <head>
 <meta charset="iso-8859-1">
 <script src="/src/brython.js"></script>
-<script src="/src/py_import.js"></script>
-<script src="/src/py2js.js"></script>
 
 </head>
 <body onLoad="brython(1)">
@@ -17,9 +15,10 @@ from html import P
 import string # in standard distribution : folder Lib
 
 menu_items = [('The Brython site','http://www.brython.info'),
-    ('Development site','http://code.google.com/p/brython/'),
+    ('Development site','https://bitbucket.org/olemis/brython/src'),
     ('Group (en)','https://groups.google.com/forum/?fromgroups=#!forum/brython')]
 doc <= sidebar.menu('Brython',menu_items)
+doc <= P('yes')+'no'
 doc <= P()+str(datetime.date.today())
 doc <= P()+string.ascii_letters
 doc <= P('sys.path : '+str(sys.path))

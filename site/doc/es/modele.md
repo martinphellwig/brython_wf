@@ -33,7 +33,7 @@ Esta funci&oacute;n llama a :
 - <code>transform(_root_)</code> : transforma el &aacute;rbol para prepararlo para la conversi&oacute;n a Javascript (ver debajo)
 - `$add_line_num()` para a&ntilde;adir n&uacute;meros de l&iacute;nea en el caso de que el 'debug mode' sea superior a 0
 
-La funci&oacute;n `$py2js` devuelve la ra&iacute;z del &aacute;rbol.
+The funci&oacute;n `$py2js` devuelve la ra&iacute;z del &aacute;rbol.
 </td>
 </tr>
 
@@ -56,11 +56,11 @@ Esta funci&oacute;n llama de forma recursiva al m&eacute;todo del mismo nombre y
 
 </table>
 
-### Ficheros usados
+### Fiicheros usados
 
 El script __brython.js__ se genera mediante la compilaci&oacute;n de varios scripts :
 
-- __brython\_builtins.js__ : define el objeto `__BRYTHON__` que act&uacute;a como pasarela entre objetos Javascript nativos (`Date, RegExp, Storage...`) y Brython
+- __brython\_builtins.js.js__ : define el objeto `__BRYTHON__` que act&uacute;a como pasarela entre objetos Javascript nativos (`Date, RegExp, Storage...`) y Brython
 - __py2js.js__ : realiza la conversi&oacute;n de c&oacute;digo Python a c&oacute;digo Javascript
 - __py\_utils.js__ : funciones &uacute;tiles (eg conversiones de tipos entre Javascript y Python)
 - __py\_string.js__ : implementaci&oacute;n de la clase Python `str`, basada en el tipo Javascript `String`
@@ -99,14 +99,12 @@ Cada instrucci&oacute;n en el c&oacute;digo fuente encuentra un nodo en el &aacu
 Cada elemento sint&aacute;ctico (identificador, llamada a funci&oacute;n, expresi&oacute;n, operador,...) es manejado mediante una clase : ver en el c&oacute;digo fuente de __py2js.js__ entre `function $AbstractExprCtx` y `function $UnaryCtx`
 
 En este paso, se puede informar de los errores : 
-
 - errores sint&aacute;cticos
 - errores de indentaci&oacute;n
 - cadenas literales inacabadas
 - falta de par&eacute;ntesis / corchetes ('brackets') / llaves ('curly braces')
 - caracteres ilegales
 - Palabras clave Python no gestionadas por Brython
-
 
 <li>Transformando el &aacute;rbol
 

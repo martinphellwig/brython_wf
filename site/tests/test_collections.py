@@ -10,7 +10,7 @@ assert _d['a'] == 3
 assert _d['b'] == 4
 
 s = 'mississippi'
-_d = collections.defaultdict(int)
+_d = defaultdict(int)
 for k in s:
     _d[k] += 1
 

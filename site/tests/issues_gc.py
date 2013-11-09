@@ -73,12 +73,13 @@ def setx(o, v):
    setattr(o, "x", v)
 
 o = object()
-setattr(o, "x", 1)
-assert o.x == 1 # direct setattr
+try:
+    setattr(o, "x", 1)
+    raise Exception("setting attribute to object() should fail")
+except:
+    pass
+#assert o.x == 1 # direct setattr
 
-o = object()
-setx(o, 1)
-assert o.x == 1 # indirect setattr
 
 # issue 23
 l = [ "A", "B" ]
@@ -182,8 +183,9 @@ def f_35_2(n):
 assert f_35_2(10)==[0,2,4,6,8]
 
 # issue 36
+class foo:pass
 def instance(i):
-    o = object()
+    o = foo()
     o.id = i
     return o
 
@@ -200,7 +202,7 @@ y = False
 res = x and not y
 assert res==True
 
-o = object()
+o = foo()
 o.res = res
 assert o.res==True
 
@@ -264,7 +266,7 @@ matrix = [
 ]
 
 transposed = zip(*matrix)
-assert transposed[0]==[1,5,9]
+assert transposed[0]==(1,5,9)
 
 # issue 54
 x=[1,2]
@@ -373,12 +375,12 @@ assert 'top' in dict(top=True), 'top was mangled: %s'%dict(top=True)
 
 # issue 100
 a = [round(kk) for kk in [1.1,2.2,3.3]]
-assert str(a)=='[1,2,3]'
+assert str(a)=='[1, 2, 3]'
 
 b = [1.0,2.0,3.0]
-assert str(b)=='[1.0,2.0,3.0]'
+assert str(b)=='[1.0, 2.0, 3.0]'
 
-assert str([value for value in [1.0,2.0,3.0]])=='[1.0,2.0,3.0]'
+assert str([value for value in [1.0,2.0,3.0]])=='[1.0, 2.0, 3.0]'
 # issue 102
 try:
     eval('1<>0')

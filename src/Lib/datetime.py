@@ -379,7 +379,7 @@ class timedelta:
         usdouble = secondsfrac * 1e6
         assert abs(usdouble) < 2.1e6    # exact value not critical
         # secondsfrac isn't referenced again
-
+        
         if isinstance(microseconds, float):
             microseconds += usdouble
             microseconds = round(microseconds, 0)
@@ -1329,6 +1329,7 @@ class datetime(date):
                  '_hour','_minute','_second','_microsecond','_tzinfo')
     def __new__(cls, year, month=None, day=None, hour=0, minute=0, second=0,
                 microsecond=0, tzinfo=None):
+             
         if isinstance(year, bytes) and len(year) == 10:
             # Pickle support
             self = date.__new__(cls, year[:4])
@@ -1377,7 +1378,6 @@ class datetime(date):
 
         A timezone info object may be passed in as well.
         """
-
         _check_tzinfo_arg(tz)
 
         converter = _time.localtime if tz is None else _time.gmtime

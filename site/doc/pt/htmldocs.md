@@ -88,12 +88,12 @@ Como regra geral, atributos de instâncias de classes HTML têm o mesmo nome que
 
 ## Cadeia de consulta
 
-`doc` suporta a função `query()`, chamada sem argumentos, que retorna o conteúdo da cadeia de consulta como um objeto com os seguintes atributos e métodos :
+`doc` suporta o atributo `query`, que retorna a cadeia de consulta como um objeto com os seguintes atributos e métodos :
 
-- <code>doc.query()[<i>key</i>]</code> : retorna o valor associado com _`key`_. Se uma chave tem mais de um valor (que pode ser o caso de etiquetas SELECT com o atributo MULTIPLO, ou para etiquetas `<INPUT type="checkbox">`), retorna uma lista de valores. Lança `KeyError` se não houver valor para a chave
+- <code>doc.query[<i>key</i>]</code> : retorna o valor associado com _`key`_. Se uma chave tem mais de um valor (que pode ser o caso de etiquetas SELECT com o atributo MULTIPLO, ou para etiquetas `<INPUT type="checkbox">`), retorna uma lista de valores. Lança `KeyError` se não houver valor para a chave
 
-- <code>doc.query().getfirst(<i>key[,default]</i>)</code> : retorna o primeiro valor para _`key`_. Se não houver valor associado com a chave, retorna _`default`_ se fornecido, em outros casos retorna `None`
+- <code>doc.query.getfirst(<i>key[,default]</i>)</code> : retorna o primeiro valor para _`key`_. Se não houver valor associado com a chave, retorna _`default`_ se fornecido, em outros casos retorna `None`
 
-- <code>doc.query().getlist(<i>key</i>)</code> : retorna a lista de valores associados com _`key`_ (uma lista vazia se não houver valor para a chave)
+- <code>doc.query.getlist(<i>key</i>)</code> : retorna a lista de valores associados com _`key`_ (uma lista vazia se não houver valor para a chave)
 
-- <code>doc.query().getvalue(<i>key[,default]</i>)</code> : o mesmo que `doc.query()[key]`, mas retorna _`default`_ ou `None` se não houver valor para a chave
+- <code>doc.query.getvalue(<i>key[,default]</i>)</code> : o mesmo que `doc.query()[key]`, mas retorna _`default`_ ou `None` se não houver valor para a chave

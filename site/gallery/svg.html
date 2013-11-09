@@ -1,47 +1,38 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<title>Example getIntersectionList</title>
 <meta charset="iso-8859-1">
-<script src="../../src/brython.js"></script>
-<script src="../../src/py_dom.js"></script>
-<script src="../../src/py_utils.js"></script>
+
+<script type="text/javascript" src="../../src/brython.js"></script>
+
+<script type="text/python">
+import svg
+titre = svg.text('Titre',x=70,y=25,font_size=22,text_anchor="middle")
+cercle = svg.circle(cx="70",cy="120",r="40",stroke="black",stroke_width="2",fill="red")
+
+panel = doc['panel']
+panel <= titre
+panel <= cercle
+</script>
+
 </head>
 <body onLoad="brython(1)">
-<script type="text/python">
-def show_inter(ev):
-  rpos = doc['reference_rect'].getBBox()
-  inter = root.getIntersectionList(rpos, None)
-  if inter:
-      print('intersection : %s' %','.join([elt.nodeName for elt in inter]))
-      for elt in inter:
-          elt.setAttribute('stroke','red')
- 
-root = doc['root']
-</script>
+<h1>SVG pie chart</h1>
+<p>
 
-<script>
-function getIntersectedElements()
-{
-  var svgroot = document.getElementById('root')
-  var rpos = document.getElementById('reference_rect').getBBox()
-  var inter = root.getIntersectionList(rpos, null)
-  for(var i=0;i<inter.length;i++){inter[i].setAttribute("stroke","blue")}
-}
-
-</script>
-<svg id="root"
-xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-width="200" height="200" style="background-color: lightgray;">
-<rect id="reference_rect" x="30" y="50" width="10" height="10" stroke="black" stroke-width="1" fill="none"/>
-<line x1="10", y1="80", x2="80", y2="10", stroke="black", stroke-width="1"/>
-<line x1="30", y1="100", x2="100", y2="30", stroke="black", stroke-width="1"/>
-<line x1="65", y1="135", x2="135", y2="65", stroke="black", stroke-width="1"/>
-<line x1="100", y1="170", x2="170", y2="100", stroke="black", stroke-width="1"/>
-<line x1="120", y1="190", x2="190", y2="120", stroke="black", stroke-width="1"/>
+<table>
+<tr>
+<td id="data"></td>
+<td>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+    width="400" height="300" style="border-style:solid;border-width:1;border-color:#000;">
+  <g id="panel">
+  </g>
 </svg>
-<br>
-<input type="button" value="Color Intersected Lines" onclick="show_inter()"/>
-<input type="button" value="Color Intersected Lines - js" onclick="getIntersectedElements()"/>
+</td>
+</tr>
+</table>
+
+
 </body>
 </html>

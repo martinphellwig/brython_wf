@@ -16,7 +16,9 @@ from html import *
 def on_complete(req):
     log(req.text)
 
-def update(elt):
+def update(ev):
+    elt = ev.target
+    print('store',ev.target.id)
     storage[elt.id]=elt.value
     log(storage[elt.id])
 
@@ -33,7 +35,9 @@ for i in range(nb_lines):
             value = storage[cell_id]
         except KeyError:
             value = ""
-        row <= TD(INPUT(id=cell_id,value=value,onchange="update(this)"))
+        field = INPUT(id=cell_id,value=value)
+        field.bind('change',update)
+        row <= TD(field)
     tb <= row
 t <= tb
 doc <= t

@@ -34,7 +34,8 @@ You can also create an object without argument, then build it up:
 - to add attributes, use the classic Python syntax : `object.attribute = value`
 Example :    
 >    link = A()
->    link <= B('connexion')    link.href = 'http://example.com'
+>    link <= B('connexion')
+>    link.href = 'http://example.com'
 
 You can also create multiple elements at the same level by using the plus (+) sign :
 
@@ -52,7 +53,7 @@ It is important to note that the creation of an instance of a class involves cre
 
 >    link = A('Python', href='http://www.python.org')
 >    doc <= 'Official Python Website: ' + link
->    doc <= P( + 'I repeat: the site is ' + link
+>    doc <= P() + 'I repeat: the site is ' + link
 
 the link will only show in the second line. One solution is to clone the original object :
 
@@ -86,15 +87,5 @@ As a rule of thumb, instances of classes HTML attributes have the same name as t
 >    for child in dom_object:
 >       (...)
 
-## Query string
 
-`doc` supports the function `query()`, called with no argument, that returns the content of the query string as an object with the following attributes and methods :
-
-- <code>doc.query()[<i>key</i>]</code> : returns the value associated with _`key`_. If a key has more than one value (which might be the case for SELECT tags with the attribute MULTIPLE set, or for `<INPUT type="checkbox">` tags), returns a list of the values. Raises `KeyError` if there is no value for the key
-
-- <code>doc.query().getfirst(<i>key[,default]</i>)</code> : returns the first value for _`key`_. If no value is associated with the key, returns _`default`_ if provided, else returns `None`
-
-- <code>doc.query().getlist(<i>key</i>)</code> : returns the list of values associated with _`key`_ (the empty list if there is no value for the key)
-
-- <code>doc.query().getvalue(<i>key[,default]</i>)</code> : same as `doc.query()[key]`, but returns _`default`_ or `None` if there is no value for the key
 

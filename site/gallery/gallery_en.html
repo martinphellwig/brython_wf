@@ -16,7 +16,7 @@ from html import *
 # detect language
 language = "en" # default
 has_req = False
-lang = doc.query().getfirst("lang")
+lang = doc.query.getfirst("lang")
 if lang and lang in ["en","fr","es","pt"]:
     has_req = True
     language = lang
@@ -88,12 +88,10 @@ for item in ['home','console','gallery','doc','download','dev','groups']:
 <br>
 <br><a target="_blank" href="svg_pie_chart.html">SVG pie chart</a>
 <br><a target="_blank" href="solitaire.html">SVG solitaire game</a>
-<br><a target="_blank" href="isolitaire.html">SVG solitaire game for touchscreens</a>
 <br><a target="_blank" href="geoloc.html">geolocation</a> by François Dion
 <br><a target="_blank" href="geo.html">geolocation iPhone version</a> by François Dion
 <br><a target="_blank" href="ruskey.html">Russian keyboard</a> by François Dion
 <br><a target="_blank" href="kanban.html">pseudo Kanban simulator</a> by Pedro Rodriguez
-
 <br><a target="_blank" href="ui/index.html">UI Components</a>
 
 <p><i>next examples require HTML5</i>

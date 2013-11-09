@@ -1,12 +1,10 @@
-$module = {
-    __getattr__ : function(attr){
-        var res = this[attr]
-        if(res===undefined){throw AttributeError("module re has no attribute '"+attr+"'")}
-        return res
-    },
-    I : 'i',
-    M : 'm',
-    findall : function(pattern,string,flags){
+$module = (function(){
+    obj = {__class__:$module,
+        __str__: function(){return "<module 're'>"}
+    }
+    obj.I = 'i'
+    obj.M = 'm'
+    obj.findall = function(pattern,string,flags){
         var $ns=$MakeArgs('re.search',arguments,['pattern','string'],{},'args','kw')
         var args = $ns['args']
         if(args.length>0){var flags=args[0]}
@@ -16,12 +14,12 @@ $module = {
         var jsmatch = string.match(jsp)
         if(jsmatch===null){return []}
         return jsmatch
-    },
-    search : function(pattern,string){
+    }
+    obj.search = function(pattern,string){
         var $ns=$MakeArgs('re.search',arguments,['pattern','string'],{},'args','kw')
         var args = $ns['args']
         if(args.length>0){var flags=args[0]}
-        else{var flags = $ns['kw'].get('flags','')}
+        else{var flags = getattr($ns['kw'],'get')('flags','')}
         var jsp = new RegExp(pattern,flags)
         var jsmatch = string.match(jsp)
         if(jsmatch===null){return None}
@@ -47,13 +45,13 @@ $module = {
         mo.start = function(){return jsmatch.index}
         mo.string = string
         return JSObject(mo)
-    },
-    sub : function(pattern,repl,string){
+    }
+    obj.sub = function(pattern,repl,string){
         var $ns=$MakeArgs('re.search',arguments,['pattern','repl','string'],{},'args','kw')
         for($var in $ns){eval("var "+$var+"=$ns[$var]")}
         var args = $ns['args']
-        var count = $ns['kw'].get('count',0)
-        var flags = $ns['kw'].get('flags','')
+        var count = $DictDict.get($ns['kw'],'count',0)
+        var flags = $DictDict.get($ns['kw'],'flags','')
         if(args.length>0){var count=args[0]}
         if(args.length>1){var flags=args[1]}
         if(typeof repl==="string"){
@@ -92,15 +90,17 @@ $module = {
         if(typeof repl==='function'){return string.replace(jsp,$repl1)}
         else{return string.replace(jsp,repl)}
     }
-}
+    obj.match = (function(search_func){
+        return function(){
+            // match is like search but pattern must start with ^
+            pattern = arguments[0]
+            if(pattern.charAt(0)!=='^'){pattern = '^'+pattern}
+            var args = [pattern]
+            for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+            return search_func.apply(null,args)
+        }
+    })(obj.search)
 
-$module.match = function(){
-    // match is like search but pattern must start with ^
-    pattern = arguments[0]
-    if(pattern.charAt(0)!=='^'){pattern = '^'+pattern}
-    var args = [pattern]
-    for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    return $module.search.apply(null,args)
+    return obj
 }
-$module.__class__ = $module // defined in $py_utils
-$module.__str__ = function(){return "<module 're'>"}
+)()

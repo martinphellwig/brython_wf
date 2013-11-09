@@ -183,19 +183,15 @@ class OrderedDict(dict):
         return size
 
     #fixme brython..  Issue with _abcoll, which contains MutableMapping
-    #update = __update = MutableMapping.update
-    update = MutableMapping.update
-    __update = MutableMapping.update
+    update = __update = MutableMapping.update
     keys = MutableMapping.keys
     values = MutableMapping.values
     items = MutableMapping.items
     __ne__ = MutableMapping.__ne__
 
-    #fix me brython
-    #__marker = object()
+    __marker = object()
 
-    #def pop(self, key, default=__marker):
-    def pop(self, key, default=object()):
+    def pop(self, key, default=__marker):
         '''od.pop(k[,d]) -> v, remove specified key and return the corresponding
         value.  If key is not found, d is returned if given, otherwise KeyError
         is raised.
@@ -205,9 +201,7 @@ class OrderedDict(dict):
             result = self[key]
             del self[key]
             return result
-        #fix me brython
-        #if default is self.__marker:
-        if default is object():
+        if default is self.__marker:
             raise KeyError(key)
         return default
 

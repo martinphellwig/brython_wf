@@ -7,7 +7,7 @@ Le module intégré `html` définit des classes correspondant aux balises HTML, 
 
 La syntaxe pour créer un objet (par exemple un lien hypertexte) est :
 
-><code>A(_content,[attributes]_)</code>
+><code>A([_content,[attributes]_]])</code>
 
 - *content* est le noeud "fils" de l'objet ; il peut s'agir d'un objet Python comme une chaine de caractères, une liste, etc, ou bien une instance d'une autre classe du module `html`
 - *attributes* est une suite de mots-clés correspondant aux attributs de la balise HTML. Ces attributs doivent être fournis avec la syntaxe Javascript, pas CSS : *backgroundColor* et pas *background-color*

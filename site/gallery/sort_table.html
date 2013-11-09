@@ -7,7 +7,22 @@ body,td,th{font-family:sans-serif}
 a.sort_link{margin-left:10px;text-decoration:none}
 </style>
 
-<script type="text/javascript" src="/src/brython.js"></script>
+<script type="text/javascript" src="../../src/brython_builtins.js"></script>
+<script type="text/javascript" src="../../src/py2js.js"></script>
+<script type="text/javascript" src="../../src/py_utils.js"></script>
+<script type="text/javascript" src="../../src/py_object.js"></script>
+<script type="text/javascript" src="../../src/py_builtin_functions.js"></script>
+<script type="text/javascript" src="../../src/py_set.js"></script>
+<script type="text/javascript" src="../../src/js_objects.js"></script>
+<script type="text/javascript" src="../../src/py_import.js"></script>
+
+<script type="text/javascript" src="../../src/py_int.js"></script>
+<script type="text/javascript" src="../../src/py_float.js"></script>
+<script type="text/javascript" src="../../src/py_dict.js"></script>
+<script type="text/javascript" src="../../src/py_list.js"></script>
+<script type="text/javascript" src="../../src/py_string.js"></script>
+<script type="text/javascript" src="../../src/py_dom.js"></script>
+<script type="text/javascript" src="../../src/py_ajax.js"></script>
 
 </head>
 <body onLoad="brython(1)">
@@ -21,7 +36,8 @@ orders = {}
 
 doc <= html.IMG(src="../brython.png")
 
-def sort_by_col(cell,numeric=False):
+def sort_by_col(evt,numeric=False):
+    cell = evt.target
     th_elt = cell.parent # TH cell
     for i,th in enumerate(title.children):
         if th==th_elt:
@@ -89,8 +105,10 @@ doc <= html.H2("Pays d'Europe")
 table = html.TABLE()
 t = html.TBODY()
 title = html.TR()
-link = html.BUTTON('\u2191\u2193',onClick="sort_by_col(this)")
-link_num = html.BUTTON('\u2191\u2193',onClick="sort_by_col(this,true)")
+link = html.BUTTON('\u2191\u2193')
+link.bind('click',sort_by_col)
+link_num = html.BUTTON('\u2191\u2193')
+link_num.bind('click',lambda ev:sort_by_col(ev,True))
 link1 = link.clone()
 title <= html.TH('Pays'+link)
 title <= html.TH('Capitale'+link.clone())
@@ -112,6 +130,8 @@ for row in rows:
 
 table <= t
 doc <= table
+
+x = html.P()+html.A('r')
 
 foot = html.P()+html.I('Ecrit en '+html.A('Brython',href="http://www.brython.info"))
 

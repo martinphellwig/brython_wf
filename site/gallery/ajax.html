@@ -7,10 +7,10 @@ body,td,th{font-family:sans-serif}
 a.sort_link{margin-left:10px;text-decoration:none}
 </style>
 
-<script type="text/javascript" src="/src/brython.js"></script>
+<script type="text/javascript" src="../../src/brython.js"></script>
 
 </head>
-<body onLoad="brython()">
+<body onLoad="brython(1)">
 
 <div id="result">(empty)</div>
 <button onClick="go('ajax_data.txt')">get text file</button>
@@ -20,6 +20,8 @@ a.sort_link{margin-left:10px;text-decoration:none}
 <button onClick="go('/cgi-bin/timeout.py')">timeout</button>
 
 <script id="ascript" type="text/python">
+import ajax
+
 def on_complete(req):
     print(req.readyState)
     print('status',req.status)
@@ -34,20 +36,19 @@ def err_msg():
 timeout = 4
 
 def go(url):
-    req = ajax()
-    req.on_complete = on_complete
+    req = ajax.ajax()
+    req.bind('complete',on_complete)
     req.set_timeout(timeout,err_msg)
     req.open('GET',url,True)
     req.send()
 
 def post(url):
-    req = ajax()
-    req.on_complete = on_complete
+    req = ajax.ajax()
+    req.bind('complete',on_complete)
     req.set_timeout(timeout,err_msg)
     req.open('POST',url,True)
     req.set_header('content-type','application/x-www-form-urlencoded')
     req.send({'foo':34})
-
 
 </script>
 

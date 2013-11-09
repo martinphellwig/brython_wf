@@ -94,18 +94,9 @@ def run():
     return state
 
 # load a Python script
-def on_complete(req):
-    editor.setValue(req.text)
-    if has_ace:
-        editor.scrollToRow(0)
-        editor.gotoLine(0)
-
 def load(evt):
-    _name=evt.target.value
-    req = ajax()
-    req.on_complete = on_complete
-    req.open('GET',_name+'?foo=%s' %time.time(),False)
-    req.send()
+    _name=evt.target.value+'?foo=%s' %time.time()
+    editor.setValue(open(_name).read())
 
 def show_js():
     src = editor.getValue()

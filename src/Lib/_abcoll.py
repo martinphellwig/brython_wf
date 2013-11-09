@@ -8,7 +8,6 @@ via collections; they are defined here only to alleviate certain
 bootstrapping issues.  Unit tests are in test_collections.
 """
 
-#fixme brython
 #from abc import ABCMeta, abstractmethod
 import sys
 
@@ -54,7 +53,6 @@ def abstractmethod(self):
 ### ONE-TRICK PONIES ###
 
 
-#fixme brython
 #class Iterable(metaclass=ABCMeta):
 class Iterable:
 
@@ -71,7 +69,6 @@ class Iterable:
         return NotImplemented
 
 
-#fixme brython
 #class Sized(metaclass=ABCMeta):
 class Sized:
 
@@ -87,7 +84,6 @@ class Sized:
         return NotImplemented
 
 
-#fixme brython
 #class Container(metaclass=ABCMeta):
 class Container:
 
@@ -153,17 +149,13 @@ class MutableMapping(Mapping):
     def __delitem__(self, key):
         raise KeyError
 
-    #fixme brython
-    #__marker = object()
+    __marker = object()
 
-    #def pop(self, key, default=__marker):
-    def pop(self, key, default=object()):
+    def pop(self, key, default=__marker):
         try:
             value = self[key]
         except KeyError:
-            #fixme brython
-            #if default is self.__marker:
-            if default is object():
+            if default is self.__marker:
                 raise
             return default
         else:
@@ -214,5 +206,4 @@ class MutableMapping(Mapping):
             self[key] = default
         return default
 
-#fixme brython
 #MutableMapping.register(dict)

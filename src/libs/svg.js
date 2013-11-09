@@ -7,22 +7,22 @@ function $SVGTag(tag_name,args){
     // represents an SVG tag
     var $i = null
     var $obj = this
-    elt = $DOMNode(document.createElementNS($svgNS,tag_name))
+    var obj = $DOMNode(document.createElementNS($svgNS,tag_name))
     if(args!=undefined && args.length>0){
         $start = 0
         $first = args[0]
         // if first argument is not a keyword, it's the tag content
-        if(!isinstance($first,$Kw)){
+        if($first.__class__!==$Kw){
             $start = 1
             if(isinstance($first,[str,int,float])){
                 txt = document.createTextNode(str($first))
-                elt.appendChild(txt)
-            } else if(isinstance($first,$AbstractTag)){
+                obj.elt.appendChild(txt)
+            } else if($first.__class__===$TagSumDict){
                 for($i=0;$i<$first.children.length;$i++){
-                    elt.appendChild($first.children[$i])
+                    obj.elt.appendChild($first.children[$i])
                 }
             } else {
-                try{elt.appendChild($first)}
+                try{obj.elt.appendChild($first.elt)}
                 catch(err){$raise('ValueError','wrong element '+$first)}
             }
         }
@@ -30,23 +30,23 @@ function $SVGTag(tag_name,args){
         for($i=$start;$i<args.length;$i++){
             // keyword arguments
             $arg = args[$i]
-            if(isinstance($arg,$Kw)){
+            if($arg && $arg.__class__===$Kw){
                 if($arg.name.toLowerCase().substr(0,2)=="on"){ // events
-                    eval('elt.'+$arg.name.toLowerCase()+'=function(){'+$arg.value+'}')
+                    eval('DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
                 }else if($arg.name.toLowerCase()=="style"){
-                    elt.set_style($arg.value)
+                    DOMNode.set_style(obj,$arg.value)
                 }else if($arg.name.toLowerCase().indexOf("href") !== -1){ // xlink:href
-                    elt.setAttributeNS( "http://www.w3.org/1999/xlink","href",$arg.value)
+                    obj.elt.setAttributeNS( "http://www.w3.org/1999/xlink","href",$arg.value)
                 } else {
                     if($arg.value!==false){
                         // option.selected=false sets it to true :-)
-                        elt.setAttributeNS(null,$arg.name.replace('_','-'),$arg.value)
+                        obj.elt.setAttributeNS(null,$arg.name.replace('_','-'),$arg.value)
                     }
                 }
             }
         }
     }
-    return elt
+    return obj
 }
 
 // SVG

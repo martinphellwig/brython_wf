@@ -1,7 +1,7 @@
 Problema
 --------
 
-Uso de las etiquetas HTML básicas: bold, italic, headers...
+Uso de las etiquetas HTML b&aacute;sicas: bold, italic, headers...
 
 
 Soluci&oacute;n
@@ -28,7 +28,7 @@ Soluci&oacute;n
     </body>
     </html>
 
-<button onclick="fill_zone()">Pruébalo</button>
+<button onclick="fill_zone()">Pru&eacute;balo</button>
 </td>
 <td id="zone" style="background-color:#FF7400;text-align:center;">Contenido inicial<p>
 </td>
@@ -43,11 +43,11 @@ def fill_zone():
     doc['zone'] <= html.B("Hola mundo !")
 </script>
 
-`B` es una función definida en el módulo `html`, que coincide con la etiqueta HTML `<B>` (bold)
+`B` es una funci&oacute;n definida en el m&oacute;dulo `html`, que coincide con la etiqueta HTML `<B>` (bold)
 
 `B("text")` devuelve un objeto que conincide con el HTML `<b>text</b>`
 
-Todas las etiquetas HTML tienen su propia función : `I, H1, H2,...`. Puedes anidar funciones, como se muestra en la segunda l&iacute;nea :
+Todas las etiquetas HTML tienen su propia funci&oacute;n : `I, H1, H2,...`. Puedes anidar funciones, como se muestra en la segunda l&iacute;nea :
 
     doc <= html.H4(html.I("Python en el navegador"))
 

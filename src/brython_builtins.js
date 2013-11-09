@@ -1,9 +1,9 @@
 // global object with brython built-ins
-__BRYTHON__ = new Object()
+__BRYTHON__ = {}
 __BRYTHON__.__getattr__ = function(attr){return this[attr]}
 __BRYTHON__.__setattr__ = function(attr,value){
     // limited to some attributes
-    if(['debug'].indexOf(attr)>-1){this[attr]=value}
+    if(['debug'].indexOf(attr)>-1){__BRYTHON__[attr]=value}
     else{throw AttributeError('__BRYTHON__ object has no attribute '+attr)}
 }
 
@@ -57,5 +57,6 @@ __BRYTHON__.has_websocket = (function(){
     catch(err){return false}
 })()
 
-__BRYTHON__.version_info = [1,1,"20131026-171611"]
+__BRYTHON__.version_info = [1,2,"20131103-172946"]
 __BRYTHON__.path = [] // path for .py modules
+

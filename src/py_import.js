@@ -1,5 +1,14 @@
 // import modules
 
+$ModuleDict = {
+    __class__ : $type,
+    __name__ : 'module',
+    __repr__:function(){return "<class 'module'>"},
+    __str__:function(){return "<class 'module'>"},
+    toString:function(){return "<class 'module'>"},
+}
+$ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
+
 function $importer(){
     // returns the XMLHTTP object to handle imports
     if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -67,7 +76,7 @@ function $import_js_module(module,filepath,module_contents){
         throw ImportError("name '$module' is not defined in module")
     }
     // add class and __str__
-    $module.__class__ = $type
+    $module.__class__ = $ModuleDict
     $module.__repr__ = function(){return "<module '"+module.name+"' from "+filepath+" >"}
     $module.__str__ = function(){return "<module '"+module.name+"' from "+filepath+" >"}
     $module.__file__ = filepath
@@ -152,16 +161,18 @@ function $import_py_module(module,path,module_contents) {
             $module[attr] = __BRYTHON__.scope[module.name].__dict__[attr]
         }
         // add class and __str__
-        $module.__class__ = $type
+        $module.__class__ = $ModuleDict
         $module.__repr__ = function(){return "<module '"+module.name+"' from "+path+" >"}
         $module.__str__ = function(){return "<module '"+module.name+"' from "+path+" >"}
+        $module.toString = function(){return "module "+module.name}
         $module.__file__ = path
         $module.__initializing__ = false
         return $module
     }catch(err){
         console.log('error running module '+module.name)
-        console.log(err)
-        eval('throw '+err.name+'(err.message)')
+        console.log(''+err)
+        throw err
+        //eval('throw '+err.name+'(err.message)')
     }
 }
 
@@ -225,11 +236,29 @@ function $import_list_intra(modules){
         if(mod_name.substr(0,2)=='$$'){mod_name=module.substr(2)}
         var mod;
         if(__BRYTHON__.modules[mod_name]===undefined){
-            var module = {'name':mod_name}
-           mod = $import_module_search_path_list(module,[search_path])
-           __BRYTHON__.modules[mod_name]=mod
+           // see if the last element in the search_path is a module
+           var _dirs=search_path.split('/')
+           var mymodule=_dirs.pop()
+           var mysearch=_dirs.join('/')
+           mod = $import_module_search_path_list({'name':mymodule},[mysearch])
+
+           var _found=True
+           if (mod !== undefined) {
+              __BRYTHON__.modules[mymodule]=mod
+              // now check to  see if this module has an attribute of mod_name
+              if (getattr(mod, mod_name) !== undefined) {
+                 _found=False
+                 res.push(mod)
+              }
+           }
+
+           if (! _found) {
+              var module = {'name':mod_name}
+              mod = $import_module_search_path_list(module,[search_path])
+              __BRYTHON__.modules[mod_name]=mod
+           }
         } else{
-            console.log('module '+mod_name+' found in __BRYTHON__ : '+__BRYTHON__.modules[mod_name])
+           console.log('module '+mod_name+' found in __BRYTHON__ : '+__BRYTHON__.modules[mod_name])
            mod=__BRYTHON__.modules[mod_name]
         }
         res.push(mod)

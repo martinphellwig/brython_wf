@@ -73,7 +73,7 @@ function $isNodeList(nodes) {
 
 var $DOMEventAttrs_W3C = ['NONE','CAPTURING_PHASE','AT_TARGET','BUBBLING_PHASE',
     'type','target','currentTarget','eventPhase','bubbles','cancelable','timeStamp',
-    'stopPropagation','preventDefault','initEvent','changedTouches']
+    'stopPropagation','preventDefault','initEvent']
 
 var $DOMEventAttrs_IE = ['altKey','altLeft','button','cancelBubble',
     'clientX','clientY','contentOverflow','ctrlKey','ctrlLeft','data',
@@ -121,48 +121,34 @@ $NodeTypes = {1:"ELEMENT",
     12:"NOTATION"
 }
 
-
-function DOMEvent(){}
-DOMEvent.__class__ = $type
-DOMEvent.toString = function(){return "<class 'DOMEvent'>"}
-
-function $Touch(obj){
-    var res = object()
-    res.clientX = int(obj.clientX)
-    res.clientY = int(obj.clientY)
-    res.identifier = int(obj.identifier)
-    res.target = obj.target
-    res.__getattr__ = function(attr){return this[attr]}
-    res.__class__ = "Touch"
-    return res  
+$DOMEventDict = {__class__:$type,
+    __name__:'DOMEvent'
 }
 
-function $TouchList(obj){
-    var res = []
-        for(var i=0; i<obj.length;i++){
-                res.push($Touch(obj[i]))
-        }
+$DOMEventDict.__mro__ = [$DOMEventDict,$ObjectDict]
+
+$DOMEventDict.__getattribute__ = function(self,attr){
+    if(attr=="x"){return $mouseCoords(self).x}
+    if(attr=="y"){return $mouseCoords(self).y}
+    if(attr=="data"){
+        if(self.dataTransfer!==undefined){return $Clipboard(self.dataTransfer)}
+        else{return self['data']}
+    }
+    if(attr=="target"){
+        if(self.target===undefined){return $DOMNode(self.srcElement)}
+        else{return $DOMNode(self.target)}
+    }
+    var res =  self[attr]
+    if(res!==undefined){
+        if(typeof res=='function'){return function(){return res.apply(self,arguments)}}
         return res
+    }else{
+        throw AttributeError("object DOMEvent has no attribute '"+attr+"'")
+    }
 }
-
-$TouchProperties = {'changedTouches':'','targetTouches':'','touches':''}
 
 function $DOMEvent(ev){
-    ev.__class__ = DOMEvent
-    ev.__getattr__ = function(attr){
-        if(attr=="x"){return $mouseCoords(ev).x}
-        if(attr=="y"){return $mouseCoords(ev).y}
-        if(attr in $TouchProperties){return $TouchList(ev[attr])}
-        if(attr=="data"){
-            if(ev.dataTransfer!==undefined){return new $Clipboard(ev.dataTransfer)}
-            else{return ev['data']}
-        }
-        if(attr=="target"){
-            if(ev.target===undefined){return $DOMNode(ev.srcElement)}
-            else{return $DOMNode(ev.target)}
-        }
-        return $getattr(ev,attr)
-    }
+    ev.__class__ = $DOMEventDict
     if(ev.preventDefault===undefined){ev.preventDefault = function(){ev.returnValue=false}}
     if(ev.stopPropagation===undefined){ev.stopPropagation = function(){ev.cancelBubble=true}}
     ev.__repr__ = function(){return '<DOMEvent object>'}
@@ -170,15 +156,28 @@ function $DOMEvent(ev){
     ev.toString = ev.__str__
     return ev
 }
+$DOMEvent.__class__ = $factory
+$DOMEvent.$dict = $DOMEventDict
+
+$ClipboardDict = {
+    __class__:$type,
+    __name__:'Clipboard'
+}
+
+$ClipboardDict.__getitem__ = function(self,name){
+    return self.data.getData(name)
+}
+
+$ClipboardDict.__mro__ = [$ClipboardDict,$ObjectDict]
+
+$ClipboardDict.__setitem__ = function(self,name,value){
+    self.data.setData(name,value)
+}
 
 function $Clipboard(data){ // drag and drop dataTransfer
     return {
         data : data,
-        __class__ : "Clipboard",
-        __getattr__ : function(attr){return this[attr]},
-        __getitem__ : function(name){return data.getData(name)},
-        __setitem__ : function(name,value){data.setData(name,value)},
-        __setattr__ : function(attr,value){data[attr]=value}
+        __class__ : $ClipboardDict,
     }
 }
 
@@ -242,63 +241,62 @@ dom.File.__str__ = function(){return "<class 'File'>"}
 dom.FileReader.__class__ = $type
 dom.FileReader.__str__ = function(){return "<class 'FileReader'>"}
 
-function $OptionsClass(parent){ 
-    // class for collection "options" of a SELECT tag
-    // implements Python list interface
-    this.parent = parent
-
-    this.__class__ = 'options'
-   
-    this.__delitem__ = function(arg){parent.options.remove(arg)}
-
-    this.__getattr__ = function(attr){
-        if(this['get_'+attr]!==undefined){return this['get_'+attr]}
-        else if(this[attr]!==undefined){
-            var res = $JS2Py(this[attr])
-            return res
-        }
-        else{throw AttributeError("'DOM.Options' object has no attribute '"+attr+"'")}
+function $Options(parent){
+    return {
+        __class__:$OptionsDict,
+        parent:parent
     }
-    
-    this.__getitem__ = function(key){
-        return $DOMNode(parent.options[key])
-    }
-    
-    this.__len__ = function() {return parent.options.length}
-
-    this.__setattr__ = function(attr,value){
-        parent.options[attr]=value
-    }
-
-    this.__setitem__ = function(attr,value){
-        parent.options[attr]= $JS2Py(value)
-    }
-    
-    this.__str__ = function(){return "<object Options wraps "+parent.options+">"}
-
-    this.get_append = function(element){
-        parent.options.add(element)
-    }
-
-    this.get_insert = function(index,element){
-        if(index===undefined){parent.options.add(element)}
-        else{parent.options.add(element,index)}
-    }
-
-    this.get_item = function(index){
-        return parent.options.item(index)
-    }
-    
-    this.get_namedItem = function(name){
-        return parent.options.namedItem(name)
-    }
-    
-    this.get_remove = function(arg){parent.options.remove(arg)}
-    
-    this.toString = this.__str__
-    
+}
+$OptionsDict = {
+    __class__:$type,
+    __name__:'Options'
 }
 
+$OptionsDict.__delitem__ = function(self,arg){
+    self.parent.options.remove(arg.elt)
+}
+
+$OptionsDict.__getitem__ = function(self,key){
+    return $DOMNode(self.parent.options[key])
+}
+    
+$OptionsDict.__len__ = function(self) {return self.parent.options.length}
+
+$OptionsDict.__mro__ = [$OptionsDict,$ObjectDict]
+
+$OptionsDict.__setattr__ = function(self,attr,value){
+    self.parent.options[attr]=value
+}
+
+$OptionsDict.__setitem__ = function(self,attr,value){
+    self.parent.options[attr]= $JS2Py(value)
+}
+
+$OptionsDict.__str__ = function(self){
+    return "<object Options wraps "+self.parent.options+">"
+}
+
+$OptionsDict.append = function(self,element){
+    self.parent.options.add(element.elt)
+}
+
+$OptionsDict.insert = function(self,index,element){
+    if(index===undefined){self.parent.options.add(element.elt)}
+    else{self.parent.options.add(element.elt,index)}
+}
+
+$OptionsDict.item = function(self,index){
+    return self.parent.options.item(index)
+}
+    
+$OptionsDict.namedItem = function(self,name){
+    return self.parent.options.namedItem(name)
+}
+    
+$OptionsDict.remove = function(self,arg){self.parent.options.remove(arg.elt)}
+    
+//$OptionsDict.toString = $OptionsDict.__str__
+    
 function $Location(){ // used because of Firefox bug #814622
     var obj = new object()
     for(var x in window.location){
@@ -324,111 +322,128 @@ function $Location(){ // used because of Firefox bug #814622
 win =  new $JSObject(window)
 
 function DOMNode(){} // define a Node object
+DOMNode.__class__ = $type
+DOMNode.__mro__ = [DOMNode,object]
+DOMNode.__name__ = 'DOMNode'
+DOMNode.$dict = DOMNode // for isinstance
+DOMNode.$factory = DOMNode
+
 function $DOMNode(elt){ 
     // returns the element, enriched with an attribute $brython_id for 
     // equality testing and with all the attributes of Node
+    var res = {}
+    res.$dict = {} // used in getattr
+    res.elt = elt // DOM element
+    res.events = new Object() // maps event types to a list of callback functions
     if(elt['$brython_id']===undefined||elt.nodeType===9){
         // add a unique id for comparisons
-        elt.$brython_id=Math.random().toString(36).substr(2, 8)
+        res.$brython_id=Math.random().toString(36).substr(2, 8)
         // add attributes of Node to element
-        for(var attr in DOMNode.prototype){elt[attr]=DOMNode.prototype[attr]}
-        elt.__repr__ = elt.__str__ = $DOMtoString
+        res.__repr__ = res.__str__ = res.toString = function(){
+            var res = "<DOMObject object type '"
+            return res+$NodeTypes[elt.nodeType]+"' name '"+elt.nodeName+"'>"
+        }
     }
-    return elt
+    res.__class__ = DOMNode
+    return res
 }
 
-DOMNode.prototype.__add__ = function(other){
+DOMNode.__add__ = function(self,other){
     // adding another element to self returns an instance of $TagSum
     var res = $TagSum()
-    res.children = [this]
+    res.children = [self]
     if(isinstance(other,$TagSum)){
         for(var $i=0;$i<other.children.length;$i++){res.children.push(other.children[$i])}
     } else if(isinstance(other,[str,int,float,list,dict,set,tuple])){
-        res.children.push(document.createTextNode(str(other)))
+        res.children.push($DOMNode(document.createTextNode(str(other))))
     }else{res.children.push(other)}
     return res
 }
 
-DOMNode.prototype.__bool__ = function(){return true}
+DOMNode.__bool__ = function(self){return true}
 
-DOMNode.prototype.__class__ = DOMObject
+DOMNode.__class__ = $type
 
-DOMNode.prototype.__contains__ = function(key){
-    try{this.__getitem__(key);return True}
+DOMNode.__contains__ = function(self,key){
+    try{self.__getitem__(key);return True}
     catch(err){return False}
 }
 
-DOMNode.prototype.__del__ = function(){
+DOMNode.__del__ = function(self){
     // if element has a parent, calling __del__ removes object
     // from the parent's children
-    if(!this.parentNode){
-        throw ValueError("can't delete "+str(this))
+    if(!self.elt.parentNode){
+        throw ValueError("can't delete "+str(elt))
     }
-    this.parentNode.removeChild(this)
+    self.elt.parentNode.removeChild(self.elt)
 }
 
-DOMNode.prototype.__delitem__ = function(key){
-    if(this.nodeType===9){ // document : remove by id
+DOMNode.__delitem__ = function(self,key){
+    if(self.elt.nodeType===9){ // document : remove by id
         var res = document.getElementById(key)
         if(res){res.parentNode.removeChild(res)}
         else{throw KeyError(key)}
     }else{ // other node : remove by rank in child nodes
-        this.removeChild(this.childNodes[key])
+        self.elt.removeChild(self.elt.childNodes[key])
     }
 }
 
-DOMNode.prototype.__eq__ = function(other){
-    if(this.isEqualNode!==undefined){
-        try{return this.isEqualNode(other)}
-        catch(err){return false}
-        return false
-    }
-    else if(this.$brython_id!==undefined){return this.$brython_id===other.$brython_id}
-    else{throw NotImplementedError('__eq__ is not implemented')}
+DOMNode.__eq__ = function(self,other){
+    return self.elt==other.elt
 }
 
-DOMNode.prototype.__getattr__ = function(attr){
-    if(attr==='__class__'){return DOMObject}
-    if(this['get_'+attr]!==undefined){return this['get_'+attr]()}
-    if(this.getAttribute!==undefined){
-        var res = this.getAttribute(attr)
+DOMNode.__getattribute__ = function(self,attr){
+    if(['children','html','left','parent','query','text','top','value'].indexOf(attr)>-1){
+        return DOMNode[attr](self)
+    }
+    if(attr=='remove'){
+        return function(){DOMNode[attr](self,arguments[0])}
+    }
+    if(attr=='$$location'){attr='location'}
+    if(self.elt.getAttribute!==undefined){
+        res = self.elt.getAttribute(attr)
         // IE returns the properties of a DOMNode (eg parentElement)
         // as "attribute", so we must check that this[attr] is not
         // defined
-        if(res!==undefined&&res!==null&&this[attr]===undefined){
+        if(res!==undefined&&res!==null&&self.elt[attr]===undefined){
             // now we're sure it's an attribute
             return res
         }
     }
-    if(this[attr]!==undefined){
-        var res = this[attr]
+    if(self.elt[attr]!==undefined){
+        res = self.elt[attr]
         if(typeof res==="function"){
-            var func = (function(obj){
+            var func = (function(elt){
                 return function(){
                     var args = []
                     for(var i=0;i<arguments.length;i++){
                         if(isinstance(arguments[i],JSObject)){
                             args.push(arguments[i].js)
+                        }else if(isinstance(arguments[i],DOMNode)){
+                            args.push(arguments[i].elt)
                         }else if(arguments[i]===None){
                             args.push(null)
                         }else{
                             args.push(arguments[i])
                         }
                     }
-                    return $JS2Py(res.apply(obj,args))
+                    return $JS2Py(res.apply(elt,args))
                 }
-            })(this)
+            })(self.elt)
             func.__name__ = attr
             return func
+        }else if(attr=='options'){
+            return $Options(self.elt)
         }else{
-            return $JS2Py(this[attr])
+            return $JS2Py(self.elt[attr])
         }
     }
-    return $getattr(this,attr)
+    if(self.elt[attr]!==undefined){return self.elt[attr]}
+    return $ObjectDict.__getattribute__(self,attr)
 }
 
-DOMNode.prototype.__getitem__ = function(key){
-    if(this.nodeType===9){ // Document
+DOMNode.__getitem__ = function(self,key){
+    if(self.elt.nodeType===9){ // Document
         if(typeof key==="string"){
             var res = document.getElementById(key)
             if(res){return $DOMNode(res)}
@@ -443,274 +458,305 @@ DOMNode.prototype.__getitem__ = function(key){
             }
         }    
     }else{
-        return $DOMNode(this.childNodes[key])
+        return $DOMNode(self.elt.childNodes[key])
     }
 }
 
-DOMNode.prototype.__in__ = function(other){return other.__contains__(this)}
+DOMNode.__in__ = function(self,other){return other.__contains__(self)}
 
-DOMNode.prototype.__iter__ = function(key){ // for iteration
-    this.$counter = -1
-    return this
+DOMNode.__iter__ = function(self){ // for iteration
+    self.$counter = -1
+    return self
 }
 
-DOMNode.prototype.__le__ = function(other){
-    var obj = this
+DOMNode.__le__ = function(self,other){
     // for document, append child to document.body
-    if(this.nodeType===9){obj = this.body} 
+    var elt = self.elt
+    if(self.elt.nodeType===9){elt = self.elt.body} 
     if(isinstance(other,$TagSum)){
         var $i=0
         for($i=0;$i<other.children.length;$i++){
-            obj.appendChild(other.children[$i])
+            elt.appendChild(other.children[$i].elt)
         }
     }else if(typeof other==="string" || typeof other==="number"){
         var $txt = document.createTextNode(other.toString())
-        obj.appendChild($txt)
-    }else{
-        obj.appendChild(other)
+        elt.appendChild($txt)
+    }else{ // other is a DOMNode instance
+        elt.appendChild(other.elt)
     }
 }
 
-DOMNode.prototype.__len__ = function(){return this.childNodes.length}
+DOMNode.__len__ = function(self){return self.elt.childNodes.length}
 
-DOMNode.prototype.__mul__ = function(other){
+DOMNode.__mul__ = function(self,other){
     if(isinstance(other,int) && other.valueOf()>0){
         var res = $TagSum()
         for(var i=0;i<other.valueOf();i++){
-            var clone = this.get_clone()()
+            var clone = DOMNode.clone(self)()
             res.children.push(clone)
         }
         return res
     }else{
-        throw ValueError("can't multiply "+this.__class__+"by "+other)
+        throw ValueError("can't multiply "+self.__class__+"by "+other)
     }
 }
 
-DOMNode.prototype.__ne__ = function(other){return !this.__eq__(other)}
+DOMNode.__ne__ = function(self,other){return !DOMNode.__eq__(self,other)}
 
-DOMNode.prototype.__next__ = function(){
-   this.$counter++
-   if(this.$counter<this.childNodes.length){
-       return $DOMNode(this.childNodes[this.$counter])
+DOMNode.__next__ = function(self){
+   self.$counter++
+   if(self.$counter<self.elt.childNodes.length){
+       return $DOMNode(self.elt.childNodes[self.$counter])
    }
    throw StopIteration('StopIteration')
 }
-DOMNode.prototype.__not_in__ = function(other){return !other.__contains__(this)}
 
-DOMNode.prototype.__radd__ = function(other){ // add to a string
+DOMNode.__not_in__ = function(self,other){return !getattr(other,"__contains__")(self)}
+
+DOMNode.__radd__ = function(self,other){ // add to a string
     var res = $TagSum()
-    var txt = document.createTextNode(other)
-    res.children = [txt,this]
-    return res        
+    var txt = $DOMNode(document.createTextNode(other))
+    res.children = [txt,self]
+    return res
 }
 
-DOMNode.prototype.__setattr__ = function(attr,value){
-    if(attr.substr(0,2)=='on'){ // event
-        if (!bool(value)) { // remove all callbacks attached to event
-            this.unbind(attr.substr(2))
-        }else{
-            // value is a function taking an event as argument
-            this.bind(attr.substr(2),value)
-        }
-    }else{
-        attr = attr.replace('_','-')
-        if(this['set_'+attr]!==undefined){return this['set_'+attr](value)}
-        if(this[attr]!==undefined){this[attr]=value}
-        var res = this.getAttribute(attr)
-        if(res!==undefined&&res!==null){this.setAttribute(attr,value)}
-        else{this[attr]=value}
+DOMNode.__repr__ = function(self){
+    if(self===undefined){return "<class 'DOMNode'>"}
+    else{
+        var res = "<DOMObject object type '"
+        return res+$NodeTypes[self.elt.nodeType]+"' name '"+self.elt.nodeName+"'>"
     }
 }
 
-DOMNode.prototype.__setitem__ = function(key,value){
-    this.childNodes[key]=value
+DOMNode.__setattr__ = function(self,attr,value){
+    if(attr.substr(0,2)=='on'){ // event
+        if (!bool(value)) { // remove all callbacks attached to event
+            DOMNode.unbind(self,attr.substr(2))
+        }else{
+            // value is a function taking an event as argument
+            DOMNode.bind(self,attr.substr(2),value)
+        }
+    }else{
+        var attr1 = attr.replace('_','-').toLowerCase()
+        if(DOMNode['set_'+attr1]!==undefined){
+            return DOMNode['set_'+attr1](self,value)
+        }
+        if(self.elt[attr1]!==undefined){self.elt[attr1]=value;return}
+        var res = self.elt.getAttribute(attr1)
+        if(res!==undefined&&res!==null){self.elt.setAttribute(attr1,value)}
+        else{
+            self.elt[attr]=value
+        }
+    }
 }
 
-DOMNode.prototype.events = new Object()
+DOMNode.__setitem__ = function(self,key,value){
+    self.elt.childNodes[key]=value
+}
 
-DOMNode.prototype.bind = function(event){
+DOMNode.__str__ = DOMNode.__repr__
+
+DOMNode.bind = function(self,event){
     // bind functions to the event (event = "click", "mouseover" etc.)
-    for(var i=1;i<arguments.length;i++){
+    for(var i=2;i<arguments.length;i++){
         var func = arguments[i]
         var callback = (function(f){
             return function(ev){return f($DOMEvent(ev))}}
         )(func)
         if(window.addEventListener){
-            this.addEventListener(event,callback,false)
+            self.elt.addEventListener(event,callback,false)
         }else if(window.attachEvent){
-            this.attachEvent("on"+event,callback)
+            self.elt.attachEvent("on"+event,callback)
         }
-        if(this.events[event]===undefined){this.events[event]=[[func,callback]]}
-        else{this.events[event].push([func,callback])}
+        if(self.events[event]===undefined){self.events[event]=[[func,callback]]}
+        else{self.events[event].push([func,callback])}
     }
 }
 
-DOMNode.prototype.get_children = function(){
+DOMNode.children = function(self){
     var res = []
-    for(var i=0;i<this.childNodes.length;i++){
-        res.push($DOMNode(this.childNodes[i]))
+    for(var i=0;i<self.elt.childNodes.length;i++){
+        res.push($DOMNode(self.elt.childNodes[i]))
     }
     return res
 }
 
-DOMNode.prototype.get_class = function(){
-    if(this.className !== undefined){return this.className}
+DOMNode.class = function(self){
+    if(self.elt.className !== undefined){return self.elt.className}
     else{return None}
 }
 
-DOMNode.prototype.get_clone = function(){
-    res = $DOMNode(this.cloneNode(true))
-    // copy events - may not work since there is no getEventListener()
-    for(var attr in this){ 
-        if(attr.substr(0,2)=='on' && this[attr]!==undefined){
-            res[attr]=this[attr]
+DOMNode.clone = function(self){
+    res = $DOMNode(self.elt.cloneNode(true))
+    // bind events
+    for(var event in self.events){
+        for(var i=0;i<self.events[event].length;i++){
+            DOMNode.bind(res,event,self.events[event][i][0])
         }
     }
-    var func = function(){return res}
-    return func
+    return res
 }
 
-DOMNode.prototype.get_focus = function(){
+DOMNode.focus = function(self){
     return (function(obj){
         return function(){
             // focus() is not supported in IE
             setTimeout(function() { obj.focus(); }, 10)
         }
-    })(this)
+    })(self.elt)
 }
 
-DOMNode.prototype.get_get = function(){
+DOMNode.get = function(self){
     // for document : doc.get(key1=value1[,key2=value2...]) returns a list of the elements
     // with specified keys/values
     // key can be 'id','name' or 'selector'
-    var obj = this
-    return function(){
-        var $ns=$MakeArgs('get',arguments,[],{},null,'kw')
-        if('name'.__in__($ns['kw'])){
-            if(obj.getElementsByName===undefined){
-                throw TypeError("DOMNode object doesn't support selection by name")
-            }
-            var res = []
-            var node_list = document.getElementsByName($ns['kw'].__getitem__('name'))
-            if(node_list.length===0){return []}
-            for(var i=0;i<node_list.length;i++){
-                res.push($DOMNode(node_list[i]))
-            }
+    var obj = self.elt
+    var args = []
+    for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+    var $ns=$MakeArgs('get',args,[],{},null,'kw')
+    var $dict = {}
+    for(var i=0;i<$ns['kw'].$keys.length;i++){
+        $dict[$ns['kw'].$keys[i]]=$ns['kw'].$values[i]
+    }
+    if($dict['name']!==undefined){
+        if(obj.getElementsByName===undefined){
+            throw TypeError("DOMNode object doesn't support selection by name")
         }
-        if('tag'.__in__($ns['kw'])){
-            if(obj.getElementsByTagName===undefined){
-                throw TypeError("DOMNode object doesn't support selection by tag name")
-            }
-            var res = []
-            var node_list = document.getElementsByTagName($ns['kw'].__getitem__('tag'))
-            if(node_list.length===0){return []}
-            for(var i=0;i<node_list.length;i++){
-                res.push($DOMNode(node_list[i]))
-            }
+        var res = []
+        var node_list = document.getElementsByName($dict['name'])
+        if(node_list.length===0){return []}
+        for(var i=0;i<node_list.length;i++){
+            res.push($DOMNode(node_list[i]))
         }
-        if('classname'.__in__($ns['kw'])){
-            if(obj.getElementsByClassName===undefined){
-                throw TypeError("DOMNode object doesn't support selection by class name")
-            }
-            var res = []
-            var node_list = document.getElementsByClassName($ns['kw'].__getitem__('classname'))
-            if(node_list.length===0){return []}
-            for(var i=0;i<node_list.length;i++){
-                res.push($DOMNode(node_list[i]))
-            }
+    }
+    if($dict['tag']!==undefined){
+        if(obj.getElementsByTagName===undefined){
+            throw TypeError("DOMNode object doesn't support selection by tag name")
         }
-        if('id'.__in__($ns['kw'])){
-            if(obj.getElementById===undefined){
-                throw TypeError("DOMNode object doesn't support selection by id")
-            }
-            var id_res = obj.getElementById($ns['kw'].__getitem__('id'))
-            if(!id_res){return []}
-            else{return [$DOMNode(id_res)]}
+        var res = []
+        var node_list = document.getElementsByTagName($dict['tag'])
+        if(node_list.length===0){return []}
+        for(var i=0;i<node_list.length;i++){
+            res.push($DOMNode(node_list[i]))
         }
-        if('selector'.__in__($ns['kw'])){
-            if(obj.querySelectorAll===undefined){
-                throw TypeError("DOMNode object doesn't support selection by selector")
+    }
+    if($dict['classname']!==undefined){
+        if(obj.getElementsByClassName===undefined){
+            throw TypeError("DOMNode object doesn't support selection by class name")
+        }
+        var res = []
+        var node_list = document.getElementsByClassName($dict['classname'])
+        if(node_list.length===0){return []}
+        for(var i=0;i<node_list.length;i++){
+            res.push($DOMNode(node_list[i]))
+        }
+    }
+    if($dict['id']!==undefined){
+        if(obj.getElementById===undefined){
+            throw TypeError("DOMNode object doesn't support selection by id")
+        }
+        var id_res = obj.getElementById($dict['id'])
+        if(!id_res){return []}
+        else{return [$DOMNode(id_res)]}
+    }
+    if($dict['selector']!==undefined){
+        if(obj.querySelectorAll===undefined){
+            throw TypeError("DOMNode object doesn't support selection by selector")
+        }
+        var node_list = obj.querySelectorAll($dict['selector'])
+        var sel_res = []
+        if(node_list.length===0){return []}
+        for(var i=0;i<node_list.length;i++){
+            sel_res.push($DOMNode(node_list[i]))
+        }
+        if(res===undefined){return sel_res}
+        var to_delete = []
+        for(var i=0;i<res.length;i++){
+            var elt = res[i] // keep it only if it is also inside sel_res
+            flag = false
+            for(var j=0;j<sel_res.length;j++){
+                if(elt.__eq__(sel_res[j])){flag=true;break}
             }
-            var node_list = obj.querySelectorAll($ns['kw'].__getitem__('selector'))
-            var sel_res = []
-            if(node_list.length===0){return []}
-            for(var i=0;i<node_list.length;i++){
-                sel_res.push($DOMNode(node_list[i]))
-            }
-            if(res===undefined){return sel_res}
-            var to_delete = []
-            for(var i=0;i<res.length;i++){
-                var elt = res[i] // keep it only if it is also inside sel_res
-                flag = false
-                for(var j=0;j<sel_res.length;j++){
-                    if(elt.__eq__(sel_res[j])){flag=true;break}
-                }
-                if(!flag){to_delete.push(i)}
-            }
-            for(var i=to_delete.length-1;i>=0;i--){
-                res.splice(to_delete[i],1)
-            }
-            return res
+            if(!flag){to_delete.push(i)}
+        }
+        for(var i=to_delete.length-1;i>=0;i--){
+            res.splice(to_delete[i],1)
         }
         return res
     }
+    return res
 }
 
-DOMNode.prototype.get_getContext = function(){ // for CANVAS tag
-    if(!('getContext' in this)){throw AttributeError(
+DOMNode.getContext = function(self){ // for CANVAS tag
+    if(!('getContext' in self.elt)){throw AttributeError(
         "object has no attribute 'getContext'")}
-    var obj = this
+    var obj = self.elt
     return function(ctx){return new $JSObject(obj.getContext(ctx))}
 }
 
-DOMNode.get_getSelectionRange = function(){ // for TEXTAREA
-    if(this['getSelectionRange']!==undefined){return this.getSelectionRange.apply(null,arguments)}
+DOMNode.getSelectionRange = function(self){ // for TEXTAREA
+    if(self.elt['getSelectionRange']!==undefined){
+        return self.elt.getSelectionRange.apply(null,arguments)
+    }
 }
 
-DOMNode.prototype.get_left = function(){
-    return int($getPosition(this)["left"])
+DOMNode.left = function(self){
+    return int($getPosition(self.elt)["left"])
 }
 
-DOMNode.prototype.get_id = function(){
-    if(this.id !== undefined){return this.id}
+DOMNode.id = function(self){
+    if(self.elt.id !== undefined){return self.elt.id}
     else{return None}
 }
 
-DOMNode.prototype.get_options = function(){ // for SELECT tag
-    return new $OptionsClass(this)
+DOMNode.options = function(self){ // for SELECT tag
+    return new $OptionsClass(self.elt)
 }
 
-DOMNode.prototype.get_parent = function(){
-    if(this.parentElement){return $DOMNode(this.parentElement)}
+DOMNode.children = function(self){
+    var res = []
+    for(var i=0;i<self.elt.childNodes.length;i++){
+        res.push($DOMNode(self.elt.childNodes[i]))
+    }
+    return res
+}
+
+DOMNode.parent = function(self){
+    if(self.elt.parentElement){return $DOMNode(self.elt.parentElement)}
     else{return None}
 }
 
-DOMNode.prototype.get_remove = function(){
-    var obj = this
-    return function(child){obj.removeChild(child)}
+DOMNode.remove = function(self,child){
+    // Remove child from self
+    // If child is not inside self, throw ValueError
+    var elt=self.elt,flag=false,ch_elt=child.elt
+    if(self.elt.nodeType==9){elt=self.elt.body}
+    
+    while(ch_elt.parentElement){
+        if(ch_elt.parentElement===elt){
+            elt.removeChild(ch_elt)
+            flag = true
+            break
+        }else{ch_elt = ch_elt.parentElement}
+    }
+    if(!flag){throw ValueError('element '+child+' is not inside '+self)}
 }
 
-DOMNode.prototype.get_tagName = function(){
-    if(this.tagName !== undefined){return this.tagName}
-    else{return None}
+DOMNode.top = function(self){
+    return int($getPosition(self.elt)["top"])
 }
 
-DOMNode.prototype.get_top = function(){
-    return int($getPosition(this)["top"])
+DOMNode.reset = function(self){ // for FORM
+    return function(){self.elt.reset()}
 }
 
-DOMNode.prototype.get_reset = function(){ // for FORM
-    var $obj = this
-    return function(){$obj.reset()}
-}
-
-DOMNode.prototype.get_style = function(){
+DOMNode.style = function(self){
     // set attribute "float" for cross-browser compatibility
-    this.style.float = this.style.cssFloat || this.style.styleFloat
-    return new $JSObject(this.style)
+    self.elt.style.float = self.elt.style.cssFloat || self.style.styleFloat
+    return new $JSObject(self.elt.style)
 }
 
-DOMNode.prototype.get_setSelectionRange = function(){ // for TEXTAREA
+DOMNode.setSelectionRange = function(self){ // for TEXTAREA
     if(this['setSelectionRange']!==undefined){
         return (function(obj){
             return function(){
@@ -730,68 +776,74 @@ DOMNode.prototype.get_setSelectionRange = function(){ // for TEXTAREA
     }
 }
     
-DOMNode.prototype.get_submit = function(){ // for FORM
-    var $obj = this
-    return function(){$obj.submit()}
+DOMNode.submit = function(self){ // for FORM
+    return function(){self.elt.submit()}
 }
 
-DOMNode.prototype.get_text = function(){
-    return this.innerText || this.textContent
+DOMNode.text = function(self){
+    return self.elt.innerText || self.elt.textContent
 }
     
-DOMNode.prototype.get_html = function(){return this.innerHTML}
+DOMNode.html = function(self){return self.elt.innerHTML}
 
-DOMNode.prototype.get_value = function(value){return this.value}
+DOMNode.value = function(self){return self.elt.value}
 
-DOMNode.prototype.set_class = function(arg){this.className == arg}
+DOMNode.set_class = function(self,arg){self.elt.setAttribute('class',arg)}
 
-DOMNode.prototype.set_html = function(value){this.innerHTML=str(value)}
+DOMNode.set_html = function(self,value){
+    self.elt.innerHTML=str(value)
+}
 
-DOMNode.prototype.set_style = function(style){ // style is a dict
+DOMNode.set_style = function(self,style){ // style is a dict
     for(var i=0;i<style.$keys.length;i++){
         if(style.$keys[i].toLowerCase()==='float'){
-            this.style.cssFloat = style.$values[i]
-            this.style.styleFloat = style.$values[i]
+            self.elt.style.cssFloat = style.$values[i]
+            self.elt.style.styleFloat = style.$values[i]
         
         }else{
-            this.style[style.$keys[i]] = style.$values[i]
+            self.elt.style[style.$keys[i]] = style.$values[i]
         }
     }
 }
 
-DOMNode.prototype.set_text = function(value){
-    this.innerText=str(value)
-    this.textContent=str(value)
+DOMNode.set_text = function(self,value){
+    self.elt.innerText=str(value)
+    self.elt.textContent=str(value)
 }
 
-DOMNode.prototype.set_value = function(value){this.value = value.toString()}
+DOMNode.set_value = function(self,value){self.elt.value = str(value)}
 
-DOMNode.prototype.unbind = function(event){
+DOMNode.toString = function(self){
+    if(self===undefined){return 'DOMNode'}
+    return self.elt.nodeName
+}
+
+DOMNode.unbind = function(self,event){
     // unbind functions from the event (event = "click", "mouseover" etc.)
     // if no function is specified, remove all callback functions
-    if(arguments.length===1){
-        for(var i=0;i<this.events[event].length;i++){
-            var callback = this.events[event][i][1]
+    if(arguments.length===2){
+        for(var i=0;i<self.events[event].length;i++){
+            var callback = self.events[event][i][1]
             if(window.removeEventListener){
-                this.removeEventListener(event,callback,false)
+                self.elt.removeEventListener(event,callback,false)
             }else if(window.detachEvent){
-                this.detachEvent(event,callback,false)
+                self.elt.detachEvent(event,callback,false)
             }
         }
-        this.events[event] = []
+        self.events[event] = []
         return
     }
     for(var i=1;i<arguments.length;i++){
         var func = arguments[i], flag = false
-        for(var j=0;j<this.events[event].length;j++){
-            if(func===this.events[event][j][0]){
-                var callback = this.events[event][j][1]
+        for(var j=0;j<self.events[event].length;j++){
+            if(func===self.events[event][j][0]){
+                var callback = self.events[event][j][1]
                 if(window.removeEventListener){
-                    this.removeEventListener(event,callback,false)
+                    self.elt.removeEventListener(event,callback,false)
                 }else if(window.detachEvent){
-                    this.detachEvent(event,callback,false)
+                    self.elt.detachEvent(event,callback,false)
                 }
-                this.events[event].splice(j,1)
+                self.events[event].splice(j,1)
                 flag = true
                 break
             }
@@ -802,7 +854,7 @@ DOMNode.prototype.unbind = function(event){
 
 doc = $DOMNode(document)
 
-doc.headers = function(){
+doc.$dict.headers = function(){
     var req = new XMLHttpRequest();
     req.open('GET', document.location, false);
     req.send(null);
@@ -820,10 +872,62 @@ doc.headers = function(){
 
 // return query string as an object with methods to access keys and values
 // same interface as cgi.FieldStorage, with getvalue / getlist / getfirst
-doc.query = function(){
-    var res = new Object()
-    res._keys = []
-    res._values = new Object()
+$QueryDict = {__class__:$type,__name__:'query'}
+
+$QueryDict.__contains__ = function(self,key){
+    return self._keys.indexOf(key)>-1
+}
+
+$QueryDict.__getitem__ = function(self,key){
+    // returns a single value or a list of values 
+    // associated with key, or raise KeyError
+    var result = self._values[key]
+    if(result===undefined){throw KeyError(key)}
+    else if(result.length==1){return result[0]}
+    return result
+}
+
+$QueryDict_iterator = $iterator_class('query string iterator')
+$QueryDict.__iter__ = function(self){
+    return $iterator(self._keys,$QueryDict_iterator)
+}
+
+$QueryDict.__mro__ = [$QueryDict,$ObjectDict]
+
+$QueryDict.getfirst = function(self,key,_default){
+    // returns the first value associated with key
+    var result = self._values[key]
+    if(result===undefined){
+        if(_default===undefined){return None}
+        return _default
+    }
+    return result[0]
+}
+
+$QueryDict.getlist = function(self,key){
+    // always return a list
+    var result = self._values[key]
+    if(result===undefined){return []}
+    return result
+}
+
+$QueryDict.getvalue = function(self,key,_default){
+    try{return self.__getitem__(key)}
+    catch(err){
+        $pop_exc()
+        if(_default===undefined){return None}
+        else{return _default}
+    }
+}
+
+$QueryDict.keys = function(self){return self._keys}
+
+DOMNode.query = function(self){
+
+    var res = {__class__:$QueryDict,
+        _keys : [],
+        _values : {}
+    }
     var qs = location.search.substr(1).split('&')
     for(var i=0;i<qs.length;i++){
         var pos = qs[i].search('=')
@@ -831,81 +935,64 @@ doc.query = function(){
         var key = decodeURIComponent(elts[0])
         var value = decodeURIComponent(elts[1])
         if(res._keys.indexOf(key)>-1){res._values[key].push(value)}
-        else{res._values[key] = [value]}
-    }
-    res.__contains__ = function(key){
-        return res._keys.indexOf(key)>-1
-    }
-    res.__getitem__ = function(key){
-        // returns a single value or a list of values 
-        // associated with key, or raise KeyError
-        var result = res._values[key]
-        if(result===undefined){throw KeyError(key)}
-        else if(result.length==1){return result[0]}
-        return result
-    }
-    res.getfirst = function(key,_default){
-        // returns the first value associated with key
-        var result = res._values[key]
-        if(result===undefined){
-            if(_default===undefined){return None}
-            return _default
-        }
-        return result[0]
-    }
-    res.getlist = function(key){
-        // always return a list
-        var result = res._values[key]
-        if(result===undefined){return []}
-        return result
-    }
-    res.getvalue = function(key,_default){
-        try{return res.__getitem__(key)}
-        catch(err){
-            $pop_exc()
-            if(_default===undefined){return None}
-            else{return _default}
+        else{
+            res._keys.push(key)
+            res._values[key] = [value]
         }
     }
-    res.keys = function(){return res._keys}
+
     return res
 }
 
 // class used for tag sums
-function $TagSumClass(){
-    this.__class__ = $TagSum
-    this.children = []
-}
-$TagSumClass.prototype.appendChild = function(child){    
-    this.children.push(child)
+$TagSumDict = {
+    __class__ : $type,
+    __name__:'TagSum'
 }
 
-$TagSumClass.prototype.__add__ = function(other){
-    if(isinstance(other,$TagSum)){
-        this.children = this.children.concat(other.children)
+$TagSumDict.appendChild = function(self,child){    
+    self.children.push(child)
+}
+
+$TagSumDict.__add__ = function(self,other){
+    if(other.__class__===$TagSumDict){
+        self.children = self.children.concat(other.children)
     }else if(isinstance(other,str)){
-        this.children = this.children.concat(document.createTextNode(other))
-    }else{this.children.push(other)}
-    return this
+        self.children = self.children.concat(document.createTextNode(other))
+    }else{self.children.push(other)}
+    return self
 }
 
-$TagSumClass.prototype.__radd__ = function(other){
+$TagSumDict.__mro__ = [$TagSumDict,$ObjectDict]
+
+$TagSumDict.__radd__ = function(self,other){
     var res = $TagSum()
-    res.children = this.children.concat(document.createTextNode(other))
+    res.children = self.children.concat(document.createTextNode(other))
     return res
 }
 
-$TagSumClass.prototype.clone = function(){
+$TagSumDict.__repr__ = function(self){
+    return '<object TagSum>'
+}
+
+$TagSumDict.__str__ = $TagSumDict.toString = $TagSumDict.__repr__
+
+$TagSumDict.clone = function(self){
     var res = $TagSum(), $i=0
-    for($i=0;$i<this.children.length;$i++){
-        res.children.push(this.children[$i].cloneNode(true))
+    for($i=0;$i<self.children.length;$i++){
+        res.children.push(self.children[$i].cloneNode(true))
     }
     return res
 }
 
 function $TagSum(){
-    return new $TagSumClass()
+    return {__class__:$TagSumDict,
+        children:[],
+        toString:function(){return '(TagSum)'}
+    }
 }
+$TagSum.__class__=$factory
+$TagSum.$dict = $TagSumDict
 
 //creation of jquery like helper functions..
 

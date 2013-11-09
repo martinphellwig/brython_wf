@@ -15,7 +15,7 @@ from html import *
 # detect language
 language = "en" # default
 has_req = False
-lang = doc.query().getfirst("lang")
+lang = doc.query.getfirst("lang")
 if lang and lang in ["en","fr","es","pt"]:
     has_req = True
     language = lang
@@ -88,7 +88,6 @@ for item in ['home','console','gallery','doc','download','dev','groups']:
 <br>
 <br><a target="_blank" href="svg_pie_chart.html">camembert SVG</a>
 <br><a target="_blank" href="solitaire.html">jeu de solitaire en SVG</a>
-<br><a target="_blank" href="isolitaire.html">jeu de solitaire pour écran tactile</a>
 <br><a target="_blank" href="geoloc.html">geolocalisation</a> par François Dion
 <br><a target="_blank" href="geo.html">geolocalisation version iPhone</a> by François Dion
 <br><a target="_blank" href="ruskey.html">clavier russe</a> par François Dion
