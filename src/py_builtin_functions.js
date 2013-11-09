@@ -192,8 +192,8 @@ function $confirm(src){return confirm(src)}
 
 //delattr() (built in function)
 function delattr(obj, attr) {
-   if (obj.__delattr__ !== undefined) { obj.__delattr(attr)
-   } else {
+   if (obj.__delattr__ !== undefined) {obj.__delattr__(attr)} 
+   else {
      //not sure this statement is possible or valid.. ?
      getattr(obj, attr).__del__()
    }
@@ -803,9 +803,9 @@ function property(fget, fset, fdel, doc) {
         if(self.fget===undefined){throw AttributeError("unreadable attribute")}
         return self.fget(obj)
     }
+    p.__set__ = fset; 
+    p.__delete__ = fdel;
     return p
-    //p.__set__ = fdel; 
-    //p.__delete__ = fdel;
 }
 
 property.__class__ = $factory
@@ -945,6 +945,19 @@ function round(arg,n){
 
 function setattr(obj,attr,value){
     if(!isinstance(attr,str)){throw TypeError("setattr(): attribute name must be string")}
+    // descriptor protocol : if obj has attribute attr and this attribute has 
+    // a method __set__(), use it
+    var res = obj[attr]
+    if(res===undefined){
+        var mro = obj.__class__.__mro__
+        for(var i=0;i<mro.length;i++){
+            var res = mro[i][attr]
+            if(res!==undefined){break}
+        }
+    }
+    if(res!==undefined && res.__set__!==undefined){
+        return res.__set__(obj,value)
+    }
     try{
         var f = getattr(obj,'__setattr__')
     }

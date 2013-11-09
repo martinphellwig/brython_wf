@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131109-201900
+// version 1.2.20131109-211206
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131109-201900"]
+__BRYTHON__.version_info=[1,2,"20131109-211206"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -4298,7 +4298,7 @@ function classmethod(klass,func){
 func.$type='classmethod'
 return func
 }
-function $class(obj,info){
+function _$class(obj,info){
 this.obj=obj
 this.info=info
 this.__class__=Object
@@ -4309,8 +4309,8 @@ return __BRYTHON__.py2js(source, filename).to_js()
 }
 function $confirm(src){return confirm(src)}
 function delattr(obj, attr){
-if(obj.__delattr__ !==undefined){obj.__delattr(attr)
-}else{
+if(obj.__delattr__ !==undefined){obj.__delattr__(attr)}
+else{
 getattr(obj, attr).__del__()
 }
 }
@@ -4831,6 +4831,8 @@ if(obj===undefined){return self}
 if(self.fget===undefined){throw AttributeError("unreadable attribute")}
 return self.fget(obj)
 }
+p.__set__=fset;
+p.__delete__=fdel
 return p
 }
 property.__class__=$factory
@@ -4948,6 +4950,17 @@ if(n==0){return int(res)}else{return float(res)}
 }
 function setattr(obj,attr,value){
 if(!isinstance(attr,str)){throw TypeError("setattr(): attribute name must be string")}
+var res=obj[attr]
+if(res===undefined){
+var mro=obj.__class__.__mro__
+for(var i=0;i<mro.length;i++){
+var res=mro[i][attr]
+if(res!==undefined){break}
+}
+}
+if(res!==undefined && res.__set__!==undefined){
+return res.__set__(obj,value)
+}
 try{
 var f=getattr(obj,'__setattr__')
 }
