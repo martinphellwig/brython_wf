@@ -69,8 +69,8 @@ abs_path = lambda path:os.path.join(os.getcwd(),'src',path)
 # update version number in module sys
 bltins_src = open(abs_path('brython_builtins.js')).read()
 
-bltins_src = re.sub('version_info = \[1,1,".*?"\]',
-    'version_info = [1,1,"%s"]' %now,bltins_src)
+bltins_src = re.sub('version_info = \[1,2,".*?"\]',
+    'version_info = [1,2,"%s"]' %now,bltins_src)
 out = open(abs_path('brython_builtins.js'),'w')
 out.write(bltins_src)
 out.close()
@@ -152,7 +152,7 @@ for dirpath,dirnames,filenames in os.walk(os.getcwd()):
         if not is_valid(path):
             continue
         abs_path = os.path.join(os.getcwd(),dirpath,path)
-        print('add',path)
+        #print('add',path)
         dist_zip.write(os.path.join(dirpath,path),
             arcname=os.path.join(name,dirpath[len(os.getcwd())+1:],path))
     if 'dist' in dirnames:
