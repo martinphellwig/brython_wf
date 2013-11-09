@@ -1,3 +1,6 @@
+Changelog for Brython 1.2
+-------------------------
+
 Classes implementation and attribute lookups
 ============================================
 
@@ -9,11 +12,11 @@ It made basic attribute lookup fast : instance.foo was found as the attribute 'f
 
 For instance, a bug that was never reported :
 
-def foo:
-    A = 0
-x = foo()
-foo.A = 1
-print(x.A)
+    def foo:
+        A = 0
+    x = foo()
+    foo.A = 1
+    print(x.A)
 
 printed 0 in the previous versions
 
@@ -40,10 +43,9 @@ Backwards-incompatible changes
 Bug fixes
 =========
 - issue 142 : isinstance(obj,klass) checks parent classes of obj
-
 - issue 154 : ajax.send() accepts string arguments (supposed to be JSON data)
-
 - issue 155 : JSObject accepts arguments that are themselves instances of JSObject or JSContructor
+- attributes can no longer be set to instances created by object()
 
 Minor implementation changes
 ============================
@@ -56,4 +58,7 @@ New features
 - implement __doc__ attribute for modules, functions and classes
 - implement __name__ and __file__ for modules
 - manage call stack and use it in error reporting
+
+- improved French and English documentation
+- new recipe for form validation
 
