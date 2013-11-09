@@ -62,4 +62,11 @@ assert len(x)==4
 assert 'r' in x
 assert 'rty' not in x
 
+class foo(set):
+    def show(self):
+        return 'show'
+
+x = foo([1,2])
+assert x.show()=='show'
+
 print("passed all tests..")
