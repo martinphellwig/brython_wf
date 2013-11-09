@@ -58,24 +58,6 @@ $DictDict.__eq__ = function(self,other){
     return True
 }
 
-$DictDict.__getattribute__ = function(self,attr){
-    var res = $DictDict[attr]
-    if(res===undefined){
-        throw AttributeError("'dict' object has no attribute '"+attr+"'")
-    }else if(typeof res==='function'){
-        var method = function(){
-            var args = [self]
-            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-            return res.apply(null,args)
-        }
-        method.__repr__ = function(){return '<built-in method '+attr+' of dict object>'}
-        method.__str__ = method.toString = method.__repr__
-        return method
-    }else{
-        return res
-    }
-}
-
 $DictDict.__getitem__ = function(self,arg){
     // search if arg is in the keys
     for(var i=0;i<self.$keys.length;i++){
@@ -88,8 +70,59 @@ $DictDict.__hash__ = function(self) {throw TypeError("unhashable type: 'dict'");
 
 $DictDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
 
-$dict_iterator = $iterator_class('dict iterator')
+$DictDict.__init__ = function(self){
+    args = []
+    for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+    self.$keys = []
+    self.$values = []
+    if(args.length==0){return}
+    else if(arg.length===1){
+        var obj = args[0]
+        if(isinstance(obj,dict)){
+            self.$keys = obj.$keys
+            self.$values = obj.$values
+            return
+        }
+        else if(isinstance(obj,JSObject)){
+            // convert a JSObject into a Python dictionary
+            var res = new $DictClass([],[])
+            for(var attr in obj.js){
+                res.__setitem__(attr,obj.js[attr])
+            }
+            self.$keys = res.$keys
+            self.$values = res.$values
+            return
+        }
+    }
+    var $ns=$MakeArgs('dict',args,[],{},'args','kw')
+    var args = $ns['args']
+    var kw = $ns['kw']
+    if(args.length>0){ 
+        if(isinstance(args[0],dict)){
+            self.$keys = args[0].$keys
+            self.$values = args[0].$values
+        }else{
+            // format dict([(k1,v1),(k2,v2)...])
+            var iterable = iter(args[0])
+            while(true){
+                try{
+                    var elt = next(iterable)
+                    self.$keys.push(getattr(elt,'__getitem__')(0))
+                    self.$values.push(getattr(elt,'__getitem__')(1))
+                }catch(err){
+                    if(err.__name__==='StopIteration'){$pop_exc();break}
+                    else{throw err}
+                }
+            }
+        }
+        return
+    }else if(kw.$keys.length>0){ // format dict(k1=v1,k2=v2...)
+        self.$keys = kw.$keys
+        self.$values = kw.$values
+    }
+}
 
+$dict_iterator = $iterator_class('dict iterator')
 $DictDict.__iter__ = function(self){
     return $iterator(self.$keys,$dict_iterator)
 }
@@ -99,8 +132,6 @@ $DictDict.__len__ = function(self) {return self.$keys.length}
 $DictDict.__mro__ = [$DictDict,$ObjectDict]
 
 $DictDict.__ne__ = function(self,other){return !$DictDict.__eq__(self,other)}
-
-$DictDict.__new__ = function(arg){return dict(arg)}
 
 $DictDict.__next__ = function(self){
     if(self.iter==null){self.iter==0}
@@ -226,7 +257,6 @@ $DictDict.update = function(self){
     for(var i=0;i<keys.length;i++){
         $DictDict.__setitem__(self,keys[i],kw.$values(keys[i]))
     }
-        
 }
 
 $dict_valuesDict = $iterator_class('dict_values')
@@ -236,40 +266,14 @@ $DictDict.values = function(self){
 }
 
 function dict(){
-    if(arguments.length==0){return new $DictClass([],[])}
-    else if(arguments.length===1){
-        var obj = arguments[0]
-        if(isinstance(obj,dict)){return obj}
-        else if(isinstance(obj,JSObject)){
-            // convert a JSObject into a Python dictionary
-            var res = new $DictClass([],[])
-            for(var attr in obj.js){
-                res.__setitem__(attr,obj.js[attr])
-            }
-            return res
-        }
-    }
-    var $ns=$MakeArgs('dict',arguments,[],{},'args','kw')
-    var args = $ns['args']
-    var kw = $ns['kw']
-    if(args.length>0){ // format dict([(k1,v1),(k2,v2)...])
-        var iterable = iter(args[0])
-        var obj = {__class__:$DictDict,$keys:[],$values:[]}
-        while(true){
-            try{
-                var elt = next(iterable)
-                obj.$keys.push(getattr(elt,'__getitem__')(0))
-                obj.$values.push(getattr(elt,'__getitem__')(1))
-            }catch(err){
-                if(err.__name__==='StopIteration'){$pop_exc();break}
-                else{throw err}
-            }
-        }
-        return obj
-    }else if(kw.$keys.length>0){ // format dict(k1=v1,k2=v2...)
-        return kw
-    }
+    var res = {__class__:$DictDict}
+    // apply __init__ with arguments of dict()
+    var args = [res]
+    for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+    $DictDict.__init__.apply(null,args)
+    return res
 }
 dict.__class__ = $factory
 dict.$dict = $DictDict
 $DictDict.$factory = dict
+$DictDict.__new__ = $__new__(dict)
