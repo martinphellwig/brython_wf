@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.1.20131109-115924
+// version 1.1.20131109-125101
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -5608,9 +5608,23 @@ var mod_name=modules[i][0],search_path=modules[i][1]
 if(mod_name.substr(0,2)=='$$'){mod_name=module.substr(2)}
 var mod
 if(__BRYTHON__.modules[mod_name]===undefined){
+var _dirs=search_path.split('/')
+var mymodule=_dirs.pop()
+var mysearch=_dirs.join('/')
+mod=$import_module_search_path_list({'name':mymodule},[mysearch])
+var _found=True
+if(mod !==undefined){
+__BRYTHON__.modules[mymodule]=mod
+if(getattr(mod, mod_name)!==undefined){
+_found=False
+res.push(mod)
+}
+}
+if(! _found){
 var module={'name':mod_name}
 mod=$import_module_search_path_list(module,[search_path])
 __BRYTHON__.modules[mod_name]=mod
+}
 }else{
 console.log('module '+mod_name+' found in __BRYTHON__ : '+__BRYTHON__.modules[mod_name])
 mod=__BRYTHON__.modules[mod_name]
