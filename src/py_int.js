@@ -51,7 +51,7 @@ $IntDict.__in__ = function(self,item){
 $IntDict.__ior__ = function(self,other){return self | other} // bitwise OR
 
 $IntDict.__init__ = function(self,value){
-    self.toString = function(){return '$'+value+'$'}
+    self.toString = function(){return value}
     self.valueOf = function(){return value}
 }
 
@@ -107,8 +107,9 @@ $IntDict.__ne__ = function(self,other){return !$IntDict.__eq__(self,other)}
 
 $IntDict.__neg__ = function(self){return -self}
 
-$IntDict.__new__ = function(cls,value){
-    return {__class__:cls}
+$IntDict.__new__ = function(cls){
+    if(cls===undefined){throw TypeError('int.__new__(): not enough arguments')}
+    return {__class__:cls.$dict}
 }
 
 $IntDict.__not_in__ = function(self,item){
@@ -131,8 +132,11 @@ $IntDict.__repr__ = function(self){
 
 $IntDict.__rshift__ = function(self,other){return self >> other} // bitwise right shift
 
-$IntDict.__setattr__ = function(self,attr,value){throw AttributeError(
-    "'int' object has no attribute "+attr+"'")}
+$IntDict.__setattr__ = function(self,attr,value){
+    if(self.__class__===$IntDict){throw AttributeError("'int' object has no attribute "+attr+"'")}
+    // subclasses of int can have attributes set
+    self[attr] = value
+}
 
 $IntDict.__str__ = $IntDict.__repr__
 
