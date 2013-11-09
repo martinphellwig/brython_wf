@@ -581,7 +581,7 @@ function $CallCtx(context){
             res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
             res += 'var $res = eval($jscode);'
             res += 'if($res===undefined){return None};return $res'
-            res += '}catch(err){console.log($jscode);throw __BRYTHON__.exception(err)}'
+            res += '}catch(err){throw __BRYTHON__.exception(err)}'
             res += '})()'
             if(ns==='globals'){
                 // copy the execution namespace in module and global namespace
