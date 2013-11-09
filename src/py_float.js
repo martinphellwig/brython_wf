@@ -51,6 +51,8 @@ $FloatDict.__hash__ = function() {
 
 $FloatDict.__in__ = function(self,item){return item.__contains__(self)}
 
+$FloatDict.__init__ = function(self,value){self.value=value}
+
 $FloatDict.__mod__ = function(self,other) {
     // can't use Javascript % because it works differently for negative numbers
     if(isinstance(other,int)){
@@ -75,7 +77,6 @@ $FloatDict.__ne__ = function(self,other){return !$FloatDict.__eq__(self,other)}
 
 $FloatDict.__neg__ = function(self,other){return float(-self.value)}
 
-$FloatDict.__new__ = function(cls,arg){return float(arg)}
 
 $FloatDict.__not_in__ = function(self,item){return !(getattr(item,'__contains__')(self))}
 
@@ -177,3 +178,4 @@ float = function (value){
 float.__class__ = $factory
 float.$dict = $FloatDict
 $FloatDict.$factory = float
+$FloatDict.__new__ = $__new__(float)
