@@ -428,5 +428,18 @@ try:
     d[3]
 except (IndexError,TypeError) as err:
     pass # just check that there is no SyntaxError
-    
+
+# issue 158
+class A:
+    def __init__(self,val):
+        self.a=val
+
+class B:
+    def __init__(self,val):
+        self.b=val
+        self.c=A(val)
+
+b=B(2)
+assert str(b)=='<B object>'
+
 print('passed all tests')

@@ -531,7 +531,7 @@ var $type = {}
 function $instance_creator(klass){
     // return the function to initalise a class instance
     return function(){
-        var new_func=null,init_func=null
+        var new_func=null,init_func=null,obj
         // apply __new__ to initialize the instance
         try{
             new_func = getattr(klass,'__new__')
