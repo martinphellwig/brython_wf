@@ -1250,7 +1250,7 @@ function $FromCtx(context){
             if(mod){
                search_path_parts.push(mod)
             }
-            var search_path = '/'.join(search_path_parts)
+            var search_path = search_path_parts.join('/')
             res +="$mods=$import_list_intra(["
             var _mods = []
             for(var i=0;i<this.names.length;i++){
