@@ -53,5 +53,5 @@ $module =  {
 
     loads : function(json_obj){return _py(JSON.parse(json_obj))},
 
-    dumps : function(obj){console.log('dumps');return JSON.stringify(_js(obj))},
+    dumps : function(obj){return JSON.stringify(_js(obj))},
 }

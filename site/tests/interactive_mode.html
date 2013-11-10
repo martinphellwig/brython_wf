@@ -18,7 +18,7 @@
 <script type="text/javascript" src="../../src/py_list.js"></script>
 <script type="text/javascript" src="../../src/py_string.js"></script>
 <script type="text/javascript" src="../../src/py_dom.js"></script>
-<script type="text/javascript" src="../../src/py_ajax.js"></script>
+
 <style>
 div,
 textarea {
@@ -47,7 +47,7 @@ import traceback
 
 # force debug level to 0, otherwise evaluation of document.line_num
 # produces unwanted result in the console
-__BRYTHON__.debug = 1
+__BRYTHON__.debug = 0
 
 history = []
 current = 0

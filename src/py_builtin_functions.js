@@ -1277,22 +1277,26 @@ __BRYTHON__.exception = function(js_exc){
     // or by the Javascript interpreter (ReferenceError for instance)
     if(!js_exc.py_error){
         if(__BRYTHON__.debug>0 && js_exc.info===undefined){
-            var mod_name = document.$line_info[1]
-            var module = __BRYTHON__.modules[mod_name]
-            if(module){
-                if(module.caller!==undefined){
-                    // for list comprehension and the likes, replace
-                    // by the line in the enclosing module
-                    document.$line_info = module.caller
-                    var module = document.$line_info[1]
+            if(document.$line_info!==undefined){
+                var mod_name = document.$line_info[1]
+                var module = __BRYTHON__.modules[mod_name]
+                if(module){
+                    if(module.caller!==undefined){
+                        // for list comprehension and the likes, replace
+                        // by the line in the enclosing module
+                        document.$line_info = module.caller
+                        var module = document.$line_info[1]
+                    }
+                    var lib_module = mod_name
+                    if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
+                    var line_num = document.$line_info[0]
+                    var lines = document.$py_src[mod_name].split('\n')
+                    js_exc.message += "\n  module '"+lib_module+"' line "+line_num
+                    js_exc.message += '\n'+lines[line_num-1]
+                    js_exc.info_in_msg = true
                 }
-                var lib_module = mod_name
-                if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-                var line_num = document.$line_info[0]
-                var lines = document.$py_src[mod_name].split('\n')
-                js_exc.message += "\n  module '"+lib_module+"' line "+line_num
-                js_exc.message += '\n'+lines[line_num-1]
-                js_exc.info_in_msg = true
+            }else{
+                console.log('error '+js_exc)
             }
         }
         var exc = Error()
