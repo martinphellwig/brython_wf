@@ -429,6 +429,10 @@ try:
 except (IndexError,TypeError) as err:
     pass # just check that there is no SyntaxError
 
+# issue 157 : check that the 2nd line doesn't raise a SyntaxError
+y=1 
+a=(1/3,-y/4)
+
 # issue 158
 class A:
     def __init__(self,val):

@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131110-214205
+// version 1.2.20131110-220106
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131110-214205"]
+__BRYTHON__.version_info=[1,2,"20131110-220106"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -2142,8 +2142,11 @@ else if(token==='op'){
 if('+-~'.search(arguments[2])>-1){
 return new $UnaryCtx(new $ExprCtx(C,'unary',false),arguments[2])
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
-}else if([')','=',','].indexOf(token)>-1){$_SyntaxError(C,token)}
-else{return $transition(C.parent,token,arguments[2])}
+}else if(['=',','].indexOf(token)>-1){
+$_SyntaxError(C,token)
+}else if(token==')' && C.parent.type!='list_or_tuple'){
+$_SyntaxError(C,token)
+}else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='assert'){
 if(token==='eol'){
 return $transition(C.parent,token)
@@ -7886,7 +7889,7 @@ if(self.elt[attr]!==undefined){
 res=self.elt[attr]
 if(typeof res==="function"){
 var func=(function(elt){
-var func=function(){
+return function(){
 var args=[]
 for(var i=0;i<arguments.length;i++){
 if(isinstance(arguments[i],JSObject)){
@@ -7901,8 +7904,6 @@ args.push(arguments[i])
 }
 return $JS2Py(res.apply(elt,args))
 }
-func.__name__='attr '+attr+' of '+self.elt
-return func
 })(self.elt)
 func.__name__=attr
 return func
