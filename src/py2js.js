@@ -2443,8 +2443,11 @@ function $transition(context,token){
             if('+-~'.search(arguments[2])>-1){ // unary + or -, bitwise ~
                 return new $UnaryCtx(new $ExprCtx(context,'unary',false),arguments[2])
             }else{$_SyntaxError(context,'token '+token+' after '+context)}
-        }else if([')','=',','].indexOf(token)>-1){$_SyntaxError(context,token)}
-        else{return $transition(context.parent,token,arguments[2])}
+        }else if(['=',','].indexOf(token)>-1){
+            $_SyntaxError(context,token)
+        }else if(token==')' && context.parent.type!='list_or_tuple'){
+            $_SyntaxError(context,token)
+        }else{return $transition(context.parent,token,arguments[2])}
 
     }else if(context.type==='assert'){
     
