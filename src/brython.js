@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131110-220106
+// version 1.2.20131111-085536
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131110-220106"]
+__BRYTHON__.version_info=[1,2,"20131111-085536"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -721,6 +721,10 @@ decorators.push(children[func_rank].C.tree[0].tree)
 children.splice(func_rank,1)
 }else{break}
 }
+this.dec_ids=[]
+for(var i=0;i<decorators.length;i++){
+this.dec_ids.push('$'+Math.random().toString(36).substr(2,8))
+}
 var obj=children[func_rank].C.tree[0]
 var callable=children[func_rank].C
 var res=obj.name+'=',tail=''
@@ -729,7 +733,7 @@ if(scope !==null && scope.ntype==='class'){
 res='$class.'+obj.name+'='
 }
 for(var i=0;i<decorators.length;i++){
-var dec=$to_js(decorators[i])
+var dec=this.dec_ids[i]
 res +=dec+'('
 if(decorators[i][0].tree[0].value=='classmethod'){res+='$class,'}
 tail +=')'
@@ -739,8 +743,15 @@ res +=obj.name+tail
 var decor_node=new $Node('expression')
 new $NodeJSCtx(decor_node,res)
 node.parent.children.splice(func_rank+1,0,decor_node)
+this.decorators=decorators
 }
-this.to_js=function(){return ''}
+this.to_js=function(){
+var res=''
+for(var i=0;i<this.decorators.length;i++){
+res +=this.dec_ids[i]+'='+$to_js(this.decorators[i])+';'
+}
+return res
+}
 }
 function $DefCtx(C){
 this.type='def'
@@ -934,6 +945,8 @@ if(expr.type==='op'){
 $_SyntaxError(this,["can't delete operator"])
 }else if(expr.type==='call'){
 $_SyntaxError(this,["can't delete function call"])
+}else if(expr.type==='attribute'){
+return 'delattr('+expr.value.to_js()+',"'+expr.name+'")'
 }
 $_SyntaxError(this,["can't delete "+expr.type])
 }
@@ -3798,6 +3811,9 @@ klass[key].$type='instancemethod'
 klass[key]=value
 }
 }
+}else if(attr==='__delattr__'){
+if(klass['__delattr__']!==undefined){return klass['__delattr__']}
+return function(key){delete klass[key]}
 }
 var res=klass[attr],is_class=true
 if(res===undefined){
@@ -4312,13 +4328,22 @@ return __BRYTHON__.py2js(source, filename).to_js()
 }
 function $confirm(src){return confirm(src)}
 function delattr(obj, attr){
-if(obj.__delattr__ !==undefined){obj.__delattr__(attr)}
-else{
-getattr(obj, attr).__del__()
+var res=obj[attr]
+if(res===undefined){
+var mro=obj.__class__.__mro__
+for(var i=0;i<mro.length;i++){
+var res=mro[i][attr]
+if(res!==undefined){break}
 }
+}
+if(res!==undefined && res.__delete__!==undefined){
+return res.__delete__(res,obj,attr)
+}
+getattr(obj,'__delattr__')(attr)
 }
 function dir(obj){
 if(isinstance(obj,JSObject)){obj=obj.js}
+if(obj.__class__===$factory){obj=obj.$dict}
 var res=[]
 for(var attr in obj){if(attr.charAt(0)!=='$'){res.push(attr)}}
 res.sort()
@@ -4834,8 +4859,22 @@ if(obj===undefined){return self}
 if(self.fget===undefined){throw AttributeError("unreadable attribute")}
 return self.fget(obj)
 }
-p.__set__=fset;
+if(fset!==undefined){
+p.__set__=function(self,obj,value){
+if(self.fset===undefined){throw AttributeError("can't set attribute")}
+self.fset(obj,value)
+}
+}
 p.__delete__=fdel
+p.getter=function(self, fget){
+return type(self)(fget, self.fset, self.fdel, self.__doc__)
+}
+p.setter=function(self, fset){
+return type(self)(self.fget, fset, self.fdel, self.__doc__)
+}
+p.deleter=function(self, fdel){
+return type(self)(self.fget, self.fset, fdel, self.__doc__)
+}
 return p
 }
 property.__class__=$factory
@@ -4962,11 +5001,9 @@ if(res!==undefined){break}
 }
 }
 if(res!==undefined && res.__set__!==undefined){
-return res.__set__(obj,value)
+return res.__set__(res,obj,value)
 }
-try{
-var f=getattr(obj,'__setattr__')
-}
+try{var f=getattr(obj,'__setattr__')}
 catch(err){
 $pop_exc()
 obj[attr]=value

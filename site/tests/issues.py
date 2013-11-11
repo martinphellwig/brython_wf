@@ -304,6 +304,23 @@ assert 1.27E+5 == 127000.0
 assert 1.27e+5 == 127000.0
 assert 1.27E5 == 127000.0
 
+# issue 122
+class Cl(object):
+    def __init__(self):
+        self._x = None
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+my_cl = Cl
+my_cl.x = 123
+assert my_cl.x==123
+
 # issue 125
 a = [1,2]
 a.clear()

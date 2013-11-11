@@ -94,4 +94,19 @@ class A:
 
 assert A().y == 2
 
+# Setting and deleting attributes in a class are reflected
+# in the classes instances
+class foo():pass
+a = foo()
+foo.x = 9
+assert 'x' in dir(foo)
+assert a.x==9
+
+del foo.x
+try:
+    a.x
+    raise Exception("should have raised AttributeError")
+except AttributeError:
+    pass
+
 print('passed all tests..')

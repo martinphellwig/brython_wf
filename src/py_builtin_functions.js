@@ -192,15 +192,25 @@ function $confirm(src){return confirm(src)}
 
 //delattr() (built in function)
 function delattr(obj, attr) {
-   if (obj.__delattr__ !== undefined) {obj.__delattr__(attr)} 
-   else {
-     //not sure this statement is possible or valid.. ?
-     getattr(obj, attr).__del__()
-   }
+    // descriptor protocol : if obj has attribute attr and this attribute has 
+    // a method __delete__(), use it
+    var res = obj[attr]
+    if(res===undefined){
+        var mro = obj.__class__.__mro__
+        for(var i=0;i<mro.length;i++){
+            var res = mro[i][attr]
+            if(res!==undefined){break}
+        }
+    }
+    if(res!==undefined && res.__delete__!==undefined){
+        return res.__delete__(res,obj,attr)
+    }
+    getattr(obj,'__delattr__')(attr)
 }
 
 function dir(obj){
     if(isinstance(obj,JSObject)){obj=obj.js}
+    if(obj.__class__===$factory){obj=obj.$dict}
     var res = []
     for(var attr in obj){if(attr.charAt(0)!=='$'){res.push(attr)}}
     res.sort()
@@ -803,8 +813,23 @@ function property(fget, fset, fdel, doc) {
         if(self.fget===undefined){throw AttributeError("unreadable attribute")}
         return self.fget(obj)
     }
-    p.__set__ = fset; 
+    if(fset!==undefined){
+        p.__set__ = function(self,obj,value){
+            if(self.fset===undefined){throw AttributeError("can't set attribute")}
+            self.fset(obj,value)
+        }
+    }
     p.__delete__ = fdel;
+
+    p.getter = function(self, fget){
+        return type(self)(fget, self.fset, self.fdel, self.__doc__)
+    }
+    p.setter = function(self, fset){
+        return type(self)(self.fget, fset, self.fdel, self.__doc__)
+    }
+    p.deleter = function(self, fdel){
+        return type(self)(self.fget, self.fset, fdel, self.__doc__)
+    }
     return p
 }
 
@@ -956,11 +981,9 @@ function setattr(obj,attr,value){
         }
     }
     if(res!==undefined && res.__set__!==undefined){
-        return res.__set__(obj,value)
+        return res.__set__(res,obj,value)
     }
-    try{
-        var f = getattr(obj,'__setattr__')
-    }
+    try{var f = getattr(obj,'__setattr__')}
     catch(err){
         $pop_exc()
         obj[attr]=value
