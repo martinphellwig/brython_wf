@@ -8,4 +8,4 @@
 
 - <code>doc.query.getlist(<i>key</i>)</code> : returns the list of values associated with _`key`_ (the empty list if there is no value for the key)
 
-- <code>doc.query.getvalue(<i>key[,default]</i>)</code> : same as `doc.query()[key]`, but returns _`default`_ or `None` if there is no value for the key
+- <code>doc.query.getvalue(<i>key[,default]</i>)</code> : same as `doc.query[key]`, but returns _`default`_ or `None` if there is no value for the key
