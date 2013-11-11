@@ -2,8 +2,26 @@ $module = (function(){
     obj = {__class__:$module,
         __str__: function(){return "<module 're'>"}
     }
+    obj.A = obj.ASCII = 256
     obj.I = 'i'
     obj.M = 'm'
+    $SRE_PatternDict = {
+        __class__:$type,
+        __name__:'SRE_Pattern'
+    }
+    $SRE_PatternDict.match = function(self,string){
+        return obj.match(self.pattern,string,self.flags)
+    }
+    $SRE_PatternDict.search = function(self,string){
+        return obj.obj(self.pattern,string,self.flags)
+    }
+    obj.compile = function(pattern,flags){
+        return {
+            __class__:$SRE_PatternDict,
+            pattern:pattern,
+            flags:flags
+        }
+    }
     obj.findall = function(pattern,string,flags){
         var $ns=$MakeArgs('re.search',arguments,['pattern','string'],{},'args','kw')
         var args = $ns['args']
