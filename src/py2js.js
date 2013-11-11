@@ -615,6 +615,18 @@ function $CallCtx(context){
             while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
             var module = ctx_node.node.module
             return 'globals("'+module+'")'
+        }else if(this.func!==undefined && this.func.value=='$$super'){
+            if(this.tree.length==0){
+                // super() called with no argument : if inside a class, add the
+                // class parent as first argument
+                var scope = $get_scope(this)
+                console.log('super scope '+scope.ntype)
+                if(scope.ntype=='def' || scope.ntype=='generator'){
+                    if(scope.parent && scope.parent.context.tree[0].type=='class'){
+                        new $IdCtx(this,scope.parent.context.tree[0].name)
+                    }
+                }
+            }
         }
         if(this.tree.length>0){
             return 'getattr('+this.func.to_js()+',"__call__")('+$to_js(this.tree)+')'
