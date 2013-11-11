@@ -99,6 +99,20 @@ class SubPattern:
             data = []
         self.data = data
         self.width = None
+        self._count=0
+    
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        self._count+=1
+
+        #fix me.. is there  a better way to do this?
+        if len(self.data) < self._count:
+           raise StopIteration
+
+        return self.data[self._count-1]
+
     def dump(self, level=0):
         nl = 1
         seqtypes = (tuple, list)
