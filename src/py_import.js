@@ -154,6 +154,7 @@ function $import_py_module(module,path,module_contents) {
     try{
         var js = root.to_js()
         if (__BRYTHON__.$options.debug == 10) {
+            console.log('code for module '+module.name)
            console.log(js);
         }
         eval(js)
@@ -226,47 +227,33 @@ function $import_list(modules){
     return res
 }
 
-function $import_list_intra(modules){
-    // intra-package, like "from . import X" or "from ..Z import bar"
-    // modules is a list of [module,search_path]
-    // where search_path is the url of the folder where the module should
-    // be found
-    var res = []
-    for(var i=0;i<modules.length;i++){
-        var mod_name=modules[i][0],search_path=modules[i][1]
-        if(mod_name.substr(0,2)=='$$'){mod_name=module.substr(2)}
-        var mod;
-        if(__BRYTHON__.modules[mod_name]===undefined){
-           // see if the last element in the search_path is a module
-           var _dirs=search_path.split('/')
-           var mymodule=_dirs.pop()
-           var mysearch=_dirs.join('/')
-           mod = $import_module_search_path_list({'name':mymodule},[mysearch])
-
-           var _found=True
-           if (mod !== undefined) {
-              __BRYTHON__.modules[mymodule]=mod
-              // now check to  see if this module has an attribute of mod_name
-              if (getattr(mod, mod_name) !== undefined) {
-                 _found=False
-                 res.push(mod)
-              }
-           }
-
-           if (! _found) {
-              var module = {'name':mod_name}
-              mod = $import_module_search_path_list(module,[search_path])
-              __BRYTHON__.modules[mod_name]=mod
-           }
-        } else{
-           console.log('module '+mod_name+' found in __BRYTHON__ : '+__BRYTHON__.modules[mod_name])
-           mod=__BRYTHON__.modules[mod_name]
+function $import_list_intra(src,current_url,names){
+    // form "from . import A,B" or "from ..X import A,B"
+    // "src" is the item after "from" : '.' and '..X' in the examples above
+    // "current_url" is the URL of the script where the call was made
+    // "names" is the list of names to import
+    var mod;
+    var elts = current_url.split('/')
+    var nbpts = 0 // number of points in src
+    while(src.charAt(nbpts)=='.'){nbpts++}
+    var pymod_elts = elts.slice(0,elts.length-nbpts)
+    var pymod_name = src.substr(nbpts)
+    var pymod_path = pymod_elts.join('/')
+    if(pymod_name){ // form 'from ..Z import bar'
+        //pymod_elts.push(pymod_name)
+        var pymod = {'name':pymod_name}
+        mod = $import_module_search_path_list(pymod,[pymod_path])
+        if(mod!=undefined){
+            return mod
         }
-        res.push(mod)
+    }else{ // form . import X
+        var mod = {}
+        for(var i=0;i<names.length;i++){
+            mod[names[i]]=$import_module_search_path_list({'name':names[i]},[pymod_path])
+        }
     }
-    return res
+    return mod
 }
-
 
 function $import_from(module,names,parent_module,alias){
     //console.log(module +","+names+","+parent_module+','+alias);
