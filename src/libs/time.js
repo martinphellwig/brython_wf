@@ -5,6 +5,8 @@ $module =  {
     __name__ : 'time',
 
     clear_interval : function(int_id){window.clearInterval(int_id)},
+    
+    clear_timeout : function(timeout_id){window.clearTimeout(timeout_id)},
 
     ctime: function(timestamp){
        if (timestamp === undefined) {
