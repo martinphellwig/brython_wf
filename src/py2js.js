@@ -998,6 +998,15 @@ function $DefCtx(context){
             node.parent.children.splice(rank+offset,0,new_node)
             offset++
         }
+        // add attribute __module__
+        var module = $get_module(this)
+        js = scope.ntype=='class' ? '$class.' : ''
+        js += this.name+'.__module__ = "'+module.module+'"'
+        new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        node.parent.children.splice(rank+offset,0,new_node)
+        offset++
+        
         // if doc string, add it as attribute __doc__
         js = scope.ntype=='class' ? '$class.' : ''
         js += this.name+'.__doc__='+(this.doc_string || 'None')
@@ -1314,12 +1323,13 @@ function $FromCtx(context){
                search_path_parts.push(mod)
             }
             var search_path = search_path_parts.join('/')
-            res +="$mods=$import_list_intra(["
-            var _mods = []
+            res +="$mod=$import_list_intra('"+this.module+"','"
+            res += __BRYTHON__.$py_module_path[parent_module]
+            res += "',["
             for(var i=0;i<this.names.length;i++){
-             _mods.push('["'+this.names[i]+'","'+search_path+'"]')
+                res += '"'+this.names[i]+'",'
             }
-            res += _mods.join(',')+']);'
+            res += ']);'
             for(var i=0;i<this.names.length;i++){
                 if(['def','class'].indexOf(scope.ntype)>-1){
                     res += 'var '
@@ -1329,7 +1339,7 @@ function $FromCtx(context){
                 if(scope!==null && scope.ntype == 'def'){
                     res += '=$locals["'+alias+'"]'
                 }            
-                res += '=$mods['+i+'];'
+                res += '=getattr($mod,"'+this.names[i]+'");'
             }
         } else {
            res += '$import_list(["'+this.module+'"])[0];'
@@ -2506,9 +2516,9 @@ function $transition(context,token){
             if('+-~'.search(arguments[2])>-1){ // unary + or -, bitwise ~
                 return new $UnaryCtx(new $ExprCtx(context,'unary',false),arguments[2])
             }else{$_SyntaxError(context,'token '+token+' after '+context)}
-        }else if(['=',','].indexOf(token)>-1){
+        }else if(token=='='){
             $_SyntaxError(context,token)
-        }else if(token==')' && context.parent.type!='list_or_tuple'){
+        }else if([')',','].indexOf(token)>-1 && context.parent.type!='list_or_tuple'){
             $_SyntaxError(context,token)
         }else{return $transition(context.parent,token,arguments[2])}
 

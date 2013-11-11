@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131111-085536
+// version 1.2.20131111-204619
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131111-085536"]
+__BRYTHON__.version_info=[1,2,"20131111-204619"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -577,6 +577,16 @@ var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
 return 'globals("'+module+'")'
+}else if(this.func!==undefined && this.func.value=='$$super'){
+if(this.tree.length==0){
+var scope=$get_scope(this)
+console.log('super scope '+scope.ntype)
+if(scope.ntype=='def' || scope.ntype=='generator'){
+if(scope.parent && scope.parent.C.tree[0].type=='class'){
+new $IdCtx(this,scope.parent.C.tree[0].name)
+}
+}
+}
 }
 if(this.tree.length>0){
 return 'getattr('+this.func.to_js()+',"__call__")('+$to_js(this.tree)+')'
@@ -862,6 +872,13 @@ new $NodeJSCtx(new_node,js)
 node.parent.children.splice(rank+offset,0,new_node)
 offset++
 }
+var module=$get_module(this)
+js=scope.ntype=='class' ? '$class.' : ''
+js +=this.name+'.__module__ = "'+module.module+'"'
+new_node=new $Node('expression')
+new $NodeJSCtx(new_node,js)
+node.parent.children.splice(rank+offset,0,new_node)
+offset++
 js=scope.ntype=='class' ? '$class.' : ''
 js +=this.name+'.__doc__='+(this.doc_string || 'None')
 new_node=new $Node('expression')
@@ -1138,12 +1155,13 @@ if(mod){
 search_path_parts.push(mod)
 }
 var search_path=search_path_parts.join('/')
-res +="$mods=$import_list_intra(["
-var _mods=[]
+res +="$mod=$import_list_intra('"+this.module+"','"
+res +=__BRYTHON__.$py_module_path[parent_module]
+res +="',["
 for(var i=0;i<this.names.length;i++){
-_mods.push('["'+this.names[i]+'","'+search_path+'"]')
+res +='"'+this.names[i]+'",'
 }
-res +=_mods.join(',')+']);'
+res +=']);'
 for(var i=0;i<this.names.length;i++){
 if(['def','class'].indexOf(scope.ntype)>-1){
 res +='var '
@@ -1153,7 +1171,7 @@ res +=alias
 if(scope!==null && scope.ntype=='def'){
 res +='=$locals["'+alias+'"]'
 }
-res +='=$mods['+i+'];'
+res +='=getattr($mod,"'+this.names[i]+'");'
 }
 }else{
 res +='$import_list(["'+this.module+'"])[0];'
@@ -2155,9 +2173,9 @@ else if(token==='op'){
 if('+-~'.search(arguments[2])>-1){
 return new $UnaryCtx(new $ExprCtx(C,'unary',false),arguments[2])
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
-}else if(['=',','].indexOf(token)>-1){
+}else if(token=='='){
 $_SyntaxError(C,token)
-}else if(token==')' && C.parent.type!='list_or_tuple'){
+}else if([')',','].indexOf(token)>-1 && C.parent.type!='list_or_tuple'){
 $_SyntaxError(C,token)
 }else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='assert'){
@@ -4319,9 +4337,9 @@ return func
 }
 function $class(obj,info){
 this.obj=obj
-this.info=info
-this.__class__=Object
-this.toString=function(){return "<class '"+info+"'>"}
+this.__name__=info
+this.__class__=$type
+this.__mro__=[this,$ObjectDict]
 }
 function compile(source, filename, mode){
 return __BRYTHON__.py2js(source, filename).to_js()
@@ -4468,7 +4486,7 @@ return klass[attr]
 if(obj.__class__===$ModuleDict){
 var res=obj[attr]
 if(res!==undefined){return res}
-else{throw AttributeError('module '+obj.__name__+" has no attribute '"+attr+"'")}
+else{throw AttributeError("'module' object has no attribute '"+attr+"'")}
 }
 var is_class=obj.__class__===$factory, mro, attr_func
 if(is_class){
@@ -4567,6 +4585,24 @@ if(klass.__mro__[i]===arg.$dict){return true}
 return false
 }
 return obj.constructor===arg
+}
+}
+function issubclass(klass,classinfo){
+if(arguments.length!==2){
+throw TypeError("issubclass expected 2 arguments, got "+arguments.length)
+}
+if(!klass.__class__===$factory){
+throw TypeError("issubclass() arg 1 must be a class")
+}
+if(isinstance(classinfo,tuple)){
+for(var i=0;i<classinfo.length;i++){
+if(issubclass(klass,classinfo[i])){return true}
+}
+return false
+}else if(classinfo.__class__===$factory){
+return classinfo.$dict.__mro__.indexOf(klass.$dict)>-1 
+}else{
+throw TypeError("issubclass() arg 2 must be a class or tuple of classes")
 }
 }
 function iter(obj){
@@ -5083,6 +5119,25 @@ else{throw err}
 }
 return res
 }
+$SuperDict={
+__class__:$type,
+__name__:'super'
+}
+$SuperDict.__getattribute__=function(self,attr){
+var mro=self.__thisclass__.$dict.__mro__,res
+for(var i=1;i<mro.length;i++){
+res=mro[i][attr]
+if(res!==undefined){return res}
+}
+throw AttributeError("object 'super' has no attribute '"+attr+"'")
+}
+$SuperDict.__mro__=[$SuperDict,$ObjectDict]
+function $$super(_type1,_type2){
+return{__class__:$SuperDict,
+__thisclass__:_type1,
+__self_class__:_type2
+}
+}
 function $tuple(arg){return arg}
 $TupleDict={__class__:$type,__name__:'tuple'}
 $TupleDict.__iter__=function(self){
@@ -5538,6 +5593,7 @@ if(eval('$module')===undefined){
 throw ImportError("name '$module' is not defined in module")
 }
 $module.__class__=$ModuleDict
+$module.__name__=module.name
 $module.__repr__=function(){return "<module '"+module.name+"' from "+filepath+" >"}
 $module.__str__=function(){return "<module '"+module.name+"' from "+filepath+" >"}
 $module.__file__=filepath
@@ -5598,6 +5654,7 @@ root.add(ex_node)
 try{
 var js=root.to_js()
 if(__BRYTHON__.$options.debug==10){
+console.log('code for module '+module.name)
 console.log(js)
 }
 eval(js)
@@ -5659,37 +5716,27 @@ res.push(mod)
 }
 return res
 }
-function $import_list_intra(modules){
-var res=[]
-for(var i=0;i<modules.length;i++){
-var mod_name=modules[i][0],search_path=modules[i][1]
-if(mod_name.substr(0,2)=='$$'){mod_name=module.substr(2)}
+function $import_list_intra(src,current_url,names){
 var mod
-if(__BRYTHON__.modules[mod_name]===undefined){
-var _dirs=search_path.split('/')
-var mymodule=_dirs.pop()
-var mysearch=_dirs.join('/')
-mod=$import_module_search_path_list({'name':mymodule},[mysearch])
-var _found=True
-if(mod !==undefined){
-__BRYTHON__.modules[mymodule]=mod
-if(getattr(mod, mod_name)!==undefined){
-_found=False
-res.push(mod)
-}
-}
-if(! _found){
-var module={'name':mod_name}
-mod=$import_module_search_path_list(module,[search_path])
-__BRYTHON__.modules[mod_name]=mod
+var elts=current_url.split('/')
+var nbpts=0 
+while(src.charAt(nbpts)=='.'){nbpts++}
+var pymod_elts=elts.slice(0,elts.length-nbpts)
+var pymod_name=src.substr(nbpts)
+var pymod_path=pymod_elts.join('/')
+if(pymod_name){
+var pymod={'name':pymod_name}
+mod=$import_module_search_path_list(pymod,[pymod_path])
+if(mod!=undefined){
+return mod
 }
 }else{
-console.log('module '+mod_name+' found in __BRYTHON__ : '+__BRYTHON__.modules[mod_name])
-mod=__BRYTHON__.modules[mod_name]
+var mod={}
+for(var i=0;i<names.length;i++){
+mod[names[i]]=$import_module_search_path_list({'name':names[i]},[pymod_path])
 }
-res.push(mod)
 }
-return res
+return mod
 }
 function $import_from(module,names,parent_module,alias){
 if(parent_module !==undefined){
