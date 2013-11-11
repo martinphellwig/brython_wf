@@ -784,6 +784,48 @@ function $DecoratorCtx(context){
                 children.splice(func_rank,1)
             }else{break}
         }
+        // Associate a random variable name to each decorator
+        // In a code such as 
+        // class Cl(object):
+        //      def __init__(self):
+        //          self._x = None
+        //    
+        //      @property
+        //      def x(self):
+        //          return self._x
+        //    
+        //      @x.setter
+        //      def x(self, value):
+        //          self._x = value
+        //
+        // we can't replace the decorated methods by something like
+        //
+        //      def x(self):
+        //          return self._x
+        //      x = property(x)      # [1]
+        //
+        //      def x(self,value):   # [2]
+        //          self._x = value
+        //      x = x.setter(x)      # [3]
+        //
+        // because when we want to use x.setter in [3], x is no longer the one
+        // defined in [1] : it has been reset by the function declaration in [2]
+        // The technique used here is to replace these lines by :
+        //
+        //      $vth93h6g = property # random variable name
+        //      def x(self):
+        //          return self._x
+        //      x = $vth93h6g(x)
+        //    
+        //      $h3upb5s8 = x.setter
+        //      def x(self, value):
+        //          self._x = value
+        //      x = $h3upb5s8(x)
+        //
+        this.dec_ids = []
+        for(var i=0;i<decorators.length;i++){
+            this.dec_ids.push('$'+Math.random().toString(36).substr(2,8))
+        }
         var obj = children[func_rank].context.tree[0]
         // add a line after decorated element
         var callable = children[func_rank].context
@@ -793,7 +835,7 @@ function $DecoratorCtx(context){
             res = '$class.'+obj.name+'='
         }
         for(var i=0;i<decorators.length;i++){
-            var dec = $to_js(decorators[i]);
+            var dec = this.dec_ids[i] //$to_js(decorators[i]);
             res += dec+'('
             if (decorators[i][0].tree[0].value == 'classmethod') { res+= '$class,'}
             tail +=')'
@@ -803,8 +845,15 @@ function $DecoratorCtx(context){
         var decor_node = new $Node('expression')
         new $NodeJSCtx(decor_node,res)
         node.parent.children.splice(func_rank+1,0,decor_node)
+        this.decorators = decorators
     }
-    this.to_js = function(){return ''}
+    this.to_js = function(){
+        var res = ''
+        for(var i=0;i<this.decorators.length;i++){
+            res += this.dec_ids[i]+'='+$to_js(this.decorators[i])+';'
+        }
+        return res
+    }
 }
 function $DefCtx(context){
     this.type = 'def'
@@ -1026,6 +1075,8 @@ function $DelCtx(context){
                     $_SyntaxError(this,["can't delete operator"])
                 }else if(expr.type==='call'){
                     $_SyntaxError(this,["can't delete function call"])
+                }else if(expr.type==='attribute'){
+                    return 'delattr('+expr.value.to_js()+',"'+expr.name+'")'
                 }
                 $_SyntaxError(this,["can't delete "+expr.type])
             }

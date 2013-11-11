@@ -572,6 +572,9 @@ $type.__getattribute__=function(klass,attr){
                 klass[key]=value
             }
         }
+    }else if(attr==='__delattr__'){
+        if(klass['__delattr__']!==undefined){return klass['__delattr__']}
+        return function(key){delete klass[key]}
     }
     var res = klass[attr],is_class=true
     if(res===undefined){
