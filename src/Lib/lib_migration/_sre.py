@@ -54,7 +54,8 @@ def getlower(char_ord, flags):
         return char_ord
 
 
-class SRE_Pattern(object):
+#class SRE_Pattern(object):
+class SRE_Pattern:
 
     def __init__(self, pattern, flags, code, groups=0, groupindex={}, indexgroup=[None]):
         self.pattern = pattern
@@ -197,7 +198,8 @@ class SRE_Pattern(object):
         raise TypeError("cannot copy this pattern object")
 
 
-class SRE_Scanner(object):
+#class SRE_Scanner(object):
+class SRE_Scanner:
     """Undocumented scanner interface of sre."""
     
     def __init__(self, pattern, string, start, end):
@@ -224,7 +226,8 @@ class SRE_Scanner(object):
         return self._match_search(self._state.search)
 
 
-class SRE_Match(object):
+#class SRE_Match(object):
+class SRE_Match:
 
     def __init__(self, pattern, state):
         self.re = pattern
@@ -337,7 +340,8 @@ class SRE_Match(object):
         raise TypeError("cannot copy this pattern object")
 
 
-class _State(object):
+#class _State(object):  #object not needed in python3
+class _State:
 
     def __init__(self, string, start, end, flags):
         self.string = string
@@ -484,7 +488,8 @@ class _State(object):
         return getlower(char_ord, self.flags)
 
 
-class _MatchContext(object):
+#class _MatchContext(object):
+class _MatchContext:
 
     def __init__(self, state, pattern_codes):
         self.state = state
@@ -547,7 +552,8 @@ class _RepeatContext(_MatchContext):
         self.last_position = None
 
 
-class _Dispatcher(object):
+#class _Dispatcher(object):
+class _Dispatcher:
 
     DISPATCH_TABLE = None
 
@@ -562,15 +568,10 @@ class _Dispatcher(object):
         if cls.DISPATCH_TABLE is not None:
             return
         table = {}
-        #fixme..  I believe there is something wrong with cls
-        # hopefully the new implementation of class inheritance will fix this.
-        #print(cls)
-        #print(dir(cls))
         for key, value in code_dict.items():
             if hasattr(cls, "%s%s" % (method_prefix, key)):
                 table[value] = getattr(cls, "%s%s" % (method_prefix, key))
         cls.DISPATCH_TABLE = table
-        #print(table)
 
     build_dispatch_table = classmethod(build_dispatch_table)
 
@@ -604,7 +605,7 @@ class _OpcodeDispatcher(_Dispatcher):
             del self.executing_contexts[id(context)]
             has_finished = generator.next()
         else:
-            print("in dispatch")
+            #print("in dispatch")
             method = self.DISPATCH_TABLE.get(opcode, _OpcodeDispatcher.unknown)
             print(method)
             has_finished = method(self, context)

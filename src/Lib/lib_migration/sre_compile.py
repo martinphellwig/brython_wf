@@ -30,7 +30,7 @@ _SUCCESS_CODES = set([SUCCESS, FAILURE])
 _ASSERT_CODES = set([ASSERT, ASSERT_NOT])
 
 def _compile(code, pattern, flags):
-    print("_compile from sre_compile.py")
+    #print("_compile from sre_compile.py")
     # internal: compile a (sub)pattern
     emit = code.append
     _len = len
