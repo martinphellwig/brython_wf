@@ -360,7 +360,7 @@ function getattr(obj,attr,_default){
     if(obj.__class__===$ModuleDict){
         var res = obj[attr]
         if(res!==undefined){return res}
-        else{throw AttributeError('module '+obj.__name__+" has no attribute '"+attr+"'")}
+        else{throw AttributeError("'module' object has no attribute '"+attr+"'")}
     }
     var is_class = obj.__class__===$factory, mro, attr_func
     //if(attr=='calc_v'){console.log('2 ! getattr '+attr+' of '+obj+' ('+type(obj)+') '+' class '+is_class)}
@@ -481,7 +481,24 @@ function isinstance(obj,arg){
     }
 }
 
-//issubclass() (built in function)
+function issubclass(klass,classinfo){
+    if(arguments.length!==2){
+        throw TypeError("issubclass expected 2 arguments, got "+arguments.length)
+    }
+    if(!klass.__class__===$factory){
+        throw TypeError("issubclass() arg 1 must be a class")
+    }
+    if(isinstance(classinfo,tuple)){
+        for(var i=0;i<classinfo.length;i++){
+            if(issubclass(klass,classinfo[i])){return true}
+        }
+        return false
+    }else if(classinfo.__class__===$factory){
+        return classinfo.$dict.__mro__.indexOf(klass.$dict)>-1    
+    }else{
+        throw TypeError("issubclass() arg 2 must be a class or tuple of classes")
+    }
+}
 
 function iter(obj){
     try{return getattr(obj,'__iter__')()}
