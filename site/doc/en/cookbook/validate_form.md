@@ -57,7 +57,7 @@ For this, we use the function _validate()_ when clicking on "Send". If there is 
             alert('Please enter the date')
             doc['date'].focus()
             return False
-        elif not re.match(r'\d{2}/\d{2}/\d{4}',doc['date'].value):
+        elif not re.match(r'\d{2}/\d{2}/\d{4}$',doc['date'].value):
             alert("The date is not at the right format")
             doc['date'].focus()
             return False
