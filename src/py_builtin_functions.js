@@ -175,9 +175,9 @@ function classmethod(klass,func) {
 
 function $class(obj,info){
     this.obj = obj
-    this.info = info
-    this.__class__ = Object
-    this.toString = function(){return "<class '"+info+"'>"}
+    this.__name__ = info
+    this.__class__ = $type
+    this.__mro__ = [this,$ObjectDict]
 }
 
 //compile() (built in function)
@@ -1076,6 +1076,28 @@ function sum(iterable,start){
 }
 
 // super() built in function
+$SuperDict = {
+    __class__:$type,
+    __name__:'super'
+}
+
+$SuperDict.__getattribute__ = function(self,attr){
+    var mro = self.__thisclass__.$dict.__mro__,res
+    for(var i=1;i<mro.length;i++){ // ignores the class where super() is defined
+        res = mro[i][attr]
+        if(res!==undefined){return res}
+    }
+    throw AttributeError("object 'super' has no attribute '"+attr+"'")
+}
+
+$SuperDict.__mro__ = [$SuperDict,$ObjectDict]
+
+function $$super(_type1,_type2){
+    return {__class__:$SuperDict,
+        __thisclass__:_type1,
+        __self_class__:_type2
+    }
+}
 
 function $tuple(arg){return arg} // used for parenthesed expressions
 
