@@ -9,7 +9,7 @@ A page is made of elements (texts, images, sounds...) that can be included in th
 
 >    <html>
 >    <body>
->    <b>Brython</b> is an implémentation of <a href="http://www.python.org">Python</a> 
+>    <b>Brython</b> is an implementation of <a href="http://www.python.org">Python</a> 
 >    for web browsers
 >    </body>
 >    </html>
