@@ -77,6 +77,7 @@ function $import_js_module(module,filepath,module_contents){
     }
     // add class and __str__
     $module.__class__ = $ModuleDict
+    $module.__name__ = module.name
     $module.__repr__ = function(){return "<module '"+module.name+"' from "+filepath+" >"}
     $module.__str__ = function(){return "<module '"+module.name+"' from "+filepath+" >"}
     $module.__file__ = filepath
