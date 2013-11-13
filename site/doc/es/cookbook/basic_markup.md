@@ -43,11 +43,11 @@ def fill_zone():
     doc['zone'] <= html.B("Hola mundo !")
 </script>
 
-`B` es una funci&oacute;n definida en el m&oacute;dulo `html`, que coincide con la etiqueta HTML `<B>` (bold)
+`B` es una función definida en el módulo `html`, que coincide con la etiqueta HTML `<B>` (bold)
 
 `B("text")` devuelve un objeto que conincide con el HTML `<b>text</b>`
 
-Todas las etiquetas HTML tienen su propia funci&oacute;n : `I, H1, H2,...`. Puedes anidar funciones, como se muestra en la segunda l&iacute;nea :
+Todas las etiquetas HTML tienen su propia función : `I, H1, H2,...`. Puedes anidar funciones, como se muestra en la segunda línea :
 
     doc <= html.H4(html.I("Python en el navegador"))
 
