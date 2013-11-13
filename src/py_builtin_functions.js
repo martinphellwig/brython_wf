@@ -396,7 +396,7 @@ function globals(module){
     // the translation engine adds the argument mdoule
     var res = dict()
     var scope = __BRYTHON__.scope[module].__dict__
-    for(var name in scope){res.__setitem__(name,scope[name])}
+    for(var name in scope){$DictDict.__setitem__(res,name,scope[name])}
     return res
 }
 

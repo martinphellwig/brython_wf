@@ -569,6 +569,7 @@ function $CallCtx(context){
                 }
             }
             var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
+            __BRYTHON__.$py_module_path[_name] = __BRYTHON__.$py_module_path[module]
             // replace by the result of an anonymous function with a try/except clause
             var res = '(function(){try{'
             // insert globals and locals in the function
@@ -618,7 +619,6 @@ function $CallCtx(context){
                 // super() called with no argument : if inside a class, add the
                 // class parent as first argument
                 var scope = $get_scope(this)
-                console.log('super scope '+scope.ntype)
                 if(scope.ntype=='def' || scope.ntype=='generator'){
                     if(scope.parent && scope.parent.context.tree[0].type=='class'){
                         new $IdCtx(this,scope.parent.context.tree[0].name)
@@ -2382,7 +2382,7 @@ function $comp_env(context,attr,src){
 }
 
 function $get_docstring(node){
-    var doc_string=null
+    var doc_string='""'
     if(node.children.length>0){
         var firstchild = node.children[0]
         if(firstchild.context.tree && firstchild.context.tree[0].type=='expr'){
@@ -3376,15 +3376,17 @@ __BRYTHON__.py2js = function(src,module,parent){
     root.insert(0,new_node)
     // module doc string
     var ds_node = new $Node('expression')
-    new $NodeJSCtx(ds_node,'__doc__='+root.doc_string)
+    new $NodeJSCtx(ds_node,'__doc__=$globals["__doc__"]='+root.doc_string)
     root.insert(1,ds_node)
     // name
     var name_node = new $Node('expression')
-    new $NodeJSCtx(name_node,'__name__="'+module+'"')
+    var lib_module = module
+    if(module.substr(0,9)=='__main__,'){lib_module='__main__'}
+    new $NodeJSCtx(name_node,'__name__=$globals["__name__"]="'+lib_module+'"')
     root.insert(2,name_node)
     // file
     var file_node = new $Node('expression')
-    new $NodeJSCtx(file_node,'__file__="'+__BRYTHON__.$py_module_path[module]+'"')
+    new $NodeJSCtx(file_node,'__file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
     root.insert(3,file_node)
         
     if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}

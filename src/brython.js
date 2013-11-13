@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131113-213504
+// version 1.2.20131113-220632
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131113-213504"]
+__BRYTHON__.version_info=[1,2,"20131113-220632"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -540,6 +540,7 @@ ns=arg2.value
 }
 }
 var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
+__BRYTHON__.$py_module_path[_name]=__BRYTHON__.$py_module_path[module]
 var res='(function(){try{'
 res +='for(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
 res +='for(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
@@ -578,7 +579,6 @@ return 'globals("'+module+'")'
 }else if(this.func!==undefined && this.func.value=='$$super'){
 if(this.tree.length==0){
 var scope=$get_scope(this)
-console.log('super scope '+scope.ntype)
 if(scope.ntype=='def' || scope.ntype=='generator'){
 if(scope.parent && scope.parent.C.tree[0].type=='class'){
 new $IdCtx(this,scope.parent.C.tree[0].name)
@@ -2052,7 +2052,7 @@ ctx=ctx.parent
 }
 }
 function $get_docstring(node){
-var doc_string=null
+var doc_string='""'
 if(node.children.length>0){
 var firstchild=node.children[0]
 if(firstchild.C.tree && firstchild.C.tree[0].type=='expr'){
@@ -2896,13 +2896,15 @@ var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 root.insert(0,new_node)
 var ds_node=new $Node('expression')
-new $NodeJSCtx(ds_node,'__doc__='+root.doc_string)
+new $NodeJSCtx(ds_node,'__doc__=$globals["__doc__"]='+root.doc_string)
 root.insert(1,ds_node)
 var name_node=new $Node('expression')
-new $NodeJSCtx(name_node,'__name__="'+module+'"')
+var lib_module=module
+if(module.substr(0,9)=='__main__,'){lib_module='__main__'}
+new $NodeJSCtx(name_node,'__name__=$globals["__name__"]="'+lib_module+'"')
 root.insert(2,name_node)
 var file_node=new $Node('expression')
-new $NodeJSCtx(file_node,'__file__="'+__BRYTHON__.$py_module_path[module]+'"')
+new $NodeJSCtx(file_node,'__file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
 root.insert(3,file_node)
 if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
 __BRYTHON__.modules[module]=root
@@ -4516,7 +4518,7 @@ else{throw AttributeError("'"+type(obj).__name__+"' object has no attribute '"+a
 function globals(module){
 var res=dict()
 var scope=__BRYTHON__.scope[module].__dict__
-for(var name in scope){res.__setitem__(name,scope[name])}
+for(var name in scope){$DictDict.__setitem__(res,name,scope[name])}
 return res
 }
 function hasattr(obj,attr){
