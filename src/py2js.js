@@ -571,10 +571,9 @@ function $CallCtx(context){
             var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
             // replace by the result of an anonymous function with a try/except clause
             var res = '(function(){try{'
-            // insert module namespace in the function
-            res += 'for(var $attr in __BRYTHON__.scope["'+module+'"].__dict__){'
-            res += 'eval("var "+$attr+"=__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]")'
-            res +='};'
+            // insert globals and locals in the function
+            res += 'for(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
+            res += 'for(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
             // execute the Python code and return its result
             // the namespace built inside the function will be in
             // __BRYTHON__.scope[_name].__dict__
@@ -586,8 +585,7 @@ function $CallCtx(context){
             if(ns==='globals'){
                 // copy the execution namespace in module and global namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{window[$attr]='
-                res += '$globals[$attr]='
+                res += '{window[$attr]=$globals[$attr]='
                 res += '__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
             }else if(ns !=''){
                 // use specified namespace
