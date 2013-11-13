@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131111-204619
+// version 1.2.20131113-213504
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131111-204619"]
+__BRYTHON__.version_info=[1,2,"20131113-213504"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -541,9 +541,8 @@ ns=arg2.value
 }
 var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
 var res='(function(){try{'
-res +='for(var $attr in __BRYTHON__.scope["'+module+'"].__dict__){'
-res +='eval("var "+$attr+"=__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]")'
-res +='};'
+res +='for(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
+res +='for(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
 res +='var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
 res +='var $res = eval($jscode);'
 res +='if($res===undefined){return None};return $res'
@@ -551,8 +550,7 @@ res +='}catch(err){throw __BRYTHON__.exception(err)}'
 res +='})()'
 if(ns==='globals'){
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-res +='{window[$attr]='
-res +='$globals[$attr]='
+res +='{window[$attr]=$globals[$attr]='
 res +='__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
 }else if(ns !=''){
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
