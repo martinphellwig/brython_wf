@@ -1,7 +1,7 @@
 Traducción de la sintaxis Python a código Javascript
 ----------------------------------------------------
 
-table border=1 cellpadding=3>
+<table border=1 cellpadding=3>
 <tr>
 <th>Python</th>
 <th>Javascript</th>
