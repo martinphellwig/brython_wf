@@ -3803,6 +3803,7 @@ function brython(options){
     __BRYTHON__.exception_stack = []
     __BRYTHON__.call_stack = []
     __BRYTHON__.scope = {}
+    __BRYTHON__.events = dict() // maps $brython_id of DOM elements to events
     var $elts = document.getElementsByTagName("script")
     var $href = window.location.href
     var $href_elts = $href.split('/')
