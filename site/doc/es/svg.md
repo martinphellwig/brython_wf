@@ -1,5 +1,5 @@
-Gr&aacute;ficos SVG
--------------------
+módulo SVG
+----------
 
 Para crear gr&aacute;ficos vectoriales (formato SVG), soportado por la mayor&iacute;a de navegadores, puedes usar el m&oacute;dulo integrado `svg`. El nombre proviene de los componentes disponibles para dibujar formas y escribir texto
 
@@ -23,9 +23,10 @@ puedes insertar formas y texto :
     panel = doc['panel']
     panel <= title
     panel <= circle
+</td>
+<td>
 <button onclick="run_svg()">click !</button>
 </td>
-
 <td>
 <script type="text/python">
 def run_svg():

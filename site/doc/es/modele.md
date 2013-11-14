@@ -24,7 +24,7 @@ Esta funci&oacute;n crea las siguientes variables de entorno :
 <tr>
     
 <td>Creaci&oacute;n del &aacute;rbol representando al c&oacute;digo Python</td>
-<td>funci&oacute;n <code>$py2js(_source,module_)</code> in __py2js.js__
+<td>funci&oacute;n <code>\_\_BRYTHON\_\_.$py2js(_source,module_)</code> in __py2js.js__
 
 Esta funci&oacute;n llama a :
 - <code>$tokenize(_source_)</code> : an&aacute;lisis sint&aacute;ctico de los tokens en el c&oacute;digo fuente Python y en la construcci&oacute;n del &aacute;rbol. ;
@@ -33,7 +33,7 @@ Esta funci&oacute;n llama a :
 - <code>transform(_root_)</code> : transforma el &aacute;rbol para prepararlo para la conversi&oacute;n a Javascript (ver debajo)
 - `$add_line_num()` para a&ntilde;adir n&uacute;meros de l&iacute;nea en el caso de que el 'debug mode' sea superior a 0
 
-The funci&oacute;n `$py2js` devuelve la ra&iacute;z del &aacute;rbol.
+La funci&oacute;n `$py2js` devuelve la ra&iacute;z del &aacute;rbol.
 </td>
 </tr>
 
@@ -60,15 +60,18 @@ Esta funci&oacute;n llama de forma recursiva al m&eacute;todo del mismo nombre y
 
 El script __brython.js__ se genera mediante la compilaci&oacute;n de varios scripts :
 
-- __brython\_builtins.js.js__ : define el objeto `__BRYTHON__` que act&uacute;a como pasarela entre objetos Javascript nativos (`Date, RegExp, Storage...`) y Brython
+- __brython\_builtins.js__ : define el objeto `__BRYTHON__` que act&uacute;a como pasarela entre objetos Javascript nativos (`Date, RegExp, Storage...`) y Brython
 - __py2js.js__ : realiza la conversi&oacute;n de c&oacute;digo Python a c&oacute;digo Javascript
 - __py\_utils.js__ : funciones &uacute;tiles (eg conversiones de tipos entre Javascript y Python)
-- __py\_string.js__ : implementaci&oacute;n de la clase Python `str`, basada en el tipo Javascript `String`
-- __py\_list.js__ : implementaci&oacute;n de la clase Python `list`, basada en el tipo Javascript `Array`
-- __py\_classes.js__ : grupos de todas las funciones y tipos Python integrados
-- __py\_import.js__ : implementaci&oacute;n de _import_
-- __py\_dom.js__ : interacci&oacute;n con el documento HTML (DOM)
-- __py\_ajax.js__ : implementaci&oacute;n Ajax
+- __py\_object.js__ : implementa el clase `object` de Python
+- __py\_builtin\_functions.js__ : Python built-in functions
+- __js\_objects.js__ : interfaz a los objetos y constructores Javascript
+- __py\_import.js__ : implementación de _import_
+- __py\_dict.js__ : implementación de la clase `dict` Python
+- __py\_list.js__ : implementación de la clase Python `list`, basada en el tipo Javascript `Array`
+- __py\_string.js__ : implementación de la clase Python `str`, basada en el tipo Javascript `String`
+- __py\_set.js__ : implementación de la clase `set` Python
+- __py\_dom.js__ : interacción con el documento HTML (DOM)
 
 ### M&aacute;s sobre traducci&oacute;n y ejecuci&oacute;n
 
@@ -120,7 +123,7 @@ Este paso se usa, adem&aacute;s, para almacenar las variables declaradas mediant
 
 En el momento de ejecuci&oacute;n, el script generado puede hacer uso de :
 
-- las clases definidas en _py\_classes.js, py\_string.js, py\_list.js, py\_dom.js, py\_ajax.js_
+- las clases definidas en _py\_objects.js, py\_dict.js, py\_string.js, py\_list.js, py\_set.js, py\_dom.js_
 - funciones internas no accesibles desde Python (sus nombres siempre comienzan con $) ; la mayor&iacute;a de ellas se definen en _$py\_utils.js_. Las m&aacute;s importantes son :
 
  - _$JS2Py_ : toma un solo argumento y devuelve :
