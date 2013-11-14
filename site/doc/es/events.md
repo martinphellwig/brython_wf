@@ -12,9 +12,9 @@ Las funciones de respuesta (o _callback_ functions) toman un &uacute;nico argume
 
 <table border=1>
 <tr><th>Tipo de evento</th><th>Atributos</th></tr>
-<tr><td>todos los eventos</td><td><tt>objetivo</tt> : el nodo del DOM al cual se asocia el evento</td></tr>
+<tr><td>todos los eventos</td><td><tt>target</tt> : el nodo del DOM al cual se asocia el evento</td></tr>
 <tr><td>click o movimiento del rat&oacute;n</td><td><tt>x, y</tt> : posici&oacute;n del rat&oacute;n en relaci&oacute;n a la esquina superior izquierda de la ventana</td></tr>
-<tr><td>"drag and drop" (HTML5)</td><td><tt>datos</tt> : datos asociados con el movimiento</td></tr>
+<tr><td>"drag and drop" (HTML5)</td><td><tt>data</tt> : datos asociados con el movimiento</td></tr>
 </table>
 
 Ejemplo :
