@@ -132,11 +132,11 @@ $BytesDict = {
     __name__ : 'bytes'
 }
 
-$BytesDict.__len__ = function(){return self.value.length}
+$BytesDict.__len__ = function(self){return self.source.length}
 
 $BytesDict.__mro__ = [$BytesDict,$ObjectDict]
 
-$BytesDict.__repr__ = $BytesDict.__str__ = function(){return self.value}
+$BytesDict.__repr__ = $BytesDict.__str__ = function(self){return self.source}
 
 function bytes(source, encoding, errors) {
     return {
