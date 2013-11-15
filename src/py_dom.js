@@ -412,7 +412,7 @@ DOMNode.__getattribute__ = function(self,attr){
     if(self.elt[attr]!==undefined){
         res = self.elt[attr]
         if(typeof res==="function"){
-            var func = (function(elt){
+            var func = (function(f,elt){
                 return function(){
                     var args = []
                     for(var i=0;i<arguments.length;i++){
@@ -426,9 +426,9 @@ DOMNode.__getattribute__ = function(self,attr){
                             args.push(arguments[i])
                         }
                     }
-                    return $JS2Py(res.apply(elt,args))
+                    return $JS2Py(f.apply(elt,args))
                 }
-            })(self.elt)
+            })(res,self.elt)
             func.__name__ = attr
             return func
         }else if(attr=='options'){

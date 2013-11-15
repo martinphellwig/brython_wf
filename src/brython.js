@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131114-215006
+// version 1.2.20131115-090757
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131114-215006"]
+__BRYTHON__.version_info=[1,2,"20131115-090757"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -7972,7 +7972,7 @@ return res
 if(self.elt[attr]!==undefined){
 res=self.elt[attr]
 if(typeof res==="function"){
-var func=(function(elt){
+var func=(function(f,elt){
 return function(){
 var args=[]
 for(var i=0;i<arguments.length;i++){
@@ -7986,9 +7986,9 @@ args.push(null)
 args.push(arguments[i])
 }
 }
-return $JS2Py(res.apply(elt,args))
+return $JS2Py(f.apply(elt,args))
 }
-})(self.elt)
+})(res,self.elt)
 func.__name__=attr
 return func
 }else if(attr=='options'){
