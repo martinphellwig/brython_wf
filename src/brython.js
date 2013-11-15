@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131115-090757
+// version 1.2.20131115-095610
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131115-090757"]
+__BRYTHON__.version_info=[1,2,"20131115-095610"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -7337,25 +7337,16 @@ return self.replace(/([a-z])|([A-Z])/g, function($0,$1,$2)
 $StringDict.title=function(self){
 return self.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase()+ txt.substr(1).toLowerCase();})
 }
-$StringDict.translate=function(){
-$ns=$MakeArgs("$StringDict.translate",arguments,['self','table'],
-{'deletechars':null},null,null)
-var table=$ns['table']
-var self=$ns['self']
-var d=$ns['deletechars']
-if(isinstance(table, str)&& table.length !==255){
-throw Error("table variable must be a string of size 255")
-}
-if(d !==undefined){
-var re=new RegExp(d)
-self=self.replace(re, '')
-}
-if(table !==None){
+$StringDict.translate=function(self,table){
+var res=''
+if(isinstance(table, dict)){
 for(var i=0;i<self.length;i++){
-self[i]=table.charCodeAt(self.charCodeAt(i))
+var repl=$DictDict.get(table,self.charCodeAt(i),-1)
+if(repl==-1){res +=self.charAt(i)}
+else if(repl!==None){res +=repl}
 }
 }
-return self
+return res
 }
 $StringDict.upper=function(self){return self.toUpperCase()}
 $StringDict.zfill=function(self, width){

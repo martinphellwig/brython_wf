@@ -759,29 +759,16 @@ $StringDict.title = function(self) {
     return self.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 
-$StringDict.translate = function() {
-    $ns=$MakeArgs("$StringDict.translate",arguments,['self','table'],
-        {'deletechars':null},null,null)
-    var table = $ns['table']
-    var self = $ns['self']
-    var d = $ns['deletechars']
-
-    if (isinstance(table, str) && table.length !== 255) {
-       throw Error("table variable must be a string of size 255")
-    }
- 
-    if (d !== undefined) {
-       var re = new RegExp(d)
-       self=self.replace(re, '')
-    }
-
-    if (table !== None) {
+$StringDict.translate = function(self,table) {
+    var res = ''
+    if (isinstance(table, dict)) {
        for (var i=0; i<self.length; i++) {
-           self[i] = table.charCodeAt(self.charCodeAt(i));
+           var repl = $DictDict.get(table,self.charCodeAt(i),-1)
+           if(repl==-1){res += self.charAt(i)}
+           else if(repl!==None){res += repl}
        }
     }
-
-    return self
+    return res
 }
 
 $StringDict.upper = function(self){return self.toUpperCase()}
