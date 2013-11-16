@@ -190,3 +190,7 @@ print("passed all tests..")
 b = b'12345'
 assert len(b) == 5
 
+# enumerate
+enum_obj = enumerate('abcdefghij')
+enum_first = next(enum_obj)
+assert isinstance(enum_first, tuple)
