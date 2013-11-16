@@ -1201,10 +1201,22 @@ $BoolDict.__eq__ = function(self,other){
     if(self.valueOf()){return !!other}else{return !other}
 }
 
+$BoolDict.__ge__ = function(self,other){
+    return $IntDict.__ge__($BoolDict.__hash__(self),other)
+}
+
+$BoolDict.__gt__ = function(self,other){
+    return $IntDict.__gt__($BoolDict.__hash__(self),other)
+}
+
 $BoolDict.__hash__ = function(self) {
    if(self.valueOf()) return 1
    return 0
 }
+
+$BoolDict.__le__ = function(self,other){return !$BoolDict.__gt__(self,other)}
+
+$BoolDict.__lt__ = function(self,other){return !$BoolDict.__ge__(self,other)}
 
 $BoolDict.__mul__ = function(self,other){
     if(self.valueOf()) return other;
@@ -1295,26 +1307,41 @@ Exception = function (msg,js_exc){
             err.info+='\n'        
         }
         // call stack
+        var last_info
         for(var i=0;i<__BRYTHON__.call_stack.length;i++){
             var call_info = __BRYTHON__.call_stack[i]
             var lib_module = call_info[1]
+            var caller = __BRYTHON__.modules[lib_module].caller
+            if(caller!==undefined){
+                call_info = caller
+                lib_module = caller[1]
+            }
             if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
             var lines = document.$py_src[call_info[1]].split('\n')
             err.info += '\n  module '+lib_module+' line '+call_info[0]
             var line = lines[call_info[0]-1]
             while(line && line.charAt(0)==' '){line=line.substr(1)}
             err.info += '\n    '+line
+            last_info = call_info
         }
         // error line
-        var module = document.$line_info[1]
-        var line_num = document.$line_info[0]
-        var lines = document.$py_src[module].split('\n')
-        var lib_module = module
-        if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-        err.info += "\n  module "+lib_module+" line "+line_num
-        var line = lines[line_num-1]
-        while(line && line.charAt(0)==' '){line = line.substr(1)}
-        err.info += '\n    '+line
+        var err_info = document.$line_info
+        while(true){
+            var caller = __BRYTHON__.modules[err_info[1]].caller
+            if(caller===undefined){break}
+            err_info = caller
+        }
+        if(err_info!==last_info){
+            var module = err_info[1]
+            var line_num = err_info[0]
+            var lines = document.$py_src[module].split('\n')
+            var lib_module = module
+            if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
+            err.info += "\n  module "+lib_module+" line "+line_num
+            var line = lines[line_num-1]
+            while(line && line.charAt(0)==' '){line = line.substr(1)}
+            err.info += '\n    '+line
+        }
     }
     err.message = msg
     err.args = msg
