@@ -185,3 +185,8 @@ assert oct(-12) == '-0o14'
 assert hex(-12) == '-0xc'
 
 print("passed all tests..")
+
+# bytes
+b = b'12345'
+assert len(b) == 5
+
