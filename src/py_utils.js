@@ -111,11 +111,11 @@ function $list_comp(){
     $py += 'res.append('+arguments[1]+')\n'
     $py += "    return res\n"
     $py += "res"+$ix+"=func"+$ix+"()"
-    var mod_name = 'lc'+$ix
-    var $root = __BRYTHON__.py2js($py,mod_name)
+    var $mod_name = 'lc'+$ix
+    var $root = __BRYTHON__.py2js($py,$mod_name)
     $root.caller = document.$line_info
     var $js = $root.to_js()
-    __BRYTHON__.scope[mod_name].__dict__ = $env
+    __BRYTHON__.scope[$mod_name].__dict__ = $env
     eval($js)
     return eval("res"+$ix)
 }
@@ -136,11 +136,11 @@ function $gen_expr(){ // generator expresssion
     }
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.append('+arguments[1]+')'
-    var mod_name = 'ge'+$ix
-    var $root = __BRYTHON__.py2js($py,mod_name)
+    var $mod_name = 'ge'+$ix
+    var $root = __BRYTHON__.py2js($py,$mod_name)
     $root.caller = document.$line_info
     var $js = $root.to_js()
-    __BRYTHON__.scope[mod_name].__dict__=$env
+    __BRYTHON__.scope[$mod_name].__dict__=$env
     eval($js)
     var $res1 = eval($res)
     var $GenExprDict = {
