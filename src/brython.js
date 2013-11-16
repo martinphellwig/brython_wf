@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131115-095610
+// version 1.2.20131116-104955
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131115-095610"]
+__BRYTHON__.version_info=[1,2,"20131116-104955"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -3460,11 +3460,11 @@ for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +='res.append('+arguments[1]+')\n'
 $py +="    return res\n"
 $py +="res"+$ix+"=func"+$ix+"()"
-var mod_name='lc'+$ix
-var $root=__BRYTHON__.py2js($py,mod_name)
+var $mod_name='lc'+$ix
+var $root=__BRYTHON__.py2js($py,$mod_name)
 $root.caller=document.$line_info
 var $js=$root.to_js()
-__BRYTHON__.scope[mod_name].__dict__=$env
+__BRYTHON__.scope[$mod_name].__dict__=$env
 eval($js)
 return eval("res"+$ix)
 }
@@ -3484,11 +3484,11 @@ indent +=4
 }
 for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.append('+arguments[1]+')'
-var mod_name='ge'+$ix
-var $root=__BRYTHON__.py2js($py,mod_name)
+var $mod_name='ge'+$ix
+var $root=__BRYTHON__.py2js($py,$mod_name)
 $root.caller=document.$line_info
 var $js=$root.to_js()
-__BRYTHON__.scope[mod_name].__dict__=$env
+__BRYTHON__.scope[$mod_name].__dict__=$env
 eval($js)
 var $res1=eval($res)
 var $GenExprDict={
@@ -5205,10 +5205,18 @@ Boolean.prototype.__class__=$BoolDict
 $BoolDict.__eq__=function(self,other){
 if(self.valueOf()){return !!other}else{return !other}
 }
+$BoolDict.__ge__=function(self,other){
+return $IntDict.__ge__($BoolDict.__hash__(self),other)
+}
+$BoolDict.__gt__=function(self,other){
+return $IntDict.__gt__($BoolDict.__hash__(self),other)
+}
 $BoolDict.__hash__=function(self){
 if(self.valueOf())return 1
 return 0
 }
+$BoolDict.__le__=function(self,other){return !$BoolDict.__gt__(self,other)}
+$BoolDict.__lt__=function(self,other){return !$BoolDict.__ge__(self,other)}
 $BoolDict.__mul__=function(self,other){
 if(self.valueOf())return other
 return 0
@@ -5277,18 +5285,32 @@ catch(_err){void(0)}
 }
 err.info+='\n' 
 }
+var last_info
 for(var i=0;i<__BRYTHON__.call_stack.length;i++){
 var call_info=__BRYTHON__.call_stack[i]
 var lib_module=call_info[1]
+var caller=__BRYTHON__.modules[lib_module].caller
+if(caller!==undefined){
+call_info=caller
+lib_module=caller[1]
+}
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
 var lines=document.$py_src[call_info[1]].split('\n')
 err.info +='\n  module '+lib_module+' line '+call_info[0]
 var line=lines[call_info[0]-1]
 while(line && line.charAt(0)==' '){line=line.substr(1)}
 err.info +='\n    '+line
+last_info=call_info
 }
-var module=document.$line_info[1]
-var line_num=document.$line_info[0]
+var err_info=document.$line_info
+while(true){
+var caller=__BRYTHON__.modules[err_info[1]].caller
+if(caller===undefined){break}
+err_info=caller
+}
+if(err_info!==last_info){
+var module=err_info[1]
+var line_num=err_info[0]
 var lines=document.$py_src[module].split('\n')
 var lib_module=module
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
@@ -5296,6 +5318,7 @@ err.info +="\n  module "+lib_module+" line "+line_num
 var line=lines[line_num-1]
 while(line && line.charAt(0)==' '){line=line.substr(1)}
 err.info +='\n    '+line
+}
 }
 err.message=msg
 err.args=msg
@@ -6044,11 +6067,11 @@ eval('$IntDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 var $comp_func=function(self,other){
 if(isinstance(other,int)){return self.valueOf()> other.valueOf()}
 else if(isinstance(other,float)){return self.valueOf()> other.value}
+else if(isinstance(other,bool)){return self.valueOf()> $BoolDict.__hash__(other)}
 else{throw TypeError(
-"unorderable types: "+str(self.__class__)+'() > '+str(other.__class__)+"()")}
+"unorderable types: "+self.__class__.__name__+'() > '+other.__class__.__name__+"()")}
 }
 $comp_func +='' 
-var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
 for($op in $comps){
 eval("$IntDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
@@ -6910,12 +6933,16 @@ var val=self.valueOf()
 while(pos<val.length){
 if(val.charAt(pos)=='%'){
 var f=new format(val.substr(pos))
-if(f.is_format && f.type!=="%"){
+if(f.is_format){
+if(f.type!=="%"){
 elts.push(val.substring(start,pos))
 elts.push(f)
 start=pos+f.src.length
 pos=start
 nb_repl++
+}else{
+pos++;pos++
+}
 }else{pos++}
 }else{pos++}
 }

@@ -238,12 +238,16 @@ $StringDict.__mod__ = function(self,args){
     while(pos<val.length){
         if(val.charAt(pos)=='%'){
             var f = new format(val.substr(pos))
-            if(f.is_format && f.type!=="%"){
-                elts.push(val.substring(start,pos))
-                elts.push(f)
-                start = pos+f.src.length
-                pos = start
-                nb_repl++
+            if(f.is_format){
+                if(f.type!=="%"){
+                    elts.push(val.substring(start,pos))
+                    elts.push(f)
+                    start = pos+f.src.length
+                    pos = start
+                    nb_repl++
+                }else{ // form %%
+                    pos++;pos++
+                }
             }else{pos++}
         }else{pos++}
     }
