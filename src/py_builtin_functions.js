@@ -238,7 +238,7 @@ function enumerate(iterator){
         __name__:'enumerate iterator',
         __next__:function(){
             res.counter++
-            return [res.counter,next(_iter)]
+            return tuple([res.counter,next(_iter)])
         },
         __repr__:function(){return "<enumerate object>"},
         __str__:function(){return "<enumerate object>"},
