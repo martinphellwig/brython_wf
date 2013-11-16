@@ -229,8 +229,11 @@ function divmod(x,y) {
     return list([int(Math.floor(x/y)), x.__class__.__mod__(x,y)])
 }
 
-function enumerate(iterator){
-    var _iter = iter(iterator)
+function enumerate(){
+    var $ns = $MakeArgs("enumerate",arguments,["iterable"],
+                {"start":Number(0)}, null, null)
+    var _iter = iter($ns["iterable"])
+    var _start = $ns["start"]
     var res = {
         __class__:enumerate,
         __getattr__:function(attr){return res[attr]},
@@ -242,7 +245,7 @@ function enumerate(iterator){
         },
         __repr__:function(){return "<enumerate object>"},
         __str__:function(){return "<enumerate object>"},
-        counter:-1
+        counter:_start-1
     }
     for(var attr in res){
         if(typeof res[attr]==='function' && attr!=="__class__"){

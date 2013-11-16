@@ -194,3 +194,8 @@ assert len(b) == 5
 enum_obj = enumerate('abcdefghij')
 enum_first = next(enum_obj)
 assert isinstance(enum_first, tuple)
+assert enum_first[0] == 0
+
+enum_obj = enumerate(['first', 'second'], start=1)
+enum_first = next(enum_obj)
+assert enum_first[0] ==  1
