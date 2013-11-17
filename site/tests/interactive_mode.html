@@ -81,6 +81,9 @@ def myKeyPress(event):
             or (len(src)-lstart<6):
                 event.preventDefault()
                 event.stopPropagation()
+    elif event.keyCode == 9: # tab key
+        event.preventDefault()
+        doc['code'].value += "    "
     elif event.keyCode == 13:    # return
         src = doc['code'].value
         if status == "main":
