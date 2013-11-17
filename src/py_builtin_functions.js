@@ -229,8 +229,11 @@ function divmod(x,y) {
     return list([int(Math.floor(x/y)), x.__class__.__mod__(x,y)])
 }
 
-function enumerate(iterator){
-    var _iter = iter(iterator)
+function enumerate(){
+    var $ns = $MakeArgs("enumerate",arguments,["iterable"],
+                {"start":Number(0)}, null, null)
+    var _iter = iter($ns["iterable"])
+    var _start = $ns["start"]
     var res = {
         __class__:enumerate,
         __getattr__:function(attr){return res[attr]},
@@ -238,11 +241,11 @@ function enumerate(iterator){
         __name__:'enumerate iterator',
         __next__:function(){
             res.counter++
-            return [res.counter,next(_iter)]
+            return tuple([res.counter,next(_iter)])
         },
         __repr__:function(){return "<enumerate object>"},
         __str__:function(){return "<enumerate object>"},
-        counter:-1
+        counter:_start-1
     }
     for(var attr in res){
         if(typeof res[attr]==='function' && attr!=="__class__"){
@@ -786,14 +789,14 @@ function pow() {
 }
 
 function $print(){
-    var $ns=$MakeArgs('print',arguments,[],{},'args','kw')
+    var $ns=$MakeArgs('print',arguments,[],{'end':'\n','sep':' '},'args', null)
     var args = $ns['args']
-    var kw = $ns['kw']
-    var end = $DictDict.get(kw,'end','\n')
+    var end = $ns.end
+    var sep = $ns.sep
     var res = ''
     for(var i=0;i<args.length;i++){
         res += str(args[i])
-        if(i<args.length-1){res += ' '}
+        if(i<args.length-1){res += sep}
     }
     res += end
     getattr(document.$stdout,'write')(res)
@@ -828,12 +831,12 @@ function property(fget, fset, fdel, doc) {
     p.__get__ = function(self,obj,objtype) {
         if(obj===undefined){return self}
         if(self.fget===undefined){throw AttributeError("unreadable attribute")}
-        return self.fget(obj)
+        return getattr(self.fget,'__call__')(obj)
     }
     if(fset!==undefined){
         p.__set__ = function(self,obj,value){
             if(self.fset===undefined){throw AttributeError("can't set attribute")}
-            self.fset(obj,value)
+            getattr(self.fset,'__call__')(obj,value)
         }
     }
     p.__delete__ = fdel;
@@ -1123,7 +1126,9 @@ $TupleDict = {__class__:$type,__name__:'tuple'}
 $TupleDict.__iter__ = function(self){
     return $iterator(self,$tuple_iterator)
 }
-$TupleDict.__new__ = function(arg){return tuple(arg)}
+
+$TupleDict.toString = function(){return '$TupleDict'}
+
 // other attributes are defined in py_list.js, once list is defined
 
 $tuple_iterator = $iterator_class('tuple_iterator')
@@ -1133,7 +1138,6 @@ $tuple_iterator = $iterator_class('tuple_iterator')
 function tuple(){
     var obj = list.apply(null,arguments)
     obj.__class__ = $TupleDict
-    //obj.__bool__ = function(){return obj.length>0}
 
     obj.__hash__ = function () {
       // http://nullege.com/codes/show/src%40p%40y%40pypy-HEAD%40pypy%40rlib%40test%40test_objectmodel.py/145/pypy.rlib.objectmodel._hash_float/python
@@ -1149,6 +1153,7 @@ function tuple(){
 tuple.__class__ = $factory
 tuple.$dict = $TupleDict
 $TupleDict.$factory = tuple
+$TupleDict.__new__ = $__new__(tuple) //function(arg){return tuple(arg)}
 
 function zip(){
     var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')

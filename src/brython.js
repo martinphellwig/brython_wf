@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131116-113625
+// version 1.2.20131117-211940
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -537,13 +537,18 @@ ns='globals'
 }
 }else if(arg2.type==='id'){
 ns=arg2.value
+console.log('namespace for exec '+ns)
 }
 }
 var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
 __BRYTHON__.$py_module_path[_name]=__BRYTHON__.$py_module_path[module]
 var res='(function(){try{'
-res +='for(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
-res +='for(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
+res +='\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
+res +='\nfor(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
+if(ns!==''){
+res +='\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
+res +='eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
+}
 res +='var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
 res +='var $res = eval($jscode);'
 res +='if($res===undefined){return None};return $res'
@@ -555,7 +560,7 @@ res +='{window[$attr]=$globals[$attr]='
 res +='__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
 }else if(ns !=''){
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-res +='{'+ns+'.__setitem__($attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}' 
+res +='{$DictDict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}' 
 }else{
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
 res +='if($attr.search(/[\.]/)>-1){continue};'
@@ -3799,6 +3804,7 @@ var args=[klass.$factory]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 obj=new_func.apply(null,args)
 }
+if(!obj.__initialized__){
 try{
 init_func=getattr(klass,'__init__')
 }catch(err){
@@ -3808,6 +3814,7 @@ if(init_func!==null){
 var args=[obj]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 init_func.apply(null,args)
+}
 }
 return obj
 }
@@ -4164,6 +4171,15 @@ throw TypeError(factory.$dict.__name__+'.__new__(): not enough arguments')
 }
 var res=factory.apply(null,[])
 res.__class__=cls.$dict
+var init_func=null
+try{init_func=getattr(res,'__init__')}
+catch(err){$pop_exc()}
+if(init_func!==null){
+var args=[]
+for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+init_func.apply(null,args)
+res.__initialized__=true
+}
 return res
 }
 }
@@ -4378,8 +4394,11 @@ return[int(Math.ceil(x/y)), x2]
 }
 return list([int(Math.floor(x/y)), x.__class__.__mod__(x,y)])
 }
-function enumerate(iterator){
-var _iter=iter(iterator)
+function enumerate(){
+var $ns=$MakeArgs("enumerate",arguments,["iterable"],
+{"start":Number(0)}, null, null)
+var _iter=iter($ns["iterable"])
+var _start=$ns["start"]
 var res={
 __class__:enumerate,
 __getattr__:function(attr){return res[attr]},
@@ -4387,11 +4406,11 @@ __iter__:function(){return res},
 __name__:'enumerate iterator',
 __next__:function(){
 res.counter++
-return[res.counter,next(_iter)]
+return tuple([res.counter,next(_iter)])
 },
 __repr__:function(){return "<enumerate object>"},
 __str__:function(){return "<enumerate object>"},
-counter:-1
+counter:_start-1
 }
 for(var attr in res){
 if(typeof res[attr]==='function' && attr!=="__class__"){
@@ -4858,14 +4877,14 @@ if(isinstance(y, float)){b=y.value}else{b=y}
 return Math.pow(a,b)
 }
 function $print(){
-var $ns=$MakeArgs('print',arguments,[],{},'args','kw')
+var $ns=$MakeArgs('print',arguments,[],{'end':'\n','sep':' '},'args', null)
 var args=$ns['args']
-var kw=$ns['kw']
-var end=$DictDict.get(kw,'end','\n')
+var end=$ns.end
+var sep=$ns.sep
 var res=''
 for(var i=0;i<args.length;i++){
 res +=str(args[i])
-if(i<args.length-1){res +=' '}
+if(i<args.length-1){res +=sep}
 }
 res +=end
 getattr(document.$stdout,'write')(res)
@@ -4894,12 +4913,12 @@ toString:function(){return '<property>'}
 p.__get__=function(self,obj,objtype){
 if(obj===undefined){return self}
 if(self.fget===undefined){throw AttributeError("unreadable attribute")}
-return self.fget(obj)
+return getattr(self.fget,'__call__')(obj)
 }
 if(fset!==undefined){
 p.__set__=function(self,obj,value){
 if(self.fset===undefined){throw AttributeError("can't set attribute")}
-self.fset(obj,value)
+getattr(self.fset,'__call__')(obj,value)
 }
 }
 p.__delete__=fdel
@@ -5144,7 +5163,7 @@ $TupleDict={__class__:$type,__name__:'tuple'}
 $TupleDict.__iter__=function(self){
 return $iterator(self,$tuple_iterator)
 }
-$TupleDict.__new__=function(arg){return tuple(arg)}
+$TupleDict.toString=function(){return '$TupleDict'}
 $tuple_iterator=$iterator_class('tuple_iterator')
 function tuple(){
 var obj=list.apply(null,arguments)
@@ -5162,6 +5181,7 @@ return obj
 tuple.__class__=$factory
 tuple.$dict=$TupleDict
 $TupleDict.$factory=tuple
+$TupleDict.__new__=$__new__(tuple)
 function zip(){
 var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')
 var _args=$ns['args']
@@ -6826,7 +6846,6 @@ return res
 this.format=function(src){
 if(this.mapping_key!==null){
 if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
-console.log('get item '+this.mapping_key)
 src=getattr(src,'__getitem__')(this.mapping_key)
 }
 if(this.type=="s"){
@@ -7404,7 +7423,16 @@ try{
 var f=getattr(arg,'__str__')
 return f()
 }
-catch(err){console.log(err+'\ndefault to toString '+arg);$pop_exc();return arg.toString()}
+catch(err){
+$pop_exc()
+try{
+var f=getattr(arg,'__repr__')
+return f()
+}catch(err){
+$pop_exc()
+console.log(err+'\ndefault to toString '+arg);$pop_exc();return arg.toString()
+}
+}
 }
 }
 str.__class__=$factory
