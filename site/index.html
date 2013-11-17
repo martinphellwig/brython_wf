@@ -11,68 +11,14 @@
 
 <script type="text/python3">
 """Code for the header menu"""
-from html import *
+import header
 
-# detect language
-language = "en" # default
-has_req = False
-
-lang = doc.query.getfirst("lang")
-if lang and lang in ["en","fr","es","pt"]:
-    has_req = True
-    language = lang
-else:
-    import locale
-    try:
-        lang,enc = locale.getdefaultlocale()
-        lang = lang[:2]
-        if lang in ["en","fr","es","pt"]:
-            language = lang
-    except:
-        pass
-
-# upper menu
-trans_menu = { 
-    'menu_console':{'en':'Console','es':'Consola','fr':'Console', 'pt':'Console'},
-    'menu_gallery':{'en':'Gallery','es':'Galería','fr':'Galerie', 'pt':'Galeria'},
-    'menu_doc':{'en':'Documentation','es':'Documentación','fr':'Documentation', 'pt':'Documentação'},
-    'menu_download':{'en':'Download','es':'Descargas','fr':'Téléchargement', 'pt':'Download'},
-    'menu_dev':{'en':'Development','es':'Desarrollo','fr':'Développement', 'pt':'Desenvolvimento'},
-    'menu_groups':{'en':'Groups','es':'Grupos','fr':'Groupes', 'pt':'Grupos'}
-}
-links = {'home':'index.html',
-    'console':'tests/console.html',
-    'gallery':'gallery/gallery_%s.html',
-    'doc':'doc/%s/index.html',
-    'download':'https://bitbucket.org/olemis/brython/downloads',
-    'dev':'https://bitbucket.org/olemis/brython/src',
-    'groups':'groups.html'
-}
-
-_banner = doc['banner_row']
-
-for key in ['home','console','gallery','doc','download','dev','groups']:
-    href = links[key]
-    if key in ['doc','gallery']:
-        href = href %language
-    if has_req and key not in ['download','dev']:
-        # add lang to href
-        href += '?lang=%s' %language
-    if key == 'home':
-        img = IMG(src="brython_white.png",Class="logo")
-        link = A(img,href=href)
-        cell = TD(link,Class="logo")
-    else:
-        link = A(trans_menu['menu_%s'%key][language],href=href,Class="banner")
-        cell = TD(link)
-    if key in ['download','dev']:
-        link.target = "_blank"        
-    _banner <= cell
+qs_lang,language = header.show()
 
 doc["content"].html = doc["content_%s" %language].html
 
-if has_req:
-    doc["c_%s" %lang].href += "?lang=%s" %lang
+if qs_lang:
+    doc["c_%s" %qs_lang].href += "?lang=%s" %qs_lang
     
 def change_lang(sel):
     new_lang = sel.options[sel.selectedIndex].value

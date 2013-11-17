@@ -577,7 +577,7 @@ function $CallCtx(context){
             res += '\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
             res += '\nfor(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
             // if an argument namespace is passed, insert it
-            if(ns!==''){
+            if(ns!=='' && ns!=='globals'){
                 res += '\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
                 res += 'eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
             }
