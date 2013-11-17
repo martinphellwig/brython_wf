@@ -786,14 +786,14 @@ function pow() {
 }
 
 function $print(){
-    var $ns=$MakeArgs('print',arguments,[],{},'args','kw')
+    var $ns=$MakeArgs('print',arguments,[],{'end':'\n','sep':' '},'args', null)
     var args = $ns['args']
-    var kw = $ns['kw']
-    var end = $DictDict.get(kw,'end','\n')
+    var end = $ns.end
+    var sep = $ns.sep
     var res = ''
     for(var i=0;i<args.length;i++){
         res += str(args[i])
-        if(i<args.length-1){res += ' '}
+        if(i<args.length-1){res += sep}
     }
     res += end
     getattr(document.$stdout,'write')(res)
