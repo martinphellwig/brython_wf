@@ -541,15 +541,18 @@ function $instance_creator(klass){
             for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
             obj = new_func.apply(null,args)
         }
-        try{
-            init_func = getattr(klass,'__init__')
-        }catch(err){
-            $pop_exc()
-        }
-        if(init_func!==null){
-            var args = [obj]
-            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-            init_func.apply(null,args)
+        // __initialized__ is set in object.__new__ if klass has a method __init__
+        if(!obj.__initialized__){
+            try{
+                init_func = getattr(klass,'__init__')
+            }catch(err){
+                $pop_exc()
+            }
+            if(init_func!==null){
+                var args = [obj]
+                for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+                init_func.apply(null,args)
+            }
         }
         return obj
     }

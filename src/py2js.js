@@ -566,6 +566,7 @@ function $CallCtx(context){
                     }
                 }else if(arg2.type==='id'){
                     ns = arg2.value
+                    console.log('namespace for exec '+ns)
                 }
             }
             var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
@@ -573,8 +574,13 @@ function $CallCtx(context){
             // replace by the result of an anonymous function with a try/except clause
             var res = '(function(){try{'
             // insert globals and locals in the function
-            res += 'for(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
-            res += 'for(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
+            res += '\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
+            res += '\nfor(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
+            // if an argument namespace is passed, insert it
+            if(ns!==''){
+                res += '\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
+                res += 'eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
+            }
             // execute the Python code and return its result
             // the namespace built inside the function will be in
             // __BRYTHON__.scope[_name].__dict__
@@ -591,7 +597,7 @@ function $CallCtx(context){
             }else if(ns !=''){
                 // use specified namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{'+ns+'.__setitem__($attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
+                res += '{$DictDict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
             }else{
                 // copy the execution namespace in module namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
