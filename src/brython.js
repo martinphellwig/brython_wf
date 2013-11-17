@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131116-104955
+// version 1.2.20131116-113625
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131116-104955"]
+__BRYTHON__.version_info=[1,2,"20131116-113625"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -4311,9 +4311,9 @@ $BytesDict={
 __class__ : $type,
 __name__ : 'bytes'
 }
-$BytesDict.__len__=function(){return self.value.length}
+$BytesDict.__len__=function(self){return self.source.length}
 $BytesDict.__mro__=[$BytesDict,$ObjectDict]
-$BytesDict.__repr__=$BytesDict.__str__=function(){return self.value}
+$BytesDict.__repr__=$BytesDict.__str__=function(self){return self.source}
 function bytes(source, encoding, errors){
 return{
 __class__:$BytesDict,
@@ -6806,7 +6806,7 @@ var ph=[]
 function format(s){
 var conv_flags='([#\\+\\- 0])*'
 var conv_types='[diouxXeEfFgGcrsa%]'
-var re=new RegExp('\\%(\\(.+\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*('+conv_types+'){1}')
+var re=new RegExp('\\%(\\(.+?\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*('+conv_types+'){1}')
 var res=re.exec(s)
 this.is_format=true
 if(!res){this.is_format=false;return}
@@ -6826,7 +6826,8 @@ return res
 this.format=function(src){
 if(this.mapping_key!==null){
 if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
-src=src.__getitem__(this.mapping_key)
+console.log('get item '+this.mapping_key)
+src=getattr(src,'__getitem__')(this.mapping_key)
 }
 if(this.type=="s"){
 var res=str(src)
@@ -6928,7 +6929,7 @@ else{throw TypeError('%c requires int or char')}
 }
 }
 var elts=[]
-var pos=0, start=0, nb_repl=0
+var pos=0, start=0, nb_repl=0, is_mapping=null
 var val=self.valueOf()
 while(pos<val.length){
 if(val.charAt(pos)=='%'){
@@ -6940,6 +6941,11 @@ elts.push(f)
 start=pos+f.src.length
 pos=start
 nb_repl++
+if(is_mapping===null){is_mapping=f.mapping_key!==null}
+else if(is_mapping!==(f.mapping_key!==null)){
+console.log(f+' not mapping')
+throw TypeError('format required a mapping')
+}
 }else{
 pos++;pos++
 }
@@ -6948,7 +6954,12 @@ pos++;pos++
 }
 elts.push(val.substr(start))
 if(!isinstance(args,tuple)){
-if(nb_repl>1){throw TypeError('not enough arguments for format string')}
+if(args.__class__==$DictDict && is_mapping){
+for(var i=1;i<elts.length;i+=2){
+elts[i]=elts[i].format(args)
+}
+}
+else if(nb_repl>1){throw TypeError('not enough arguments for format string')}
 else{elts[1]=elts[1].format(args)}
 }else{
 if(nb_repl==args.length){
