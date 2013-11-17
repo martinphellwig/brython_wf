@@ -8,6 +8,9 @@
 <script src="/src/brython.js"></script>
 
 <script type="text/python3">
+from ... import header
+header.show()
+
 import markdown
 import time
 
@@ -26,8 +29,6 @@ def load(url,target):
 
 language = "pt"
 </script>
-
-<script type="text/python3" src="../menu_doc.py"></script>
 
 </head>
 <body onLoad="brython(1);load('intro.md','content')">

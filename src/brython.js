@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131117-213651
+// version 1.2.20131117-221049
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -545,7 +545,7 @@ __BRYTHON__.$py_module_path[_name]=__BRYTHON__.$py_module_path[module]
 var res='(function(){try{'
 res +='\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
 res +='\nfor(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
-if(ns!==''){
+if(ns!=='' && ns!=='globals'){
 res +='\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
 res +='eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
 }
