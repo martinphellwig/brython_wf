@@ -106,7 +106,7 @@ $StringDict.__mod__ = function(self,args){
     function format(s){
         var conv_flags = '([#\\+\\- 0])*'
         var conv_types = '[diouxXeEfFgGcrsa%]'
-        var re = new RegExp('\\%(\\(.+\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*('+conv_types+'){1}')
+        var re = new RegExp('\\%(\\(.+?\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*('+conv_types+'){1}')
         var res = re.exec(s)
         this.is_format = true
         if(!res){this.is_format = false;return}
@@ -127,7 +127,8 @@ $StringDict.__mod__ = function(self,args){
         this.format = function(src){
             if(this.mapping_key!==null){
                 if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
-                src=src.__getitem__(this.mapping_key)
+                console.log('get item '+this.mapping_key)
+                src=getattr(src,'__getitem__')(this.mapping_key)
             }
             if(this.type=="s"){
                 var res = str(src)
@@ -233,7 +234,7 @@ $StringDict.__mod__ = function(self,args){
     
     // elts is an Array ; items of odd rank are string format objects
     var elts = []
-    var pos = 0, start = 0, nb_repl = 0
+    var pos = 0, start = 0, nb_repl = 0, is_mapping = null
     var val = self.valueOf()
     while(pos<val.length){
         if(val.charAt(pos)=='%'){
@@ -245,6 +246,12 @@ $StringDict.__mod__ = function(self,args){
                     start = pos+f.src.length
                     pos = start
                     nb_repl++
+                    if(is_mapping===null){is_mapping=f.mapping_key!==null}
+                    else if(is_mapping!==(f.mapping_key!==null)){
+                        // can't mix mapping keys with non-mapping
+                        console.log(f+' not mapping')
+                        throw TypeError('format required a mapping')
+                    }
                 }else{ // form %%
                     pos++;pos++
                 }
@@ -253,7 +260,13 @@ $StringDict.__mod__ = function(self,args){
     }
     elts.push(val.substr(start))
     if(!isinstance(args,tuple)){
-        if(nb_repl>1){throw TypeError('not enough arguments for format string')}
+        if(args.__class__==$DictDict && is_mapping){
+            // convert all formats with the dictionary
+            for(var i=1;i<elts.length;i+=2){
+                elts[i]=elts[i].format(args)
+            }
+        }
+        else if(nb_repl>1){throw TypeError('not enough arguments for format string')}
         else{elts[1]=elts[1].format(args)}
     }else{
         if(nb_repl==args.length){
