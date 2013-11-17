@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131117-205834
+// version 1.2.20131117-210639
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -47,7 +47,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1,2,"20131117-205834"]
+__BRYTHON__.version_info=[1,2,"20131117-210639"]
 __BRYTHON__.path=[]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -4394,8 +4394,11 @@ return[int(Math.ceil(x/y)), x2]
 }
 return list([int(Math.floor(x/y)), x.__class__.__mod__(x,y)])
 }
-function enumerate(iterator){
-var _iter=iter(iterator)
+function enumerate(){
+var $ns=$MakeArgs("enumerate",arguments,["iterable"],
+{"start":Number(0)}, null, null)
+var _iter=iter($ns["iterable"])
+var _start=$ns["start"]
 var res={
 __class__:enumerate,
 __getattr__:function(attr){return res[attr]},
@@ -4403,11 +4406,11 @@ __iter__:function(){return res},
 __name__:'enumerate iterator',
 __next__:function(){
 res.counter++
-return[res.counter,next(_iter)]
+return tuple([res.counter,next(_iter)])
 },
 __repr__:function(){return "<enumerate object>"},
 __str__:function(){return "<enumerate object>"},
-counter:-1
+counter:_start-1
 }
 for(var attr in res){
 if(typeof res[attr]==='function' && attr!=="__class__"){
