@@ -831,12 +831,12 @@ function property(fget, fset, fdel, doc) {
     p.__get__ = function(self,obj,objtype) {
         if(obj===undefined){return self}
         if(self.fget===undefined){throw AttributeError("unreadable attribute")}
-        return self.fget(obj)
+        return getattr(self.fget,'__call__')(obj)
     }
     if(fset!==undefined){
         p.__set__ = function(self,obj,value){
             if(self.fset===undefined){throw AttributeError("can't set attribute")}
-            self.fset(obj,value)
+            getattr(self.fset,'__call__')(obj,value)
         }
     }
     p.__delete__ = fdel;
@@ -1126,7 +1126,9 @@ $TupleDict = {__class__:$type,__name__:'tuple'}
 $TupleDict.__iter__ = function(self){
     return $iterator(self,$tuple_iterator)
 }
-$TupleDict.__new__ = function(arg){return tuple(arg)}
+
+$TupleDict.toString = function(){return '$TupleDict'}
+
 // other attributes are defined in py_list.js, once list is defined
 
 $tuple_iterator = $iterator_class('tuple_iterator')
@@ -1136,7 +1138,6 @@ $tuple_iterator = $iterator_class('tuple_iterator')
 function tuple(){
     var obj = list.apply(null,arguments)
     obj.__class__ = $TupleDict
-    //obj.__bool__ = function(){return obj.length>0}
 
     obj.__hash__ = function () {
       // http://nullege.com/codes/show/src%40p%40y%40pypy-HEAD%40pypy%40rlib%40test%40test_objectmodel.py/145/pypy.rlib.objectmodel._hash_float/python
@@ -1152,6 +1153,7 @@ function tuple(){
 tuple.__class__ = $factory
 tuple.$dict = $TupleDict
 $TupleDict.$factory = tuple
+$TupleDict.__new__ = $__new__(tuple) //function(arg){return tuple(arg)}
 
 function zip(){
     var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')

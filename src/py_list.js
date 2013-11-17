@@ -407,7 +407,7 @@ function list(){
             }
             break
         }
-    }    
+    }
     res.__brython__ = true // false for Javascript arrays - used in sort()
     return res
 }
