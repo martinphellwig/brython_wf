@@ -127,7 +127,6 @@ $StringDict.__mod__ = function(self,args){
         this.format = function(src){
             if(this.mapping_key!==null){
                 if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
-                console.log('get item '+this.mapping_key)
                 src=getattr(src,'__getitem__')(this.mapping_key)
             }
             if(this.type=="s"){
@@ -808,11 +807,21 @@ String.prototype.__class__ = $StringDict
 function str(arg){
     if(arg===undefined){return ''}
     else{
-        try{
+        try{ // try __str__
             var f = getattr(arg,'__str__')
+            // XXX fix : if not better than object.__str__, try __repr__
             return f()
         }
-        catch(err){console.log(err+'\ndefault to toString '+arg);$pop_exc();return arg.toString()}
+        catch(err){
+            $pop_exc()
+            try{ // try __repr__
+                var f = getattr(arg,'__repr__')
+                return f()
+            }catch(err){
+                $pop_exc()
+                console.log(err+'\ndefault to toString '+arg);$pop_exc();return arg.toString()
+            }
+        }
     }
 }
 str.__class__ = $factory
