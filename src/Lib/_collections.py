@@ -490,8 +490,6 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
             seen.add(name)
         field_names = tuple(names)
     for name in (typename,) + field_names:
-        print('name',name)    
-        print([c for c in name])
         if not min(c.isalnum() or c=='_' for c in name):
             raise ValueError('Type names and field names can only contain alphanumeric characters and underscores: %r' % name)
         if _iskeyword(name):
@@ -538,6 +536,7 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
             return tuple(self) \n\n''' % locals()
     for i, name in enumerate(field_names):
         template += '        %s = _property(_itemgetter(%d))\n' % (name, i)
+    
     if verbose:
         print(template)
 
@@ -562,7 +561,10 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
     return result
 
 if __name__ == '__main__':
-    # verify that instances can be pickled
-    Point = namedtuple('Point', 'x, y', True)
-
-
+    Point = namedtuple('Point', ['x', 'y'])
+    p = Point(11, y=22)
+    print(p[0]+p[1])
+    x,y=p
+    print(x,y)
+    print(p.x+p.y)
+    print(p)
