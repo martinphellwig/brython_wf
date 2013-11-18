@@ -1165,7 +1165,7 @@ return window.postMessage(msg,targetOrigin)
 }
 =======
 // brython.js www.brython.info
-// version 1.2.20131117-221049
+// version 1.2.20131118-221505
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -2190,12 +2190,12 @@ if(this.tree.length===0){return 'else'}
 else if(this.tree.length===1 && this.tree[0].name==='Exception'){
 return 'else if(true)'
 }else{
-var res='else if(['
+var res='else if($is_exc('+this.error_name+',['
 for(var i=0;i<this.tree.length;i++){
-res+='"'+this.tree[i].name+'"'
+res+=this.tree[i].to_js()
 if(i<this.tree.length-1){res+=','}
 }
-res +='].indexOf('+this.error_name+'.__name__)>-1)'
+res +=']))'
 return res
 }
 }
@@ -2803,6 +2803,22 @@ this.tree=[js]
 this.toString=function(){return 'js '+js}
 this.to_js=function(){return js}
 }
+function $NonlocalCtx(C){
+this.type='global'
+this.parent=C
+this.tree=[]
+C.tree.push(this)
+this.expect='id'
+this.toString=function(){return 'global '+this.tree}
+this.transform=function(node,rank){
+var scope=$get_scope(this)
+if(scope.globals===undefined){scope.globals=[]}
+for(var i=0;i<this.tree.length;i++){
+scope.globals.push(this.tree[i].value)
+}
+}
+this.to_js=function(){return ''}
+}
 function $NotCtx(C){
 this.type='not'
 this.parent=C
@@ -3029,7 +3045,9 @@ var ctx=node.parent.children[pos].C.tree[0]
 if(ctx.type==='except'){
 if(has_else){$_SyntaxError(C,"'except' or 'finally' after 'else'")}
 ctx.error_name='$err'+$loop_num
-if(ctx.tree.length>0 && ctx.tree[0].alias!==null){
+if(ctx.tree.length>0 && ctx.tree[0].alias!==null
+&& ctx.tree[0].alias!==undefined){
+console.log(ctx.tree[0]+' has alias '+ctx.tree[0].alias)
 var new_node=new $Node('expression')
 var js='var '+ctx.tree[0].alias+'=__BRYTHON__.exception($err'+$loop_num+')'
 new $NodeJSCtx(new_node,js)
@@ -3535,16 +3553,16 @@ return $transition(new $AbstractExprCtx(C,false),token,arguments[2])
 else if(token===')'){return $transition(C.parent,token)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='except'){
-if(token==='id' && C.expect==='id'){
-new $TargetCtx(C,arguments[2])
+if($expr_starters.indexOf(token)>-1 && C.expect==='id'){
 C.expect='as'
-return C
+return $transition(new $AbstractExprCtx(C,false),token,arguments[2])
 }else if(token==='as' && C.expect==='as'
 && C.has_alias===undefined){
 C.expect='alias'
 C.has_alias=true
 return C
 }else if(token==='id' && C.expect==='alias'){
+console.log('set alias '+arguments[2])
 C.expect=':'
 C.tree[0].alias=arguments[2]
 return C
@@ -3901,6 +3919,7 @@ else if(token==='assert'){return new $AbstractExprCtx(new $AssertCtx(C),'assert'
 else if(token==='from'){return new $FromCtx(C)}
 else if(token==='import'){return new $ImportCtx(C)}
 else if(token==='global'){return new $GlobalCtx(C)}
+else if(token==='nonlocal'){return new $NonlocalCtx(C)}
 else if(token==='lambda'){return new $LambdaCtx(C)}
 else if(token==='pass'){return new $PassCtx(C)}
 else if(token==='raise'){return new $RaiseCtx(C)}
@@ -4097,7 +4116,7 @@ var kwdict=["class","return","break",
 "as","elif","else","if","yield","assert","import",
 "except","raise","in","not","pass","with"
 ]
-var unsupported=["nonlocal"]
+var unsupported=[]
 var $indented=['class','def','for','condition','single_kw','try','except','with']
 var punctuation={',':0,':':0}
 var int_pattern=new RegExp("^\\d+")
@@ -4259,10 +4278,10 @@ name+=car
 pos++;continue
 }else{
 if(kwdict.indexOf(name)>-1){
+$pos=pos-name.length
 if(unsupported.indexOf(name)>-1){
 $_SyntaxError(C,"Unsupported Python keyword '"+name+"'")
 }
-$pos=pos-name.length
 C=$transition(C,name)
 }else if(name in $operators){
 $pos=pos-name.length
@@ -4811,7 +4830,7 @@ function $raise(){
 if(__BRYTHON__.exception_stack.length>0){throw $last(__BRYTHON__.exception_stack)}
 else{throw Error('Exception')}
 }
-function $src_error(name,module,msg,pos){
+function $syntax_err_line(module,pos){
 var pos2line={}
 var lnum=1
 var src=document.$py_src[module]
@@ -4824,33 +4843,29 @@ var line_num=pos2line[pos]
 var lines=src.split('\n')
 var lib_module=module
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-info="  module '"+lib_module+"' line "+line_num
 var line=lines[line_num-1]
 var lpos=pos-line_pos[line_num]
 while(line && line.charAt(0)==' '){
 line=line.substr(1)
 lpos--
 }
-info +='\n    '+line+'\n'
+info='\n    '+line+'\n    '
 for(var i=0;i<lpos;i++){info+=' '}
 info +='^'
-err=new Error()
-err.name=name
-err.__class__=Exception
-err.__name__=name
-err.__getattr__=function(attr){return err[attr]}
-err.__str__=function(){return msg}
-err.message=msg
-err.info=info
-err.py_error=true
-__BRYTHON__.exception_stack.push(err)
-throw err
+return info
 }
 function $SyntaxError(module,msg,pos){
-$src_error('SyntaxError',module,msg,pos)
+console.log('Synta error')
+var exc=SyntaxError(msg)
+console.log('info '+exc)
+exc.info +=$syntax_err_line(module,pos)
+console.log('syntax error '+exc.info)
+throw exc
 }
 function $IndentationError(module,msg,pos){
-$src_error('IndentationError',module,msg,pos)
+var exc=IndentationError(msg)
+exc.info +=$syntax_err_line(module,pos)
+throw exc
 }
 function $pop_exc(){__BRYTHON__.exception_stack.pop()}
 function $resolve_cl_attr(_class,attr){
@@ -5638,6 +5653,16 @@ else{throw AttributeError('object has no attribute '+attr)}
 }
 if(attr=='__class__'){
 return klass.$factory
+}
+if(attr==='__dict__'){
+var res=dict()
+for(var $attr in obj){
+if($attr.charAt(0)!='$'){
+res.$keys.push($attr)
+res.$values.push(obj[$attr])
+}
+}
+return res
 }
 if(attr==='__call__' &&(typeof obj=='function')){
 if(__BRYTHON__.debug>0){
@@ -6453,15 +6478,15 @@ Function.prototype.__class__=Function
 Function.prototype.__get__=function(self,obj,objtype){
 return self
 }
-$ExceptionDict={
+$BaseExceptionDict={
 __class__:$type,
-__name__:'Exception'
+__name__:'BaseException'
 }
-$ExceptionDict.__mro__=[$ExceptionDict,$ObjectDict]
-Exception=function(msg,js_exc){
+$BaseExceptionDict.__mro__=[$BaseExceptionDict,$ObjectDict]
+BaseException=function(msg,js_exc){
 var err=Error()
 err.info='Traceback (most recent call last):'
-if(msg===undefined){msg='Exception'}
+if(msg===undefined){msg='BaseException'}
 if(__BRYTHON__.debug && !msg.info){
 if(js_exc!==undefined){
 for(var attr in js_exc){
@@ -6490,7 +6515,9 @@ last_info=call_info
 }
 var err_info=document.$line_info
 while(true){
-var caller=__BRYTHON__.modules[err_info[1]].caller
+var mod=__BRYTHON__.modules[err_info[1]]
+if(mod===undefined){break}
+var caller=mod.caller
 if(caller===undefined){break}
 err_info=caller
 }
@@ -6510,16 +6537,15 @@ err.message=msg
 err.args=msg
 err.__str__=function(){return msg}
 err.toString=err.__str__
-err.__getattr__=function(attr){return this[attr]}
-err.__name__='Exception'
-err.__class__=Exception
+err.__name__='BaseException'
+err.__class__=$BaseExceptionDict
 err.py_error=true
 __BRYTHON__.exception_stack.push(err)
 return err
 }
-Exception.__name__='Exception'
-Exception.__class__=$factory
-Exception.$dict=$ExceptionDict
+BaseException.__name__='BaseException'
+BaseException.__class__=$factory
+BaseException.$dict=$BaseExceptionDict
 __BRYTHON__.exception=function(js_exc){
 if(!js_exc.py_error){
 if(__BRYTHON__.debug>0 && js_exc.info===undefined){
@@ -6553,24 +6579,51 @@ var exc=js_exc
 __BRYTHON__.exception_stack.push(exc)
 return exc
 }
-function $make_exc(name){
-var $exc=(Exception+'').replace(/Exception/g,name)
+function $is_exc(exc,exc_list){
+var exc_class=exc.__class__.$factory
+for(var i=0;i<exc_list.length;i++){
+if(issubclass(exc_class,exc_list[i])){return true}
+}
+return false
+}
+function $make_exc(names,parent){
+for(var i=0;i<names.length;i++){
+var name=names[i]
+var $exc=(BaseException+'').replace(/BaseException/g,name)
 eval(name+'='+$exc)
 eval(name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
-eval(name+'.__class__=$type')
+eval(name+'.__class__=$factory')
+eval('$'+name+'Dict={__class__:$type,__name__:"'+name+'"}')
+eval('$'+name+'Dict.__mro__=[$'+name+'Dict].concat(parent.__mro__)')
+eval('$'+name+'Dict.$factory='+name)
+eval(name+'.$dict=$'+name+'Dict')
 }
-var $errors=['AssertionError','AttributeError','EOFError','FloatingPointError',
-'GeneratorExit','ImportError','IndexError','KeyError','KeyboardInterrupt',
-'NameError','NotImplementedError','OSError','OverflowError','ReferenceError',
-'RuntimeError','StopIteration','SyntaxError','IndentationError','TabError',
-'SystemError','SystemExit','TypeError','UnboundLocalError','ValueError',
-'ZeroDivisionError','IOError']
-for(var $i=0;$i<$errors.length;$i++){$make_exc($errors[$i])}
-var $warnings=['Warning', 'DeprecationWarning', 'PendingDeprecationWarning',
-'RuntimeWarning', 'SyntaxWarning', 'UserWarning',
-'FutureWarning', 'ImportWarning', 'UnicodeWarning',
-'BytesWarning', 'ResourceWarning']
-for(var $i=0;$i<$warnings.length;$i++){$make_exc($warnings[$i])}
+}
+$make_exc(['SystemExit','KeyboardInterrupt','GeneratorExit','Exception'],BaseException)
+$make_exc(['StopIteration','ArithmeticError','AssertionError','AttributeError',
+'BufferError','EOFError','ImportError','LookupError','MemoryError',
+'NameError','OSError','ReferenceError','RuntimeError','SyntaxError',
+'SystemError','TypeError','ValueError','Warning'],Exception)
+$make_exc(['FloatingPointError','OverflowError','ZeroDivisionError'],
+ArithmeticError)
+$make_exc(['IndexError','KeyError'],LookupError)
+$make_exc(['UnboundLocalError'],NameError)
+$make_exc(['BlockingIOError','ChildProcessError','ConnectionError',
+'FileExistsError','FileNotFoundError','InterruptedError',
+'IsADirectoryError','NotADirectoryError','PermissionError',
+'ProcessLookupError','TimeoutError'],OSError)
+$make_exc(['BrokenPipeError','ConnectionAbortedError','ConnectionRefusedError',
+'ConnectionResetError'],ConnectionError)
+$make_exc(['NotImplementedError'],RuntimeError)
+$make_exc(['IndentationError'],SyntaxError)
+$make_exc(['TabError'],IndentationError)
+$make_exc(['UnicodeError'],ValueError)
+$make_exc(['UnicodeDecodeError','UnicodeEncodeError','UnicodeTranslateError'],
+UnicodeError)
+$make_exc(['DeprecationWarning','PendingDeprecationWarning','RuntimeWarning',
+'SyntaxWarning','UserWarning','FutureWarning','ImportWarning',
+'UnicodeWarning','BytesWarning','ResourceWarning'],Warning)
+EnvironmentError=IOError=VMSError=WindowsError=OSError
 
 function $applyToConstructor(constructor, argArray){
 var args=[null].concat(argArray)

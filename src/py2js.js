@@ -1166,12 +1166,12 @@ function $ExceptCtx(context){
         else if(this.tree.length===1 && this.tree[0].name==='Exception'){
             return 'else if(true)'
         }else{
-            var res ='else if(['
+            var res ='else if($is_exc('+this.error_name+',['
             for(var i=0;i<this.tree.length;i++){
-                res+='"'+this.tree[i].name+'"'
+                res+=this.tree[i].to_js()
                 if(i<this.tree.length-1){res+=','}
             }
-            res +='].indexOf('+this.error_name+'.__name__)>-1)'
+            res +=']))'
             return res
         }
     }
@@ -1897,6 +1897,25 @@ function $NodeJSCtx(node,js){ // used for raw JS code
     this.to_js = function(){return js}
 }
 
+function $NonlocalCtx(context){
+    // for the moment keep this as alias for global 
+    this.type = 'global'
+    this.parent = context
+    this.tree = []
+    context.tree.push(this)
+    this.expect = 'id'
+    this.toString = function(){return 'global '+this.tree}
+    this.transform = function(node,rank){
+        var scope = $get_scope(this)
+        if(scope.globals===undefined){scope.globals=[]}
+        for(var i=0;i<this.tree.length;i++){
+            scope.globals.push(this.tree[i].value)
+        }
+    }
+    this.to_js = function(){return ''}
+}
+
+
 function $NotCtx(context){
     this.type = 'not'
     this.parent = context
@@ -2152,8 +2171,10 @@ function $TryCtx(context){
                 // move the except clauses below catch_node
                 if(has_else){$_SyntaxError(context,"'except' or 'finally' after 'else'")}
                 ctx.error_name = '$err'+$loop_num
-                if(ctx.tree.length>0 && ctx.tree[0].alias!==null){
+                if(ctx.tree.length>0 && ctx.tree[0].alias!==null
+                    && ctx.tree[0].alias!==undefined){
                     // syntax "except ErrorName as Alias"
+                    console.log(ctx.tree[0]+' has alias '+ctx.tree[0].alias)
                     var new_node = new $Node('expression')
                     var js = 'var '+ctx.tree[0].alias+'=__BRYTHON__.exception($err'+$loop_num+')'
                     new $NodeJSCtx(new_node,js)
@@ -2754,16 +2775,21 @@ function $transition(context,token){
 
     }else if(context.type==='except'){ 
 
-        if(token==='id' && context.expect==='id'){
-            new $TargetCtx(context,arguments[2])
-            context.expect='as'
-            return context
+        if($expr_starters.indexOf(token)>-1 && context.expect==='id'){
+            context.expect = 'as'
+            return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
+
+        //if(token==='id' && context.expect==='id'){
+        //    new $TargetCtx(context,arguments[2])
+        //    context.expect='as'
+        //    return context
         }else if(token==='as' && context.expect==='as'
             && context.has_alias===undefined) {  // only one alias allowed
             context.expect = 'alias'
             context.has_alias = true
             return context
         }else if(token==='id' && context.expect==='alias'){
+            console.log('set alias '+arguments[2])
             context.expect=':'
             context.tree[0].alias = arguments[2]
             return context
@@ -3167,6 +3193,7 @@ function $transition(context,token){
         else if(token==='from'){return new $FromCtx(context)}
         else if(token==='import'){return new $ImportCtx(context)}
         else if(token==='global'){return new $GlobalCtx(context)}
+        else if(token==='nonlocal'){return new $NonlocalCtx(context)}
         else if(token==='lambda'){return new $LambdaCtx(context)}
         else if(token==='pass'){return new $PassCtx(context)}
         else if(token==='raise'){return new $RaiseCtx(context)}
@@ -3419,7 +3446,7 @@ function $tokenize(src,module,parent){
         //"False","None","True","continue",
         // "and',"or","is"
         ]
-    var unsupported = ["nonlocal"]
+    var unsupported = []
     var $indented = ['class','def','for','condition','single_kw','try','except','with']
     // from https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Reserved_Words
 
@@ -3600,10 +3627,10 @@ function $tokenize(src,module,parent){
                 pos++;continue
             } else{
                 if(kwdict.indexOf(name)>-1){
+                    $pos = pos-name.length
                     if(unsupported.indexOf(name)>-1){
                         $_SyntaxError(context,"Unsupported Python keyword '"+name+"'")                    
                     }
-                    $pos = pos-name.length
                     context = $transition(context,name)
                 } else if(name in $operators) { // and, or
                     $pos = pos-name.length
