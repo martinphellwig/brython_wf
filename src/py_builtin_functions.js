@@ -132,11 +132,11 @@ $BytesDict = {
     __name__ : 'bytes'
 }
 
-$BytesDict.__len__ = function(){return self.value.length}
+$BytesDict.__len__ = function(self){return self.source.length}
 
 $BytesDict.__mro__ = [$BytesDict,$ObjectDict]
 
-$BytesDict.__repr__ = $BytesDict.__str__ = function(){return self.value}
+$BytesDict.__repr__ = $BytesDict.__str__ = function(self){return self.source}
 
 function bytes(source, encoding, errors) {
     return {
@@ -175,9 +175,9 @@ function classmethod(klass,func) {
 
 function $class(obj,info){
     this.obj = obj
-    this.info = info
-    this.__class__ = Object
-    this.toString = function(){return "<class '"+info+"'>"}
+    this.__name__ = info
+    this.__class__ = $type
+    this.__mro__ = [this,$ObjectDict]
 }
 
 //compile() (built in function)
@@ -192,15 +192,25 @@ function $confirm(src){return confirm(src)}
 
 //delattr() (built in function)
 function delattr(obj, attr) {
-   if (obj.__delattr__ !== undefined) {obj.__delattr__(attr)} 
-   else {
-     //not sure this statement is possible or valid.. ?
-     getattr(obj, attr).__del__()
-   }
+    // descriptor protocol : if obj has attribute attr and this attribute has 
+    // a method __delete__(), use it
+    var res = obj[attr]
+    if(res===undefined){
+        var mro = obj.__class__.__mro__
+        for(var i=0;i<mro.length;i++){
+            var res = mro[i][attr]
+            if(res!==undefined){break}
+        }
+    }
+    if(res!==undefined && res.__delete__!==undefined){
+        return res.__delete__(res,obj,attr)
+    }
+    getattr(obj,'__delattr__')(attr)
 }
 
 function dir(obj){
     if(isinstance(obj,JSObject)){obj=obj.js}
+    if(obj.__class__===$factory){obj=obj.$dict}
     var res = []
     for(var attr in obj){if(attr.charAt(0)!=='$'){res.push(attr)}}
     res.sort()
@@ -219,8 +229,11 @@ function divmod(x,y) {
     return list([int(Math.floor(x/y)), x.__class__.__mod__(x,y)])
 }
 
-function enumerate(iterator){
-    var _iter = iter(iterator)
+function enumerate(){
+    var $ns = $MakeArgs("enumerate",arguments,["iterable"],
+                {"start":Number(0)}, null, null)
+    var _iter = iter($ns["iterable"])
+    var _start = $ns["start"]
     var res = {
         __class__:enumerate,
         __getattr__:function(attr){return res[attr]},
@@ -228,11 +241,11 @@ function enumerate(iterator){
         __name__:'enumerate iterator',
         __next__:function(){
             res.counter++
-            return [res.counter,next(_iter)]
+            return tuple([res.counter,next(_iter)])
         },
         __repr__:function(){return "<enumerate object>"},
         __str__:function(){return "<enumerate object>"},
-        counter:-1
+        counter:_start-1
     }
     for(var attr in res){
         if(typeof res[attr]==='function' && attr!=="__class__"){
@@ -350,7 +363,7 @@ function getattr(obj,attr,_default){
     if(obj.__class__===$ModuleDict){
         var res = obj[attr]
         if(res!==undefined){return res}
-        else{throw AttributeError('module '+obj.__name__+" has no attribute '"+attr+"'")}
+        else{throw AttributeError("'module' object has no attribute '"+attr+"'")}
     }
     var is_class = obj.__class__===$factory, mro, attr_func
     //if(attr=='calc_v'){console.log('2 ! getattr '+attr+' of '+obj+' ('+type(obj)+') '+' class '+is_class)}
@@ -386,7 +399,7 @@ function globals(module){
     // the translation engine adds the argument mdoule
     var res = dict()
     var scope = __BRYTHON__.scope[module].__dict__
-    for(var name in scope){res.__setitem__(name,scope[name])}
+    for(var name in scope){$DictDict.__setitem__(res,name,scope[name])}
     return res
 }
 
@@ -471,7 +484,24 @@ function isinstance(obj,arg){
     }
 }
 
-//issubclass() (built in function)
+function issubclass(klass,classinfo){
+    if(arguments.length!==2){
+        throw TypeError("issubclass expected 2 arguments, got "+arguments.length)
+    }
+    if(!klass.__class__===$factory){
+        throw TypeError("issubclass() arg 1 must be a class")
+    }
+    if(isinstance(classinfo,tuple)){
+        for(var i=0;i<classinfo.length;i++){
+            if(issubclass(klass,classinfo[i])){return true}
+        }
+        return false
+    }else if(classinfo.__class__===$factory){
+        return classinfo.$dict.__mro__.indexOf(klass.$dict)>-1    
+    }else{
+        throw TypeError("issubclass() arg 2 must be a class or tuple of classes")
+    }
+}
 
 function iter(obj){
     try{return getattr(obj,'__iter__')()}
@@ -759,14 +789,14 @@ function pow() {
 }
 
 function $print(){
-    var $ns=$MakeArgs('print',arguments,[],{},'args','kw')
+    var $ns=$MakeArgs('print',arguments,[],{'end':'\n','sep':' '},'args', null)
     var args = $ns['args']
-    var kw = $ns['kw']
-    var end = $DictDict.get(kw,'end','\n')
+    var end = $ns.end
+    var sep = $ns.sep
     var res = ''
     for(var i=0;i<args.length;i++){
         res += str(args[i])
-        if(i<args.length-1){res += ' '}
+        if(i<args.length-1){res += sep}
     }
     res += end
     getattr(document.$stdout,'write')(res)
@@ -801,10 +831,25 @@ function property(fget, fset, fdel, doc) {
     p.__get__ = function(self,obj,objtype) {
         if(obj===undefined){return self}
         if(self.fget===undefined){throw AttributeError("unreadable attribute")}
-        return self.fget(obj)
+        return getattr(self.fget,'__call__')(obj)
     }
-    p.__set__ = fset; 
+    if(fset!==undefined){
+        p.__set__ = function(self,obj,value){
+            if(self.fset===undefined){throw AttributeError("can't set attribute")}
+            getattr(self.fset,'__call__')(obj,value)
+        }
+    }
     p.__delete__ = fdel;
+
+    p.getter = function(self, fget){
+        return type(self)(fget, self.fset, self.fdel, self.__doc__)
+    }
+    p.setter = function(self, fset){
+        return type(self)(self.fget, fset, self.fdel, self.__doc__)
+    }
+    p.deleter = function(self, fdel){
+        return type(self)(self.fget, self.fset, fdel, self.__doc__)
+    }
     return p
 }
 
@@ -956,11 +1001,9 @@ function setattr(obj,attr,value){
         }
     }
     if(res!==undefined && res.__set__!==undefined){
-        return res.__set__(obj,value)
+        return res.__set__(res,obj,value)
     }
-    try{
-        var f = getattr(obj,'__setattr__')
-    }
+    try{var f = getattr(obj,'__setattr__')}
     catch(err){
         $pop_exc()
         obj[attr]=value
@@ -1053,6 +1096,28 @@ function sum(iterable,start){
 }
 
 // super() built in function
+$SuperDict = {
+    __class__:$type,
+    __name__:'super'
+}
+
+$SuperDict.__getattribute__ = function(self,attr){
+    var mro = self.__thisclass__.$dict.__mro__,res
+    for(var i=1;i<mro.length;i++){ // ignores the class where super() is defined
+        res = mro[i][attr]
+        if(res!==undefined){return res}
+    }
+    throw AttributeError("object 'super' has no attribute '"+attr+"'")
+}
+
+$SuperDict.__mro__ = [$SuperDict,$ObjectDict]
+
+function $$super(_type1,_type2){
+    return {__class__:$SuperDict,
+        __thisclass__:_type1,
+        __self_class__:_type2
+    }
+}
 
 function $tuple(arg){return arg} // used for parenthesed expressions
 
@@ -1061,7 +1126,9 @@ $TupleDict = {__class__:$type,__name__:'tuple'}
 $TupleDict.__iter__ = function(self){
     return $iterator(self,$tuple_iterator)
 }
-$TupleDict.__new__ = function(arg){return tuple(arg)}
+
+$TupleDict.toString = function(){return '$TupleDict'}
+
 // other attributes are defined in py_list.js, once list is defined
 
 $tuple_iterator = $iterator_class('tuple_iterator')
@@ -1071,7 +1138,6 @@ $tuple_iterator = $iterator_class('tuple_iterator')
 function tuple(){
     var obj = list.apply(null,arguments)
     obj.__class__ = $TupleDict
-    //obj.__bool__ = function(){return obj.length>0}
 
     obj.__hash__ = function () {
       // http://nullege.com/codes/show/src%40p%40y%40pypy-HEAD%40pypy%40rlib%40test%40test_objectmodel.py/145/pypy.rlib.objectmodel._hash_float/python
@@ -1087,6 +1153,7 @@ function tuple(){
 tuple.__class__ = $factory
 tuple.$dict = $TupleDict
 $TupleDict.$factory = tuple
+$TupleDict.__new__ = $__new__(tuple) //function(arg){return tuple(arg)}
 
 function zip(){
     var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')
@@ -1139,10 +1206,22 @@ $BoolDict.__eq__ = function(self,other){
     if(self.valueOf()){return !!other}else{return !other}
 }
 
+$BoolDict.__ge__ = function(self,other){
+    return $IntDict.__ge__($BoolDict.__hash__(self),other)
+}
+
+$BoolDict.__gt__ = function(self,other){
+    return $IntDict.__gt__($BoolDict.__hash__(self),other)
+}
+
 $BoolDict.__hash__ = function(self) {
    if(self.valueOf()) return 1
    return 0
 }
+
+$BoolDict.__le__ = function(self,other){return !$BoolDict.__gt__(self,other)}
+
+$BoolDict.__lt__ = function(self,other){return !$BoolDict.__ge__(self,other)}
 
 $BoolDict.__mul__ = function(self,other){
     if(self.valueOf()) return other;
@@ -1233,26 +1312,41 @@ Exception = function (msg,js_exc){
             err.info+='\n'        
         }
         // call stack
+        var last_info
         for(var i=0;i<__BRYTHON__.call_stack.length;i++){
             var call_info = __BRYTHON__.call_stack[i]
             var lib_module = call_info[1]
+            var caller = __BRYTHON__.modules[lib_module].caller
+            if(caller!==undefined){
+                call_info = caller
+                lib_module = caller[1]
+            }
             if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
             var lines = document.$py_src[call_info[1]].split('\n')
             err.info += '\n  module '+lib_module+' line '+call_info[0]
             var line = lines[call_info[0]-1]
             while(line && line.charAt(0)==' '){line=line.substr(1)}
             err.info += '\n    '+line
+            last_info = call_info
         }
         // error line
-        var module = document.$line_info[1]
-        var line_num = document.$line_info[0]
-        var lines = document.$py_src[module].split('\n')
-        var lib_module = module
-        if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-        err.info += "\n  module "+lib_module+" line "+line_num
-        var line = lines[line_num-1]
-        while(line && line.charAt(0)==' '){line = line.substr(1)}
-        err.info += '\n    '+line
+        var err_info = document.$line_info
+        while(true){
+            var caller = __BRYTHON__.modules[err_info[1]].caller
+            if(caller===undefined){break}
+            err_info = caller
+        }
+        if(err_info!==last_info){
+            var module = err_info[1]
+            var line_num = err_info[0]
+            var lines = document.$py_src[module].split('\n')
+            var lib_module = module
+            if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
+            err.info += "\n  module "+lib_module+" line "+line_num
+            var line = lines[line_num-1]
+            while(line && line.charAt(0)==' '){line = line.substr(1)}
+            err.info += '\n    '+line
+        }
     }
     err.message = msg
     err.args = msg
@@ -1277,22 +1371,26 @@ __BRYTHON__.exception = function(js_exc){
     // or by the Javascript interpreter (ReferenceError for instance)
     if(!js_exc.py_error){
         if(__BRYTHON__.debug>0 && js_exc.info===undefined){
-            var mod_name = document.$line_info[1]
-            var module = __BRYTHON__.modules[mod_name]
-            if(module){
-                if(module.caller!==undefined){
-                    // for list comprehension and the likes, replace
-                    // by the line in the enclosing module
-                    document.$line_info = module.caller
-                    var module = document.$line_info[1]
+            if(document.$line_info!==undefined){
+                var mod_name = document.$line_info[1]
+                var module = __BRYTHON__.modules[mod_name]
+                if(module){
+                    if(module.caller!==undefined){
+                        // for list comprehension and the likes, replace
+                        // by the line in the enclosing module
+                        document.$line_info = module.caller
+                        var module = document.$line_info[1]
+                    }
+                    var lib_module = mod_name
+                    if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
+                    var line_num = document.$line_info[0]
+                    var lines = document.$py_src[mod_name].split('\n')
+                    js_exc.message += "\n  module '"+lib_module+"' line "+line_num
+                    js_exc.message += '\n'+lines[line_num-1]
+                    js_exc.info_in_msg = true
                 }
-                var lib_module = mod_name
-                if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-                var line_num = document.$line_info[0]
-                var lines = document.$py_src[mod_name].split('\n')
-                js_exc.message += "\n  module '"+lib_module+"' line "+line_num
-                js_exc.message += '\n'+lines[line_num-1]
-                js_exc.info_in_msg = true
+            }else{
+                console.log('error '+js_exc)
             }
         }
         var exc = Error()

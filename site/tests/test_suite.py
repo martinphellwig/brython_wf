@@ -185,3 +185,17 @@ assert oct(-12) == '-0o14'
 assert hex(-12) == '-0xc'
 
 print("passed all tests..")
+
+# bytes
+b = b'12345'
+assert len(b) == 5
+
+# enumerate
+enum_obj = enumerate('abcdefghij')
+enum_first = next(enum_obj)
+assert isinstance(enum_first, tuple)
+assert enum_first[0] == 0
+
+enum_obj = enumerate(['first', 'second'], start=1)
+enum_first = next(enum_obj)
+assert enum_first[0] ==  1

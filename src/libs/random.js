@@ -7,7 +7,7 @@ $module = {
         return float(Math.random());
       }
     },
-    randint:function(a,b){return int(Math.floor(Math.random()*(b-a)+a))},
+    randint:function(a,b){return int(Math.floor(Math.random()*(b-a+1)+a))},
     randrange:function(start,stop,step){
       if(step === undefined) {
         step=1;

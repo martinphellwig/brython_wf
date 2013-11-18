@@ -59,7 +59,8 @@ sys.stderr.write = write
 def to_str(xx):
     return str(xx)
 
-doc['version'].text = '.'.join(map(to_str,sys.version_info))
+info = sys.version_info
+doc['version'].text = '%s.%s.%s' %(info.major,info.minor,info.micro)
 
 output = ''
 

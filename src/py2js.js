@@ -566,15 +566,21 @@ function $CallCtx(context){
                     }
                 }else if(arg2.type==='id'){
                     ns = arg2.value
+                    console.log('namespace for exec '+ns)
                 }
             }
             var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
+            __BRYTHON__.$py_module_path[_name] = __BRYTHON__.$py_module_path[module]
             // replace by the result of an anonymous function with a try/except clause
             var res = '(function(){try{'
-            // insert module namespace in the function
-            res += 'for(var $attr in __BRYTHON__.scope["'+module+'"].__dict__){'
-            res += 'eval("var "+$attr+"=__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]")'
-            res +='};'
+            // insert globals and locals in the function
+            res += '\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
+            res += '\nfor(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
+            // if an argument namespace is passed, insert it
+            if(ns!=='' && ns!=='globals'){
+                res += '\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
+                res += 'eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
+            }
             // execute the Python code and return its result
             // the namespace built inside the function will be in
             // __BRYTHON__.scope[_name].__dict__
@@ -586,13 +592,12 @@ function $CallCtx(context){
             if(ns==='globals'){
                 // copy the execution namespace in module and global namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{window[$attr]='
-                res += '$globals[$attr]='
+                res += '{window[$attr]=$globals[$attr]='
                 res += '__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
             }else if(ns !=''){
                 // use specified namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{'+ns+'.__setitem__($attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
+                res += '{$DictDict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
             }else{
                 // copy the execution namespace in module namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
@@ -615,6 +620,17 @@ function $CallCtx(context){
             while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
             var module = ctx_node.node.module
             return 'globals("'+module+'")'
+        }else if(this.func!==undefined && this.func.value=='$$super'){
+            if(this.tree.length==0){
+                // super() called with no argument : if inside a class, add the
+                // class parent as first argument
+                var scope = $get_scope(this)
+                if(scope.ntype=='def' || scope.ntype=='generator'){
+                    if(scope.parent && scope.parent.context.tree[0].type=='class'){
+                        new $IdCtx(this,scope.parent.context.tree[0].name)
+                    }
+                }
+            }
         }
         if(this.tree.length>0){
             return 'getattr('+this.func.to_js()+',"__call__")('+$to_js(this.tree)+')'
@@ -784,6 +800,48 @@ function $DecoratorCtx(context){
                 children.splice(func_rank,1)
             }else{break}
         }
+        // Associate a random variable name to each decorator
+        // In a code such as 
+        // class Cl(object):
+        //      def __init__(self):
+        //          self._x = None
+        //    
+        //      @property
+        //      def x(self):
+        //          return self._x
+        //    
+        //      @x.setter
+        //      def x(self, value):
+        //          self._x = value
+        //
+        // we can't replace the decorated methods by something like
+        //
+        //      def x(self):
+        //          return self._x
+        //      x = property(x)      # [1]
+        //
+        //      def x(self,value):   # [2]
+        //          self._x = value
+        //      x = x.setter(x)      # [3]
+        //
+        // because when we want to use x.setter in [3], x is no longer the one
+        // defined in [1] : it has been reset by the function declaration in [2]
+        // The technique used here is to replace these lines by :
+        //
+        //      $vth93h6g = property # random variable name
+        //      def x(self):
+        //          return self._x
+        //      x = $vth93h6g(x)
+        //    
+        //      $h3upb5s8 = x.setter
+        //      def x(self, value):
+        //          self._x = value
+        //      x = $h3upb5s8(x)
+        //
+        this.dec_ids = []
+        for(var i=0;i<decorators.length;i++){
+            this.dec_ids.push('$'+Math.random().toString(36).substr(2,8))
+        }
         var obj = children[func_rank].context.tree[0]
         // add a line after decorated element
         var callable = children[func_rank].context
@@ -793,7 +851,7 @@ function $DecoratorCtx(context){
             res = '$class.'+obj.name+'='
         }
         for(var i=0;i<decorators.length;i++){
-            var dec = $to_js(decorators[i]);
+            var dec = this.dec_ids[i] //$to_js(decorators[i]);
             res += dec+'('
             if (decorators[i][0].tree[0].value == 'classmethod') { res+= '$class,'}
             tail +=')'
@@ -803,8 +861,15 @@ function $DecoratorCtx(context){
         var decor_node = new $Node('expression')
         new $NodeJSCtx(decor_node,res)
         node.parent.children.splice(func_rank+1,0,decor_node)
+        this.decorators = decorators
     }
-    this.to_js = function(){return ''}
+    this.to_js = function(){
+        var res = ''
+        for(var i=0;i<this.decorators.length;i++){
+            res += this.dec_ids[i]+'='+$to_js(this.decorators[i])+';'
+        }
+        return res
+    }
 }
 function $DefCtx(context){
     this.type = 'def'
@@ -937,6 +1002,15 @@ function $DefCtx(context){
             node.parent.children.splice(rank+offset,0,new_node)
             offset++
         }
+        // add attribute __module__
+        var module = $get_module(this)
+        js = scope.ntype=='class' ? '$class.' : ''
+        js += this.name+'.__module__ = "'+module.module+'"'
+        new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        node.parent.children.splice(rank+offset,0,new_node)
+        offset++
+        
         // if doc string, add it as attribute __doc__
         js = scope.ntype=='class' ? '$class.' : ''
         js += this.name+'.__doc__='+(this.doc_string || 'None')
@@ -1026,6 +1100,8 @@ function $DelCtx(context){
                     $_SyntaxError(this,["can't delete operator"])
                 }else if(expr.type==='call'){
                     $_SyntaxError(this,["can't delete function call"])
+                }else if(expr.type==='attribute'){
+                    return 'delattr('+expr.value.to_js()+',"'+expr.name+'")'
                 }
                 $_SyntaxError(this,["can't delete "+expr.type])
             }
@@ -1251,12 +1327,13 @@ function $FromCtx(context){
                search_path_parts.push(mod)
             }
             var search_path = search_path_parts.join('/')
-            res +="$mods=$import_list_intra(["
-            var _mods = []
+            res +="$mod=$import_list_intra('"+this.module+"','"
+            res += __BRYTHON__.$py_module_path[parent_module]
+            res += "',["
             for(var i=0;i<this.names.length;i++){
-             _mods.push('["'+this.names[i]+'","'+search_path+'"]')
+                res += '"'+this.names[i]+'",'
             }
-            res += _mods.join(',')+']);'
+            res += ']);'
             for(var i=0;i<this.names.length;i++){
                 if(['def','class'].indexOf(scope.ntype)>-1){
                     res += 'var '
@@ -1266,7 +1343,7 @@ function $FromCtx(context){
                 if(scope!==null && scope.ntype == 'def'){
                     res += '=$locals["'+alias+'"]'
                 }            
-                res += '=$mods['+i+'];'
+                res += '=getattr($mod,"'+this.names[i]+'");'
             }
         } else {
            res += '$import_list(["'+this.module+'"])[0];'
@@ -2311,7 +2388,7 @@ function $comp_env(context,attr,src){
 }
 
 function $get_docstring(node){
-    var doc_string=null
+    var doc_string='""'
     if(node.children.length>0){
         var firstchild = node.children[0]
         if(firstchild.context.tree && firstchild.context.tree[0].type=='expr'){
@@ -2443,8 +2520,11 @@ function $transition(context,token){
             if('+-~'.search(arguments[2])>-1){ // unary + or -, bitwise ~
                 return new $UnaryCtx(new $ExprCtx(context,'unary',false),arguments[2])
             }else{$_SyntaxError(context,'token '+token+' after '+context)}
-        }else if([')','=',','].indexOf(token)>-1){$_SyntaxError(context,token)}
-        else{return $transition(context.parent,token,arguments[2])}
+        }else if(token=='='){
+            $_SyntaxError(context,token)
+        }else if([')',','].indexOf(token)>-1 && context.parent.type!='list_or_tuple'){
+            $_SyntaxError(context,token)
+        }else{return $transition(context.parent,token,arguments[2])}
 
     }else if(context.type==='assert'){
     
@@ -3302,15 +3382,17 @@ __BRYTHON__.py2js = function(src,module,parent){
     root.insert(0,new_node)
     // module doc string
     var ds_node = new $Node('expression')
-    new $NodeJSCtx(ds_node,'__doc__='+root.doc_string)
+    new $NodeJSCtx(ds_node,'__doc__=$globals["__doc__"]='+root.doc_string)
     root.insert(1,ds_node)
     // name
     var name_node = new $Node('expression')
-    new $NodeJSCtx(name_node,'__name__="'+module+'"')
+    var lib_module = module
+    if(module.substr(0,9)=='__main__,'){lib_module='__main__'}
+    new $NodeJSCtx(name_node,'__name__=$globals["__name__"]="'+lib_module+'"')
     root.insert(2,name_node)
     // file
     var file_node = new $Node('expression')
-    new $NodeJSCtx(file_node,'__file__="'+__BRYTHON__.$py_module_path[module]+'"')
+    new $NodeJSCtx(file_node,'__file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
     root.insert(3,file_node)
         
     if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
@@ -3727,6 +3809,7 @@ function brython(options){
     __BRYTHON__.exception_stack = []
     __BRYTHON__.call_stack = []
     __BRYTHON__.scope = {}
+    __BRYTHON__.events = dict() // maps $brython_id of DOM elements to events
     var $elts = document.getElementsByTagName("script")
     var $href = window.location.href
     var $href_elts = $href.split('/')

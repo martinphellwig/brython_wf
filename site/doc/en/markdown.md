@@ -3,7 +3,7 @@ module markdown
 
 markdown is a mode of text formatting adapted to publication on Internet, more simple to edit than HTML
 
-A complete description complète is available on [the mardown site](http://daringfireball.net/projects/markdown/). The module `markdown` is a slightly adapted version : to enrich the rendering options, the markdown tags \_text\_ and \*text\* match two different HTML tags : `<I>` and `<EM>`, as well as \_\_text\_\_ et \*\*text\*\* that match `<B>` and `<STRONG>`
+A complete description is available on [the mardown site](http://daringfireball.net/projects/markdown/). The module `markdown` is a slightly adapted version : to enrich the rendering options, the markdown tags \_text\_ and \*text\* match two different HTML tags : `<I>` and `<EM>`, as well as \_\_text\_\_ and \*\*text\*\* that match `<B>` and `<STRONG>`
 
 The module `markdown` exposes a single function : <code>mark(_src_)</code> where *src* is a string holding text formatted with the markdown syntax. The function returns a 2-element tuple : *html, scripts* where *html* is the HTML code generated from the source, and *scripts* is a list of all the source code of scripts found in the page
 

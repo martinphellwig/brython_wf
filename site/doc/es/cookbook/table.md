@@ -51,7 +51,7 @@ def fill_zone():
     exec(src)
 </script>
 
-Fíjate que el contenido inicial de la celda se ha eliminado : simplemente asignando una cadena vacía al asu atributo `text`
+Fíjate que el contenido inicial de la celda se ha eliminado : simplemente asignando una cadena vacía a su atributo `text`
 
 Podemos construir una tabla a partir de una lista de listas :
 

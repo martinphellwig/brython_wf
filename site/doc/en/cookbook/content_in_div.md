@@ -1,7 +1,7 @@
 Problem
 -------
 
-Display content in a element of the web page
+Display content in an element of the web page
 
 
 Solution

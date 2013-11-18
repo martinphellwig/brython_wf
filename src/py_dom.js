@@ -334,10 +334,9 @@ function $DOMNode(elt){
     var res = {}
     res.$dict = {} // used in getattr
     res.elt = elt // DOM element
-    res.events = new Object() // maps event types to a list of callback functions
     if(elt['$brython_id']===undefined||elt.nodeType===9){
         // add a unique id for comparisons
-        res.$brython_id=Math.random().toString(36).substr(2, 8)
+        elt.$brython_id=Math.random().toString(36).substr(2, 8)
         // add attributes of Node to element
         res.__repr__ = res.__str__ = res.toString = function(){
             var res = "<DOMObject object type '"
@@ -413,7 +412,7 @@ DOMNode.__getattribute__ = function(self,attr){
     if(self.elt[attr]!==undefined){
         res = self.elt[attr]
         if(typeof res==="function"){
-            var func = (function(elt){
+            var func = (function(f,elt){
                 return function(){
                     var args = []
                     for(var i=0;i<arguments.length;i++){
@@ -427,9 +426,9 @@ DOMNode.__getattribute__ = function(self,attr){
                             args.push(arguments[i])
                         }
                     }
-                    return $JS2Py(res.apply(elt,args))
+                    return $JS2Py(f.apply(elt,args))
                 }
-            })(self.elt)
+            })(res,self.elt)
             func.__name__ = attr
             return func
         }else if(attr=='options'){
@@ -558,6 +557,21 @@ DOMNode.__str__ = DOMNode.__repr__
 
 DOMNode.bind = function(self,event){
     // bind functions to the event (event = "click", "mouseover" etc.)
+    var _id
+    if(self.elt.nodeType===9){_id=0}
+    else{_id = self.elt.$brython_id}
+    var ix = __BRYTHON__.events.$keys.indexOf(_id)
+    if(ix===-1){
+        __BRYTHON__.events.$keys.push(_id)
+        __BRYTHON__.events.$values.push(dict())
+        ix = __BRYTHON__.events.$keys.length-1
+    }
+    var ix_event = __BRYTHON__.events.$values[ix].$keys.indexOf(event)
+    if(ix_event==-1){
+        __BRYTHON__.events.$values[ix].$keys.push(event)
+        __BRYTHON__.events.$values[ix].$values.push([])
+        ix_event = __BRYTHON__.events.$values[ix].$values.length-1
+    }
     for(var i=2;i<arguments.length;i++){
         var func = arguments[i]
         var callback = (function(f){
@@ -568,8 +582,8 @@ DOMNode.bind = function(self,event){
         }else if(window.attachEvent){
             self.elt.attachEvent("on"+event,callback)
         }
-        if(self.events[event]===undefined){self.events[event]=[[func,callback]]}
-        else{self.events[event].push([func,callback])}
+        
+        __BRYTHON__.events.$values[ix].$values[ix_event].push([func,callback])
     }
 }
 
@@ -588,10 +602,17 @@ DOMNode.class = function(self){
 
 DOMNode.clone = function(self){
     res = $DOMNode(self.elt.cloneNode(true))
-    // bind events
-    for(var event in self.events){
-        for(var i=0;i<self.events[event].length;i++){
-            DOMNode.bind(res,event,self.events[event][i][0])
+    res.elt.$brython_id=Math.random().toString(36).substr(2, 8)
+
+    // bind events on clone to the same callbacks as self
+    var ix_elt = __BRYTHON__.events.$keys.indexOf(self.elt.$brython_id)
+    if(ix_elt!=-1){
+        var events = __BRYTHON__.events.$values[ix_elt]
+        for(var i=0;i<events.$keys.length;i++){
+            var event = events.$keys[i]
+            for(var j=0;j<events.$values[i].length;j++){
+                DOMNode.bind(res,event,events.$values[i][j][0])
+            }
         }
     }
     return res
@@ -821,33 +842,43 @@ DOMNode.toString = function(self){
 DOMNode.unbind = function(self,event){
     // unbind functions from the event (event = "click", "mouseover" etc.)
     // if no function is specified, remove all callback functions
+    var _id
+    if(self.elt.nodeType==9){_id=0}else{_id=self.elt.$brython_id}
+    var ix_elt = __BRYTHON__.events.$keys.indexOf(_id)
+    if(ix_elt==-1){
+        throw KeyError('missing callback for event '+event)
+    }
+    var ix_event = __BRYTHON__.events.$values[ix_elt].$keys.indexOf(event)
+    if(ix_event==-1){throw KeyError('missing callback for event '+event)}
+    var events = __BRYTHON__.events.$values[ix_elt].$values[ix_event]
     if(arguments.length===2){
-        for(var i=0;i<self.events[event].length;i++){
-            var callback = self.events[event][i][1]
+        for(var i=0;i<events.length;i++){
+            var callback = events[i][1]
             if(window.removeEventListener){
                 self.elt.removeEventListener(event,callback,false)
             }else if(window.detachEvent){
                 self.elt.detachEvent(event,callback,false)
             }
         }
-        self.events[event] = []
+        __BRYTHON__.events.$values[ix_elt][ix_event] = []
         return
     }
     for(var i=1;i<arguments.length;i++){
         var func = arguments[i], flag = false
-        for(var j=0;j<self.events[event].length;j++){
-            if(func===self.events[event][j][0]){
-                var callback = self.events[event][j][1]
+        for(var j=0;j<events.length;j++){
+            if(func===events[j][0]){
+                var callback = events[event][j][1]
                 if(window.removeEventListener){
                     self.elt.removeEventListener(event,callback,false)
                 }else if(window.detachEvent){
                     self.elt.detachEvent(event,callback,false)
                 }
-                self.events[event].splice(j,1)
+                event.splice(j,1)
                 flag = true
                 break
             }
             if(!flag){throw KeyError('missing callback for event '+event)}
+            __BRYTHON__.events.$values[ix_elt][ix_event] = events
         }
     }
 }

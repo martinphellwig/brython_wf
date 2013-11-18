@@ -13,7 +13,7 @@ Brython implementa una API basada en la especificación 'drag and drop' HTML5. E
 
 Para añadir la función _callback_ a un _event_ en un _element_, usamos el método _element_<code>.bind(_event,callback_)</code>
 
-Las funciones de respuesta (callback) toman un único elemento, una instancia de `DOMEvent`. Para comunicar la información durante la operación de arrastrar y soltar, el evento posee un atributo _data_ que recibe un valor en la respuesta asociada a _dragstart_ ; este valor será usado en la respuesta asociada con _drop_ para identificar el elemento que está siendo soltado
+Las funciones de respuesta (callbacks) toman un único elemento, una instancia de `DOMEvent`. Para comunicar la información durante la operación de arrastrar y soltar, el evento posee un atributo _data_ que recibe un valor en la respuesta asociada a _dragstart_ ; este valor será usado en la respuesta asociada con _drop_ para identificar el elemento que está siendo soltado
 
 En el ejemplo, cuando el objeto arrastrable ha sido soltado, ya no se puede volver a arrastrar ; para ello, eliminamos los 'bindings' añadidos al _event_ sobre este objeto usando el método _element_<code>.unbind(_event_)</code>
 

@@ -111,11 +111,11 @@ function $list_comp(){
     $py += 'res.append('+arguments[1]+')\n'
     $py += "    return res\n"
     $py += "res"+$ix+"=func"+$ix+"()"
-    var mod_name = 'lc'+$ix
-    var $root = __BRYTHON__.py2js($py,mod_name)
+    var $mod_name = 'lc'+$ix
+    var $root = __BRYTHON__.py2js($py,$mod_name)
     $root.caller = document.$line_info
     var $js = $root.to_js()
-    __BRYTHON__.scope[mod_name].__dict__ = $env
+    __BRYTHON__.scope[$mod_name].__dict__ = $env
     eval($js)
     return eval("res"+$ix)
 }
@@ -136,11 +136,11 @@ function $gen_expr(){ // generator expresssion
     }
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.append('+arguments[1]+')'
-    var mod_name = 'ge'+$ix
-    var $root = __BRYTHON__.py2js($py,mod_name)
+    var $mod_name = 'ge'+$ix
+    var $root = __BRYTHON__.py2js($py,$mod_name)
     $root.caller = document.$line_info
     var $js = $root.to_js()
-    __BRYTHON__.scope[mod_name].__dict__=$env
+    __BRYTHON__.scope[$mod_name].__dict__=$env
     eval($js)
     var $res1 = eval($res)
     var $GenExprDict = {
@@ -531,7 +531,7 @@ var $type = {}
 function $instance_creator(klass){
     // return the function to initalise a class instance
     return function(){
-        var new_func=null,init_func=null
+        var new_func=null,init_func=null,obj
         // apply __new__ to initialize the instance
         try{
             new_func = getattr(klass,'__new__')
@@ -541,15 +541,18 @@ function $instance_creator(klass){
             for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
             obj = new_func.apply(null,args)
         }
-        try{
-            init_func = getattr(klass,'__init__')
-        }catch(err){
-            $pop_exc()
-        }
-        if(init_func!==null){
-            var args = [obj]
-            for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-            init_func.apply(null,args)
+        // __initialized__ is set in object.__new__ if klass has a method __init__
+        if(!obj.__initialized__){
+            try{
+                init_func = getattr(klass,'__init__')
+            }catch(err){
+                $pop_exc()
+            }
+            if(init_func!==null){
+                var args = [obj]
+                for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+                init_func.apply(null,args)
+            }
         }
         return obj
     }
@@ -572,6 +575,9 @@ $type.__getattribute__=function(klass,attr){
                 klass[key]=value
             }
         }
+    }else if(attr==='__delattr__'){
+        if(klass['__delattr__']!==undefined){return klass['__delattr__']}
+        return function(key){delete klass[key]}
     }
     var res = klass[attr],is_class=true
     if(res===undefined){
