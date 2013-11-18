@@ -3,6 +3,8 @@
 # reduce() has moved to _functools in Python 2.6+.
 #reduce = reduce
 
+sentinel=object()
+
 # retrieved from https://bitbucket.org/pypy/pypy/src/b5b32411e744092d61e116764a40fc54875ddb35/pypy/module/__builtin__/app_functional.py?at=default
 def reduce(func, sequence, initial=sentinel):
     """reduce(function, sequence[, initial]) -> value
