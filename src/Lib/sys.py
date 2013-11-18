@@ -8,7 +8,23 @@ modules=__BRYTHON__.modules
 
 has_local_storage=__BRYTHON__.has_local_storage
 has_json=__BRYTHON__.has_json
-version_info=__BRYTHON__.version_info
+
+class __version_info(object):
+    def __init__(self, version_info):
+        self.version_info = version_info
+        self.major = version_info[0]
+        self.minor = version_info[1]
+        self.micro = version_info[2]
+        self.releaselevel = version_info[3]
+        self.serial = version_info[4]
+
+    def __getitem__(self, index):
+        return self.version_info[index]
+
+    def __str__(self):
+        return str(self.version_info)
+     
+version_info=__version_info(__BRYTHON__.version_info)
 path=__BRYTHON__.path
 builtin_module_names=['posix']
 

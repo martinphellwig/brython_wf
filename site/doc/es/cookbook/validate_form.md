@@ -1,15 +1,15 @@
-Problem
--------
-
-Validate the content of a form before sending it to the server
-
-
-Solution
+Problema
 --------
 
-In the form below we want to check that the user filled all the fields marked with a star, and that the date has the format MM/DD/YYYY
+Validar el contenido de un formulario antes de enviarlo al servidor
 
-For this, we use the function _validate()_ when clicking on "Send". If there is an error, the function reports it and we stay on the page ; otherwise the form is sent to a page that prints the data sent, using _doc.query_
+
+Solución
+--------
+
+En el formulario que se encuentra más abajo queremos comprobar si el usuario ha rellenado los campos marcados con un asterisco y que la fecha tiene un formato MM/DD/YYYY
+
+Para ello, usaremos la función _validate()_  que será invocada cuando pulsemos en el botón "Enviar". Si hay un error, la función lo indicará y continuaremos en la misma página ; si no encontramos errores el formulario será enviado a una página que mostrará los datos enviados, usando _doc.query_
 
 <table width="100%">
 <tr>
@@ -20,23 +20,23 @@ For this, we use the function _validate()_ when clicking on "Send". If there is 
 
 <table cellpadding=5>
 <tr>
-<td align="right">Surname *</td>
+<td align="right">Apellido *</td>
 <td><INPUT id="name" name="name"></td>
 </tr>
 <tr>
-<td align="right">First name</td>
+<td align="right">Nombre</td>
 <td><INPUT id="firstname" name="firstname"></td>
 </tr>
 <tr>
-<td>Birth date (MM/DD/YYYY) * </td>
+<td>Fecha de nacimiento (MM/DD/YYYY) * </td>
 <td><INPUT id="date" name="date"></td>
 </tr>
 <tr>
-<td>Adresse mail</td>
+<td>email</td>
 <td><INPUT id="mail" name="mail"></td>
 </tr>
 <tr>
-<td colspan=2><INPUT type="submit" value="Send" onclick="return validate()"></td>
+<td colspan=2><INPUT type="submit" value="Enviar" onclick="return validate()"></td>
 </tr>
 </table>
 
@@ -50,15 +50,15 @@ For this, we use the function _validate()_ when clicking on "Send". If there is 
     
     def validate():
         if not doc['name'].value:
-            alert('Please enter the name')
+            alert('Por favor, introduce el nombre')
             doc['name'].focus()
             return False
         if not doc['date'].value:
-            alert('Please enter the date')
+            alert('Por favor, introduce la fecha')
             doc['date'].focus()
             return False
         elif not re.match(r'\d{2}/\d{2}/\d{4}$',doc['date'].value):
-            alert("The date is not at the right format")
+            alert("La fecha no tiene el formato apropiado")
             doc['date'].focus()
             return False
             

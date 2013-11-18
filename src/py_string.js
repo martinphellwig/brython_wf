@@ -106,7 +106,7 @@ $StringDict.__mod__ = function(self,args){
     function format(s){
         var conv_flags = '([#\\+\\- 0])*'
         var conv_types = '[diouxXeEfFgGcrsa%]'
-        var re = new RegExp('\\%(\\(.+\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*('+conv_types+'){1}')
+        var re = new RegExp('\\%(\\(.+?\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*('+conv_types+'){1}')
         var res = re.exec(s)
         this.is_format = true
         if(!res){this.is_format = false;return}
@@ -127,7 +127,7 @@ $StringDict.__mod__ = function(self,args){
         this.format = function(src){
             if(this.mapping_key!==null){
                 if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
-                src=src.__getitem__(this.mapping_key)
+                src=getattr(src,'__getitem__')(this.mapping_key)
             }
             if(this.type=="s"){
                 var res = str(src)
@@ -233,23 +233,39 @@ $StringDict.__mod__ = function(self,args){
     
     // elts is an Array ; items of odd rank are string format objects
     var elts = []
-    var pos = 0, start = 0, nb_repl = 0
+    var pos = 0, start = 0, nb_repl = 0, is_mapping = null
     var val = self.valueOf()
     while(pos<val.length){
         if(val.charAt(pos)=='%'){
             var f = new format(val.substr(pos))
-            if(f.is_format && f.type!=="%"){
-                elts.push(val.substring(start,pos))
-                elts.push(f)
-                start = pos+f.src.length
-                pos = start
-                nb_repl++
+            if(f.is_format){
+                if(f.type!=="%"){
+                    elts.push(val.substring(start,pos))
+                    elts.push(f)
+                    start = pos+f.src.length
+                    pos = start
+                    nb_repl++
+                    if(is_mapping===null){is_mapping=f.mapping_key!==null}
+                    else if(is_mapping!==(f.mapping_key!==null)){
+                        // can't mix mapping keys with non-mapping
+                        console.log(f+' not mapping')
+                        throw TypeError('format required a mapping')
+                    }
+                }else{ // form %%
+                    pos++;pos++
+                }
             }else{pos++}
         }else{pos++}
     }
     elts.push(val.substr(start))
     if(!isinstance(args,tuple)){
-        if(nb_repl>1){throw TypeError('not enough arguments for format string')}
+        if(args.__class__==$DictDict && is_mapping){
+            // convert all formats with the dictionary
+            for(var i=1;i<elts.length;i+=2){
+                elts[i]=elts[i].format(args)
+            }
+        }
+        else if(nb_repl>1){throw TypeError('not enough arguments for format string')}
         else{elts[1]=elts[1].format(args)}
     }else{
         if(nb_repl==args.length){
@@ -759,29 +775,16 @@ $StringDict.title = function(self) {
     return self.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 
-$StringDict.translate = function() {
-    $ns=$MakeArgs("$StringDict.translate",arguments,['self','table'],
-        {'deletechars':null},null,null)
-    var table = $ns['table']
-    var self = $ns['self']
-    var d = $ns['deletechars']
-
-    if (isinstance(table, str) && table.length !== 255) {
-       throw Error("table variable must be a string of size 255")
-    }
- 
-    if (d !== undefined) {
-       var re = new RegExp(d)
-       self=self.replace(re, '')
-    }
-
-    if (table !== None) {
+$StringDict.translate = function(self,table) {
+    var res = ''
+    if (isinstance(table, dict)) {
        for (var i=0; i<self.length; i++) {
-           self[i] = table.charCodeAt(self.charCodeAt(i));
+           var repl = $DictDict.get(table,self.charCodeAt(i),-1)
+           if(repl==-1){res += self.charAt(i)}
+           else if(repl!==None){res += repl}
        }
     }
-
-    return self
+    return res
 }
 
 $StringDict.upper = function(self){return self.toUpperCase()}
@@ -804,11 +807,21 @@ String.prototype.__class__ = $StringDict
 function str(arg){
     if(arg===undefined){return ''}
     else{
-        try{
+        try{ // try __str__
             var f = getattr(arg,'__str__')
+            // XXX fix : if not better than object.__str__, try __repr__
             return f()
         }
-        catch(err){console.log(err+'\ndefault to toString '+arg);$pop_exc();return arg.toString()}
+        catch(err){
+            $pop_exc()
+            try{ // try __repr__
+                var f = getattr(arg,'__repr__')
+                return f()
+            }catch(err){
+                $pop_exc()
+                console.log(err+'\ndefault to toString '+arg);$pop_exc();return arg.toString()
+            }
+        }
     }
 }
 str.__class__ = $factory

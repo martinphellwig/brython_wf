@@ -182,11 +182,11 @@ for($op in $ops){
 var $comp_func = function(self,other){
     if(isinstance(other,int)){return self.valueOf() > other.valueOf()}
     else if(isinstance(other,float)){return self.valueOf() > other.value}
+    else if(isinstance(other,bool)){return self.valueOf() > $BoolDict.__hash__(other)}
     else{throw TypeError(
-        "unorderable types: "+str(self.__class__)+'() > '+str(other.__class__)+"()")}
+        "unorderable types: "+self.__class__.__name__+'() > '+other.__class__.__name__+"()")}
 }
-$comp_func += '' // source code
-var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
+$comp_func += '' // source codevar $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
 for($op in $comps){
     eval("$IntDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }

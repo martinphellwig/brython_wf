@@ -304,6 +304,23 @@ assert 1.27E+5 == 127000.0
 assert 1.27e+5 == 127000.0
 assert 1.27E5 == 127000.0
 
+# issue 122
+class Cl(object):
+    def __init__(self):
+        self._x = None
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+my_cl = Cl
+my_cl.x = 123
+assert my_cl.x==123
+
 # issue 125
 a = [1,2]
 a.clear()
@@ -428,5 +445,22 @@ try:
     d[3]
 except (IndexError,TypeError) as err:
     pass # just check that there is no SyntaxError
-    
+
+# issue 157 : check that the 2nd line doesn't raise a SyntaxError
+y=1 
+a=(1/3,-y/4)
+
+# issue 158
+class A:
+    def __init__(self,val):
+        self.a=val
+
+class B:
+    def __init__(self,val):
+        self.b=val
+        self.c=A(val)
+
+b=B(2)
+assert str(b)=='<B object>'
+
 print('passed all tests')

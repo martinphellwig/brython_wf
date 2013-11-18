@@ -160,6 +160,15 @@ function $__new__(factory){
         }
         var res = factory.apply(null,[])
         res.__class__ = cls.$dict
+        var init_func = null
+        try{init_func = getattr(res,'__init__')}
+        catch(err){$pop_exc()}
+        if(init_func!==null){
+            var args = []
+            for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+            init_func.apply(null,args)
+            res.__initialized__ = true
+        }
         return res
     }
 }
