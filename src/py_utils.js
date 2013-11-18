@@ -323,7 +323,7 @@ function $raise(){
     else{throw Error('Exception')}
 }
 
-function $src_error(name,module,msg,pos) {
+function $syntax_err_line(module,pos) {
     // map position to line number
     var pos2line = {}
     var lnum=1
@@ -339,35 +339,31 @@ function $src_error(name,module,msg,pos) {
     var lib_module = module
     if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
 
-    info = "  module '"+lib_module+"' line "+line_num
     var line = lines[line_num-1]
     var lpos = pos-line_pos[line_num]
     while(line && line.charAt(0)==' '){
      line=line.substr(1)
      lpos--
     }
-    info += '\n    '+line+'\n'
+    info = '\n    '+line+'\n    '
     for(var i=0;i<lpos;i++){info+=' '}
     info += '^'
-    err = new Error()
-    err.name = name
-    err.__class__ = Exception
-    err.__name__ = name
-    err.__getattr__ = function(attr){return err[attr]}
-    err.__str__ = function(){return msg}
-    err.message = msg
-    err.info = info
-    err.py_error = true
-    __BRYTHON__.exception_stack.push(err)
-    throw err
+    return info
 }
 
 function $SyntaxError(module,msg,pos) {
-    $src_error('SyntaxError',module,msg,pos)
+    console.log('Synta error')
+    var exc = SyntaxError(msg)
+    console.log('info '+exc)
+    exc.info += $syntax_err_line(module,pos)
+    console.log('syntax error '+exc.info)
+    throw exc
 }
 
 function $IndentationError(module,msg,pos) {
-    $src_error('IndentationError',module,msg,pos)
+    var exc = IndentationError(msg)
+    exc.info += $syntax_err_line(module,pos)
+    throw exc
 }
 
 // function to remove internal exceptions from stack exposed to programs
