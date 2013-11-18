@@ -1,6 +1,6 @@
 #__all__ = ['deque', 'defaultdict', 'Counter']
 
-#from _collections import deque, defaultdict
+from _collections import deque, defaultdict
 
 #from itertools import repeat as _repeat, chain as _chain, starmap as _starmap
 

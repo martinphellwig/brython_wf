@@ -26,8 +26,8 @@ BLOCKSIZ = n+2
 # popping an item off of the opposite end.  The methods that can trigger this
 # are append(), appendleft(), extend(), and extendleft().
 
-class deque(object):
-#class deque:
+#class deque(object):
+class deque:
 
     def __new__(cls, iterable=(), *args, **kw):
         #fixme

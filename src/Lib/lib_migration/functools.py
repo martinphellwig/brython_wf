@@ -233,7 +233,9 @@ def lru_cache(maxsize=128, typed=False):
 
             def wrapper(*args, **kwds):
                 # No caching -- just a statistics update after a successful call
-                nonlocal misses
+                #fixme brython
+                #nonlocal misses
+                global misses
                 result = user_function(*args, **kwds)
                 misses += 1
                 return result
@@ -242,7 +244,9 @@ def lru_cache(maxsize=128, typed=False):
 
             def wrapper(*args, **kwds):
                 # Simple caching without ordering or size limit
-                nonlocal hits, misses
+                # fixme brython
+                #nonlocal hits, misses
+                global hits, misses
                 key = make_key(args, kwds, typed)
                 result = cache_get(key, sentinel)
                 if result is not sentinel:
@@ -257,7 +261,9 @@ def lru_cache(maxsize=128, typed=False):
 
             def wrapper(*args, **kwds):
                 # Size limited caching that tracks accesses by recency
-                nonlocal root, hits, misses, full
+                #fixme brython
+                #nonlocal root, hits, misses, full
+                global root, hits, misses, full
                 key = make_key(args, kwds, typed)
                 with lock:
                     link = cache_get(key)
@@ -317,7 +323,9 @@ def lru_cache(maxsize=128, typed=False):
 
         def cache_clear():
             """Clear the cache and cache statistics"""
-            nonlocal hits, misses, full
+            #fixme brython
+            #nonlocal hits, misses, full
+            global hits, misses, full
             with lock:
                 cache.clear()
                 root[:] = [root, root, None, None]
