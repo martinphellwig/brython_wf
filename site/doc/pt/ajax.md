@@ -1,9 +1,32 @@
-Ajax
-----
+## módulo ajax
 
-A função integrada `ajax()` retorna um objeto similar ao
-XMLHttlRequest em Javascript, mas sua interface é ligeiramente
-diferente. Ela tem os seguintes métodos
+O módulo `ajax` expõe a função `ajax()` que retorna um objeto capaz de
+executar requisições Ajax. Ele tem os seguintes métodos :
+
+- <code>bind(_evt,function_)</code> : vincula a a função _function_ ao evento _evt_. Os eventos correspondem aos diferentes estados da requisição :
+<blockquote>
+
+<table cellspacing=0 cellpadding=0 border=1>
+<tr><th>
+readyState
+</th><th>
+evento
+</th></tr>
+<tr><td align="center">0</td><td>`uninitialized`</td></tr>
+<tr><td align="center">1</td><td align="center">`loading`</td></tr>
+<tr><td align="center">2</td><td align="center">`loaded`</td></tr>
+<tr><td align="center">3</td><td align="center">`interactive`</td></tr>
+<tr><td align="center">4</td><td align="center">`complete`</td></tr>
+</table>
+
+A função _`function`_ toma um único argumento, o objeto `ajax`. Este objeto tem os seguintes atributos :
+
+- `readyState` : um inteiro representando o estado da requisição (como na tabela acima)
+- `status` : um inteiro representando o status HTTP da requisição
+- `text` : a resposta do servidor como uma cadeia de caracteres
+- `xml` : a resposta do servidor como um objeto DOM
+
+</blockquote>
 
 - `open(_método, url, async_)` : _método_ é o método HTTP usado para a  
   requisição (normalmente GET ou POST), _url_ é a url a chamar, _async_ é o  
@@ -13,21 +36,6 @@ diferente. Ela tem os seguintes métodos
   durante a _duração_ em segundos, a consulta será cancelada e a _função_ será  
   chamada. Esta função não pode ter argumentos  
 - `send()` : envia (inicia) a requisição  
-
-Para interagir com o servidor, você deve usar os seguintes atributos correspondentes a cada estado do atributo _readyState_ do objeto Ajax :  
-<p><table><tr><th>readyState</th><th>attribute</th></tr>
-<tr><td>0</td><td>`on_uninitialized`</td></tr>
-<tr><td>1</td><td>`on_loading`</td></tr>
-<tr><td>2</td><td>`on_loaded`</td></tr>
-<tr><td>3</td><td>`on_interactive`</td></tr>
-<tr><td>4</td><td>`on_complete`</td></tr>
-</table>
-
-O atributo deve ser uma função com um único argumento: o objeto `ajax`. Este objeto tem os seguintes atributos : 
-
-- `status` : um inteiro que representa o estado HTTP da requisição  
-- `text` : a resposta do servidor como uma cadeia de caracteres (que seria _responseText_ em Javascript)  
-- `xml` : a resposta do servidor como um objeto DOM (que seria _responseXML_ em Javascript)
 
 
 ### Exemplo  

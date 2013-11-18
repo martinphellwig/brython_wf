@@ -1,7 +1,6 @@
-Gráficos SVG
-------------
+## módulo svg
 
-Para criar gráficos no formato SVG, suportado pela maioria dos navegadores, use o módulo integrado `svg`. Ele contém os nomes dos componentes disponíveis para desenhar formas e escrever texto
+Para criar gráficos no formato SVG, suportado pela maioria dos navegadores, use o módulo `svg`. Ele contém os nomes dos componentes disponíveis para desenhar formas e escrever texto
 
 Por exemplo, se o documento HTML tem uma zona de gráfico SVG definida por
 
@@ -16,8 +15,10 @@ você pode inserir formas e texto :
 <tr>
 <td>
     import svg
-    title = svg.text('Título',x=70,y=25,font_size=22,text_anchor="middle")
-    circle = svg.circle(cx="70",cy="120",r="40",stroke="black",stroke_width="2",fill="red")
+    title = svg.text('Title',x=70,y=25,font_size=22,
+        text_anchor="middle")
+    circle = svg.circle(cx="70",cy="120",r="40",
+        stroke="black",stroke_width="2",fill="red")
     
     panel = doc['panel']
     panel <= title
@@ -31,8 +32,10 @@ você pode inserir formas e texto :
 <script type="text/python">
 def run_svg():
     import svg
-    title = svg.text('Título',x=70,y=25,font_size=22,text_anchor="middle")
-    circle = svg.circle(cx=70,cy=120,r=40,stroke="black",stroke_width=2,fill="red")
+    title = svg.text('Título',x=70,y=25,font_size=22,
+        text_anchor="middle")
+    circle = svg.circle(cx=70,cy=120,r=40,stroke="black",
+        stroke_width=2,fill="red")
     
     panel = doc['panel']
     panel <= title
