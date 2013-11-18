@@ -13,8 +13,8 @@ Brython est conforme à la syntaxe de Python 3
 
 - générateurs (mot-clé `yield`), expressions de générateur : `foo(x for x in bar if x>5)`
 - opérateur ternaire : `x = r1 if condition else r2`
-- la définition des fonctions peut comporter des valeurs par défaut et des arguments et mot-clés optionnels : <br>`def foo(x,y=0,*args,**kw):`
-- décompactage de listes ou de dictionnaires dans l'appel de fonctions : `x = foo(*args,**kw)`
+- la définition des fonctions peut comporter des valeurs par défaut et des arguments et mot-clés optionnels : <br>`def foo(x,y=0,\*args,\*\*kw):`
+- décompactage de listes ou de dictionnaires dans l'appel de fonctions : `x = foo(\*args,\*\*kw)`
 - classes avec héritage multiple
 - décorateurs
 - importation : 

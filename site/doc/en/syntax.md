@@ -13,7 +13,7 @@ Brython follows the Python syntax:
 -ternary operator: `x = r1 if condition else r2`
 -functions can be defined with any combination of fixed arguments, default values, variable positional arguments 
  and variable keyword arguments : `def foo(x, y=0, \*args, \*\*kw):`
--unpacking of argument lists or dictionaries in function calls: `x = foo(*args, **kw)`
+-unpacking of argument lists or dictionaries in function calls: `x = foo(\*args, \*\*kw)`
 -classes with multiple inheritance
 -decorators
 -imports :  
