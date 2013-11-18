@@ -326,6 +326,19 @@ function getattr(obj,attr,_default){
         return klass.$factory
     }
     
+    // attribute __dict__ returns a dictionary of all attributes
+    // of the underlying Javascript object
+    if(attr==='__dict__'){
+        var res = dict()
+        for(var $attr in obj){
+            if($attr.charAt(0)!='$'){
+                res.$keys.push($attr)
+                res.$values.push(obj[$attr])
+            }
+        }
+        return res
+    }
+    
     // __call__ on a function returns the function itself
     if(attr==='__call__' && (typeof obj=='function')){
         if(__BRYTHON__.debug>0){
@@ -1291,16 +1304,17 @@ Function.prototype.__get__ = function(self,obj,objtype){
 
 // built-in exceptions
 
-$ExceptionDict = {
+$BaseExceptionDict = {
     __class__:$type,
-    __name__:'Exception'
+    __name__:'BaseException'
 }
-$ExceptionDict.__mro__ = [$ExceptionDict,$ObjectDict]
 
-Exception = function (msg,js_exc){
+$BaseExceptionDict.__mro__ = [$BaseExceptionDict,$ObjectDict]
+
+BaseException = function (msg,js_exc){
     var err = Error()
     err.info = 'Traceback (most recent call last):'
-    if(msg===undefined){msg='Exception'}
+    if(msg===undefined){msg='BaseException'}
     
     if(__BRYTHON__.debug && !msg.info){
         if(js_exc!==undefined){
@@ -1332,7 +1346,9 @@ Exception = function (msg,js_exc){
         // error line
         var err_info = document.$line_info
         while(true){
-            var caller = __BRYTHON__.modules[err_info[1]].caller
+            var mod = __BRYTHON__.modules[err_info[1]]
+            if(mod===undefined){break}
+            var caller = mod.caller
             if(caller===undefined){break}
             err_info = caller
         }
@@ -1352,17 +1368,16 @@ Exception = function (msg,js_exc){
     err.args = msg
     err.__str__ = function(){return msg}
     err.toString = err.__str__
-    err.__getattr__ = function(attr){return this[attr]}
-    err.__name__ = 'Exception'
-    err.__class__ = Exception
+    err.__name__ = 'BaseException'
+    err.__class__ = $BaseExceptionDict
     err.py_error = true
     __BRYTHON__.exception_stack.push(err)
     return err
 }
 
-Exception.__name__ = 'Exception'
-Exception.__class__ = $factory
-Exception.$dict = $ExceptionDict
+BaseException.__name__ = 'BaseException'
+BaseException.__class__ = $factory
+BaseException.$dict = $BaseExceptionDict
 
 __BRYTHON__.exception = function(js_exc){
     // thrown by eval(), exec() or by a function
@@ -1404,25 +1419,56 @@ __BRYTHON__.exception = function(js_exc){
     return exc
 }
 
-function $make_exc(name){
-    var $exc = (Exception+'').replace(/Exception/g,name)
-    eval(name+'='+$exc)
-    eval(name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
-    eval(name+'.__class__=$type')
+function $is_exc(exc,exc_list){
+    // used in try/except to check if an exception is an instance of
+    // one of the classes in exc_list
+    var exc_class = exc.__class__.$factory
+    for(var i=0;i<exc_list.length;i++){
+        if(issubclass(exc_class,exc_list[i])){return true}
+    }
+    return false
 }
 
-var $errors = ['AssertionError','AttributeError','EOFError','FloatingPointError',
-    'GeneratorExit','ImportError','IndexError','KeyError','KeyboardInterrupt',
-    'NameError','NotImplementedError','OSError','OverflowError','ReferenceError',
-    'RuntimeError','StopIteration','SyntaxError','IndentationError','TabError',
-    'SystemError','SystemExit','TypeError','UnboundLocalError','ValueError',
-    'ZeroDivisionError','IOError']
-for(var $i=0;$i<$errors.length;$i++){$make_exc($errors[$i])}
+function $make_exc(names,parent){
+    // create a class for exception called "name"
+    for(var i=0;i<names.length;i++){
+        var name = names[i]
+        var $exc = (BaseException+'').replace(/BaseException/g,name)
+        // class constructor
+        eval(name+'='+$exc)
+        eval(name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
+        eval(name+'.__class__=$factory')
+        // class dictionary
+        eval('$'+name+'Dict={__class__:$type,__name__:"'+name+'"}')
+        eval('$'+name+'Dict.__mro__=[$'+name+'Dict].concat(parent.__mro__)')
+        eval('$'+name+'Dict.$factory='+name)
+        eval(name+'.$dict=$'+name+'Dict')
+    }
+}
 
-//do the same for warnings.. :)
-var $warnings = ['Warning', 'DeprecationWarning', 'PendingDeprecationWarning',
-                 'RuntimeWarning', 'SyntaxWarning', 'UserWarning',
-                 'FutureWarning', 'ImportWarning', 'UnicodeWarning',
-                 'BytesWarning', 'ResourceWarning']
-for(var $i=0;$i<$warnings.length;$i++){$make_exc($warnings[$i])}
+$make_exc(['SystemExit','KeyboardInterrupt','GeneratorExit','Exception'],BaseException)
+$make_exc(['StopIteration','ArithmeticError','AssertionError','AttributeError',
+    'BufferError','EOFError','ImportError','LookupError','MemoryError',
+    'NameError','OSError','ReferenceError','RuntimeError','SyntaxError',
+    'SystemError','TypeError','ValueError','Warning'],Exception)
+$make_exc(['FloatingPointError','OverflowError','ZeroDivisionError'],
+    ArithmeticError)
+$make_exc(['IndexError','KeyError'],LookupError)
+$make_exc(['UnboundLocalError'],NameError)
+$make_exc(['BlockingIOError','ChildProcessError','ConnectionError',
+    'FileExistsError','FileNotFoundError','InterruptedError',
+    'IsADirectoryError','NotADirectoryError','PermissionError',
+    'ProcessLookupError','TimeoutError'],OSError)
+$make_exc(['BrokenPipeError','ConnectionAbortedError','ConnectionRefusedError',
+    'ConnectionResetError'],ConnectionError)
+$make_exc(['NotImplementedError'],RuntimeError)
+$make_exc(['IndentationError'],SyntaxError)
+$make_exc(['TabError'],IndentationError)
+$make_exc(['UnicodeError'],ValueError)
+$make_exc(['UnicodeDecodeError','UnicodeEncodeError','UnicodeTranslateError'],
+    UnicodeError)
+$make_exc(['DeprecationWarning','PendingDeprecationWarning','RuntimeWarning',
+    'SyntaxWarning','UserWarning','FutureWarning','ImportWarning',
+    'UnicodeWarning','BytesWarning','ResourceWarning'],Warning)
 
+EnvironmentError = IOError = VMSError = WindowsError = OSError
