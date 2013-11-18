@@ -510,7 +510,8 @@ function issubclass(klass,classinfo){
         }
         return false
     }else if(classinfo.__class__===$factory){
-        return classinfo.$dict.__mro__.indexOf(klass.$dict)>-1    
+        var res = klass.$dict.__mro__.indexOf(classinfo.$dict)>-1    
+        return res
     }else{
         throw TypeError("issubclass() arg 2 must be a class or tuple of classes")
     }
@@ -1308,6 +1309,7 @@ $BaseExceptionDict = {
     __class__:$type,
     __name__:'BaseException'
 }
+$BaseExceptionDict.__repr__ = $BaseExceptionDict.__str__ = function(){return 'BaseException'}
 
 $BaseExceptionDict.__mro__ = [$BaseExceptionDict,$ObjectDict]
 
@@ -1410,6 +1412,7 @@ __BRYTHON__.exception = function(js_exc){
         }
         var exc = Error()
         exc.__name__ = js_exc.name
+        exc.__class__ = $ExceptionDict
         exc.message = js_exc.message
         exc.info = ''
     }else{
@@ -1440,7 +1443,7 @@ function $make_exc(names,parent){
         eval(name+'.__class__=$factory')
         // class dictionary
         eval('$'+name+'Dict={__class__:$type,__name__:"'+name+'"}')
-        eval('$'+name+'Dict.__mro__=[$'+name+'Dict].concat(parent.__mro__)')
+        eval('$'+name+'Dict.__mro__=[$'+name+'Dict].concat(parent.$dict.__mro__)')
         eval('$'+name+'Dict.$factory='+name)
         eval(name+'.$dict=$'+name+'Dict')
     }
