@@ -85,7 +85,6 @@ $module =  {
             throw TypeError("time.struct_time() takes a 9-sequence ("+len(arg)+"-sequence given")
         }
         var res = arg
-        console.log(res.__getitem__[0])
         var names = ['tm_year','tm_mon','tm_mday','tm_hour','tm_min','tm_sec','tm_wday',
             'tm_yday','tm_isdst','tm_zone','tm_gmtoff']
         res.__getattr__ = function(attr){
