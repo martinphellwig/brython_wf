@@ -30,7 +30,7 @@
 
 <script type="text/python3">
 from .. import header
-language,has_req = header.show()
+qs_lang,language = header.show()
 
 # other translations
 
@@ -49,10 +49,20 @@ for key in trans:
 
 # link to test page
 tplink = doc['test_page']
-if has_req:
-    tplink.href += '?lang=%s' %language
+if qs_lang:
+    tplink.href += '?lang=%s' %qs_lang
 </script>
 
+<script>
+function run_js(){
+    var cons = document.getElementById("console")
+    var jscode = cons.value
+    var t0 = (new Date()).getTime()
+    eval(jscode)
+    var t1 = (new Date()).getTime()
+    console.log("Javascript code run in "+(t1-t0)+" ms")
+}
+</script>
 </head>
 <body onload="brython({debug:1, cache:'version'})">
 
@@ -111,8 +121,8 @@ Theme: <select id="ace_theme" onChange="change_theme(event)">
 <div id="right-div">
 <div style="padding: 3px 3px 3px 3px;">
   <div style="float:left">
-    <button onClick="run()" id="run">run</button>
-    <button onClick="clear_text()" id="clear">clear</button>
+    <button onClick="run()" id="run Python">run</button>
+    <button onClick="run_js()" id="clear">run Javascript</button>
   </div>
 
   <div style="float:right">
