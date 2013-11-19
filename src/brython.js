@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131118-231032
+// version 1.2.20131119-181239
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -1881,7 +1881,6 @@ if(has_else){$_SyntaxError(C,"'except' or 'finally' after 'else'")}
 ctx.error_name='$err'+$loop_num
 if(ctx.tree.length>0 && ctx.tree[0].alias!==null
 && ctx.tree[0].alias!==undefined){
-console.log(ctx.tree[0]+' has alias '+ctx.tree[0].alias)
 var new_node=new $Node('expression')
 var js='var '+ctx.tree[0].alias+'=__BRYTHON__.exception($err'+$loop_num+')'
 new $NodeJSCtx(new_node,js)
@@ -5667,7 +5666,7 @@ if($xmlhttp.readyState==4){
 window.clearTimeout(timer)
 if($xmlhttp.status==200 || $xmlhttp.status==0){res=$xmlhttp.responseText}
 else{
-res=ImportError("No module named '"+module+"'")
+res=FileNotFoundError("No module named '"+module+"'")
 }
 }
 }
@@ -5715,7 +5714,7 @@ var path=path_list[i]+ "/" + modpath
 try{
 mod=$import_py(module,path)
 flag=true
-}catch(err){if(err.__name__!=="ImportError"){throw err}}
+}catch(err){if(err.__name__!=="FileNotFoundError"){throw err}}
 if(flag){break}
 }
 if(flag){break}
@@ -5767,7 +5766,6 @@ $module.__file__=path
 $module.__initializing__=false
 return $module
 }catch(err){
-console.log('error running module '+module.name)
 console.log(''+err+' '+err.__name__)
 throw err
 }
@@ -5779,15 +5777,13 @@ for(var j=0;j<import_funcs.length;j++){
 try{
 return import_funcs[j](module)
 }catch(err){
-console.log('in import single err '+err)
-if(err.__name__==="ImportError"){
+if(err.__name__==="FileNotFoundError"){
 if(j==import_funcs.length-1){
-console.log('throw err')
-throw ImportError("no module named '"+module.name+"'")
+throw err
 }else{
 continue
 }
-}else{throw(err)}
+}else{throw err}
 }
 }
 }
