@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131119-181239
+// version 1.2.20131119-182458
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -1186,7 +1186,7 @@ res +='=__BRYTHON__.scope["'+scope.module+'"].__dict__["'
 res +=this.aliases[this.names[i]]||this.names[i]
 res +='"]'
 }
-res +='=__BRYTHON__.modules["'+this.module+'"].__getattr__("'+this.names[i]+'");'
+res +='=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'");'
 }
 }else{
 res +='var $mod=__BRYTHON__.modules["'+this.module+'"];'
@@ -4161,6 +4161,7 @@ break
 }
 }
 if(_ga!==undefined){
+console.log('getattr is not undef')
 try{return _ga(obj,attr)}
 catch(err){void(0)}
 }
@@ -5767,6 +5768,9 @@ $module.__initializing__=false
 return $module
 }catch(err){
 console.log(''+err+' '+err.__name__)
+for(var attr in err){
+console.log(attr+' : '+err[attr].toString().substr(0,40))
+}
 throw err
 }
 }

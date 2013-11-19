@@ -1356,7 +1356,7 @@ function $FromCtx(context){
                   res += this.aliases[this.names[i]]||this.names[i]
                   res += '"]'
               }
-              res += '=__BRYTHON__.modules["'+this.module+'"].__getattr__("'+this.names[i]+'");'
+              res += '=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'");'
              }
            }else{
              res += 'var $mod=__BRYTHON__.modules["'+this.module+'"];'
