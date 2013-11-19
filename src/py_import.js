@@ -46,9 +46,7 @@ function $download_module(module,url){
             if($xmlhttp.status==200 || $xmlhttp.status==0){res=$xmlhttp.responseText}
             else{
                 // don't throw an exception here, it will not be caught (issue #30)
-                res = ImportError("No module named '"+module+"'")
-                //res.name = 'NotFoundError'
-                //res.message = 
+                res = FileNotFoundError("No module named '"+module+"'")
             }
         }
     }
@@ -105,7 +103,7 @@ function $import_module_search_path_list(module,path_list){
            try {
                mod = $import_py(module,path)
                flag = true
-           }catch(err){if(err.__name__!=="ImportError"){throw err}}
+           }catch(err){if(err.__name__!=="FileNotFoundError"){throw err}}
            if(flag){break}
         }
         if(flag){break}
@@ -171,10 +169,8 @@ function $import_py_module(module,path,module_contents) {
         $module.__initializing__ = false
         return $module
     }catch(err){
-        console.log('error running module '+module.name)
         console.log(''+err+' '+err.__name__)
         throw err
-        //eval('throw '+err.name+'(err.message)')
     }
 }
 
@@ -185,15 +181,14 @@ function $import_single(module){
         try{
             return import_funcs[j](module)
         } catch(err){
-            console.log('in import single err '+err)
-            if(err.__name__==="ImportError"){
+            if(err.__name__==="FileNotFoundError"){
                 if(j==import_funcs.length-1){
-                    console.log('throw err')
-                    throw ImportError("no module named '"+module.name+"'")
+                    // all possible locations failed : throw error
+                    throw err
                 }else{
                     continue
                 }
-            }else{throw(err)}
+            }else{throw err}
         }
     }
 }

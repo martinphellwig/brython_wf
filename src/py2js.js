@@ -2174,7 +2174,6 @@ function $TryCtx(context){
                 if(ctx.tree.length>0 && ctx.tree[0].alias!==null
                     && ctx.tree[0].alias!==undefined){
                     // syntax "except ErrorName as Alias"
-                    console.log(ctx.tree[0]+' has alias '+ctx.tree[0].alias)
                     var new_node = new $Node('expression')
                     var js = 'var '+ctx.tree[0].alias+'=__BRYTHON__.exception($err'+$loop_num+')'
                     new $NodeJSCtx(new_node,js)
