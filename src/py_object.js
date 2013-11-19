@@ -128,6 +128,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
             }
         }
         if(_ga!==undefined){
+            console.log('getattr is not undef')
             try{return _ga(obj,attr)}
             catch(err){void(0)}
         }
