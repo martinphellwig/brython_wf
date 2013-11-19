@@ -3,9 +3,6 @@
 $ModuleDict = {
     __class__ : $type,
     __name__ : 'module',
-    __repr__:function(){return "<class 'module'>"},
-    __str__:function(){return "<class 'module'>"},
-    toString:function(){return "<class 'module'>"},
 }
 $ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
 

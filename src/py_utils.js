@@ -293,11 +293,6 @@ function $JS2Py(src){
     return JSObject(src)
 }
 
-// generic class for modules
-function $module(){}
-$module.__class__ = $type
-$module.__str__ = function(){return "<class 'module'>"}
-
 // generic attribute getter
 function $getattr(obj,attr){ 
     if(obj[attr]!==undefined){

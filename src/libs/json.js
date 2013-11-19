@@ -49,8 +49,6 @@ function _js(obj){
 
 $module =  {
 
-    __getattr__ : function(attr){return this[attr]},
-
     loads : function(json_obj){return _py(JSON.parse(json_obj))},
 
     dumps : function(obj){return JSON.stringify(_js(obj))},
