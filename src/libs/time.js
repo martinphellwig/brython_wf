@@ -16,7 +16,11 @@ $module =  {
        d.setUTCSeconds(timestamp);
        return d.toUTCString();
     },
-
+    gmtime: function(){
+       var d=new Date();
+       return list([d.getFullYear(), d.getMonth()+1, d.getDate(), d.getHours(),
+                    d.getMinutes(), d.getSeconds(), d.getDay(), 0, 0])
+    },
     perf_counter: function() {
         return float((new Date()).getTime()/1000.0);
     },
