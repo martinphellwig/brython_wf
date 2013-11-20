@@ -2788,7 +2788,6 @@ function $transition(context,token){
             context.has_alias = true
             return context
         }else if(token==='id' && context.expect==='alias'){
-            console.log('set alias '+arguments[2])
             context.expect=':'
             context.tree[0].alias = arguments[2]
             return context
@@ -3426,7 +3425,7 @@ __BRYTHON__.py2js = function(src,module,parent){
     return root
 }
 
-__BRYTHON__.forbidden = ['catch','Date','delete','default','document','history',
+__BRYTHON__.forbidden = ['case','catch','Date','delete','default','document','history',
     'function','location','Math','new','RegExp','this','throw','var','super','window']
 
 function $tokenize(src,module,parent){
@@ -3824,6 +3823,7 @@ function brython(options){
     __BRYTHON__.$py_module_alias = {}
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
+    __BRYTHON__.imported = {}
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
 
     // debug level
