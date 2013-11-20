@@ -203,6 +203,7 @@ class _AssertWarnsContext(_AssertRaisesBaseContext):
 
 
 class TestCase(object):
+#class TestCase(object):
     """A class whose instances are single test cases.
 
     By default, the test code itself should be placed in a method named

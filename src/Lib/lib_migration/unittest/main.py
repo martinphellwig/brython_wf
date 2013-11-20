@@ -4,7 +4,7 @@ import sys
 import os
 #import types    <-- is this module needed for this module?
 
-from . import loader, runner
+#from . import loader, runner
 from .signals import installHandler
 
 __unittest = True
