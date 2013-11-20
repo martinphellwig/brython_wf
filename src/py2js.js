@@ -3823,6 +3823,7 @@ function brython(options){
     __BRYTHON__.$py_module_alias = {}
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
+    __BRYTHON__.imported = {}
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
 
     // debug level
