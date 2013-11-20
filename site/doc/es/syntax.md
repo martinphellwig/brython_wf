@@ -11,8 +11,8 @@ Brython usa la misma sintaxis que Python:
 </ul>
 - generadores (keyword `yield`), expresiones generadoras : `foo(x for x in bar if x>5)`
 - operador ternario: `x = r1 if condition else r2`
-- Las funciones pueden ser definidas con cualquier combinaci&oacute;n de argumentos fijos, argumentos por defecto, argumentos posicionales variables y argumentos de palabras clave variables : <br>`def foo(x, y=0, *args, **kw):`
-- Desempaquetado de argumentos en listas o diccionarios en llamadas a funciones : `x = foo(*args, **kw)`
+- Las funciones pueden ser definidas con cualquier combinaci&oacute;n de argumentos fijos, argumentos por defecto, argumentos posicionales variables y argumentos de palabras clave variables : <br>`def foo(x, y=0, \*args, \*\*kw):`
+- Desempaquetado de argumentos en listas o diccionarios en llamadas a funciones : `x = foo(\*args, \*\*kw)`
 - clases con herencia m&uacute;ltiple
 - decoradores
 - imports : 

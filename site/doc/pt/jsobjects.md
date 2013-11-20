@@ -50,6 +50,31 @@ Por exemplo :
     doc['result'].value = JSObject(circle).surface(10)
     </script>
 
+### Usando construtores Javascript
+
+Se uma função Javascript é um construtor de objetos que pode ser chamada em Javascript com a palavra-chave `new`, ela pode ser usada em Brython transformando-a com a função intrgrada `JSConstructor()`
+
+<code>JSConstructor(_constr_)</code> retorna a função que, quando chamada com argumantos, retorna um objeto Python que corresponde ao objeto Javascript construído pelo construtor _constr_
+
+Por exemplo :
+
+    <script type="text/javascript">
+    function Rectangle(x0,y0,x1,y1){
+        this.x0 = x0
+        this.y0 = y0
+        this.x1 = x1
+        this.y1 = y1
+        this.surface = function(){return (x1-x0)*(y1-y0)}
+    }
+    </script>
+    
+    <script type="text/python">
+    rectangle = JSConstructor(Rectangle)
+    alert(rectangle(10,10,30,30).surface())
+    </script>
+
+### Exemplo jQuery
+
 Abaixo um exemplo mais completo de como você pode usar a popular biblioteca jQuery :
 
     <html>

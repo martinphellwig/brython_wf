@@ -1,62 +1,86 @@
-## Web Sockets
+## módulo websocket
 
-Web sockets são uma forma de gerir a comunicação bi direcional entre cliente e servidor. Eles têm sido especificados em HTML5
+Web sockets são uma forma de gerir a comunicação bi direcional entre cliente e servidor. Eles foram especificados em HTML5
 
-Se sim, a comunicação com o servidor é estabelecida utilizando a função integrada `websocket` :
+A comunicação com o servidor é estabelecida utilizando o módulo `websocket` que expõe a função <code>websocket(_host_)</code> onde _host_ é a localização de um servidor que suporta o protocolo WebSocket
 
-<code>websocket(_host_)</code>
+Se seu navegador não suporta WebSocket, um erro `NotImplementedError` será levantado
 
-onde _host_ é a localização do servidor que suporta o protocolo WebSocket
+Esta chamada retorna uma instância da classe `WebSocket`, ela tem os seguintes métodos :
 
-Se seu navegador não suporta WebSocket, lança `NotImplementedError`
+- <code>bind(_evt,function_)</code> vincula a função _function_ ao evento _evt_. Os eventos e os argumentos correspondentes da função são :
 
-Esta chamada retorna uma instância da classe `WebSocket`. Para descrever a comunicação, funções de resposta (callback) precisam ser definidas como atributos da instância :
-
-- `on_open` : definida como uma função sem argumentos, chamada quando a conexão com o servidor é estabelecida
-- `on_error` : definida como uma função sem argumentos, chamada se um erro ocorrer durante a comunicação
-- `on_message` : definida como uma função com um argumento, uma instância de `DOMEvent`. Esta instância tem um atributo `data` que contém a mensagem enviada pelo servidor
-- `on_close` : definida como uma função sem argumentos, chamada quando a conexão é fechada
-
-Instâncias de `WebSocket` suportam os seguintes métodos :
+<blockquote>
+<table border=1 cellpadding=5>
+<tr>
+<th>Evento</th>
+<th>Função</th>
+</tr>
+<tr>
+<td>`open`</td>
+<td>função sem argumentos, chamada quando a conexão com o servidor é estabelecida</td>
+</tr>
+<tr>
+<td>`error`</td>
+<td>função sem argumentos, chamada se um erro ocorrer durante a comunicação</td>
+</tr>
+<tr>
+<td>`message`</td>
+<td>função com um único argumento, uma instância de `DOMEvent`. Esta instância tem um atributo `data` que contém a mensagem enviada pelo servidor como uma cadeia de caracteres</td>
+</tr>
+<tr>
+<td>`close`</td>
+<td>função sem argumentos, chamada quando a conexão é fechada</td>
+</tr>
+</table>
+</blockquote>
 
 - <code>send(_data_)</code> : envia a cadeia de caracteres _data_ para o servidor
 - `close()` : fecha a conexão
-
 
 Exemplo :
 <table>
 <tr>
 <td id="py_source">
-    def on_open():
-        # Web Socket está conectado, enviar dados usando send()
-        data = doc["data"].value
-        if data:
-            ws.send(data)
-            alert("Messagem foi enviada")
+    import websocket
+    
+    def on_open(evt):
+        doc['send_button'].disabled = False
+        doc['closebtn'].disabled = False
+        doc['openbtn'].disabled = True
     
     def on_message(evt):
         # mensagem recebida do servidor
-        alert("Messagem recebida : %s" %evt.data)
+        alert("Mensagem recebida : %s" %evt.data)
     
     def on_close(evt):
-        # websocket foi fechado
-        alert("Conexão foi fechada")
+        # websocket está fechado
+        alert("Conexão está fechada")
+        doc['openbtn'].disabled = False
+        doc['closebtn'].disabled = True
+        doc['send_button'].disabled = True
     
     ws = None
-    def _test():
+    def _open():
         if not __BRYTHON__.has_websocket:
             alert("WebSocket não é suportado por seu navegador")
             return
         global ws
-        # abrir um socket
-        ws = websocket("wss://echo.websocket.org")
-        # vincular funções a eventos de web socket
-        ws.on_open = on_open
-        ws.on_message = on_message
-        ws.on_close= on_close
+        # abre um websocket
+        ws = websocket.websocket("wss://echo.websocket.org")
+        # vincula funções aos eventos websocket
+        ws.bind('open',on_open)
+p        ws.bind('message',on_message)
+        ws.bind('close',on_close)
+    
+    def send():
+        data = doc["data"].value
+        if data:
+            ws.send(data)
     
     def close_connection():
         ws.close()
+        doc['openbtn'].disabled = False
     
 </td>
 <td valign="top">
@@ -64,8 +88,9 @@ Exemplo :
 exec(doc['py_source'].text)
 </script>
 
-<input id="data"><button onclick="_test()">Enviar</button>
-<p><button onclick="close_connection()">Fechar conexão</button>
+<button id="openbtn" onclick="_open()">Abrir conexão</button>
+<br><input id="data"><button id="send_button" disabled onclick="send()">Enviar</button>
+<p><button id="closebtn" disabled onclick="close_connection()">Fechar conexão</button>
 </td>
 </tr>
 </table>
