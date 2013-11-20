@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131119-182458
+// version 1.2.20131120-223059
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -2395,7 +2395,6 @@ C.expect='alias'
 C.has_alias=true
 return C
 }else if(token==='id' && C.expect==='alias'){
-console.log('set alias '+arguments[2])
 C.expect=':'
 C.tree[0].alias=arguments[2]
 return C
@@ -2933,7 +2932,7 @@ if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
 __BRYTHON__.modules[module]=root
 return root
 }
-__BRYTHON__.forbidden=['catch','Date','delete','default','document','history',
+__BRYTHON__.forbidden=['case','catch','Date','delete','default','document','history',
 'function','location','Math','new','RegExp','this','throw','var','super','window']
 function $tokenize(src,module,parent){
 var delimiters=[["#","\n","comment"],['"""','"""',"triple_string"],
@@ -3293,6 +3292,7 @@ document.$py_src={}
 __BRYTHON__.$py_module_path={}
 __BRYTHON__.$py_module_alias={}
 __BRYTHON__.modules={}
+__BRYTHON__.imported={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
 if(options===undefined){options={'debug':0}}
 if(typeof options==='number'){options={'debug':options}}
@@ -3484,7 +3484,7 @@ $py +='res.append('+arguments[1]+')\n'
 $py +="    return res\n"
 $py +="res"+$ix+"=func"+$ix+"()"
 var $mod_name='lc'+$ix
-var $root=__BRYTHON__.py2js($py,$mod_name)
+var $root=__BRYTHON__.py2js($py,$mod_name,document.$line_info)
 $root.caller=document.$line_info
 var $js=$root.to_js()
 __BRYTHON__.scope[$mod_name].__dict__=$env
@@ -3508,7 +3508,7 @@ indent +=4
 for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.append('+arguments[1]+')'
 var $mod_name='ge'+$ix
-var $root=__BRYTHON__.py2js($py,$mod_name)
+var $root=__BRYTHON__.py2js($py,$mod_name,document.$line_info)
 $root.caller=document.$line_info
 var $js=$root.to_js()
 __BRYTHON__.scope[$mod_name].__dict__=$env
@@ -3547,7 +3547,7 @@ indent +=4
 for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.update({'+arguments[1]+'})'
 var mod_name='dc'+$ix
-var $js=__BRYTHON__.py2js($py,mod_name).to_js()
+var $js=__BRYTHON__.py2js($py,mod_name,document.$line_info).to_js()
 __BRYTHON__.scope[mod_name].__dict__=$env
 eval($js)
 return eval($res)
@@ -3644,9 +3644,6 @@ return res
 }
 return JSObject(src)
 }
-function $module(){}
-$module.__class__=$type
-$module.__str__=function(){return "<class 'module'>"}
 function $getattr(obj,attr){
 if(obj[attr]!==undefined){
 var res=obj[attr]
@@ -5632,9 +5629,6 @@ JSObject.$dict=$JSObjectDict
 $ModuleDict={
 __class__ : $type,
 __name__ : 'module',
-__repr__:function(){return "<class 'module'>"},
-__str__:function(){return "<class 'module'>"},
-toString:function(){return "<class 'module'>"},
 }
 $ModuleDict.__mro__=[$ModuleDict,$ObjectDict]
 function $importer(){
@@ -5702,6 +5696,7 @@ return $import_module_search_path_list(module,__BRYTHON__.path)
 }
 function $import_module_search_path_list(module,path_list){
 var search=[]
+if(module.name.substr(0,2)=='$$'){module.name=module.name.substr(2)}
 mod_path=module.name.replace(/\./g,'/')
 if(!module.package_only){
 search.push(mod_path)
@@ -5768,9 +5763,6 @@ $module.__initializing__=false
 return $module
 }catch(err){
 console.log(''+err+' '+err.__name__)
-for(var attr in err){
-console.log(attr+' : '+err[attr].toString().substr(0,40))
-}
 throw err
 }
 }
@@ -5797,7 +5789,8 @@ for(var i=0;i<modules.length;i++){
 var mod_name=modules[i]
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod
-if(__BRYTHON__.modules[mod_name]===undefined){
+var stored=__BRYTHON__.imported[mod_name]
+if(stored===undefined){
 var mod={}
 var parts=mod_name.split('.')
 for(var i=0;i<parts.length;i++){
@@ -5805,12 +5798,14 @@ var module=new Object()
 module.name=parts.slice(0,i+1).join('.')
 if(__BRYTHON__.modules[module.name]===undefined){
 __BRYTHON__.modules[module.name]={}
+__BRYTHON__.imported[module.name]={}
 if(i<parts.length-1){module.package_only=true}
 __BRYTHON__.modules[module.name]=$import_single(module)
+__BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
 }
 }
 }else{
-mod=__BRYTHON__.modules[mod_name]
+mod=stored
 }
 res.push(mod)
 }
@@ -5825,15 +5820,25 @@ var pymod_elts=elts.slice(0,elts.length-nbpts)
 var pymod_name=src.substr(nbpts)
 var pymod_path=pymod_elts.join('/')
 if(pymod_name){
+var stored=__BRYTHON__.imported[pymod_name]
+if(stored!==undefined){return stored}
 var pymod={'name':pymod_name}
 mod=$import_module_search_path_list(pymod,[pymod_path])
 if(mod!=undefined){
+__BRYTHON__.modules[pymod_name]=mod
+__BRYTHON__.imported[pymod_name]=mod
 return mod
 }
 }else{
 var mod={}
 for(var i=0;i<names.length;i++){
+var stored=__BRYTHON__.imported[names[i]]
+if(stored){mod[names[i]]=stored}
+else{
 mod[names[i]]=$import_module_search_path_list({'name':names[i]},[pymod_path])
+__BRYTHON__.modules[names[i]]=mod[names[i]]
+__BRYTHON__.imported[names[i]]=mod[names[i]]
+}
 }
 }
 return mod
