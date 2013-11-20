@@ -12,7 +12,8 @@ from functools import wraps
 __unittest = True
 
 def failfast(method):
-    @wraps(method)
+    #fixme brython
+    #@wraps(method)
     def inner(self, *args, **kw):
         if getattr(self, 'failfast', False):
             self.stop()

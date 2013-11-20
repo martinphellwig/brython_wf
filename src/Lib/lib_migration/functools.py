@@ -133,10 +133,10 @@ def cmp_to_key(mycmp):
         __hash__ = None
     return K
 
-try:
-    from _functools import cmp_to_key
-except ImportError:
-    pass
+#try:
+#    from _functools import cmp_to_key
+#except ImportError:
+#    pass
 
 
 ################################################################################
