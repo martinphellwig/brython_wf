@@ -1,5 +1,4 @@
-O objetivo de Brython é substituir Javascript por Python como a
-linguagem de scripting para navegadores web.
+O objetivo de Brython é substituir Javascript por Python como a linguagem de scripting para navegadores web.
 
 Um exemplo simples :
 <table>

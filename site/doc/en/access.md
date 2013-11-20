@@ -9,7 +9,7 @@ we can get a reference to this field by
 
 >    data = doc["data"]
 
-`doc` is a built-in Brython keyword that refers to the HTML document. It behaves like a dictionary whose keys are the identifiers of the elements in the page. If not element has the specified id, the program raises a `KeyError` exception
+`doc` is a built-in Brython keyword that refers to the HTML document. It behaves like a dictionary whose keys are the identifiers of the elements in the page. If no element has the specified id, the program raises a `KeyError` exception
 
 We can also get all the elements of a given type, for instance all the hypertext links (HTML tag `A`), using the syntax
 
