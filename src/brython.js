@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131120-223059
+// version 1.2.20131121-224911
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -990,7 +990,7 @@ this.tree=[]
 C.tree.push(this)
 this.to_js=function(){
 if(this.real==='dict'){
-var res='dict(['
+var res='$dict(['
 for(var i=0;i<this.items.length;i+=2){
 res+='['+this.items[i].to_js()+','+this.items[i+1].to_js()+']'
 if(i<this.items.length-2){res+=','}
@@ -1000,7 +1000,7 @@ return res+'])'+$to_js(this.tree)
 else if(this.real==='dict_comp'){
 var key_items=this.items[0].expression[0].to_js()
 var value_items=this.items[0].expression[1].to_js()
-return 'dict('+$to_js(this.items)+')'+$to_js(this.tree)
+return '$dict('+$to_js(this.items)+')'+$to_js(this.tree)
 }else{return 'set(['+$to_js(this.items)+'])'+$to_js(this.tree)}
 }
 }
@@ -1166,13 +1166,15 @@ res +='"'+this.names[i]+'",'
 }
 res +=']);'
 for(var i=0;i<this.names.length;i++){
-if(['def','class'].indexOf(scope.ntype)>-1){
+if(['def','class','module'].indexOf(scope.ntype)>-1){
 res +='var '
 }
 var alias=this.aliases[this.names[i]]||this.names[i]
 res +=alias
-if(scope!==null && scope.ntype=='def'){
+if(scope.ntype=='def'){
 res +='=$locals["'+alias+'"]'
+}else if(scope.ntype=='module'){
+res +='=$globals["'+alias+'"]'
 }
 res +='=getattr($mod,"'+this.names[i]+'");'
 }
@@ -1712,7 +1714,10 @@ var exc=this.tree[0]
 if(exc.type==='id'){return 'throw '+exc.value+'("")'}
 else if(exc.type==='expr' && exc.tree[0].type==='id'){
 return 'throw '+exc.tree[0].value+'("")'
-}else{return 'throw '+$to_js(this.tree)}
+}else{
+while(this.tree.length>1){this.tree.pop()}
+return 'throw '+$to_js(this.tree)
+}
 }
 }
 function $RawJSCtx(C,js){
@@ -2056,23 +2061,6 @@ new $NodeJSCtx(aa3,js3)
 aa2.add(aa3)
 return new $AbstractExprCtx(assign)
 }
-function $comp_env(C,attr,src){
-var ids=$get_ids(src)
-var ctx=C
-while(ctx.parent!==undefined){
-if(['list_or_tuple','call_arg','def'].indexOf(ctx.type)>-1){
-if(ctx[attr]===undefined){ctx[attr]=ids}
-else{
-for(var i=0;i<ids.length;i++){
-if(ctx[attr].indexOf(ids[i])===-1){
-ctx[attr].push(ids[i])
-}
-}
-}
-}
-ctx=ctx.parent
-}
-}
 function $get_docstring(node){
 var doc_string='""'
 if(node.children.length>0){
@@ -2284,7 +2272,6 @@ if(token==='in' && C.expect==='in'){
 C.expect=null
 return new $AbstractExprCtx(new $CompIterableCtx(C),true)
 }else if(C.expect===null){
-$comp_env(C,'locals',C.tree[0])
 return $transition(C.parent,token,arguments[2])
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='comp_iterable'){
@@ -2791,6 +2778,8 @@ else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='raise'){
 if(token==='id' && C.tree.length===0){
 return new $IdCtx(new $ExprCtx(C,'exc',false),arguments[2])
+}else if(token=='from' && C.tree.length>0){
+return new $AbstractExprCtx(C,false)
 }else if(token==='eol'){
 return $transition(C.parent,token)
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
@@ -3036,7 +3025,7 @@ raw=true;name=''
 name=''
 }else if(name.toLowerCase()=='b'){
 bytes=true;name=''
-}else if(['rb','br'].indexOf(name.toLowerCase)>-1){
+}else if(['rb','br'].indexOf(name.toLowerCase())>-1){
 bytes=true;raw=true;name=''
 }
 }
@@ -3049,8 +3038,13 @@ while(end<src.length){
 if(escaped){zone+=src.charAt(end);escaped=false;end+=1}
 else if(src.charAt(end)=="\\"){
 if(raw){
+if(end<src.length-1 && src.charAt(end+1)==car){
+zone +='\\\\'+car
+end +=2
+}else{
 zone +='\\\\'
 end++
+}
 }else{
 if(src.charAt(end+1)=='\n'){
 end +=2
@@ -3292,7 +3286,7 @@ document.$py_src={}
 __BRYTHON__.$py_module_path={}
 __BRYTHON__.$py_module_alias={}
 __BRYTHON__.modules={}
-__BRYTHON__.imported={}
+__BRYTHON__.imported=dict()
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
 if(options===undefined){options={'debug':0}}
 if(typeof options==='number'){options={'debug':options}}
@@ -3366,6 +3360,11 @@ var $root=__BRYTHON__.py2js($src,'__main__')
 var $js=$root.to_js()
 if(__BRYTHON__.debug>1){console.log($js)}
 eval($js)
+var _mod=$globals
+_mod.__class__=$ModuleDict
+_mod.__name__='__main__'
+_mod.__file__=__BRYTHON__.$py_module_path['__main__']
+$DictDict.__setitem__(__BRYTHON__.imported,'__main__',_mod)
 }catch($err){
 console.log('PY2JS '+$err)
 for(var attr in $err){
@@ -3679,7 +3678,7 @@ while(line && line.charAt(0)==' '){
 line=line.substr(1)
 lpos--
 }
-info='\n    '+line+'\n    '
+info='\n    ' 
 for(var i=0;i<lpos;i++){info+=' '}
 info +='^'
 return info
@@ -3790,8 +3789,7 @@ return other===factory.__class__
 class_dict.$factory=factory 
 return factory
 }
-$factory={toString:function(){return '<factory>'}}
-$factory.__mro__=[$factory]
+$factory={toString:function(){return '<factory>'},__class__:$type,$factory:type}
 var $dq_regexp=new RegExp('"',"g")
 function $escape_dq(arg){return arg.replace($dq_regexp,'\\"')}
 document.$stderr={
@@ -3803,7 +3801,10 @@ document.$stdout={
 __getattr__:function(attr){return this[attr]},
 write: function(data){console.log(data)}
 }
-var $type={}
+var $type={__class__:$type,__name__:'type'}
+$type.$factory=type
+type.$dict=$type
+$factory.__mro__=[$factory,$type]
 function $instance_creator(klass){
 return function(){
 var new_func=null,init_func=null,obj
@@ -4162,7 +4163,6 @@ console.log('getattr is not undef')
 try{return _ga(obj,attr)}
 catch(err){void(0)}
 }
-throw AttributeError('object '+obj.__class__.__name__+" has no attribute '"+attr+"'")
 }
 }
 $ObjectDict.__gt__=$ObjectNI('__gt__','>')
@@ -4373,6 +4373,13 @@ this.__mro__=[this,$ObjectDict]
 function compile(source, filename, mode){
 return __BRYTHON__.py2js(source, filename).to_js()
 }
+$ComplexDict={__class__:$type,__name__:'complex'}
+$ComplexDict.__mro__=[$ComplexDict,$ObjectDict]
+function complex(real,imag){
+return{__class__:$ComplexDict,real:real,imag:imag}
+}
+complex.$dict=$ComplexDict
+$ComplexDict.$factory=complex
 function $confirm(src){return confirm(src)}
 function delattr(obj, attr){
 var res=obj[attr]
@@ -4525,11 +4532,6 @@ return method
 }
 return klass[attr]
 }
-if(obj.__class__===$ModuleDict){
-var res=obj[attr]
-if(res!==undefined){return res}
-else{throw AttributeError("'module' object has no attribute '"+attr+"'")}
-}
 var is_class=obj.__class__===$factory, mro, attr_func
 if(is_class){
 attr_func=$type.__getattribute__
@@ -4596,6 +4598,9 @@ if(obj.__hash__ !==undefined){
 return obj.__hash__()
 }
 return null
+}
+function __import__(mod_name){
+return $import_list([mod_name])[0]
 }
 function input(src){
 return prompt(src)
@@ -5071,6 +5076,7 @@ if(n==0){return int(res)}else{return float(res)}
 }
 function setattr(obj,attr,value){
 if(!isinstance(attr,str)){throw TypeError("setattr(): attribute name must be string")}
+if(__BRYTHON__.forbidden.indexOf(attr)>-1){attr='$$'+attr}
 var res=obj[attr]
 if(res===undefined){
 var mro=obj.__class__.__mro__
@@ -5630,6 +5636,8 @@ $ModuleDict={
 __class__ : $type,
 __name__ : 'module',
 }
+$ModuleDict.__repr__=function(self){return '<module '+self.__name__+'>'}
+$ModuleDict.__str__=function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__mro__=[$ModuleDict,$ObjectDict]
 function $importer(){
 if(window.XMLHttpRequest){
@@ -5733,13 +5741,8 @@ var mod_node=new $Node('expression')
 new $NodeJSCtx(mod_node,'$module=(function()')
 root.insert(0,mod_node)
 mod_node.children=body
-var ret_code='return {'
-ret_code +='__getattr__:function(attr){if(this[attr]!==undefined){return this[attr]}'
-ret_code +='else{throw AttributeError("module '+module.name+' has no attribute \''+'"+attr+"\'")}},'
-ret_code +='__setattr__:function(attr,value){this[attr]=value}'
-ret_code +='}'
 var ret_node=new $Node('expression')
-new $NodeJSCtx(ret_node,ret_code)
+new $NodeJSCtx(ret_node,'return $globals')
 mod_node.add(ret_node)
 var ex_node=new $Node('expression')
 new $NodeJSCtx(ex_node,')()')
@@ -5789,8 +5792,8 @@ for(var i=0;i<modules.length;i++){
 var mod_name=modules[i]
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod
-var stored=__BRYTHON__.imported[mod_name]
-if(stored===undefined){
+var stored=$DictDict.get(__BRYTHON__.imported,mod_name)
+if(stored===None){
 var mod={}
 var parts=mod_name.split('.')
 for(var i=0;i<parts.length;i++){
@@ -5798,10 +5801,11 @@ var module=new Object()
 module.name=parts.slice(0,i+1).join('.')
 if(__BRYTHON__.modules[module.name]===undefined){
 __BRYTHON__.modules[module.name]={}
-__BRYTHON__.imported[module.name]={}
+$DictDict.__setitem__(__BRYTHON__.imported,module.name,{})
 if(i<parts.length-1){module.package_only=true}
 __BRYTHON__.modules[module.name]=$import_single(module)
-__BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
+$DictDict.__setitem__(__BRYTHON__.imported,module.name,
+__BRYTHON__.modules[module.name])
 }
 }
 }else{
@@ -5820,24 +5824,24 @@ var pymod_elts=elts.slice(0,elts.length-nbpts)
 var pymod_name=src.substr(nbpts)
 var pymod_path=pymod_elts.join('/')
 if(pymod_name){
-var stored=__BRYTHON__.imported[pymod_name]
-if(stored!==undefined){return stored}
+var stored=$DictDict.get(__BRYTHON__.imported,pymod_name)
+if(stored!==None){return stored}
 var pymod={'name':pymod_name}
 mod=$import_module_search_path_list(pymod,[pymod_path])
 if(mod!=undefined){
 __BRYTHON__.modules[pymod_name]=mod
-__BRYTHON__.imported[pymod_name]=mod
+$DictDict.__setitem__(__BRYTHON__.imported,pymod_name,mod)
 return mod
 }
 }else{
 var mod={}
 for(var i=0;i<names.length;i++){
-var stored=__BRYTHON__.imported[names[i]]
-if(stored){mod[names[i]]=stored}
+var stored=$DictDict.get(__BRYTHON__.imported,names[i])
+if(stored!==None){mod[names[i]]=stored}
 else{
 mod[names[i]]=$import_module_search_path_list({'name':names[i]},[pymod_path])
 __BRYTHON__.modules[names[i]]=mod[names[i]]
-__BRYTHON__.imported[names[i]]=mod[names[i]]
+$DictDict.__setitem__(__BRYTHON__.imported,names[i],mod[names[i]])
 }
 }
 }
@@ -6250,7 +6254,7 @@ return
 else if(isinstance(obj,JSObject)){
 var res=new $DictClass([],[])
 for(var attr in obj.js){
-res.__setitem__(attr,obj.js[attr])
+$DictDict.__setitem__(res,attr,obj.js[attr])
 }
 self.$keys=res.$keys
 self.$values=res.$values
@@ -6407,6 +6411,7 @@ for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 $DictDict.__init__.apply(null,args)
 return res
 }
+$dict=dict 
 dict.__class__=$factory
 dict.$dict=$DictDict
 $DictDict.$factory=dict
