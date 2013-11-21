@@ -3,8 +3,8 @@ $module = (function(){
         __str__: function(){return "<module 're'>"}
     }
     obj.A = obj.ASCII = 256
-    obj.I = 'i'
-    obj.M = 'm'
+    obj.I = obj.IGNORECASE = 'i'
+    obj.M = obj.MULTILINE = 'm'
     $SRE_PatternDict = {
         __class__:$type,
         __name__:'SRE_Pattern'

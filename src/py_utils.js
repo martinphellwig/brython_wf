@@ -340,7 +340,7 @@ function $syntax_err_line(module,pos) {
      line=line.substr(1)
      lpos--
     }
-    info = '\n    '+line+'\n    '
+    info = '\n    ' //+line+'\n    '
     for(var i=0;i<lpos;i++){info+=' '}
     info += '^'
     return info
@@ -496,9 +496,8 @@ function type(name,bases,cl_dict){
     class_dict.$factory = factory    
     return factory
 }
+$factory = {toString:function(){return '<factory>'},__class__:$type,$factory:type}
 
-$factory = {toString:function(){return '<factory>'}}
-$factory.__mro__ = [$factory]
 
 // escaping double quotes
 var $dq_regexp = new RegExp('"',"g") // to escape double quotes in arguments
@@ -518,7 +517,11 @@ document.$stdout = {
 }
 
 // used for class of classes
-var $type = {}
+var $type = {__class__:$type,__name__:'type'}
+$type.$factory = type
+type.$dict = $type
+$factory.__mro__ = [$factory,$type]
+
 function $instance_creator(klass){
     // return the function to initalise a class instance
     return function(){

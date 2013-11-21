@@ -135,3 +135,11 @@ def walk(top, topdown=True, onerror=None, followlinks=False):
     if not topdown:
         yield top, dirs, nondirs
     """
+
+class _path:
+
+    def basename(self,arg):
+        return arg
+
+path = _path()
+environ = {}

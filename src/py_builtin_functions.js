@@ -186,7 +186,14 @@ function compile(source, filename, mode) {
     return __BRYTHON__.py2js(source, filename).to_js()
 }
 
-//complex() (built in function)
+$ComplexDict = {__class__:$type,__name__:'complex'}
+$ComplexDict.__mro__ = [$ComplexDict,$ObjectDict]
+
+function complex(real,imag){
+    return {__class__:$ComplexDict,real:real,imag:imag}
+}
+complex.$dict = $ComplexDict
+$ComplexDict.$factory = complex
 
 function $confirm(src){return confirm(src)}
 
@@ -372,12 +379,6 @@ function getattr(obj,attr,_default){
         return klass[attr]
     }
 
-    // module attribute are returned unmodified
-    if(obj.__class__===$ModuleDict){
-        var res = obj[attr]
-        if(res!==undefined){return res}
-        else{throw AttributeError("'module' object has no attribute '"+attr+"'")}
-    }
     var is_class = obj.__class__===$factory, mro, attr_func
     //if(attr=='calc_v'){console.log('2 ! getattr '+attr+' of '+obj+' ('+type(obj)+') '+' class '+is_class)}
     if(is_class){
@@ -459,6 +460,9 @@ function id(obj) {
    return null
 }
 
+function __import__(mod_name){
+    return $import_list([mod_name])[0]
+}
 //not a direct alias of prompt: input has no default value
 function input(src){
     return prompt(src)
@@ -1036,6 +1040,7 @@ function setattr(obj,attr,value){
     if(!isinstance(attr,str)){throw TypeError("setattr(): attribute name must be string")}
     // descriptor protocol : if obj has attribute attr and this attribute has 
     // a method __set__(), use it
+    if(__BRYTHON__.forbidden.indexOf(attr)>-1){attr='$$'+attr}
     var res = obj[attr]
     if(res===undefined){
         var mro = obj.__class__.__mro__

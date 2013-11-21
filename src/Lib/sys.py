@@ -4,10 +4,12 @@ __stderr__=getattr(doc,"$stderr")
 stdout = getattr(doc,"$stdout")
 stderr = getattr(doc,"$stderr")
 
-modules=__BRYTHON__.modules
-
 has_local_storage=__BRYTHON__.has_local_storage
 has_json=__BRYTHON__.has_json
+
+modules = __BRYTHON__.imported
+
+argv = ['__main__']
 
 class __version_info(object):
     def __init__(self, version_info):

@@ -1128,7 +1128,7 @@ function $DictOrSetCtx(context){
     context.tree.push(this)
     this.to_js = function(){
         if(this.real==='dict'){
-            var res = 'dict(['
+            var res = '$dict(['
             for(var i=0;i<this.items.length;i+=2){
                 res+='['+this.items[i].to_js()+','+this.items[i+1].to_js()+']'
                 if(i<this.items.length-2){res+=','}
@@ -1138,7 +1138,7 @@ function $DictOrSetCtx(context){
         else if(this.real==='dict_comp'){
             var key_items = this.items[0].expression[0].to_js()
             var value_items = this.items[0].expression[1].to_js()
-            return 'dict('+$to_js(this.items)+')'+$to_js(this.tree)
+            return '$dict('+$to_js(this.items)+')'+$to_js(this.tree)
         }else{return 'set(['+$to_js(this.items)+'])'+$to_js(this.tree)}
     }
 }
@@ -1335,14 +1335,16 @@ function $FromCtx(context){
             }
             res += ']);'
             for(var i=0;i<this.names.length;i++){
-                if(['def','class'].indexOf(scope.ntype)>-1){
+                if(['def','class','module'].indexOf(scope.ntype)>-1){
                     res += 'var '
                 }
                 var alias = this.aliases[this.names[i]]||this.names[i]
                 res += alias
-                if(scope!==null && scope.ntype == 'def'){
+                if(scope.ntype == 'def'){
                     res += '=$locals["'+alias+'"]'
-                }            
+                }else if(scope.ntype=='module'){
+                    res += '=$globals["'+alias+'"]'
+                }          
                 res += '=getattr($mod,"'+this.names[i]+'");'
             }
         } else {
@@ -1979,7 +1981,11 @@ function $RaiseCtx(context){
         if(exc.type==='id'){return 'throw '+exc.value+'("")'}
         else if(exc.type==='expr' && exc.tree[0].type==='id'){
             return 'throw '+exc.tree[0].value+'("")'
-        }else{return 'throw '+$to_js(this.tree)}
+        }else{
+            // if raise had a 'from' clause, ignore it
+            while(this.tree.length>1){this.tree.pop()}
+            return 'throw '+$to_js(this.tree)
+        }
     }
 }
 
@@ -2387,26 +2393,6 @@ function $augmented_assign(context,op){
     return new $AbstractExprCtx(assign)
 }
 
-function $comp_env(context,attr,src){
-    // update the attribute "attr" of all comprehensions above "context"
-    // with the ids in "src"
-    var ids = $get_ids(src)
-    var ctx = context
-    while(ctx.parent!==undefined){
-        if(['list_or_tuple','call_arg','def'].indexOf(ctx.type)>-1){
-            if(ctx[attr]===undefined){ctx[attr]=ids}
-            else{
-                for(var i=0;i<ids.length;i++){
-                    if(ctx[attr].indexOf(ids[i])===-1){
-                        ctx[attr].push(ids[i])
-                    }
-                }
-            }
-        }
-        ctx = ctx.parent
-    }
-}
-
 function $get_docstring(node){
     var doc_string='""'
     if(node.children.length>0){
@@ -2418,6 +2404,7 @@ function $get_docstring(node){
     }
     return doc_string
 }
+
 function $get_scope(context){
     // return the $Node indicating the scope of context
     // null for the script or a def $Node
@@ -2651,7 +2638,6 @@ function $transition(context,token){
             return new $AbstractExprCtx(new $CompIterableCtx(context),true)
         }else if(context.expect===null){
             // ids in context.tree[0] are local to the comprehension
-            $comp_env(context,'locals',context.tree[0])
             return $transition(context.parent,token,arguments[2])
         }else{$_SyntaxError(context,'token '+token+' after '+context)}
 
@@ -3239,6 +3225,8 @@ function $transition(context,token){
 
         if(token==='id' && context.tree.length===0){
             return new $IdCtx(new $ExprCtx(context,'exc',false),arguments[2])
+        }else if(token=='from' && context.tree.length>0){
+            return new $AbstractExprCtx(context,false)
         }else if(token==='eol'){
             return $transition(context.parent,token)
         }else{$_SyntaxError(context,'token '+token+' after '+context)}
@@ -3546,7 +3534,7 @@ function $tokenize(src,module,parent){
                     name = ''
                 }else if(name.toLowerCase()=='b'){
                     bytes = true;name=''
-                }else if(['rb','br'].indexOf(name.toLowerCase)>-1){
+                }else if(['rb','br'].indexOf(name.toLowerCase())>-1){
                     bytes=true;raw=true;name=''
                 }
             }
@@ -3559,8 +3547,13 @@ function $tokenize(src,module,parent){
                 if(escaped){zone+=src.charAt(end);escaped=false;end+=1}
                 else if(src.charAt(end)=="\\"){
                     if(raw){
-                        zone += '\\\\'
-                        end++
+                        if(end<src.length-1 && src.charAt(end+1)==car){
+                            zone += '\\\\'+car
+                            end += 2
+                        }else{
+                            zone += '\\\\'
+                            end++
+                        }
                     } else {
                         if(src.charAt(end+1)=='\n'){
                             // explicit line joining inside strings
@@ -3823,7 +3816,7 @@ function brython(options){
     __BRYTHON__.$py_module_alias = {}
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
-    __BRYTHON__.imported = {}
+    __BRYTHON__.imported = dict()
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
 
     // debug level
@@ -3913,6 +3906,11 @@ function brython(options){
                 var $js = $root.to_js()
                 if(__BRYTHON__.debug>1){console.log($js)}
                 eval($js)
+                var _mod = $globals
+                _mod.__class__ = $ModuleDict
+                _mod.__name__ = '__main__'
+                _mod.__file__ = __BRYTHON__.$py_module_path['__main__']                
+                $DictDict.__setitem__(__BRYTHON__.imported,'__main__',_mod)
             }catch($err){
                 console.log('PY2JS '+$err)
                 for(var attr in $err){
