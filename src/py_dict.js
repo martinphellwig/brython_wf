@@ -87,7 +87,7 @@ $DictDict.__init__ = function(self){
             // convert a JSObject into a Python dictionary
             var res = new $DictClass([],[])
             for(var attr in obj.js){
-                res.__setitem__(attr,obj.js[attr])
+                $DictDict.__setitem__(res,attr,obj.js[attr])
             }
             self.$keys = res.$keys
             self.$values = res.$values
@@ -273,6 +273,13 @@ function dict(){
     $DictDict.__init__.apply(null,args)
     return res
 }
+$dict = dict // used for dict literals : "x={}" is translated to "x=$dict()",
+             // not to "x=dict()"
+             // otherwise this would fail :
+             // def foo(dict=None):
+             //     x = {}
+             // because inside the function, 'dict' has beeen set to the 
+             // value of argument 'dict'
 dict.__class__ = $factory
 dict.$dict = $DictDict
 $DictDict.$factory = dict
