@@ -463,4 +463,19 @@ class B:
 b=B(2)
 assert str(b)=='<B object>'
 
+# issue #166
+assert pow(2,3,4) == 0
+assert pow(2,3,3) == 2
+try:
+    pow(2.2,3,4)
+    raise Exception('should have raised TypeError')
+except TypeError:
+    pass
+try:
+    pow('2',3)
+    raise Exception('should have raised TypeError')
+except TypeError:
+    pass
+
+
 print('passed all tests')

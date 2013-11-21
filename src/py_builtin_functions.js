@@ -790,16 +790,46 @@ function ord(c) {
 function pow() {
     var $ns=$MakeArgs('pow',arguments,[],{},'args','kw')
     var args = $ns['args']
-    if(args.length!=2){throw TypeError(
-        "pow expected 2 arguments, got "+args.length)
+    if(args.length<2){throw TypeError(
+        "pow expected at least 2 arguments, got "+args.length)
     }
-    var x = args[0]
-    var y = args[1]
-    var a,b
-    if (isinstance(x, float)) {a=x.value} else {a=x}
-    if (isinstance(y, float)) {b=y.value} else {b=y}
-
-    return Math.pow(a,b)
+    if(args.length>3){throw TypeError(
+        "pow expected at most 3 arguments, got "+args.length)
+    }
+    if(args.length === 2){
+        var x = args[0]
+        var y = args[1]
+        var a,b
+        if(isinstance(x, float)){
+	  a=x.value
+	} else if(isinstance(x, int)){
+	  a=x
+	} else {
+	  throw TypeError("unsupported operand type(s) for ** or pow()")
+	}
+        if (isinstance(y, float)){
+	  b=y.value
+	} else if (isinstance(y, int)){
+	  b=y
+	}
+        else {
+	  throw TypeError("unsupported operand type(s) for ** or pow()")
+	}
+        return Math.pow(a,b)
+    }
+    if(args.length === 3){
+        var x = args[0]
+        var y = args[1]
+        var z = args[2]
+        var a,b,c
+        if (isinstance(x, int)) {a=x} else {throw TypeError(
+            "pow() 3rd argument not allowed unless all arguments are integers")}
+        if (isinstance(y, int)) {b=y} else {throw TypeError(
+            "pow() 3rd argument not allowed unless all arguments are integers")}
+        if (isinstance(z, int)) {c=z} else {throw TypeError(
+            "pow() 3rd argument not allowed unless all arguments are integers")}
+        return Math.pow(a,b)%c
+    }
 }
 
 function $print(){
