@@ -77,9 +77,9 @@ def unorderable_list_difference(expected, actual):
     # anything left in actual is unexpected
     return missing, actual
 
-#def three_way_cmp(x, y):
-#    """Return -1 if x < y, 0 if x == y and 1 if x > y"""
-#    return (x > y) - (x < y)
+def three_way_cmp(x, y):
+    """Return -1 if x < y, 0 if x == y and 1 if x > y"""
+    return (x > y) - (x < y)
 
 # fixme, brython
 #namedtuple issues in collections.py
