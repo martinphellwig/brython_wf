@@ -27,7 +27,12 @@ __BRYTHON__.exception_stack = []
 __BRYTHON__.scope = {}
 __BRYTHON__.modules = {}
 
-function node_import(module,alias,names) {
+// Read and eval library
+jscode = fs.readFileSync('../src/brython.js','utf8');
+eval(jscode);
+
+//function node_import(module,alias,names) {
+function $import_single(module) {
   var search_path=['../src/libs', '../src/Lib'];
   var ext=['.js', '.py'];
   var mods=[module, module+'/__init__'];
@@ -130,15 +135,12 @@ $compile_python=function(module_contents,module) {
 
 function execute_python_script(filename) {
   _py_src=fs.readFileSync(filename, 'utf8')
+  __BRYTHON__.$py_module_path['__main__']='./'
   var root = __BRYTHON__.py2js(_py_src,'__main__')
   var js = root.to_js()
   //console.log(js);
   eval(js);
 }
-
-// Read and eval library
-jscode = fs.readFileSync('../src/brython.js','utf8');
-eval(jscode);
 
 //console.log("try to execute compile script");
 
@@ -146,6 +148,7 @@ __BRYTHON__.$py_module_path = __BRYTHON__.$py_module_path || {}
 __BRYTHON__.$py_module_alias = __BRYTHON__.$py_module_alias || {}
 __BRYTHON__.exception_stack = __BRYTHON__.exception_stack || []
 __BRYTHON__.scope = __BRYTHON__.scope || {}
+__BRYTHON__.imported = __BRYTHON__.imported || {}
 __BRYTHON__.modules = __BRYTHON__.modules || {}
 __BRYTHON__.compile_python=$compile_python
 
@@ -154,7 +157,7 @@ __BRYTHON__.$options = {}
 __BRYTHON__.$options.debug = 0
 
 // other import algs don't work in node
-$import_funcs=[node_import]
+//import_funcs=[node_import]
 
 var filename=process.argv[2];
 execute_python_script(filename)
