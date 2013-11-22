@@ -805,20 +805,20 @@ function pow() {
         var y = args[1]
         var a,b
         if(isinstance(x, float)){
-	  a=x.value
-	} else if(isinstance(x, int)){
-	  a=x
-	} else {
-	  throw TypeError("unsupported operand type(s) for ** or pow()")
-	}
+      a=x.value
+    } else if(isinstance(x, int)){
+      a=x
+    } else {
+      throw TypeError("unsupported operand type(s) for ** or pow()")
+    }
         if (isinstance(y, float)){
-	  b=y.value
-	} else if (isinstance(y, int)){
-	  b=y
-	}
+      b=y.value
+    } else if (isinstance(y, int)){
+      b=y
+    }
         else {
-	  throw TypeError("unsupported operand type(s) for ** or pow()")
-	}
+      throw TypeError("unsupported operand type(s) for ** or pow()")
+    }
         return Math.pow(a,b)
     }
     if(args.length === 3){
@@ -1154,7 +1154,32 @@ $SuperDict.__getattribute__ = function(self,attr){
     var mro = self.__thisclass__.$dict.__mro__,res
     for(var i=1;i<mro.length;i++){ // ignores the class where super() is defined
         res = mro[i][attr]
-        if(res!==undefined){return res}
+        if(res!==undefined){
+            // if super() is called with a second argument, the result is bound
+            if(self.__self_class__!==None){
+                var args = [self]
+                for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+                var method = (function(initial_args){
+                    return function(){
+                        // make a local copy of initial args
+                        var local_args = initial_args.slice()
+                        for(var i=0;i<arguments.length;i++){
+                            local_args.push(arguments[i])
+                        }
+                        var x = res.apply(obj,local_args)
+                        if(x===undefined){return None}else{return x}
+                    }})(args)
+                method.__class__ = {
+                    __class__:$type,
+                    __name__:'method',
+                    __mro__:[$ObjectDict]
+                }
+                method.__func__ = res
+                method.__self__ = self
+                return method
+            }
+            return res
+        }
     }
     throw AttributeError("object 'super' has no attribute '"+attr+"'")
 }
@@ -1164,7 +1189,7 @@ $SuperDict.__mro__ = [$SuperDict,$ObjectDict]
 function $$super(_type1,_type2){
     return {__class__:$SuperDict,
         __thisclass__:_type1,
-        __self_class__:_type2
+        __self_class__:_type2 || None
     }
 }
 
