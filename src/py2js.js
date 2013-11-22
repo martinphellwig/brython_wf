@@ -2240,7 +2240,7 @@ function $WithCtx(context){
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,'catch($err'+$loop_num+')')
         var fbody = new $Node('expression')
-        var js = 'if(!'+this.tree[0].alias+'.__exit__($err'+$loop_num+'.type,'
+        var js = 'if(!$ctx_manager_exit($err'+$loop_num+'.type,'
         js += '$err'+$loop_num+'.value,$err'+$loop_num+'.traceback))'
         js += '{throw $err'+$loop_num+'}'
         new $NodeJSCtx(fbody,js)
@@ -2250,14 +2250,19 @@ function $WithCtx(context){
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,'finally')
         var fbody = new $Node('expression')
-        new $NodeJSCtx(fbody,this.tree[0].alias+'.__exit__(None,None,None)')
+        new $NodeJSCtx(fbody,'$ctx_manager_exit(None,None,None)')
         new_node.add(fbody)
         node.parent.insert(rank+2,new_node)
         this.transformed = true
     }
     this.to_js = function(){
-        res = 'var '+this.tree[0].alias+'='+this.tree[0].to_js()+'.__enter__()'
-        return res+';try'
+        var res = 'var $ctx_manager='+this.tree[0].to_js()
+        res += '\n$ctx_manager_exit = getattr($ctx_manager,"__exit__")\n'
+        if(this.tree[0].alias){
+            res += 'var '+this.tree[0].alias+'='
+        }
+        res += 'getattr($ctx_manager,"__enter__")()'
+        return res+'\ntry'
     }
 }
 
