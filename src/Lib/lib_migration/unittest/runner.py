@@ -35,7 +35,9 @@ class TextTestResult(result.TestResult):
     separator2 = '-' * 70
 
     def __init__(self, stream, descriptions, verbosity):
-        super(TextTestResult, self).__init__()
+        #fixme brython
+        #super(TextTestResult, self).__init__()
+        result.TestResult.__init__(self)
         self.stream = stream
         self.showAll = verbosity > 1
         self.dots = verbosity == 1
