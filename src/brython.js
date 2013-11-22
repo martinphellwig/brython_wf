@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131121-224911
+// version 1.2.20131122-182624
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -1942,7 +1942,7 @@ if(this.tree[0].alias===null){this.tree[0].alias='$temp'}
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,'catch($err'+$loop_num+')')
 var fbody=new $Node('expression')
-var js='if(!'+this.tree[0].alias+'.__exit__($err'+$loop_num+'.type,'
+var js='if(!$ctx_manager_exit($err'+$loop_num+'.type,'
 js +='$err'+$loop_num+'.value,$err'+$loop_num+'.traceback))'
 js +='{throw $err'+$loop_num+'}'
 new $NodeJSCtx(fbody,js)
@@ -1952,14 +1952,19 @@ $loop_num++
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,'finally')
 var fbody=new $Node('expression')
-new $NodeJSCtx(fbody,this.tree[0].alias+'.__exit__(None,None,None)')
+new $NodeJSCtx(fbody,'$ctx_manager_exit(None,None,None)')
 new_node.add(fbody)
 node.parent.insert(rank+2,new_node)
 this.transformed=true
 }
 this.to_js=function(){
-res='var '+this.tree[0].alias+'='+this.tree[0].to_js()+'.__enter__()'
-return res+';try'
+var res='var $ctx_manager='+this.tree[0].to_js()
+res +='\n$ctx_manager_exit = getattr($ctx_manager,"__exit__")\n'
+if(this.tree[0].alias){
+res +='var '+this.tree[0].alias+'='
+}
+res +='getattr($ctx_manager,"__enter__")()'
+return res+'\ntry'
 }
 }
 function $YieldCtx(C){
@@ -4894,15 +4899,46 @@ return c.charCodeAt(0)
 function pow(){
 var $ns=$MakeArgs('pow',arguments,[],{},'args','kw')
 var args=$ns['args']
-if(args.length!=2){throw TypeError(
-"pow expected 2 arguments, got "+args.length)
+if(args.length<2){throw TypeError(
+"pow expected at least 2 arguments, got "+args.length)
 }
+if(args.length>3){throw TypeError(
+"pow expected at most 3 arguments, got "+args.length)
+}
+if(args.length===2){
 var x=args[0]
 var y=args[1]
 var a,b
-if(isinstance(x, float)){a=x.value}else{a=x}
-if(isinstance(y, float)){b=y.value}else{b=y}
+if(isinstance(x, float)){
+a=x.value
+}else if(isinstance(x, int)){
+a=x
+}else{
+throw TypeError("unsupported operand type(s) for ** or pow()")
+}
+if(isinstance(y, float)){
+b=y.value
+}else if(isinstance(y, int)){
+b=y
+}
+else{
+throw TypeError("unsupported operand type(s) for ** or pow()")
+}
 return Math.pow(a,b)
+}
+if(args.length===3){
+var x=args[0]
+var y=args[1]
+var z=args[2]
+var a,b,c
+if(isinstance(x, int)){a=x}else{throw TypeError(
+"pow() 3rd argument not allowed unless all arguments are integers")}
+if(isinstance(y, int)){b=y}else{throw TypeError(
+"pow() 3rd argument not allowed unless all arguments are integers")}
+if(isinstance(z, int)){c=z}else{throw TypeError(
+"pow() 3rd argument not allowed unless all arguments are integers")}
+return Math.pow(a,b)%c
+}
 }
 function $print(){
 var $ns=$MakeArgs('print',arguments,[],{'end':'\n','sep':' '},'args', null)
@@ -5176,7 +5212,30 @@ $SuperDict.__getattribute__=function(self,attr){
 var mro=self.__thisclass__.$dict.__mro__,res
 for(var i=1;i<mro.length;i++){
 res=mro[i][attr]
-if(res!==undefined){return res}
+if(res!==undefined){
+if(self.__self_class__!==None){
+var args=[self]
+for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+var method=(function(initial_args){
+return function(){
+var local_args=initial_args.slice()
+for(var i=0;i<arguments.length;i++){
+local_args.push(arguments[i])
+}
+var x=res.apply(obj,local_args)
+if(x===undefined){return None}else{return x}
+}})(args)
+method.__class__={
+__class__:$type,
+__name__:'method',
+__mro__:[$ObjectDict]
+}
+method.__func__=res
+method.__self__=self
+return method
+}
+return res
+}
 }
 throw AttributeError("object 'super' has no attribute '"+attr+"'")
 }
@@ -5184,7 +5243,7 @@ $SuperDict.__mro__=[$SuperDict,$ObjectDict]
 function $$super(_type1,_type2){
 return{__class__:$SuperDict,
 __thisclass__:_type1,
-__self_class__:_type2
+__self_class__:_type2 || None
 }
 }
 function $tuple(arg){return arg}
