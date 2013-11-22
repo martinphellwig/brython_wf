@@ -55,3 +55,5 @@ class flag_class:
 
 flags=flag_class()
 
+def exit(i):
+    JSObject("throw 'stop execution'")
