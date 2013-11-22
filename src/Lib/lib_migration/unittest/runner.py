@@ -166,11 +166,11 @@ class TextTestRunner(object):
             startTestRun = getattr(result, 'startTestRun', None)
             if startTestRun is not None:
                 startTestRun()
+            #fixme brython..  theres a problem here.
+            test(result)
             #try:
             #    test(result)
             #finally:
-            #    #fixme brython
-            #    pass
             #    #stopTestRun = getattr(result, 'stopTestRun', None)
             #    #if stopTestRun is not None:
             #    #    stopTestRun()
