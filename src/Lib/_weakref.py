@@ -13,8 +13,9 @@ class ReferenceType:
 
 class ref:
 
-    def __init__(self,obj):
+    def __init__(self,obj,callback=None):
         self.obj = ReferenceType(obj)
+        self.callback=callback
 
 def getweakrefcount(obj):
     return 1
