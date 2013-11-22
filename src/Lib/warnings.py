@@ -318,8 +318,8 @@ class catch_warnings(object):
 
         """
         self._record = record
-        #self._module = sys.modules['warnings'] if module is None else module
-        self._module = None #module
+        self._module = sys.modules['warnings'] if module is None else module
+        #self._module = module
         self._entered = False
 
     def __repr__(self):

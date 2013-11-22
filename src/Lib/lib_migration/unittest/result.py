@@ -6,7 +6,7 @@ import sys
 import traceback
 
 #help me!
-#from . import util
+from . import util
 from functools import wraps
 
 __unittest = True
@@ -56,6 +56,7 @@ class TestResult(object):
 
     def printErrors(self):
         "Called by TestRunner after test run"
+        pass
 
     def startTest(self, test):
         "Called when the given test is about to be run"
@@ -76,6 +77,7 @@ class TestResult(object):
 
         See startTest for a method called before each test.
         """
+        pass
 
     def stopTest(self, test):
         """Called when the given test has been run"""
@@ -103,13 +105,14 @@ class TestResult(object):
             self._stderr_buffer.seek(0)
             self._stderr_buffer.truncate()
 
-    def stopTestRun(self):
-        """Called once after all tests are executed.
+    #def stopTestRun(self):
+    #    """Called once after all tests are executed.
 
-        See stopTest for a method called after each test.
-        """
+    #    See stopTest for a method called after each test.
+    #    """
+    #    pass
 
-    @failfast
+    #@failfast
     def addError(self, test, err):
         """Called when an error has occurred. 'err' is a tuple of values as
         returned by sys.exc_info().
@@ -117,7 +120,7 @@ class TestResult(object):
         self.errors.append((test, self._exc_info_to_string(err, test)))
         self._mirrorOutput = True
 
-    @failfast
+    #@failfast
     def addFailure(self, test, err):
         """Called when an error has occurred. 'err' is a tuple of values as
         returned by sys.exc_info()."""
@@ -137,7 +140,7 @@ class TestResult(object):
         self.expectedFailures.append(
             (test, self._exc_info_to_string(err, test)))
 
-    @failfast
+    #@failfast
     def addUnexpectedSuccess(self, test):
         """Called when a test was expected to fail, but succeed."""
         self.unexpectedSuccesses.append(test)
