@@ -27,8 +27,7 @@ HEXDIGITS = set("0123456789abcdefABCDEF")
 
 WHITESPACE = set(" \t\n\r\v\f")
 
-ESCAPES = {
-    r"\a": (LITERAL, ord("\a")),
+ESCAPES = {"\a": (LITERAL, ord("\a")),
     r"\b": (LITERAL, ord("\b")),
     r"\f": (LITERAL, ord("\f")),
     r"\n": (LITERAL, ord("\n")),
