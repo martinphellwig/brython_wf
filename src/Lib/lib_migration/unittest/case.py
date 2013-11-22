@@ -202,7 +202,7 @@ class _AssertWarnsContext(_AssertRaisesBaseContext):
                 .format(exc_name))
 
 
-class TestCase(object):
+class TestCase:
 #class TestCase(object):
     """A class whose instances are single test cases.
 

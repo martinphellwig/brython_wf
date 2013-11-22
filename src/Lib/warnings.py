@@ -308,7 +308,7 @@ class catch_warnings(object):
 
     """
 
-    #def __init__(self, *, record=False, module=None):  BE modified
+    #def __init__(self, *, record=False, module=None):  #BE modified
     def __init__(self, record=False, module=None):
         """Specify whether to record warnings and if an alternative module
         should be used other than sys.modules['warnings'].
@@ -318,7 +318,8 @@ class catch_warnings(object):
 
         """
         self._record = record
-        self._module = sys.modules['warnings'] if module is None else module
+        #self._module = sys.modules['warnings'] if module is None else module
+        self._module = None #module
         self._entered = False
 
     def __repr__(self):
