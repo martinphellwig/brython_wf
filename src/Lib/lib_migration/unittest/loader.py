@@ -64,29 +64,6 @@ class TestLoader(object):
     def loadTestsFromModule(self, module, use_load_tests=True):
         """Return a suite of all tests cases contained in the given module"""
         tests = []
-        print(dir(module))
-        #fixme brython.
-        #dir(module) does not show classes defined in __main__
-        #for example, when the code below is ran in the editor
-        #dir(module) should conatain IntegerArithmenticTestCase
-        #but does not
-        #import sys
-        #
-        #sys.path.append("/src/Lib/lib_migration")
-        #
-        #import unittest
-        #
-        #class IntegerArithmenticTestCase(unittest.TestCase):
-        #    def testAdd(self):  ## test method names begin 'test*'
-        #        self.assertEqual((1 + 2), 3)
-        #        self.assertEqual(0 + 1, 1)
-        #    def testMultiply(self):
-        #         self.assertEqual((0 * 10), 0)
-        #         self.assertEqual((5 * 8), 40)
-        #
-        #if __name__ == '__main__':
-        #   unittest.main()
-
         for name in dir(module):
             obj = getattr(module, name)
             if isinstance(obj, type) and issubclass(obj, case.TestCase):
