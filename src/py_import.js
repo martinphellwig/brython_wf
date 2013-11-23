@@ -193,8 +193,8 @@ function $import_list(modules){
         var mod_name=modules[i]
         if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
         var mod;
-        var stored = $DictDict.get(__BRYTHON__.imported,mod_name)
-        if(stored===None){
+        var stored = __BRYTHON__.imported[mod_name]
+        if(stored===undefined){
             // if module is in a package (eg "import X.Y") then we must first import X
             // by searching for the file X/__init__.py, then import X.Y searching either
             // X/Y.py or X/Y/__init__.py
@@ -206,12 +206,11 @@ function $import_list(modules){
                 if(__BRYTHON__.modules[module.name]===undefined){
                     // this could be a recursive import, so lets set modules={}
                     __BRYTHON__.modules[module.name]={}
-                    $DictDict.__setitem__(__BRYTHON__.imported,module.name,{})
+                    __BRYTHON__.imported[module.name]={}
                     // indicate if package only, or package or file
                     if(i<parts.length-1){module.package_only = true}
                     __BRYTHON__.modules[module.name] = $import_single(module)
-                    $DictDict.__setitem__(__BRYTHON__.imported,module.name,
-                        __BRYTHON__.modules[module.name])
+                    __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
                 }
             }
         }else{
@@ -237,24 +236,24 @@ function $import_list_intra(src,current_url,names){
     if(pymod_name){ // form 'from ..Z import bar' : Z is a module name, 
                     // bar is a name in Z namespace
         //pymod_elts.push(pymod_name)
-        var stored = $DictDict.get(__BRYTHON__.imported,pymod_name)
-        if(stored!==None){return stored}
+        var stored = __BRYTHON__.imported[pymod_name]
+        if(stored!==undefined){return stored}
         var pymod = {'name':pymod_name}
         mod = $import_module_search_path_list(pymod,[pymod_path])
         if(mod!=undefined){
             __BRYTHON__.modules[pymod_name] = mod
-            $DictDict.__setitem__(__BRYTHON__.imported,pymod_name,mod)
+            __BRYTHON__.imported[pymod_name] = mod
             return mod
         }
     }else{ // form 'from . import X' : X is a module name
         var mod = {}
         for(var i=0;i<names.length;i++){
-            var stored = $DictDict.get(__BRYTHON__.imported,names[i])
-            if(stored!==None){mod[names[i]]=stored}
+            var stored = __BRYTHON__.imported[names[i]]
+            if(stored!==undefined){mod[names[i]]=stored}
             else{
                 mod[names[i]]=$import_module_search_path_list({'name':names[i]},[pymod_path])
                 __BRYTHON__.modules[names[i]] = mod[names[i]]
-                $DictDict.__setitem__(__BRYTHON__.imported,names[i],mod[names[i]])
+                __BRYTHON__.imported[names[i]]=mod[names[i]]
             }
         }
     }
