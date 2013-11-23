@@ -388,11 +388,10 @@ class TestCase:
                 outcome.expectedFailure = exc_info
             else:
                 outcome.errors.append(exc_info)
-        #fixme brython Syntax error
-        #except self.failureException:
-        #    outcome.success = False
-        #    outcome.failures.append(sys.exc_info())
-        #    exc_info = sys.exc_info()
+        except self.failureException:
+            outcome.success = False
+            outcome.failures.append(sys.exc_info())
+            exc_info = sys.exc_info()
         except:
             outcome.success = False
             outcome.errors.append(sys.exc_info())
@@ -555,9 +554,8 @@ class TestCase:
         context = _AssertRaisesContext(excClass, self, callableObj)
         if callableObj is None:
             return context
-        #fixme brython syntax error
-        #with context:
-        #    callableObj(*args, **kwargs)
+        with context:
+            callableObj(*args, **kwargs)
 
     def assertWarns(self, expected_warning, callable_obj=None, *args, **kwargs):
         """Fail unless a warning of class warnClass is triggered
@@ -587,9 +585,8 @@ class TestCase:
         context = _AssertWarnsContext(expected_warning, self, callable_obj)
         if callable_obj is None:
             return context
-        #fixme brython syntax error
-        #with context:
-        #    callable_obj(*args, **kwargs)
+        with context:
+            callable_obj(*args, **kwargs)
 
     def _getAssertEqualityFunc(self, first, second):
         """Get a detailed comparison function for the types of the two args.
@@ -1117,9 +1114,8 @@ class TestCase:
                                        expected_regex)
         if callable_obj is None:
             return context
-        #fixme brython syntax error
-        #with context:
-        #    callable_obj(*args, **kwargs)
+        with context:
+            callable_obj(*args, **kwargs)
 
     def assertWarnsRegex(self, expected_warning, expected_regex,
                          callable_obj=None, *args, **kwargs):
@@ -1140,9 +1136,8 @@ class TestCase:
                                       expected_regex)
         if callable_obj is None:
             return context
-        #fixme brython syntax error
-        #with context:
-        #    callable_obj(*args, **kwargs)
+        with context:
+            callable_obj(*args, **kwargs)
 
     def assertRegex(self, text, expected_regex, msg=None):
         """Fail the test unless the text matches the regular expression."""
