@@ -79,8 +79,6 @@ def three_way_cmp(x, y):
     """Return -1 if x < y, 0 if x == y and 1 if x > y"""
     return (x > y) - (x < y)
 
-# fixme, brython
-#namedtuple issues in collections.py
 _Mismatch = namedtuple('Mismatch', 'actual expected value')
 
 def _count_diff_all_purpose(actual, expected):

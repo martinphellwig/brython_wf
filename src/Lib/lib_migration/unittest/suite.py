@@ -222,7 +222,7 @@ class TestSuite(BaseTestSuite):
 
     def _tearDownPreviousClass(self, test, result):
         previousClass = getattr(result, '_previousTestClass', None)
-        #fixme brython
+        #fixme brython, if test is None, test.__class__ causes problems
         if test is None:
            currentClass = None
         else:
