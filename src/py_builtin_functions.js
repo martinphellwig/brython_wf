@@ -152,10 +152,8 @@ bytes.$dict = $BytesDict
 //callable() (built in function)
 function callable(obj) {
   if (obj.__call__) return True
-  // todo: need to figure out if an object is a class or an instance
-  // classes are callable, instances usually aren't unless they have __call__
-  // functions are callable..
-  //for now assume the worst..
+  if (obj.__class__) return True
+
   return False
 }
 
