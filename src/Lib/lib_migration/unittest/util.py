@@ -1,8 +1,6 @@
 # "Various utility functions."
 
-#fixme, brython, need to fix namedtuple
-#from collections import namedtuple, OrderedDict
-from collections import OrderedDict
+from collections import namedtuple, OrderedDict
 
 __unittest = True
 
@@ -81,9 +79,7 @@ def three_way_cmp(x, y):
     """Return -1 if x < y, 0 if x == y and 1 if x > y"""
     return (x > y) - (x < y)
 
-# fixme, brython
-#namedtuple issues in collections.py
-#_Mismatch = namedtuple('Mismatch', 'actual expected value')
+_Mismatch = namedtuple('Mismatch', 'actual expected value')
 
 def _count_diff_all_purpose(actual, expected):
     'Returns list of (cnt_act, cnt_exp, elem) triples where the counts differ'
