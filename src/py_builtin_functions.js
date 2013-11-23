@@ -1312,10 +1312,10 @@ $BoolDict.__repr__ = $BoolDict.toString
 $BoolDict.__str__ = $BoolDict.toString
 
 $NoneDict = {__class__:$type,
-    __mro__ : [$ObjectDict],
     __name__:'NoneType',
-    __str__:function(){return "<class 'NoneType'>"}
 }
+$NoneDict.__mro__ = [$NoneDict,$ObjectDict]
+$NoneDict.$factory = $NoneDict
 
 None = {
     __bool__ : function(){return False},
