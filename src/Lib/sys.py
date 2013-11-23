@@ -1,3 +1,10 @@
+# hack to return special attributes
+def __getattr__(attr):
+    if attr=='modules':
+        return dict(JSObject(__BRYTHON__.imported))
+    else:
+        raise ImportError("cannot import name "+attr)
+
 __stdout__=getattr(doc,"$stdout")
 __stderr__=getattr(doc,"$stderr")
 
@@ -6,11 +13,6 @@ stderr = getattr(doc,"$stderr")
 
 has_local_storage=__BRYTHON__.has_local_storage
 has_json=__BRYTHON__.has_json
-
-def __getattr__(attr):
-    if(attr=='modules'):
-        print('get sys modules')
-        return dict(JSObject(__BRYTHON__.imported))
 
 argv = ['__main__']
 
