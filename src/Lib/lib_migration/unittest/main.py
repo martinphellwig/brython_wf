@@ -144,14 +144,10 @@ class TestProgram(object):
             return
 
         import getopt
-        #fixme brython, except statement below don't like getopt.
-        getopt_error=getopt.error
         long_opts = ['help', 'verbose', 'quiet', 'failfast', 'catch', 'buffer']
         try:
             options, args = getopt.getopt(argv[1:], 'hHvqfcb', long_opts)
-        #fixme brython invalid syntax
-        #except getopt.error as msg:
-        except getopt_error as msg:
+        except getopt.error as msg:
             self.usageExit(msg)
             return
 
