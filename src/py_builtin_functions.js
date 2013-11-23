@@ -1313,6 +1313,11 @@ $BoolDict.__repr__ = $BoolDict.toString
 
 $BoolDict.__str__ = $BoolDict.toString
 
+$BoolDict.__sub__ = function(self,other){
+    if(self.valueOf()) return 1-other;
+    return -other;
+}
+
 $NoneDict = {__class__:$type,
     __name__:'NoneType',
 }
