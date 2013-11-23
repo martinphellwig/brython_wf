@@ -7,7 +7,10 @@ stderr = getattr(doc,"$stderr")
 has_local_storage=__BRYTHON__.has_local_storage
 has_json=__BRYTHON__.has_json
 
-modules = __BRYTHON__.imported
+def __getattr__(attr):
+    if(attr=='modules'):
+        print('get sys modules')
+        return dict(JSObject(__BRYTHON__.imported))
 
 argv = ['__main__']
 
@@ -56,4 +59,4 @@ class flag_class:
 flags=flag_class()
 
 def exit(i=None):
-    JSObject("throw 'stop execution'")
+    raise SystemExit('')
