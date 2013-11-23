@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131122-191551
+// version 1.2.20131123-091433
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -5336,10 +5336,10 @@ return "False"
 $BoolDict.__repr__=$BoolDict.toString
 $BoolDict.__str__=$BoolDict.toString
 $NoneDict={__class__:$type,
-__mro__ :[$ObjectDict],
 __name__:'NoneType',
-__str__:function(){return "<class 'NoneType'>"}
 }
+$NoneDict.__mro__=[$NoneDict,$ObjectDict]
+$NoneDict.$factory=$NoneDict
 None={
 __bool__ : function(){return False},
 __class__ : $NoneDict,
