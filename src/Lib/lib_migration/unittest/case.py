@@ -259,6 +259,10 @@ class TestCase:
         self._testMethodName = methodName
         self._outcomeForDoCleanups = None
         self._testMethodDoc = 'No test'
+        
+        #fix me brython  
+        #a = getattr(self, methodName)  # <- this works!
+        #print(a)        # but fails in try/except below... 
         try:
             testMethod = getattr(self, methodName)
         except AttributeError:
