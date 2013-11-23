@@ -18,7 +18,7 @@ from _abcoll import MutableMapping
 
 from _collections import deque, defaultdict, namedtuple
 #fixme, brython.  This causes a ReferenceError: itemgetter is not defined
-#from operator import itemgetter as _itemgetter
+from operator import itemgetter as _itemgetter
 from keyword import iskeyword as _iskeyword
 import sys as _sys
 import heapq as _heapq
@@ -26,7 +26,7 @@ import heapq as _heapq
 #from weakref import proxy as _proxy
 from itertools import repeat as _repeat, chain as _chain, starmap as _starmap
 #fixme brython 
-#from reprlib import recursive_repr as _recursive_repr
+from reprlib import recursive_repr as _recursive_repr
 
 class Set(set):
     pass
@@ -606,9 +606,9 @@ class ChainMap(MutableMapping):
 
     #fixme, brython
     #@_recursive_repr()
-#    def __repr__(self):
-#        return '{0.__class__.__name__}({1})'.format(
-#            self, ', '.join(map(repr, self.maps)))
+    def __repr__(self):
+        return '{0.__class__.__name__}({1})'.format(
+            self, ', '.join(map(repr, self.maps)))
 
     def __repr__(self):
         return ','.join(str(_map) for _map in self.maps)

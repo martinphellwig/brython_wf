@@ -31,8 +31,8 @@ class deque:
 
     def __new__(cls, iterable=(), *args, **kw):
         #fixme
-        #self = super(deque, cls).__new__(cls, *args, **kw)
-        self=object.__new__(cls, *args, **kw)
+        self = super(deque, cls).__new__(cls, *args, **kw)
+        #self=object.__new__(cls, *args, **kw)
         self.clear()
         return self
 
@@ -404,11 +404,11 @@ class defaultdict(dict):
         #super(defaultdict, self).__init__(*args, **kwds)
 
     #fixme..  had to add this function to get defaultdict working with brython correctly
-    def __getitem__(self, key):
-        if self.__contains__(key):  
-           return dict.__getitem__(self,key)
-    
-        return self.__missing__(key)
+    #def __getitem__(self, key):
+    #    if self.__contains__(key):  
+    #       return dict.__getitem__(self,key)
+    # 
+    #     return self.__missing__(key)
 
     def __missing__(self, key):
         # from defaultdict docs
