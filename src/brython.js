@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131123-091433
+// version 1.2.20131123-114448
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -4164,7 +4164,6 @@ break
 }
 }
 if(_ga!==undefined){
-console.log('getattr is not undef')
 try{return _ga(obj,attr)}
 catch(err){void(0)}
 }
@@ -5214,7 +5213,7 @@ for(var i=1;i<mro.length;i++){
 res=mro[i][attr]
 if(res!==undefined){
 if(self.__self_class__!==None){
-var args=[self]
+var args=[self.__self_class__]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 var method=(function(initial_args){
 return function(){

@@ -1157,7 +1157,7 @@ $SuperDict.__getattribute__ = function(self,attr){
         if(res!==undefined){
             // if super() is called with a second argument, the result is bound
             if(self.__self_class__!==None){
-                var args = [self]
+                var args = [self.__self_class__]
                 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
                 var method = (function(initial_args){
                     return function(){
