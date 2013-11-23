@@ -6,6 +6,7 @@
 # Copied and completed from the sandbox of CPython
 #   (nondist/sandbox/collections/pydeque.py rev 1.1, Raymond Hettinger)
 #
+# edited for Brython line 558 : catch ImportError instead of AttributeError
 
 import operator
 #try:
@@ -555,7 +556,7 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
     # defined for arguments greater than 0 (IronPython).
     try:
         result.__module__ = _sys._getframe(1).f_globals.get('__name__', '__main__')
-    except (AttributeError, ValueError):
+    except (ImportError, ValueError):
         pass
 
     return result
