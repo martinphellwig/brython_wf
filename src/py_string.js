@@ -431,6 +431,7 @@ $StringDict.find = function(self){
 }
 
 $StringDict.format = function(self) {
+  console.log('py_string.format:' + arguments);
   throw NotImplementedError("function format not implemented yet");
 }
 
