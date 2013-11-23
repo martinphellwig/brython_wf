@@ -5,15 +5,13 @@ import _pyio as io
 import sys
 import traceback
 
-#help me!
 from . import util
 from functools import wraps
 
 __unittest = True
 
 def failfast(method):
-    #fixme brython
-    #@wraps(method)
+    @wraps(method)
     def inner(self, *args, **kw):
         if getattr(self, 'failfast', False):
             self.stop()
@@ -105,12 +103,12 @@ class TestResult(object):
             self._stderr_buffer.seek(0)
             self._stderr_buffer.truncate()
 
-    #def stopTestRun(self):
-    #    """Called once after all tests are executed.
+    def stopTestRun(self):
+        """Called once after all tests are executed.
 
-    #    See stopTest for a method called after each test.
-    #    """
-    #    pass
+        See stopTest for a method called after each test.
+        """
+        pass
 
     #@failfast
     def addError(self, test, err):
@@ -155,43 +153,42 @@ class TestResult(object):
 
     def _exc_info_to_string(self, err, test):
         """Converts a sys.exc_info()-style tuple of values into a string."""
-        pass   #fixme brython
 
-        #exctype, value, tb = err
-        ## Skip test runner traceback levels
-        #while tb and self._is_relevant_tb_level(tb):
-        #    tb = tb.tb_next
+        exctype, value, tb = err
+        # Skip test runner traceback levels
+        while tb and self._is_relevant_tb_level(tb):
+            tb = tb.tb_next
 
-        #if exctype is test.failureException:
-        #    # Skip assert*() traceback levels
-        #    length = self._count_relevant_tb_levels(tb)
-        #    msgLines = traceback.format_exception(exctype, value, tb, length)
-        #else:
-        #    msgLines = traceback.format_exception(exctype, value, tb)
+        if exctype is test.failureException:
+            # Skip assert*() traceback levels
+            length = self._count_relevant_tb_levels(tb)
+            msgLines = traceback.format_exception(exctype, value, tb, length)
+        else:
+            msgLines = traceback.format_exception(exctype, value, tb)
 
-        #if self.buffer:
-        #    output = sys.stdout.getvalue()
-        #    error = sys.stderr.getvalue()
-        #    if output:
-        #        if not output.endswith('\n'):
-        #            output += '\n'
-        #        msgLines.append(STDOUT_LINE % output)
-        #    if error:
-        #        if not error.endswith('\n'):
-        #            error += '\n'
-        #        msgLines.append(STDERR_LINE % error)
-        #return ''.join(msgLines)
+        if self.buffer:
+            output = sys.stdout.getvalue()
+            error = sys.stderr.getvalue()
+            if output:
+                if not output.endswith('\n'):
+                    output += '\n'
+                msgLines.append(STDOUT_LINE % output)
+            if error:
+                if not error.endswith('\n'):
+                    error += '\n'
+                msgLines.append(STDERR_LINE % error)
+        return ''.join(msgLines)
 
 
-    #def _is_relevant_tb_level(self, tb):
-    #    return '__unittest' in tb.tb_frame.f_globals
+    def _is_relevant_tb_level(self, tb):
+        return '__unittest' in tb.tb_frame.f_globals
 
-    #def _count_relevant_tb_levels(self, tb):
-    #    length = 0
-    #    while tb and not self._is_relevant_tb_level(tb):
-    #        length += 1
-    #        tb = tb.tb_next
-    #    return length
+    def _count_relevant_tb_levels(self, tb):
+        length = 0
+        while tb and not self._is_relevant_tb_level(tb):
+            length += 1
+            tb = tb.tb_next
+        return length
 
     def __repr__(self):
         return ("<%s run=%i errors=%i failures=%i>" %

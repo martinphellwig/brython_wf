@@ -221,9 +221,12 @@ class TestSuite(BaseTestSuite):
                 _call_if_exists(result, '_restoreStdout')
 
     def _tearDownPreviousClass(self, test, result):
-        #fixme brython
         previousClass = getattr(result, '_previousTestClass', None)
-        currentClass = test.__class__
+        #fixme brython
+        if test is None:
+           currentClass = None
+        else:
+           currentClass = test.__class__
         if currentClass == previousClass:
             return
         if getattr(previousClass, '_classSetupFailed', False):
