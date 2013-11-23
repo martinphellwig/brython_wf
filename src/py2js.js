@@ -601,7 +601,7 @@ function $CallCtx(context){
                 res += '{$DictDict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
             }else{
                 // namespace not specified copy the execution namespace in module namespace
-                res += ';console.log("no ns");for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
+                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
                 // check that $attr is a valid identifier
                 res += '\nif($attr.search(/[\.]/)>-1){continue}\n'
                 res += 'eval("var "+$attr+"='
@@ -2164,7 +2164,8 @@ function $TryCtx(context){
         }
         // transform node into Javascript 'try' (necessary if
         // "try" inside a "for" loop
-        new $NodeJSCtx(node,'try')
+        // add a boolean $failed, used to run the 'else' clause
+        new $NodeJSCtx(node,'$failed'+$loop_num+'=false;try')
         // insert new 'catch' clause
         var catch_node = new $Node('expression')
         new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
@@ -2172,7 +2173,8 @@ function $TryCtx(context){
         
         // fake line to start the 'else if' clauses
         var new_node = new $Node('expression')
-        new $NodeJSCtx(new_node,'if(false){void(0)}')
+        // set the boolean $failed to true
+        new $NodeJSCtx(new_node,'var $failed'+$loop_num+'=true;if(false){void(0)}')
         catch_node.insert(0,new_node)
         
         var pos = rank+2
@@ -2206,10 +2208,7 @@ function $TryCtx(context){
             }else if(ctx.type==='single_kw' && ctx.token==='else'){
                 if(has_else){$_SyntaxError(context,"more than one 'else'")}
                 has_else = true
-                var else_children = node.parent.children[pos].children
-                for(var i=0;i<else_children.length;i++){
-                    node.add(else_children[i])
-                }
+                else_body = node.parent.children[pos]
                 node.parent.children.splice(pos,1)
             }else{break}
         }
@@ -2219,6 +2218,14 @@ function $TryCtx(context){
             var new_node = new $Node('expression')
             new $NodeJSCtx(new_node,'else{throw $err'+$loop_num+'}')
             catch_node.insert(catch_node.children.length,new_node)
+        }
+        if(has_else){
+            var else_node = new $Node('expression')
+            new $NodeJSCtx(else_node,'if(!$failed'+$loop_num+')')
+            for(var i=0;i<else_body.children.length;i++){
+                else_node.add(else_body.children[i])
+            }
+            catch_node.insert(catch_node.children.length,else_node)
         }
         $loop_num++
     }

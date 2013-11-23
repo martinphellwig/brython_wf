@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131123-114448
+// version 1.2.20131123-182612
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -523,6 +523,7 @@ while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
 arg=this.tree[0].to_js()
 var ns=''
+var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
 if(this.tree.length>1){
 var arg2=this.tree[1]
 if(arg2.tree!==undefined&&arg2.tree.length>0){
@@ -534,13 +535,13 @@ arg2=arg2.tree[0]
 if(arg2.type==='call'){
 if(arg2.func.value==='globals'){
 ns='globals'
+_name=module
 }
 }else if(arg2.type==='id'){
 ns=arg2.value
 console.log('namespace for exec '+ns)
 }
 }
-var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
 __BRYTHON__.$py_module_path[_name]=__BRYTHON__.$py_module_path[module]
 var res='(function(){try{'
 res +='\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
@@ -563,7 +564,7 @@ res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
 res +='{$DictDict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}' 
 }else{
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
-res +='if($attr.search(/[\.]/)>-1){continue};'
+res +='\nif($attr.search(/[\.]/)>-1){continue}\n'
 res +='eval("var "+$attr+"='
 res +='$globals[$attr]='
 res +='__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
@@ -619,6 +620,11 @@ js='$'+this.name+'.__doc__='+(this.doc_string || 'None')
 var ds_node=new $Node('expression')
 new $NodeJSCtx(ds_node,js)
 node.parent.insert(rank+1,ds_node)
+rank++
+js='$'+this.name+'.__module__="'+$get_module(this).module+'"'
+var mod_node=new $Node('expression')
+new $NodeJSCtx(mod_node,js)
+node.parent.insert(rank+1,mod_node)
 var scope=$get_scope(this)
 if(scope.ntype==="module"||scope.ntype!=='class'){
 js='var '+this.name
@@ -1868,12 +1874,12 @@ if(['except','finally','single_kw'].indexOf(next_ctx.type)===-1){
 $_SyntaxError(C,"missing clause after 'try' 2")
 }
 }
-new $NodeJSCtx(node,'try')
+new $NodeJSCtx(node,'$failed'+$loop_num+'=false;try')
 var catch_node=new $Node('expression')
 new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
 node.parent.insert(rank+1,catch_node)
 var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,'if(false){void(0)}')
+new $NodeJSCtx(new_node,'var $failed'+$loop_num+'=true;if(false){void(0)}')
 catch_node.insert(0,new_node)
 var pos=rank+2
 var has_default=false 
@@ -1904,10 +1910,7 @@ pos++
 }else if(ctx.type==='single_kw' && ctx.token==='else'){
 if(has_else){$_SyntaxError(C,"more than one 'else'")}
 has_else=true
-var else_children=node.parent.children[pos].children
-for(var i=0;i<else_children.length;i++){
-node.add(else_children[i])
-}
+else_body=node.parent.children[pos]
 node.parent.children.splice(pos,1)
 }else{break}
 }
@@ -1915,6 +1918,14 @@ if(!has_default){
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,'else{throw $err'+$loop_num+'}')
 catch_node.insert(catch_node.children.length,new_node)
+}
+if(has_else){
+var else_node=new $Node('expression')
+new $NodeJSCtx(else_node,'if(!$failed'+$loop_num+')')
+for(var i=0;i<else_body.children.length;i++){
+else_node.add(else_body.children[i])
+}
+catch_node.insert(catch_node.children.length,else_node)
 }
 $loop_num++
 }
@@ -3291,7 +3302,7 @@ document.$py_src={}
 __BRYTHON__.$py_module_path={}
 __BRYTHON__.$py_module_alias={}
 __BRYTHON__.modules={}
-__BRYTHON__.imported=dict()
+__BRYTHON__.imported={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
 if(options===undefined){options={'debug':0}}
 if(typeof options==='number'){options={'debug':options}}
@@ -3369,7 +3380,7 @@ var _mod=$globals
 _mod.__class__=$ModuleDict
 _mod.__name__='__main__'
 _mod.__file__=__BRYTHON__.$py_module_path['__main__']
-$DictDict.__setitem__(__BRYTHON__.imported,'__main__',_mod)
+__BRYTHON__.imported['__main__']=_mod
 }catch($err){
 console.log('PY2JS '+$err)
 for(var attr in $err){
@@ -4447,6 +4458,12 @@ return res
 enumerate.__class__=$type
 enumerate.__repr__=function(){return "<class 'enumerate'>"}
 enumerate.__str__=function(){return "<class 'enumerate'>"}
+$FilterDict={__class__:$type,__name__:'filter'}
+$filter_iterator=$iterator_class('filter iterator')
+$FilterDict.__iter__=function(self){
+return $iterator(self.$items,$filter_iterator)
+}
+$FilterDict.__mro__=[$FilterDict,$ObjectDict]
 function filter(){
 if(arguments.length!=2){throw TypeError(
 "filter expected 2 arguments, got "+arguments.length)}
@@ -4461,18 +4478,7 @@ if(err.__name__==='StopIteration'){$pop_exc();break}
 else{throw err}
 }
 }
-var obj={
-__class__:{
-__class__:$type,
-__repr__:function(){return "<class 'filter'>"},
-__str__:function(){return "<class 'filter'>"}
-},
-__getattr__:function(attr){return obj[attr]},
-__iter__:function(){return iter(res)},
-__repr__:function(){return "<filter object>"},
-__str__:function(){return "<filter object>"}
-}
-return obj
+return{__class__:$FilterDict,$items:res}
 }
 $FrozensetDict={__class__:$type,
 __name__:'frozenset',
@@ -4561,7 +4567,13 @@ console.log(attr+' is not a function '+attr_func)
 var res=attr_func(obj,attr)
 if(res!==undefined){return res}
 if(_default !==undefined){return _default}
-else{throw AttributeError("'"+type(obj).__name__+"' object has no attribute '"+attr+"'")}
+else{
+if(obj.__class__===$ModuleDict){
+throw ImportError(' cannot import name '+attr)
+}else{
+throw AttributeError("'"+type(obj).__name__+"' object has no attribute '"+attr+"'")
+}
+}
 }
 function globals(module){
 var res=dict()
@@ -5334,6 +5346,10 @@ return "False"
 }
 $BoolDict.__repr__=$BoolDict.toString
 $BoolDict.__str__=$BoolDict.toString
+$BoolDict.__sub__=function(self,other){
+if(self.valueOf())return 1-other
+return -other
+}
 $NoneDict={__class__:$type,
 __name__:'NoneType',
 }
@@ -5850,8 +5866,8 @@ for(var i=0;i<modules.length;i++){
 var mod_name=modules[i]
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod
-var stored=$DictDict.get(__BRYTHON__.imported,mod_name)
-if(stored===None){
+var stored=__BRYTHON__.imported[mod_name]
+if(stored===undefined){
 var mod={}
 var parts=mod_name.split('.')
 for(var i=0;i<parts.length;i++){
@@ -5859,11 +5875,10 @@ var module=new Object()
 module.name=parts.slice(0,i+1).join('.')
 if(__BRYTHON__.modules[module.name]===undefined){
 __BRYTHON__.modules[module.name]={}
-$DictDict.__setitem__(__BRYTHON__.imported,module.name,{})
+__BRYTHON__.imported[module.name]={}
 if(i<parts.length-1){module.package_only=true}
 __BRYTHON__.modules[module.name]=$import_single(module)
-$DictDict.__setitem__(__BRYTHON__.imported,module.name,
-__BRYTHON__.modules[module.name])
+__BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
 }
 }
 }else{
@@ -5882,24 +5897,24 @@ var pymod_elts=elts.slice(0,elts.length-nbpts)
 var pymod_name=src.substr(nbpts)
 var pymod_path=pymod_elts.join('/')
 if(pymod_name){
-var stored=$DictDict.get(__BRYTHON__.imported,pymod_name)
-if(stored!==None){return stored}
+var stored=__BRYTHON__.imported[pymod_name]
+if(stored!==undefined){return stored}
 var pymod={'name':pymod_name}
 mod=$import_module_search_path_list(pymod,[pymod_path])
 if(mod!=undefined){
 __BRYTHON__.modules[pymod_name]=mod
-$DictDict.__setitem__(__BRYTHON__.imported,pymod_name,mod)
+__BRYTHON__.imported[pymod_name]=mod
 return mod
 }
 }else{
 var mod={}
 for(var i=0;i<names.length;i++){
-var stored=$DictDict.get(__BRYTHON__.imported,names[i])
-if(stored!==None){mod[names[i]]=stored}
+var stored=__BRYTHON__.imported[names[i]]
+if(stored!==undefined){mod[names[i]]=stored}
 else{
 mod[names[i]]=$import_module_search_path_list({'name':names[i]},[pymod_path])
 __BRYTHON__.modules[names[i]]=mod[names[i]]
-$DictDict.__setitem__(__BRYTHON__.imported,names[i],mod[names[i]])
+__BRYTHON__.imported[names[i]]=mod[names[i]]
 }
 }
 }
