@@ -600,14 +600,13 @@ function $CallCtx(context){
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
                 res += '{$DictDict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
             }else{
-                // copy the execution namespace in module namespace
-                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
+                // namespace not specified copy the execution namespace in module namespace
+                res += ';console.log("no ns");for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
                 // check that $attr is a valid identifier
                 res += '\nif($attr.search(/[\.]/)>-1){continue}\n'
                 res += 'eval("var "+$attr+"='
                 res += '$globals[$attr]='
-                res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")'
-                res += '\n$DictDict.__setitem__(__BRYTHON__.scope["'+module+'"],$attr,$globals[$attr])\n}'
+                res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
             }
             return res
         }else if(this.func!==undefined && this.func.value === 'classmethod'){
