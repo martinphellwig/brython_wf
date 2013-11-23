@@ -35,9 +35,8 @@ class TextTestResult(result.TestResult):
     separator2 = '-' * 70
 
     def __init__(self, stream, descriptions, verbosity):
-        #fixme brython
-        #super(TextTestResult, self).__init__()
-        result.TestResult.__init__(self)
+        super(TextTestResult, self).__init__()
+        #result.TestResult.__init__(self)
         self.stream = stream
         self.showAll = verbosity > 1
         self.dots = verbosity == 1
@@ -51,16 +50,16 @@ class TextTestResult(result.TestResult):
             return str(test)
 
     def startTest(self, test):
-        #super(TextTestResult, self).startTest(test)
-        TextTestResult.startTest(self,test)
+        super(TextTestResult, self).startTest(test)
+        #TextTestResult.startTest(self,test)
         if self.showAll:
             self.stream.write(self.getDescription(test))
             self.stream.write(" ... ")
             self.stream.flush()
 
     def addSuccess(self, test):
-        #super(TextTestResult, self).addSuccess(test)
-        TextTestResult.addSuccess(self,test)
+        super(TextTestResult, self).addSuccess(test)
+        #TextTestResult.addSuccess(self,test)
         if self.showAll:
             self.stream.writeln("ok")
         elif self.dots:
@@ -68,8 +67,8 @@ class TextTestResult(result.TestResult):
             self.stream.flush()
 
     def addError(self, test, err):
-        #super(TextTestResult, self).addError(test, err)
-        TextTestResult.addError(self,test,err)
+        super(TextTestResult, self).addError(test, err)
+        #TextTestResult.addError(self,test,err)
         if self.showAll:
             self.stream.writeln("ERROR")
         elif self.dots:
@@ -77,8 +76,8 @@ class TextTestResult(result.TestResult):
             self.stream.flush()
 
     def addFailure(self, test, err):
-        #super(TextTestResult, self).addFailure(test, err)
-        TextTestResult.addFailure(self,test,err)
+        super(TextTestResult, self).addFailure(test, err)
+        #TextTestResult.addFailure(self,test,err)
         if self.showAll:
             self.stream.writeln("FAIL")
         elif self.dots:
@@ -86,8 +85,8 @@ class TextTestResult(result.TestResult):
             self.stream.flush()
 
     def addSkip(self, test, reason):
-        #super(TextTestResult, self).addSkip(test, reason)
-        TextTestResult.addSkip(self,test,reason)
+        super(TextTestResult, self).addSkip(test, reason)
+        #TextTestResult.addSkip(self,test,reason)
         if self.showAll:
             self.stream.writeln("skipped {0!r}".format(reason))
         elif self.dots:
@@ -95,8 +94,8 @@ class TextTestResult(result.TestResult):
             self.stream.flush()
 
     def addExpectedFailure(self, test, err):
-        #super(TextTestResult, self).addExpectedFailure(test, err)
-        TextTestResult.addExpectedFailure(self,test, err)
+        super(TextTestResult, self).addExpectedFailure(test, err)
+        #TextTestResult.addExpectedFailure(self,test, err)
         if self.showAll:
             self.stream.writeln("expected failure")
         elif self.dots:
@@ -104,8 +103,8 @@ class TextTestResult(result.TestResult):
             self.stream.flush()
 
     def addUnexpectedSuccess(self, test):
-        #super(TextTestResult, self).addUnexpectedSuccess(test)
-        TextTestResult.addUnexpectedSuccess(self,test)
+        super(TextTestResult, self).addUnexpectedSuccess(test)
+        #TextTestResult.addUnexpectedSuccess(self,test)
         if self.showAll:
             self.stream.writeln("unexpected success")
         elif self.dots:
