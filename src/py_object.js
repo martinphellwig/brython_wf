@@ -115,6 +115,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
         return res
     }else{
         // XXX search __getattr__
+        console.log('search __getattr__ for '+obj+' '+obj['__getattr__'])
         var _ga = obj['__getattr__']
         if(_ga===undefined){
             var mro = type(obj).__mro__
@@ -128,7 +129,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
             }
         }
         if(_ga!==undefined){
-            try{return _ga(obj,attr)}
+            try{return _ga(attr)}
             catch(err){void(0)}
         }
         //throw AttributeError('object '+obj.__class__.__name__+" has no attribute '"+attr+"'")
