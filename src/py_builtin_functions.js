@@ -270,6 +270,13 @@ enumerate.__str__ = function(){return "<class 'enumerate'>"}
 //eval() (built in function)
 //exec() (built in function)
 
+$FilterDict = {__class__:$type,__name__:'filter'}
+$filter_iterator = $iterator_class('filter iterator')
+$FilterDict.__iter__ = function(self){
+    return $iterator(self.$items,$filter_iterator)
+}
+$FilterDict.__mro__ = [$FilterDict,$ObjectDict]
+
 function filter(){
     if(arguments.length!=2){throw TypeError(
             "filter expected 2 arguments, got "+arguments.length)}
@@ -284,18 +291,7 @@ function filter(){
             else{throw err}
         }
     }
-    var obj = {
-        __class__:{
-            __class__:$type,
-            __repr__:function(){return "<class 'filter'>"},
-            __str__:function(){return "<class 'filter'>"}
-        },
-        __getattr__:function(attr){return obj[attr]},
-        __iter__:function(){return iter(res)},
-        __repr__:function(){return "<filter object>"},
-        __str__:function(){return "<filter object>"}
-    }
-    return obj
+    return {__class__:$FilterDict,$items:res}
 }
 
 
@@ -405,7 +401,13 @@ function getattr(obj,attr,_default){
     var res = attr_func(obj,attr)
     if(res!==undefined){return res}
     if(_default !==undefined){return _default}
-    else{throw AttributeError("'"+type(obj).__name__+"' object has no attribute '"+attr+"'")}
+    else{
+        if(obj.__class__===$ModuleDict){
+            throw ImportError(' cannot import name '+attr)
+        }else{
+            throw AttributeError("'"+type(obj).__name__+"' object has no attribute '"+attr+"'")
+        }
+    }
 }
 
 //globals() (built in function)
