@@ -551,6 +551,7 @@ function $CallCtx(context){
             var module = ctx_node.node.module
             arg = this.tree[0].to_js()
             var ns = ''
+            var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
             if(this.tree.length>1){
                 var arg2 = this.tree[1]
                 if(arg2.tree!==undefined&&arg2.tree.length>0){
@@ -563,13 +564,13 @@ function $CallCtx(context){
                     if(arg2.func.value==='globals'){
                         // exec in globals
                         ns = 'globals'
+                        _name = module
                     }
                 }else if(arg2.type==='id'){
                     ns = arg2.value
                     console.log('namespace for exec '+ns)
                 }
             }
-            var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
             __BRYTHON__.$py_module_path[_name] = __BRYTHON__.$py_module_path[module]
             // replace by the result of an anonymous function with a try/except clause
             var res = '(function(){try{'
@@ -602,10 +603,11 @@ function $CallCtx(context){
                 // copy the execution namespace in module namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
                 // check that $attr is a valid identifier
-                res += 'if($attr.search(/[\.]/)>-1){continue};'
+                res += '\nif($attr.search(/[\.]/)>-1){continue}\n'
                 res += 'eval("var "+$attr+"='
                 res += '$globals[$attr]='
-                res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
+                res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")'
+                res += '\n$DictDict.__setitem__(__BRYTHON__.scope["'+module+'"],$attr,$globals[$attr])\n}'
             }
             return res
         }else if(this.func!==undefined && this.func.value === 'classmethod'){
@@ -670,7 +672,14 @@ function $ClassCtx(context){
         js = '$'+this.name+'.__doc__='+(this.doc_string || 'None')
         var ds_node = new $Node('expression')
         new $NodeJSCtx(ds_node,js)
-        node.parent.insert(rank+1,ds_node)            
+        node.parent.insert(rank+1,ds_node)       
+
+        // add attribute __module__
+        rank++
+        js = '$'+this.name+'.__module__="'+$get_module(this).module+'"'
+        var mod_node = new $Node('expression')
+        new $NodeJSCtx(mod_node,js)
+        node.parent.insert(rank+1,mod_node)       
 
         // class constructor
         var scope = $get_scope(this)
@@ -3821,7 +3830,7 @@ function brython(options){
     __BRYTHON__.$py_module_alias = {}
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
-    __BRYTHON__.imported = dict()
+    __BRYTHON__.imported = {}
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
 
     // debug level
@@ -3915,7 +3924,7 @@ function brython(options){
                 _mod.__class__ = $ModuleDict
                 _mod.__name__ = '__main__'
                 _mod.__file__ = __BRYTHON__.$py_module_path['__main__']                
-                $DictDict.__setitem__(__BRYTHON__.imported,'__main__',_mod)
+                __BRYTHON__.imported['__main__'] = _mod
             }catch($err){
                 console.log('PY2JS '+$err)
                 for(var attr in $err){
