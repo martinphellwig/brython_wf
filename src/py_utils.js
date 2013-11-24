@@ -14,6 +14,7 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
     var upargs = []
     for(var i=0;i<$args.length;i++){
         $arg = $args[i]
+        if($arg===undefined){console.log('arg '+i+' undef in '+$fname)}
         if($arg===null){upargs.push(null)}
         else if($arg.__class__===$ptupleDict){
             for(var j=0;j<$arg.arg.length;j++){
@@ -61,6 +62,7 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
                 $ns[$var_name]=$PyVar
                 $set_vars.push($var_name)
             } else {
+                console.log(''+document.$line_info)
                 msg = $fname+"() takes "+$required.length+' positional argument'
                 msg += $required.length == 1 ? '' : 's'
                 msg += ' but more were given'
@@ -507,13 +509,15 @@ function $escape_dq(arg){return arg.replace($dq_regexp,'\\"')}
 // can be reset by sys.stdout or sys.stderr
 document.$stderr = {
     __getattr__:function(attr){return this[attr]},
-    'write':function(data){console.log(data)}
+    write:function(data){console.log(data)},
+    flush:function(){}
 }
 document.$stderr_buff = '' // buffer for standard output
 
 document.$stdout = {
     __getattr__:function(attr){return this[attr]},
-    write: function(data){console.log(data)}
+    write: function(data){console.log(data)},
+    flush:function(){}
 }
 
 // used for class of classes
@@ -647,7 +651,7 @@ $type.__getattribute__=function(klass,attr){
         }
     }else{
         // search __getattr__
-        throw AttributeError("type object '"+klass.__name__+"' has no attribute '"+attr+"'")
+        //throw AttributeError("type object '"+klass.__name__+"' has no attribute '"+attr+"'")
     }
 }
 $type.__mro__ = [$type]
