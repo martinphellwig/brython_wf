@@ -431,7 +431,9 @@ $StringDict.find = function(self){
 }
 
 $StringDict.format = function(self) {
-  throw NotImplementedError("function format not implemented yet");
+    var $ns=$MakeArgs('str.format',arguments,['self'],{},'args', 'kw')
+    console.log('args '+$ns['args']+' kw '+str($ns['kw']))
+    return '<formatted string>'
 }
 
 $StringDict.format_map = function(self) {
