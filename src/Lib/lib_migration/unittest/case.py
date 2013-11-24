@@ -259,6 +259,7 @@ class TestCase:
         self._testMethodName = methodName
         self._outcomeForDoCleanups = None
         self._testMethodDoc = 'No test'
+        
         try:
             testMethod = getattr(self, methodName)
         except AttributeError:

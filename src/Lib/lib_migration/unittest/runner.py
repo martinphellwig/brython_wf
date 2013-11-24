@@ -155,6 +155,11 @@ class TextTestRunner(object):
         registerResult(result)
         result.failfast = self.failfast
         result.buffer = self.buffer
+        #fixme brython
+        #I believe issue on next line is within the 'with' clause below
+        #even though the error says its in module result
+        #Error: $arg is undefined
+        #module 'result' line 111
         with warnings.catch_warnings():
             if self.warnings:
                 # if self.warnings is set, use it to filter all the warnings
@@ -178,7 +183,10 @@ class TextTestRunner(object):
                 stopTestRun = getattr(result, 'stopTestRun', None)
                 if stopTestRun is not None:
                     stopTestRun()
+                #print('runner.py stopTestRun')
+                #this is the last line that executes
             stopTime = time.time()
+        #  issue causes code below to NOT execute
         timeTaken = stopTime - startTime
         result.printErrors()
         if hasattr(result, 'separator2'):
