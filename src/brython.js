@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131124-212916
+// version 1.2.20131124-214301
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
