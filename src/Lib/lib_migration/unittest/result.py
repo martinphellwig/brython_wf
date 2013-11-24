@@ -105,12 +105,12 @@ class TestResult(object):
 
     def stopTestRun(self):
         """Called once after all tests are executed.
-
+        
         See stopTest for a method called after each test.
         """
         pass
 
-    #@failfast
+    @failfast
     def addError(self, test, err):
         """Called when an error has occurred. 'err' is a tuple of values as
         returned by sys.exc_info().
@@ -118,7 +118,7 @@ class TestResult(object):
         self.errors.append((test, self._exc_info_to_string(err, test)))
         self._mirrorOutput = True
 
-    #@failfast
+    @failfast
     def addFailure(self, test, err):
         """Called when an error has occurred. 'err' is a tuple of values as
         returned by sys.exc_info()."""
@@ -138,7 +138,7 @@ class TestResult(object):
         self.expectedFailures.append(
             (test, self._exc_info_to_string(err, test)))
 
-    #@failfast
+    @failfast
     def addUnexpectedSuccess(self, test):
         """Called when a test was expected to fail, but succeed."""
         self.unexpectedSuccesses.append(test)
