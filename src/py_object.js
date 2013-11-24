@@ -128,7 +128,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
             }
         }
         if(_ga!==undefined){
-            try{return _ga(attr)}
+            try{return _ga(obj,attr)}
             catch(err){void(0)}
         }
         //throw AttributeError('object '+obj.__class__.__name__+" has no attribute '"+attr+"'")
