@@ -32,6 +32,7 @@ a.banner:hover,a.banner:active
     color:#FFF;
     background-color:#000;
     font-weight:bold;
+    font-size:12px;
 }
 #content {
     padding-left:5%;
