@@ -1,5 +1,5 @@
 # hack to return special attributes
-def __getattr__(attr):
+def __getattr__(None,attr):
     if attr=='modules':
         return dict(JSObject(__BRYTHON__.imported))
     else:
