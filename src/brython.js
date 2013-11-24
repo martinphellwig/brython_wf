@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131123-182612
+// version 1.2.20131124-212916
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -3404,6 +3404,7 @@ if($other_kw !=null){$dict_keys=[];$dict_values=[]}
 var upargs=[]
 for(var i=0;i<$args.length;i++){
 $arg=$args[i]
+if($arg===undefined){console.log('arg '+i+' undef in '+$fname)}
 if($arg===null){upargs.push(null)}
 else if($arg.__class__===$ptupleDict){
 for(var j=0;j<$arg.arg.length;j++){
@@ -3451,6 +3452,7 @@ $var_name=$def_names[$i-$required.length]
 $ns[$var_name]=$PyVar
 $set_vars.push($var_name)
 }else{
+console.log(''+document.$line_info)
 msg=$fname+"() takes "+$required.length+' positional argument'
 msg +=$required.length==1 ? '' : 's'
 msg +=' but more were given'
@@ -3810,12 +3812,14 @@ var $dq_regexp=new RegExp('"',"g")
 function $escape_dq(arg){return arg.replace($dq_regexp,'\\"')}
 document.$stderr={
 __getattr__:function(attr){return this[attr]},
-'write':function(data){console.log(data)}
+write:function(data){console.log(data)},
+flush:function(){}
 }
 document.$stderr_buff='' 
 document.$stdout={
 __getattr__:function(attr){return this[attr]},
-write: function(data){console.log(data)}
+write: function(data){console.log(data)},
+flush:function(){}
 }
 var $type={__class__:$type,__name__:'type'}
 $type.$factory=type
@@ -3932,7 +3936,6 @@ return method
 return res
 }
 }else{
-throw AttributeError("type object '"+klass.__name__+"' has no attribute '"+attr+"'")
 }
 }
 $type.__mro__=[$type]
@@ -4368,8 +4371,7 @@ errors:errors
 bytes.__class__=$factory
 bytes.$dict=$BytesDict
 function callable(obj){
-if(obj.__call__)return True
-return False
+return hasattr(obj,'__call__')
 }
 function chr(i){
 if(i < 0 || i > 1114111){Exception('ValueError', 'Outside valid range')}
@@ -5225,8 +5227,6 @@ for(var i=1;i<mro.length;i++){
 res=mro[i][attr]
 if(res!==undefined){
 if(self.__self_class__!==None){
-var args=[self.__self_class__]
-for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 var method=(function(initial_args){
 return function(){
 var local_args=initial_args.slice()
@@ -5235,7 +5235,7 @@ local_args.push(arguments[i])
 }
 var x=res.apply(obj,local_args)
 if(x===undefined){return None}else{return x}
-}})(args)
+}})([self.__self_class__])
 method.__class__={
 __class__:$type,
 __name__:'method',
@@ -5453,6 +5453,9 @@ err.toString=err.__str__
 err.__name__='BaseException'
 err.__class__=$BaseExceptionDict
 err.py_error=true
+err.type='BaseException'
+err.value=msg
+err.traceback=None
 __BRYTHON__.exception_stack.push(err)
 return err
 }
@@ -7250,7 +7253,9 @@ if(res==-1){return -1}
 else{return start+res}
 }
 $StringDict.format=function(self){
-throw NotImplementedError("function format not implemented yet")
+var $ns=$MakeArgs('str.format',arguments,['self'],{},'args', 'kw')
+console.log('args '+$ns['args']+' kw '+str($ns['kw']))
+return '<formatted string>'
 }
 $StringDict.format_map=function(self){
 throw NotImplementedError("function format_map not implemented yet")
