@@ -40,8 +40,6 @@ maxsize=9007199254740992   #largest integer..
 maxint=9007199254740992   #largest integer..
 maxunicode=1114111
 
-modules=dict(JSObject(__BRYTHON__.imported))
-
 platform="brython"
 warnoptions=[]
 
