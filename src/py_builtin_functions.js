@@ -151,12 +151,7 @@ bytes.$dict = $BytesDict
 
 //callable() (built in function)
 function callable(obj) {
-  if (obj.__call__) return True
-  // todo: need to figure out if an object is a class or an instance
-  // classes are callable, instances usually aren't unless they have __call__
-  // functions are callable..
-  //for now assume the worst..
-  return False
+  return hasattr(obj,'__call__')
 }
 
 //chr() (built in function)
@@ -1159,8 +1154,6 @@ $SuperDict.__getattribute__ = function(self,attr){
         if(res!==undefined){
             // if super() is called with a second argument, the result is bound
             if(self.__self_class__!==None){
-                var args = [self.__self_class__]
-                for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
                 var method = (function(initial_args){
                     return function(){
                         // make a local copy of initial args
@@ -1170,7 +1163,7 @@ $SuperDict.__getattribute__ = function(self,attr){
                         }
                         var x = res.apply(obj,local_args)
                         if(x===undefined){return None}else{return x}
-                    }})(args)
+                    }})([self.__self_class__])
                 method.__class__ = {
                     __class__:$type,
                     __name__:'method',
@@ -1440,6 +1433,9 @@ BaseException = function (msg,js_exc){
     err.__name__ = 'BaseException'
     err.__class__ = $BaseExceptionDict
     err.py_error = true
+    err.type = 'BaseException'
+    err.value = msg
+    err.traceback = None
     __BRYTHON__.exception_stack.push(err)
     return err
 }
