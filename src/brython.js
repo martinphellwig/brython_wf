@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131124-214301
+// version 1.2.20131125-214039
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -539,7 +539,6 @@ _name=module
 }
 }else if(arg2.type==='id'){
 ns=arg2.value
-console.log('namespace for exec '+ns)
 }
 }
 __BRYTHON__.$py_module_path[_name]=__BRYTHON__.$py_module_path[module]
@@ -605,6 +604,7 @@ C.tree.push(this)
 this.expect='id'
 this.toString=function(){return '(class) '+this.name+' '+this.tree}
 this.transform=function(node,rank){
+if(this.transformed){return}
 this.doc_string=$get_docstring(node)
 var instance_decl=new $Node('expression')
 new $NodeJSCtx(instance_decl,'var $class = new Object()')
@@ -655,6 +655,7 @@ new $NodeJSCtx(w_decl,js)
 node.parent.insert(rank+3,w_decl)
 rank++ 
 }
+this.transformed=true
 }
 this.to_js=function(){
 return 'var $'+this.name+'=(function()'
@@ -1150,7 +1151,7 @@ var path=__BRYTHON__.$py_module_path[mod]
 var elts=path.split('/')
 elts.pop()
 path=elts.join('/')
-var res='var $flag=false;if(__BRYTHON__.path.indexOf("'+path+'")==-1){__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
+var res=''
 if(this.module.charAt(0)=='.'){
 var parent_module=$get_module(this).module
 var parent_path=__BRYTHON__.$py_module_path[parent_module]
@@ -1206,7 +1207,7 @@ res +='=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
 res +='=$mod["'+"'+$attr+'"+'"]'+"'"+';eval($x)}}'
 }
 }
-res +=';if($flag){__BRYTHON__.path.shift()};None'
+res +=';None'
 return res
 }
 }
@@ -1446,9 +1447,7 @@ var path=__BRYTHON__.$py_module_path[mod]
 var elts=path.split('/')
 elts.pop()
 path=elts.join('/')
-var res='var $flag=false;'
-res +='if(__BRYTHON__.path.indexOf("'+path+'")==-1)'
-res +='{__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
+var res=''
 res +='$import_list(['+$to_js(this.tree)+']);'
 for(var i=0;i<this.tree.length;i++){
 var parts=this.tree[i].name.split('.')
@@ -1471,7 +1470,6 @@ res +='=$globals["'+alias+'"]'
 res +='=__BRYTHON__.modules["'+key+'"];'
 }
 }
-res +='if($flag){__BRYTHON__.path.shift()};None'
 return res
 }
 }
@@ -2199,7 +2197,9 @@ return new $UnaryCtx(new $ExprCtx(C,'unary',false),arguments[2])
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(token=='='){
 $_SyntaxError(C,token)
-}else if([')',','].indexOf(token)>-1 && C.parent.type!='list_or_tuple'){
+}else if([')',','].indexOf(token)>-1 && 
+['list_or_tuple','call_arg'].indexOf(C.parent.type)==-1){
+console.log('err token '+token+' type '+C.parent.type)
 $_SyntaxError(C,token)
 }else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='assert'){
@@ -3002,7 +3002,7 @@ if(indent>current.indent){
 if(C!==null){
 if($indented.indexOf(C.tree[0].type)==-1){
 $pos=pos
-$_SyntaxError(C,'unexpected indent',pos)
+$_SyntaxError(C,'unexpected indent1',pos)
 }
 }
 current.add(new_node)
@@ -3016,7 +3016,7 @@ while(indent!==current.indent){
 current=current.parent
 if(current===undefined || indent>current.indent){
 $pos=pos
-$_SyntaxError(C,'unexpected indent',pos)
+$_SyntaxError(C,'unexpected indent2',pos)
 }
 }
 current.parent.add(new_node)
@@ -3051,8 +3051,11 @@ var escaped=false
 var zone=car
 var found=false
 while(end<src.length){
-if(escaped){zone+=src.charAt(end);escaped=false;end+=1}
-else if(src.charAt(end)=="\\"){
+if(escaped){
+zone+=src.charAt(end)
+if(raw && src.charAt(end)=='\\'){zone+='\\'}
+escaped=false;end+=1
+}else if(src.charAt(end)=="\\"){
 if(raw){
 if(end<src.length-1 && src.charAt(end+1)==car){
 zone +='\\\\'+car
@@ -3061,12 +3064,14 @@ end +=2
 zone +='\\\\'
 end++
 }
+escaped=true
 }else{
 if(src.charAt(end+1)=='\n'){
 end +=2
 lnum++
 }else{
-zone+=src.charAt(end);escaped=true;end+=1
+zone+='\\' 
+escaped=true;end+=1
 }
 }
 }else if(src.charAt(end)==car){
