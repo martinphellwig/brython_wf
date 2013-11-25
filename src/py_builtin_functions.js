@@ -1321,7 +1321,7 @@ $EllipsisDict.$factory = $EllipsisDict
 Ellipsis = {
     __bool__ : function(){return False},
     __class__ : $EllipsisDict,
- //   __hash__ : function(){return 0},
+    //__hash__ : function(){return 0},
     __repr__ : function(){return 'Ellipsis'},
     __str__ : function(){return 'Ellipsis'},
     toString : function(){return 'Ellipsis'}
