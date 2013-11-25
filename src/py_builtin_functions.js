@@ -1333,7 +1333,7 @@ for(var $key in $comps){ // Ellipsis is not orderable with any type
     if($comp_ops.indexOf($comps[$key])>-1){
         Ellipsis['__'+$comps[$key]+'__']=(function(k){
             return function(other){
-            throw TypeError("unorderable types: ellipsis() "+$comps[k]+" "+
+            throw TypeError("unorderable types: ellipsis() "+k+" "+
                 other.__class__.__name__)}
         })($key)
     }
@@ -1368,7 +1368,7 @@ for(var $key in $comps){ // None is not orderable with any type
     if($comp_ops.indexOf($comps[$key])>-1){
         None['__'+$comps[$key]+'__']=(function(k){
             return function(other){
-            throw TypeError("unorderable types: NoneType() "+$comps[k]+" "+
+            throw TypeError("unorderable types: NoneType() "+k+" "+
                 other.__class__.__name__)}
         })($key)
     }
