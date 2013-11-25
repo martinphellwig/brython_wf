@@ -9,17 +9,17 @@ trans_menu = {
     'menu_dev':{'en':'Development','es':'Desarrollo','fr':'Développement', 'pt':'Desenvolvimento'},
     'menu_groups':{'en':'Groups','es':'Grupos','fr':'Groupes', 'pt':'Grupos'}
 }
-links = {'home':'/site/index.html',
-    'console':'/site/tests/console.html',
-    'editor':'/site/tests/editor.html',
-    'gallery':'/site/gallery/gallery_%s.html',
-    'doc':'/site/doc/%s/index.html',
+links = {'home':'index.html',
+    'console':'tests/console.html',
+    'editor':'tests/editor.html',
+    'gallery':'gallery/gallery_%s.html',
+    'doc':'doc/%s/index.html',
     'download':'https://bitbucket.org/olemis/brython/downloads',
     'dev':'https://bitbucket.org/olemis/brython/src',
-    'groups':'/site/groups.html'
+    'groups':'groups.html'
 }
 
-def show():
+def show(prefix=''):
     # detect language
     language = "en" # default
     has_req = False
@@ -41,14 +41,14 @@ def show():
     _banner = doc['banner_row']
     
     for key in ['home','console','editor','gallery','doc','download','dev','groups']:
-        href = links[key]
+        href = prefix+links[key]
         if key in ['doc','gallery']:
             href = href %language
         if has_req and key not in ['download','dev']:
             # add lang to href
             href += '?lang=%s' %language
         if key == 'home':
-            img = IMG(src="/site/brython_white.png",Class="logo")
+            img = IMG(src=prefix+"brython_white.png",Class="logo")
             link = A(img,href=href)
             cell = TD(link,Class="logo")
         else:
