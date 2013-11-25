@@ -349,7 +349,7 @@ function $syntax_err_line(module,pos) {
 }
 
 function $SyntaxError(module,msg,pos) {
-    console.log('Synta error')
+    console.log('Syntax error')
     var exc = SyntaxError(msg)
     console.log('info '+exc)
     exc.info += $syntax_err_line(module,pos)
