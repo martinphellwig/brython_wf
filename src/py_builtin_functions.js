@@ -1311,6 +1311,42 @@ $BoolDict.__sub__ = function(self,other){
     return -other;
 }
 
+
+$EllipsisDict = {__class__:$type,
+    __name__:'Ellipsis',
+}
+$EllipsisDict.__mro__ = [$ObjectDict]
+$EllipsisDict.$factory = $EllipsisDict
+
+Ellipsis = {
+    __bool__ : function(){return False},
+    __class__ : $EllipsisDict,
+ //   __hash__ : function(){return 0},
+    __repr__ : function(){return 'Ellipsis'},
+    __str__ : function(){return 'Ellipsis'},
+    toString : function(){return 'Ellipsis'}
+}
+
+var $comp_ops = ['ge','gt','le','lt']
+var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
+for(var $key in $comps){ // Ellipsis is not orderable with any type
+    if($comp_ops.indexOf($comps[$key])>-1){
+        Ellipsis['__'+$comps[$key]+'__']=(function(k){
+            return function(other){
+            throw TypeError("unorderable types: ellipsis() "+$comps[k]+" "+
+                other.__class__.__name__)}
+        })($key)
+    }
+}
+
+for(var $func in Ellipsis){
+    if(typeof Ellipsis[$func]==='function'){
+        Ellipsis[$func].__str__ = (function(f){
+            return function(){return "<method-wrapper "+f+" of Ellipsis object>"}
+        })($func)
+    }
+}
+
 $NoneDict = {__class__:$type,
     __name__:'NoneType',
 }
