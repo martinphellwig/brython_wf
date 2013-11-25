@@ -568,7 +568,6 @@ function $CallCtx(context){
                     }
                 }else if(arg2.type==='id'){
                     ns = arg2.value
-                    console.log('namespace for exec '+ns)
                 }
             }
             __BRYTHON__.$py_module_path[_name] = __BRYTHON__.$py_module_path[module]
@@ -648,6 +647,15 @@ function $ClassCtx(context){
     this.toString = function(){return '(class) '+this.name+' '+this.tree}
     this.transform = function(node,rank){
 
+        // for an unknown reason, code like
+        //
+        // for base in foo:
+        //    class Int:
+        //        A=9
+        //
+        // generates the class declaration twice. To avoid this we use
+        // a flag this.transformed
+        if(this.transformed){return}
         // doc string
         this.doc_string = $get_docstring(node)
 
@@ -678,7 +686,7 @@ function $ClassCtx(context){
         js = '$'+this.name+'.__module__="'+$get_module(this).module+'"'
         var mod_node = new $Node('expression')
         new $NodeJSCtx(mod_node,js)
-        node.parent.insert(rank+1,mod_node)       
+        node.parent.insert(rank+1,mod_node)  
 
         // class constructor
         var scope = $get_scope(this)
@@ -713,6 +721,7 @@ function $ClassCtx(context){
             node.parent.insert(rank+3,w_decl)
             rank++         
         }
+        this.transformed = true
                 
     }
     this.to_js = function(){
@@ -1315,7 +1324,8 @@ function $FromCtx(context){
         elts.pop()
         path =elts.join('/')
         // temporarily add module path to __BRYTHON__.path
-        var res = 'var $flag=false;if(__BRYTHON__.path.indexOf("'+path+'")==-1){__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
+        var res = ''
+        //var res = 'var $flag=false;if(__BRYTHON__.path.indexOf("'+path+'")==-1){__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
 
         if (this.module.charAt(0)=='.'){
             // intra-package reference : "from . import x"
@@ -1378,7 +1388,8 @@ function $FromCtx(context){
              res += '=$mod["'+"'+$attr+'"+'"]'+"'"+';eval($x)}}'
            }
         }
-        res += ';if($flag){__BRYTHON__.path.shift()};None'
+        //res += ';if($flag){__BRYTHON__.path.shift()};None'
+        res += ';None'
         return res
     }
 }
@@ -1680,9 +1691,10 @@ function $ImportCtx(context){
         elts.pop()
         path =elts.join('/')
         // temporarily add module path to __BRYTHON__.path
-        var res = 'var $flag=false;'
-        res += 'if(__BRYTHON__.path.indexOf("'+path+'")==-1)'
-        res += '{__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
+        var res = ''
+        //res += 'var $flag=false;'
+        //res += 'if(__BRYTHON__.path.indexOf("'+path+'")==-1)'
+        //res += '{__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
         res += '$import_list(['+$to_js(this.tree)+']);'
         for(var i=0;i<this.tree.length;i++){
             var parts = this.tree[i].name.split('.')
@@ -1709,7 +1721,7 @@ function $ImportCtx(context){
             }
         }
         // clean up __BRYTHON__.path
-        res += 'if($flag){__BRYTHON__.path.shift()};None'
+        //res += 'if($flag){__BRYTHON__.path.shift()};None'
         return res
     }
 }
@@ -2549,7 +2561,9 @@ function $transition(context,token){
             }else{$_SyntaxError(context,'token '+token+' after '+context)}
         }else if(token=='='){
             $_SyntaxError(context,token)
-        }else if([')',','].indexOf(token)>-1 && context.parent.type!='list_or_tuple'){
+        }else if([')',','].indexOf(token)>-1 && 
+            ['list_or_tuple','call_arg'].indexOf(context.parent.type)==-1){
+            console.log('err token '+token+' type '+context.parent.type)
             $_SyntaxError(context,token)
         }else{return $transition(context.parent,token,arguments[2])}
 
@@ -3510,7 +3524,7 @@ function $tokenize(src,module,parent){
                 if(context!==null){
                     if($indented.indexOf(context.tree[0].type)==-1){
                         $pos = pos
-                        $_SyntaxError(context,'unexpected indent',pos)
+                        $_SyntaxError(context,'unexpected indent1',pos)
                     }
                 }
                 // add a child to current node
@@ -3525,7 +3539,7 @@ function $tokenize(src,module,parent){
                     current = current.parent
                     if(current===undefined || indent>current.indent){
                         $pos = pos
-                        $_SyntaxError(context,'unexpected indent',pos)
+                        $_SyntaxError(context,'unexpected indent2',pos)
                     }
                 }
                 current.parent.add(new_node)
@@ -3564,8 +3578,11 @@ function $tokenize(src,module,parent){
             var zone = car
             var found = false
             while(end<src.length){
-                if(escaped){zone+=src.charAt(end);escaped=false;end+=1}
-                else if(src.charAt(end)=="\\"){
+                if(escaped){
+                    zone+=src.charAt(end)
+                    if(raw && src.charAt(end)=='\\'){zone+='\\'}
+                    escaped=false;end+=1
+                }else if(src.charAt(end)=="\\"){
                     if(raw){
                         if(end<src.length-1 && src.charAt(end+1)==car){
                             zone += '\\\\'+car
@@ -3574,13 +3591,15 @@ function $tokenize(src,module,parent){
                             zone += '\\\\'
                             end++
                         }
+                        escaped = true
                     } else {
                         if(src.charAt(end+1)=='\n'){
                             // explicit line joining inside strings
                             end += 2
                             lnum++
                         } else {
-                            zone+=src.charAt(end);escaped=true;end+=1
+                            zone+='\\' //src.charAt(end);
+                            escaped=true;end+=1
                         }
                     }
                 } else if(src.charAt(end)==car){
