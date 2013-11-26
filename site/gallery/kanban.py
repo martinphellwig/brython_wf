@@ -1,6 +1,8 @@
 # ----------------------------------------------------------
 import time
-import html
+
+from browser import doc
+import browser.html as html
 
 DB = {
     "REVISION" : 0

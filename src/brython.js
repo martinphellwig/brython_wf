@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131125-214039
+// version 1.2.20131126-190315
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -1152,6 +1152,9 @@ var elts=path.split('/')
 elts.pop()
 path=elts.join('/')
 var res=''
+var indent=$get_node(this).indent
+var head=''
+for(var i=0;i<indent;i++){head +=' '}
 if(this.module.charAt(0)=='.'){
 var parent_module=$get_module(this).module
 var parent_path=__BRYTHON__.$py_module_path[parent_module]
@@ -1171,7 +1174,7 @@ res +="',["
 for(var i=0;i<this.names.length;i++){
 res +='"'+this.names[i]+'",'
 }
-res +=']);'
+res +='])\n'+head
 for(var i=0;i<this.names.length;i++){
 if(['def','class','module'].indexOf(scope.ntype)>-1){
 res +='var '
@@ -1183,31 +1186,36 @@ res +='=$locals["'+alias+'"]'
 }else if(scope.ntype=='module'){
 res +='=$globals["'+alias+'"]'
 }
-res +='=getattr($mod,"'+this.names[i]+'");'
+res +='=getattr($mod,"'+this.names[i]+'")\n'
 }
 }else{
-res +='$import_list(["'+this.module+'"])[0];'
-if(this.names[0]!=='*'){
-for(var i=0;i<this.names.length;i++){
-res +=(this.aliases[this.names[i]]||this.names[i])
-if(scope.ntype==="module"){
-res +='=__BRYTHON__.scope["'+scope.module+'"].__dict__["'
-res +=this.aliases[this.names[i]]||this.names[i]
-res +='"]'
-}
-res +='=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'");'
-}
-}else{
-res +='var $mod=__BRYTHON__.modules["'+this.module+'"];'
-res +='for(var $attr in $mod){'
-res +="if($attr.substr(0,1)!=='_'){var $x = 'var '+$attr+'"
+if(this.names[0]=='*'){
+res +='$import_list(["'+this.module+'"])\n'
+res +=head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
+res +=head+'for(var $attr in $mod){\n'
+res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
 if(scope.ntype==="module"){
 res +='=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
 }
-res +='=$mod["'+"'+$attr+'"+'"]'+"'"+';eval($x)}}'
+res +='=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x)}}'
+}else{
+res +='$import_from("'+this.module+'",['
+for(var i=0;i<this.names.length;i++){
+res +='"'+this.names[i]+'",'
+}
+res +='])\n'
+for(var i=0;i<this.names.length;i++){
+res +=head+'var '+(this.aliases[this.names[i]]||this.names[i])
+if(scope.ntype==="module"){
+res +='=$globals["'
+res +=this.aliases[this.names[i]]||this.names[i]
+res +='"]'
+}
+res +='=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'")\n'
 }
 }
-res +=';None'
+}
+res +='\n'+head+'None'
 return res
 }
 }
@@ -2117,6 +2125,11 @@ tree_node=tree_node.parent
 scope=tree_node.parent 
 scope.ntype="module"
 return scope
+}
+function $get_node(C){
+var ctx=C
+while(ctx.parent){ctx=ctx.parent}
+return ctx.node
 }
 function $get_ids(ctx){
 var res=[]
@@ -3707,7 +3720,7 @@ info +='^'
 return info
 }
 function $SyntaxError(module,msg,pos){
-console.log('Synta error')
+console.log('Syntax error')
 var exc=SyntaxError(msg)
 console.log('info '+exc)
 exc.info +=$syntax_err_line(module,pos)
@@ -5355,6 +5368,36 @@ $BoolDict.__sub__=function(self,other){
 if(self.valueOf())return 1-other
 return -other
 }
+$EllipsisDict={__class__:$type,
+__name__:'Ellipsis',
+}
+$EllipsisDict.__mro__=[$ObjectDict]
+$EllipsisDict.$factory=$EllipsisDict
+Ellipsis={
+__bool__ : function(){return False},
+__class__ : $EllipsisDict,
+__repr__ : function(){return 'Ellipsis'},
+__str__ : function(){return 'Ellipsis'},
+toString : function(){return 'Ellipsis'}
+}
+var $comp_ops=['ge','gt','le','lt']
+var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
+for(var $key in $comps){
+if($comp_ops.indexOf($comps[$key])>-1){
+Ellipsis['__'+$comps[$key]+'__']=(function(k){
+return function(other){
+throw TypeError("unorderable types: ellipsis() "+k+" "+
+other.__class__.__name__)}
+})($key)
+}
+}
+for(var $func in Ellipsis){
+if(typeof Ellipsis[$func]==='function'){
+Ellipsis[$func].__str__=(function(f){
+return function(){return "<method-wrapper "+f+" of Ellipsis object>"}
+})($func)
+}
+}
 $NoneDict={__class__:$type,
 __name__:'NoneType',
 }
@@ -5374,7 +5417,7 @@ for(var $key in $comps){
 if($comp_ops.indexOf($comps[$key])>-1){
 None['__'+$comps[$key]+'__']=(function(k){
 return function(other){
-throw TypeError("unorderable types: NoneType() "+$comps[k]+" "+
+throw TypeError("unorderable types: NoneType() "+k+" "+
 other.__class__.__name__)}
 })($key)
 }
@@ -5800,6 +5843,7 @@ var path=path_list[i]+ "/" + modpath
 try{
 mod=$import_py(module,path)
 flag=true
+if(j==search.length-1){mod.$package=true}
 }catch(err){if(err.__name__!=="FileNotFoundError"){throw err}}
 if(flag){break}
 }
@@ -5896,6 +5940,24 @@ res.push(mod)
 }
 return res
 }
+function $import_from(mod_name,names){
+if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
+var mod=__BRYTHON__.imported[mod_name]
+if(mod===undefined){$import_list([mod_name]);mod=__BRYTHON__.modules[mod_name]}
+var mod_ns=__BRYTHON__.modules[mod_name]
+for(var i=0;i<names.length;i++){
+if(mod_ns[names[i]]===undefined){
+if(mod.$package){
+var sub_mod=mod_name+'.'+names[i]
+$import_list([sub_mod])
+mod[names[i]]=__BRYTHON__.modules[sub_mod]
+}else{
+throw ImportError("cannot import name "+names[i])
+}
+}
+}
+return mod
+}
 function $import_list_intra(src,current_url,names){
 var mod
 var elts=current_url.split('/')
@@ -5927,19 +5989,6 @@ __BRYTHON__.imported[names[i]]=mod[names[i]]
 }
 }
 return mod
-}
-function $import_from(module,names,parent_module,alias){
-if(parent_module !==undefined){
-var relpath=__BRYTHON__.$py_module_path[parent_module]
-var i=relpath.lastIndexOf('/')
-relpath=relpath.substring(0, i)
-alias=__BRYTHON__.$py_module_alias[parent_module]
-console.log('in import from, call import_md_s_p_l for module '+module)
-return $import_module_search_path_list(module,alias,names,[relpath])
-}else if(alias !==undefined){
-return $import_single(modules,alias,names)
-}
-return $import_single(modules,names,names)
 }
 
 $FloatDict={$native:true}
@@ -8588,8 +8637,8 @@ __BRYTHON__.events.$values[ix_elt][ix_event]=events
 }
 }
 }
-doc=$DOMNode(document)
-doc.$dict.headers=function(){
+_doc=$DOMNode(document)
+_doc.$dict.headers=function(){
 var req=new XMLHttpRequest()
 req.open('GET', document.location, false)
 req.send(null)
@@ -8739,7 +8788,7 @@ return this
 }
 DOMNode.prototype.closest=function(selector){
 var traverse=function(node, ancestors){
-if(node===doc)return None
+if(node===_doc)return None
 for(var i=0;i<ancestors.length;i++){
 if(node===ancestors[i]){
 return ancestors[i]
@@ -8748,7 +8797,7 @@ return ancestors[i]
 return traverse(this.parentElement, ancestors)
 }
 if(isinstance(selector, str)){
-var _elements=doc.get(selector=selector)
+var _elements=_doc.get(selector=selector)
 return traverse(this, _elements);
 }
 return traverse(this, selector)

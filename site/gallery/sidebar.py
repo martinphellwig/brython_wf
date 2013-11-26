@@ -1,5 +1,5 @@
 x=0
-from html import A,B,BR
+from browser.html import A,B,BR
 print('A',A)
 from os import *
 

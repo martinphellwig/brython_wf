@@ -29,7 +29,7 @@
 <script type="text/python" src="editor.py"></script>
 
 <script type="text/python3">
-import time
+from browser import timer
 script_num = -1
 failed = []
 
@@ -45,14 +45,14 @@ def test_next():
         state = run()
         if state == 0:
             failed.append(option.text)
-        time.set_timeout(test_next,500)
+        timer.set_timeout(test_next,500)
     else:
         doc['console'].value = ''
         print('completed all tests !')
         print('failed : %s' %failed)
         
 def test_all():
-    global script_num,timer,failed
+    global script_num,failed
     script_num = -1
     failed = []
     test_next()

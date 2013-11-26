@@ -1,4 +1,5 @@
-from html import *
+from browser import doc
+from browser.html import *
 
 # globals #########################
 refr = False

@@ -1,3 +1,5 @@
+from browser import doc
+
 class NodeCollectionSelector(Selector):
   def __init__(self, selector, collection):
       Selector.__init__(self, selector)

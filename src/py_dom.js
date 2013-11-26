@@ -883,9 +883,9 @@ DOMNode.unbind = function(self,event){
     }
 }
 
-doc = $DOMNode(document)
+_doc = $DOMNode(document)
 
-doc.$dict.headers = function(){
+_doc.$dict.headers = function(){
     var req = new XMLHttpRequest();
     req.open('GET', document.location, false);
     req.send(null);
@@ -1086,7 +1086,7 @@ DOMNode.prototype.before = function(content){
 
 DOMNode.prototype.closest = function(selector){
    var traverse=function(node, ancestors) {
-       if (node === doc) return None
+       if (node === _doc) return None
        for(var i=0; i<ancestors.length; i++) {
           if (node === ancestors[i]) { 
              return ancestors[i];
@@ -1097,7 +1097,7 @@ DOMNode.prototype.closest = function(selector){
    }
 
    if (isinstance(selector, str)) {
-      var _elements=doc.get(selector=selector)
+      var _elements=_doc.get(selector=selector)
       return traverse(this, _elements); 
    } 
 

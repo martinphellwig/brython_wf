@@ -8,10 +8,11 @@
 <script type="text/javascript" src="/src/brython.js"></script>
 
 <script type="text/python">
+from browser import doc
 from ... import header
 header.show('../../')
 
-import markdown
+import browser.markdown as markdown
 import time
 
 def load(url,target):
@@ -54,7 +55,7 @@ language = "fr"
 <br><a class="navig" href="#" onClick="load('jsobjects.md','content')">Objets et librairies Javascript</a>
 </div>
 
-<h4>Librairies</h4>
+<h4>Librairies du paquetage <code>browser</code></h4>
 <div style="padding-left:10px;">
 <a class="navig" href="#" onClick="load('ajax.md','content')">ajax</a>
 <br><a class="navig" href="#" onClick="load('html.md','content')">html</a>
