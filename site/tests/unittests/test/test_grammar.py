@@ -121,11 +121,9 @@ the \'lazy\' dog.\n\
         self.assertEqual(x, y)
 
     def test_ellipsis(self):
-        pass
-        #fixme brython  ellipsis fails
-        #x = ...
-        #self.assertTrue(x is Ellipsis)
-        #self.assertRaises(SyntaxError, eval, ".. .")
+        x = ...
+        self.assertTrue(x is Ellipsis)
+        self.assertRaises(SyntaxError, eval, ".. .")
 
     def test_eof_error(self):
         samples = ("def foo(", "\ndef foo(", "def foo(\n")
