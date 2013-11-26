@@ -9,7 +9,7 @@
 
 </head>
 
-<body onLoad="brython(2)">
+<body onLoad="brython(1)">
 <img src="../brython.png">
 <p>
 
@@ -17,6 +17,9 @@
 import time
 import math
 import datetime
+
+from browser import doc
+import browser.timer
 
 sin,cos = math.sin,math.cos
 width,height = 250,250 # canvas dimensions
@@ -67,7 +70,7 @@ def set_clock():
     angle = second*2*math.pi/60 - math.pi/2
     needle(angle,0.05,0.85,"#FF0000") # in red
     
-time.set_interval(set_clock,100)
+browser.timer.set_interval(set_clock,100)
 
 canvas = doc["clock"]
 

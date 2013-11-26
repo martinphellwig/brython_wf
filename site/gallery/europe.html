@@ -24,8 +24,8 @@
 <body onLoad="brython()">
 <img src="../brython.png">
 <script type="text/python">
-from html import AREA,DIV
-import time
+from browser import doc,timer
+from browser.html import AREA,DIV
 
 countries = [area.id for area in doc[AREA]]
 
@@ -84,8 +84,8 @@ def go_back(elt,mouse):
         elt.style.top = y0+step*dy
         step += 1
         if step>100:
-            time.clear_interval(timer)
-    timer = time.set_interval(move,10)
+            timer.clear_interval(_timer)
+    _timer = timer.set_interval(move,10)
 
 </script>
 

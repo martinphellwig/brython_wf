@@ -1325,7 +1325,9 @@ function $FromCtx(context){
         path =elts.join('/')
         // temporarily add module path to __BRYTHON__.path
         var res = ''
-        //var res = 'var $flag=false;if(__BRYTHON__.path.indexOf("'+path+'")==-1){__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
+        var indent = $get_node(this).indent
+        var head = ''
+        for(var i=0;i<indent;i++){head += ' '}
 
         if (this.module.charAt(0)=='.'){
             // intra-package reference : "from . import x"
@@ -1351,7 +1353,7 @@ function $FromCtx(context){
             for(var i=0;i<this.names.length;i++){
                 res += '"'+this.names[i]+'",'
             }
-            res += ']);'
+            res += '])\n'+head
             for(var i=0;i<this.names.length;i++){
                 if(['def','class','module'].indexOf(scope.ntype)>-1){
                     res += 'var '
@@ -1363,33 +1365,36 @@ function $FromCtx(context){
                 }else if(scope.ntype=='module'){
                     res += '=$globals["'+alias+'"]'
                 }          
-                res += '=getattr($mod,"'+this.names[i]+'");'
+                res += '=getattr($mod,"'+this.names[i]+'")\n'
             }
-        } else {
-           res += '$import_list(["'+this.module+'"])[0];'
-        
-           if(this.names[0]!=='*'){
-             for(var i=0;i<this.names.length;i++){
-              res += (this.aliases[this.names[i]]||this.names[i])
-              if(scope.ntype==="module"){
-                  res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__["'
-                  res += this.aliases[this.names[i]]||this.names[i]
-                  res += '"]'
-              }
-              res += '=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'");'
-             }
-           }else{
-             res += 'var $mod=__BRYTHON__.modules["'+this.module+'"];'
-             res +='for(var $attr in $mod){'
-             res +="if($attr.substr(0,1)!=='_'){var $x = 'var '+$attr+'"
+        }else{
+           if(this.names[0]=='*'){
+             res += '$import_list(["'+this.module+'"])\n'
+             res += head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
+             res += head+'for(var $attr in $mod){\n'
+             res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
               if(scope.ntype==="module"){
                   res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
               }
-             res += '=$mod["'+"'+$attr+'"+'"]'+"'"+';eval($x)}}'
+             res += '=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x)}}'
+           }else{
+             res += '$import_from("'+this.module+'",['
+             for(var i=0;i<this.names.length;i++){
+                 res += '"'+this.names[i]+'",'
+             }
+             res += '])\n'
+             for(var i=0;i<this.names.length;i++){
+                res += head+'var '+(this.aliases[this.names[i]]||this.names[i])
+                if(scope.ntype==="module"){
+                    res += '=$globals["'
+                    res += this.aliases[this.names[i]]||this.names[i]
+                    res += '"]'
+                }
+                res += '=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'")\n'
+             }
            }
         }
-        //res += ';if($flag){__BRYTHON__.path.shift()};None'
-        res += ';None'
+        res += '\n'+head+'None'
         return res
     }
 }
@@ -2471,6 +2476,12 @@ function $get_module(context){
     scope = tree_node.parent // module
     scope.ntype = "module"
     return scope
+}
+
+function $get_node(context){
+    var ctx = context
+    while(ctx.parent){ctx=ctx.parent}
+    return ctx.node
 }
 
 function $get_ids(ctx){

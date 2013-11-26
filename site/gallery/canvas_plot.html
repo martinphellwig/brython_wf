@@ -11,7 +11,7 @@
 
         <script type="text/python">
 import random
-import time
+from browser import doc,timer
 
 canvas = doc["plotarea"]
 ctx = canvas.getContext("2d")
@@ -59,11 +59,11 @@ def graph():
         draw_line(x1, y1, x2, y2, linethick=3, color="blue")
     if len(dataset) >= 100:
         print(len(dataset))
-        time.clear_interval(work)
+        timer.clear_interval(work)
 
 axis(color = "black", linethick = 5)
 figure_title()
-work = time.set_interval(graph, 100)
+work = timer.set_interval(graph, 100)
 
 # Some "adds" :-P
 #dicc = {'Pybonacci (on wordpress)':'http://pybonacci.wordpress.com',

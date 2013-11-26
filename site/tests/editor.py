@@ -6,7 +6,7 @@ import traceback
 
 #doctype html 5 causes issues with setting height of the container
 #so python to the rescue! :)
-import pydom
+from browser import doc, pydom
 _height=doc.documentElement.clientHeight
 _s=pydom.Selector('#container')
 #set height of container to 66% of screen
@@ -28,7 +28,7 @@ except:
     has_ace = False
 
 if sys.has_local_storage:
-    from local_storage import storage
+    from browser.local_storage import storage
 else:
     storage = False
 
