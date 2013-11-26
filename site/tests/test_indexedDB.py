@@ -1,4 +1,4 @@
-import pyindexedDB
+from browser import indexed_db
 
 _kids=['Marsha', 'Jan', 'Cindy']
 
@@ -55,6 +55,6 @@ def onupgradeneeded(e):
    # todo.. override createObjectStore to take options (ie, like OS.put)
    e.target.result.createObjectStore("BradyKids")
    
-_db=pyindexedDB.pyindexedDB()
+_db=indexed_db.IndexedDB()
 _db.open("BradyKids", onsuccess, onupgradeneeded=onupgradeneeded, version=3)
 print("allowing async operations to complete")

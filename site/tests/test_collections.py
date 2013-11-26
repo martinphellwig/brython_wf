@@ -10,17 +10,16 @@ assert _d['a'] == 3
 assert _d['b'] == 4
 
 s = 'mississippi'
-_d = defaultdict(int)
 for k in s:
     _d[k] += 1
 
 _values=list(_d.values())
 _values.sort()
-assert _values == [1, 2, 4, 4]
+assert _values == [1, 2, 3, 4, 4, 4]
 
 _keys=list(_d.keys())
 _keys.sort()
-assert _keys == ['i', 'm', 'p', 's']
+assert _keys == ['a', 'b', 'i', 'm', 'p', 's']
 
 #now try with default being list (ie, empty list)
 _listdict=collections.defaultdict(list)

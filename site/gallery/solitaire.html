@@ -8,7 +8,8 @@
 """Much of the drag and drop code is copied from a demo by Doug Schepers
 at http://svg-whiz.com/svg/DragAndDrop.svg"""
 
-import svg
+from browser import doc
+import browser.svg as svg
 
 def Grab(evt):
     global DragTarget,DragStart,dragged_pos

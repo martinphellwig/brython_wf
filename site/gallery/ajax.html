@@ -10,7 +10,7 @@ a.sort_link{margin-left:10px;text-decoration:none}
 <script type="text/javascript" src="../../src/brython.js"></script>
 
 </head>
-<body onLoad="brython(1)">
+<body onLoad="brython(2)">
 
 <div id="result">(empty)</div>
 <button onClick="go('ajax_data.txt')">get text file</button>
@@ -20,7 +20,7 @@ a.sort_link{margin-left:10px;text-decoration:none}
 <button onClick="go('/cgi-bin/timeout.py')">timeout</button>
 
 <script id="ascript" type="text/python">
-import ajax
+from browser import ajax,doc
 
 def on_complete(req):
     print(req.readyState)

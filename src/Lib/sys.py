@@ -5,6 +5,7 @@ def __getattr__(None,attr):
     else:
         raise ImportError("cannot import name "+attr)
 
+from browser import doc
 __stdout__=getattr(doc,"$stdout")
 __stderr__=getattr(doc,"$stderr")
 
