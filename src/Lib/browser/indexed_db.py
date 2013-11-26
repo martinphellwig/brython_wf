@@ -9,7 +9,7 @@ class EventListener:
       for _event in self._events:
           _event(e)
 
-class pyindexedDB:
+class IndexedDB:
   def __init__(self):
       if not __BRYTHON__.has_indexedDB:
          raise Exception("NotImplementedError", "Your browser doesn't support indexedDB")

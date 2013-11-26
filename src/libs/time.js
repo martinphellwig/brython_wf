@@ -4,10 +4,6 @@ $module =  {
     
     __name__ : 'time',
 
-    clear_interval : function(int_id){window.clearInterval(int_id)},
-    
-    clear_timeout : function(timeout_id){window.clearTimeout(timeout_id)},
-
     ctime: function(timestamp){
        if (timestamp === undefined) {
           timestamp=int(new Date().getTime()/1000);
@@ -25,12 +21,6 @@ $module =  {
         return float((new Date()).getTime()/1000.0);
     },
     
-    set_interval : function(func,interval){
-        return int(window.setInterval(func,interval))
-    },
-
-    set_timeout : function(func,interval){window.setTimeout(func,interval)},
-
     localtime : function(secs){ 
        var d=new Date();
        if (secs === undefined || secs === None) {return d.getTime()}
