@@ -2,6 +2,8 @@
 def __getattr__(None,attr):
     if attr=='modules':
         return dict(JSObject(__BRYTHON__.imported))
+    elif attr=='path_hooks':
+        return dict(JSObject(__BRYTHON__.path_hooks))
     else:
         raise ImportError("cannot import name "+attr)
 
@@ -62,3 +64,7 @@ flags=flag_class()
 
 def exit(i=None):
     raise SystemExit('')
+
+#to make output of dir function correct  dir(sys)
+modules={}
+path_hooks=[]

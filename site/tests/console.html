@@ -71,6 +71,12 @@ def get_col(area):
         sel -= len(line)+1
     return sel
 
+def expect_output(line):
+    if line.startswith('import') or line.startswith('from'):
+       return False
+
+    return True
+
 def myKeyPress(event):
     global status,current
 
@@ -103,8 +109,8 @@ def myKeyPress(event):
         if status == "main" or status == "3string":
             try:
                 _ = exec(currentLine,globals())
-                if _ is not None:
-                    print(_)
+                if _ is not None and expect_output(currentLine):
+                   print(_)
                 doc['code'].value += '>>> '
                 status = "main"
             except IndentationError:
