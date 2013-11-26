@@ -40,15 +40,12 @@ def write(data):
 sys.stderr.write=write
 sys.stdout.write=write
 
-_log=JSObject(console.log)
-_log.log=write
-
 doc["console"].value=''
-
 
 import test_grammar
 test_grammar.test_main()
 
+# run_all doesn't print all error messages, just 'invalid syntax'
 def run_all():
     try:
       import test_grammar
