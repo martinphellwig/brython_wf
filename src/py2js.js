@@ -3674,11 +3674,19 @@ function $tokenize(src,module,parent){
                 continue
             }
         }
-        // point
+        // point, ellipsis (...)
         if(car=="."){
             if(pos<src.length-1 && '0123456789'.indexOf(src.charAt(pos+1))>-1){
                 // number starting with . : add a 0 before the point
                 src = src.substr(0,pos)+'0'+src.substr(pos)
+                continue
+            } 
+            if(pos<src.length-2 && '.' == src.charAt(pos+1) && '.' == src.charAt(pos+2)) {
+                // this is an ellipsis
+                // I'm not sure what should go here, or if we need to
+                // create an EllipsisCtx or something, so lets just
+                // substitute 'Ellipsis' for '...'
+                src = src.substr(0,pos)+'Ellipsis'+src.substr(pos+3)
                 continue
             }
             $pos = pos
