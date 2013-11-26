@@ -28,8 +28,11 @@ doc['version'].text = '%s.%s.%s' % (info.major,info.minor,info.micro)
 _height=doc.documentElement.clientHeight
 _top=doc['container'].offsetTop
 doc['container'].style.height='%dpx' % (_height-_top-10)
+</script>
 
-sys.path.append("/site/tests/unittests/test")
+<script type="text/python">
+import unittest
+sys.path.append("test")
 
 def write(data):
     doc["console"].value += str(data)
@@ -37,22 +40,48 @@ def write(data):
 sys.stderr.write=write
 sys.stdout.write=write
 
-def mylog(data):
-    doc["console"].value += str(data) + '\n'
+_log=JSObject(console.log)
+_log.log=write
 
 doc["console"].value=''
-#import test_grammar
-import test_with as mytest
-mytest.test_main()
 
-#def choose_test(event):
-#    module=event.target.value
 
-#    doc['console'].value='Importing test module %s\n\n' % module
-#    exec('import %s' % module)
+import test_grammar
+test_grammar.test_main()
 
-#    print('Running Tests for %s\n\n' % module)
-#    exec('%s.test_main()' % module)
+def run_all():
+    try:
+      import test_grammar
+      test_grammar.test_main()
+    except BaseException as e:
+      print(e.args)
+
+    try:
+      import test_math
+      test_math.test_main()
+    except BaseException as e:
+      print(e.args)
+
+#run_all()
+
+#the code below works, but doesn't direct the output to the textarea
+# the exec function is probably causing problems..
+def choose_test(event):
+    module=event.target.value
+
+    exec("""
+    try:
+      import %s
+      %s.test_main()
+    except BaseException as e:
+      print(e.args)
+""" % (module, module))
+
+    #print('Importing module %s\n' % module)
+    #exec('import %s' % module)
+
+    #print('Executing module %s\n\n' % module)
+    #exec('%s.test_main()' % module)
 </script>
 
 </head>
@@ -66,12 +95,14 @@ mytest.test_main()
 </div>
 </center>
 
-<!--
+<!-- -->
 <select onchange="choose_test(event)">
   <option value="test_grammar">test_grammar</option>
-  <option value="test_blah">test_blah</option>
+  <option value="test_html">test_html</option>
+  <option value="test_math">test_math</option>
+  <option value="test_with">test_with</option>
 </select>
--->
+<!-- -->
 
 <div id="container">
 <textarea style="width:100%;height:100%" id="console"></textarea>
