@@ -12,6 +12,8 @@ __stderr__=getattr(doc,"$stderr")
 stdout = getattr(doc,"$stdout")
 stderr = getattr(doc,"$stderr")
 
+path_hooks=list(JSObject(__BRYTHON__.path_hooks))
+
 has_local_storage=__BRYTHON__.has_local_storage
 has_json=__BRYTHON__.has_json
 

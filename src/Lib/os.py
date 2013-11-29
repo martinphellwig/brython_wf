@@ -1,5 +1,7 @@
 import _os
 
+import posixpath as path
+
 name="brython"
 
 #altsep=None
@@ -136,10 +138,10 @@ def walk(top, topdown=True, onerror=None, followlinks=False):
         yield top, dirs, nondirs
     """
 
-class _path:
+#class _path:
 
-    def basename(self,arg):
-        return arg
+#    def basename(self,arg):
+#        return arg
 
-path = _path()
+#path = _path()
 environ = {}

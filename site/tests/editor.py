@@ -18,7 +18,7 @@ try:
     editor=JSObject(ace).edit("editor")
     editor.getSession().setMode("ace/mode/python")
 except:
-    import html
+    from browser import html
     editor = html.TEXTAREA(rows=20,cols=70)
     doc["editor"] <= editor
     def get_value(): return editor.value
