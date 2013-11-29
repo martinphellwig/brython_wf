@@ -60,11 +60,11 @@ function $__import__(name, globals, locals, fromlist, level, curpath) {
                 _loader=_mod.find_module(name, _path)
              }
          }
-      }
+     }
    }
 
    if(_loader == None) {
-     throw ImportError('')
+     throw ImportError('Could not find module:' + name)
      return
    }
 
@@ -72,7 +72,7 @@ function $__import__(name, globals, locals, fromlist, level, curpath) {
    return _loader.load_module(name)
 }
 
-function import_js_module(module_contents){
+function import_js_module(module_contents, name, filepath){
     eval(module_contents)
     // check that module name is in namespace
     if(eval('$module')===undefined){
@@ -80,6 +80,10 @@ function import_js_module(module_contents){
     }
     // add class
     $module.__class__ = $ModuleDict
+    $module.__name__ = name
+    $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
+    $module.__str__ = function(){return "<module '"+module.name+"' from "+path + " >"}
+    $module.__file__ = path
 
     return $module
 }
@@ -87,7 +91,9 @@ function import_js_module(module_contents){
 function import_py_module(module_contents, path, name) {
     __BRYTHON__.$py_module_path[name]=path
 
+    console.log(module_contents)
     var root = __BRYTHON__.py2js(module_contents,name)
+    console.log('after py2js')
     var body = root.children
     root.children = []
     // use the module pattern : module name returns the results of an anonymous$
@@ -120,6 +126,10 @@ function import_py_module(module_contents, path, name) {
         }
         // add class and __str__
         $module.__class__ = $ModuleDict
+        $module.__name__ = name
+        $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
+        $module.__str__ = function(){return "<module '"+name+"' from "+path + " >"}
+        $module.__file__ = path
 
         return $module
 
@@ -129,35 +139,8 @@ function import_py_module(module_contents, path, name) {
     }
 }
 
-function readFromVFS(lib){
-   //borrowed code from http://stackoverflow.com/questions/1119722/base-62-conv$
-   if (window.atob === undefined) {
-      // browser is not chrome, firefox or safari :(
-      window.atob=function(s) {
-        var e={},i,k,v=[],r='',w=String.fromCharCode;
-        var n=[[65,91],[97,123],[48,58],[43,44],[47,48]];
-
-        for(z in n){for(i=n[z][0];i<n[z][1];i++){v.push(w(i));}}
-        for(i=0;i<64;i++){e[v[i]]=i;}
-
-        for(i=0;i<s.length;i+=72){
-           var b=0,c,x,l=0,o=s.substring(i,i+72);
-           for(x=0;x<o.length;x++){
-              c=e[o.charAt(x)];b=(b<<6)+c;l+=6;
-              while(l>=8){r+=w((b>>>(l-=8))%256);}
-           }
-        }
-        return r;
-      }
-   }
-
-   if (__BRYTHON__.py_VFS[lib] === undefined) return undefined
-   //retrieve module from virutal file system and return contents
-   return window.atob(__BRYTHON__.py_VFS[lib])
-}
-
 //function $import_pyj_module(module,alias,names,path,module_contents) {
-function $import_pyj_module(module_contents,path,name) {
+function import_pyj_module(module_contents,path,name) {
     __BRYTHON__.$py_module_path[name]=path
     //__BRYTHON__.$py_module_alias[module]=alias
     __BRYTHON__.scope[name]={}
@@ -171,12 +154,58 @@ function $import_pyj_module(module_contents,path,name) {
      }
 
      // add class and __str__
-     $module.__class__ = $type
-     //$module.__repr__ = function(){return "<module '"+module+"' from "+path+" >"}
-     //$module.__str__ = function(){return "<module '"+module+"' from "+path+" >"}
-     //$module.__file__ = path
+     $module.__class__ = $ModuleDict
+     $module.__name__ = name
+     $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
+     $module.__str__ = function(){return "<module '"+name+"' from "+path + " >"}
+     $module.__file__ = path
+
      return $module
    } catch(err) {
      eval('throw '+err.name+'(err.message)')
    }
 }
+
+// now work on default import module to import modules over ajax.
+
+$module = { // Module Finder
+    __getattr__ : function(attr){return this[attr]},
+    __init__:function(path) {
+       if (path == '/src/libs' || path == '/src/Lib') {
+          self.fullpath=path;
+       }
+       throw ImportError('')
+    },
+    find_module:function(name){
+       var import_funcs = [import_js, import_module_search_path];
+       if(module.name.search(/\./)>-1){import_funcs = [import_module_search_path]}
+
+       for(var j=0;j<import_funcs.length;j++){
+          try{
+            var mod=import_funcs[j](module)
+            if (mod !== undefined) {
+               this.mod=mod;
+               return this
+            }
+            throw ImportError('Cannot find module:' + name)
+          } catch(err){
+            if(err.__name__==="FileNotFoundError"){
+                if(j==import_funcs.length-1){
+                    // all possible locations failed : throw error
+                    throw err
+                }else{
+                    continue
+                }
+            }else{throw err}
+          }
+       }
+    },
+
+    load_module: function( ) {
+       return mod;
+    }
+}
+$module.__class__ = $module // defined in $py_utils
+$module.__str__ = function(){return "<module '_os'>"}
+
+__BRYTHON__.path_hooks.append($module)
