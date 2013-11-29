@@ -902,7 +902,7 @@ property.__class__ = $factory
 property.$dict = $PropertyDict
 
 // range
-$RangeDict = {__class__:$type,__name__:'range'}
+$RangeDict = {__class__:$type,__name__:'range',$native:true}
 
 $RangeDict.__contains__ = function(self,other){
     var x = iter(self)
