@@ -1287,7 +1287,7 @@ function $ForExpr(context){
         try_node.add(iter_node)
 
         var catch_node = new $Node('expression')
-        var js = 'catch($err){if($err.__name__=="StopIteration"){$pop_exc();break}'
+        var js = 'catch($err){if($is_exc($err,[StopIteration])){$pop_exc();break}'
         js += 'else{throw($err)}}'
         new $NodeJSCtx(catch_node,js)
         node.insert(1,catch_node)
@@ -2374,6 +2374,7 @@ function $augmented_assign(context,op){
     var func = '__'+$operators[op]+'__'
     var ctx = context
     while(ctx.parent!==undefined){ctx=ctx.parent}
+    console.log('augm assign '+ctx)
     var node = ctx.node
     var parent = node.parent
     for(var i=0;i<parent.children.length;i++){
@@ -2391,11 +2392,19 @@ function $augmented_assign(context,op){
     assign.tree[0] = _id
     _id.parent = assign
 
-    // insert node 'if(!hasattr(foo,"__iadd__"))
+    // insert shortcut node if op is += and both args are numbers
     var new_node = new $Node('expression')
-    var js = 'if(!hasattr('+context.to_js()+',"'+func+'"))'
+    var js = 'if($temp.$fast_augm && '
+    js += context.to_js()+'.$fast_augm){'
+    js += context.to_js()+op+'$temp}'
     new $NodeJSCtx(new_node,js)
     parent.insert(rank+1,new_node)
+
+    // insert node 'if(!hasattr(foo,"__iadd__"))
+    var new_node = new $Node('expression')
+    var js = 'else if(!hasattr('+context.to_js()+',"'+func+'"))'
+    new $NodeJSCtx(new_node,js)
+    parent.insert(rank+2,new_node)
 
     // create node for "foo = foo + bar"
     var aa1 = new $Node('expression')
@@ -2417,7 +2426,7 @@ function $augmented_assign(context,op){
     // create node for "else"
     var aa2 = new $Node('expression')
     new $NodeJSCtx(aa2,'else')
-    parent.insert(rank+2,aa2)
+    parent.insert(rank+3,aa2)
 
     // create node for "foo.__iadd__(bar)    
     var aa3 = new $Node('expression')

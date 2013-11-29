@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131126-190315
+// version 1.2.20131129-174138
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -1118,7 +1118,7 @@ var assign=new $AssignCtx(target_expr)
 assign.tree[1]=new $JSCode('getattr($iter'+$loop_num+',"__next__")()')
 try_node.add(iter_node)
 var catch_node=new $Node('expression')
-var js='catch($err){if($err.__name__=="StopIteration"){$pop_exc();break}'
+var js='catch($err){if($is_exc($err,[StopIteration])){$pop_exc();break}'
 js +='else{throw($err)}}'
 new $NodeJSCtx(catch_node,js)
 node.insert(1,catch_node)
@@ -3160,6 +3160,10 @@ if(pos<src.length-1 && '0123456789'.indexOf(src.charAt(pos+1))>-1){
 src=src.substr(0,pos)+'0'+src.substr(pos)
 continue
 }
+if(pos<src.length-2 && '.'==src.charAt(pos+1)&& '.'==src.charAt(pos+2)){
+src=src.substr(0,pos)+'Ellipsis'+src.substr(pos+3)
+continue
+}
 $pos=pos
 C=$transition(C,'.')
 pos++;continue
@@ -3319,6 +3323,7 @@ function brython(options){
 document.$py_src={}
 __BRYTHON__.$py_module_path={}
 __BRYTHON__.$py_module_alias={}
+__BRYTHON__.path_hooks=[]
 __BRYTHON__.modules={}
 __BRYTHON__.imported={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
@@ -5030,7 +5035,9 @@ return p
 }
 property.__class__=$factory
 property.$dict=$PropertyDict
-$RangeDict={__class__:$type,__name__:'range'}
+$RangeDict={__class__:$type,__name__:'range',
+$native:true,
+$has_length_items:true}
 $RangeDict.__contains__=function(self,other){
 var x=iter(self)
 while(true){
@@ -5040,6 +5047,14 @@ if(getattr(y,'__eq__')(other)){return true}
 }catch(err){return false}
 }
 return false
+}
+$RangeDict.$fast_loop=function(self){
+self.$counter +=self.step
+if((self.step>0 && self.$counter >=self.stop)
+||(self.step<0 && self.$counter <=self.stop)){
+return undefined
+}
+return self.$counter
 }
 $RangeDict.__getitem__=function(self,rank){
 var res=self.start + rank*self.step
@@ -7970,14 +7985,6 @@ if(obj[$DOMEventAttrs_IE[i]]===undefined){return false}
 }
 return true
 }
-function DOMObject(){}
-DOMObject.__class__=$type
-DOMObject.__str__=function(){return "<class 'DOMObject'>"}
-DOMObject.toString=function(){return "<class 'DOMObject'>"}
-$DOMtoString=function(){
-var res="<DOMObject object type '" 
-return res+$NodeTypes[this.nodeType]+"' name '"+this.nodeName+"'>"
-}
 $NodeTypes={1:"ELEMENT",
 2:"ATTRIBUTE",
 3:"TEXT",
@@ -8169,7 +8176,7 @@ res.elt=elt
 if(elt['$brython_id']===undefined||elt.nodeType===9){
 elt.$brython_id=Math.random().toString(36).substr(2, 8)
 res.__repr__=res.__str__=res.toString=function(){
-var res="<DOMObject object type '"
+var res="<DOMNode object type '"
 return res+$NodeTypes[elt.nodeType]+"' name '"+elt.nodeName+"'>"
 }
 }
@@ -8325,7 +8332,7 @@ return res
 DOMNode.__repr__=function(self){
 if(self===undefined){return "<class 'DOMNode'>"}
 else{
-var res="<DOMObject object type '"
+var res="<DOMNode object type '"
 return res+$NodeTypes[self.elt.nodeType]+"' name '"+self.elt.nodeName+"'>"
 }
 }
