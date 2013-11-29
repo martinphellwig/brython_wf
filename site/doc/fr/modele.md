@@ -125,7 +125,7 @@ Le script généré peut faire appel en cours d'exécution :
 
  - _$JS2Py_ : prend un seul argument et renvoie :
   - l'argument sans changement s'il est d'un type reconnu par Brython (c'est-à-dire s'il possède un attribut \_\__class\_\__)
-  - une instance de DOMObject (respectivement DOMEvent) si l'argument est un objet (resp. un événement) DOM
+  - une instance de DOMNode (respectivement DOMEvent) si l'argument est un objet (resp. un événement) DOM
   - une instance de JSObject "enveloppant" l'argument sinon
  - _$MakeArgs_ appelée au début de l'exécution de chaque fonction dont la signature comporte au moins un argument. Elle construit un espace de noms à partir des arguments passés à la fonction, en appelant notamment la fonction $JS2Py sur tous les arguments
  - _$class\_constructor_ est appelée pour la définition des classes
