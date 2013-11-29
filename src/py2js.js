@@ -1817,18 +1817,6 @@ function $LambdaCtx(context){
     this.vars = []
     this.locals = []
     this.to_js = function(){
-        var env = []
-        for(var i=0;i<this.vars.length;i++){
-            if(this.locals.indexOf(this.vars[i])===-1){
-                env.push(this.vars[i])
-            }
-        }
-        env_str = '{'
-        for(var i=0;i<env.length;i++){
-            env_str+="'"+env[i]+"':"+env[i]
-            if(i<env.length-1){env_str+=','}
-        }
-        env_str += '}'
         var ctx_node = this
         while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
         var module = ctx_node.node.module
@@ -1838,7 +1826,7 @@ function $LambdaCtx(context){
         var args = src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
         var body = src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
         body = body.replace(/\n/g,' ')
-        return '$lambda('+env_str+',"'+args+'","'+body+'")'
+        return '$lambda($globals,$locals,"'+args+'","'+body+'")'
     }
 }
 
