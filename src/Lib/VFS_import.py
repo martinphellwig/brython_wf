@@ -23,6 +23,7 @@ class VFSModuleFinder:
         for _ext in ['js', 'pyj', 'py']:
             _filepath=os.path.join(self.path_entry, '%s.%s' % (fullname, _ext))
             if _filepath in VFS:
+               print("module found at %s:%s" % (_filepath, fullname))
                return VFSModuleLoader(_filepath, fullname)
 
         print('module %s not found' % fullname)
@@ -77,6 +78,9 @@ class VFSModuleLoader:
             print('imported as regular module')
         
         print('creating a new module object for "%s"' % self._name)
-        sys.modules.setdefault(self._filepath, mod)
+        sys.modules.setdefault(self._name, mod)
+        JSObject(__BRYTHON__.imported)[self._name]=mod
 
         return mod
+
+JSObject(__BRYTHON__.path_hooks.insert(0, VFSModuleFinder))
