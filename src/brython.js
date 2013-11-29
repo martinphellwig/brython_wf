@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131129-221011
+// version 1.2.20131129-230010
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -2054,12 +2054,9 @@ var _id=new $IdCtx(new_expr,'$temp')
 var assign=new $AssignCtx(C)
 assign.tree[0]=_id
 _id.parent=assign
-var new_node=new $Node('expression')
-var js='if($temp.$fast_augm && '
-js +=C.to_js()+'.$fast_augm){'
-js +=C.to_js()+op+'$temp'
 var prefix=''
-if(C.type=='expr' && C.tree[0].type=='id'){
+if(['+=','-=','*=','/='].indexOf(op)>-1 && 
+C.type=='expr' && C.tree[0].type=='id'){
 var scope=$get_scope(C)
 prefix='$locals'
 if(scope.ntype=='module'){prefix='$globals'}
@@ -2068,15 +2065,26 @@ if(scope.globals && scope.globals.indexOf(C.tree[0].value)>-1){
 prefix='$globals'
 }
 }
-js +=';'+prefix+'["'+C.tree[0].value+'"]='+C.to_js()
 }
+var offset=1
+if(prefix){
+var new_node=new $Node('expression')
+var js='if($temp.$fast_augm && '
+js +=C.to_js()+'.$fast_augm){'
+js +=C.to_js()+op+'$temp'
+js +=';'+prefix+'["'+C.tree[0].value+'"]='+C.to_js()
 js +='}'
 new $NodeJSCtx(new_node,js)
-parent.insert(rank+1,new_node)
+parent.insert(rank+offset,new_node)
+offset++
+}
 var new_node=new $Node('expression')
-var js='else if(!hasattr('+C.to_js()+',"'+func+'"))'
+var js=''
+if(prefix){js +='else '}
+js +='if(!hasattr('+C.to_js()+',"'+func+'"))'
 new $NodeJSCtx(new_node,js)
-parent.insert(rank+2,new_node)
+parent.insert(rank+offset,new_node)
+offset ++
 var aa1=new $Node('expression')
 var ctx1=new $NodeCtx(aa1)
 var expr1=new $ExprCtx(ctx1,'clone',false)
@@ -2094,7 +2102,7 @@ expr1.parent.tree.push(assign1)
 new_node.add(aa1)
 var aa2=new $Node('expression')
 new $NodeJSCtx(aa2,'else')
-parent.insert(rank+3,aa2)
+parent.insert(rank+offset,aa2)
 var aa3=new $Node('expression')
 var js3=C.to_js()
 if(prefix){js3 +='='+prefix+'["'+C.to_js()+'"]'}

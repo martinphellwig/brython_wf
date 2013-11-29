@@ -2391,13 +2391,10 @@ function $augmented_assign(context,op){
     assign.tree[0] = _id
     _id.parent = assign
 
-    // insert shortcut node if op is += and both args are numbers
-    var new_node = new $Node('expression')
-    var js = 'if($temp.$fast_augm && '
-    js += context.to_js()+'.$fast_augm){'
-    js += context.to_js()+op+'$temp'
     var prefix = ''
-    if(context.type=='expr' && context.tree[0].type=='id'){
+
+    if(['+=','-=','*=','/='].indexOf(op)>-1 && 
+        context.type=='expr' && context.tree[0].type=='id'){
         var scope = $get_scope(context)
         prefix='$locals'
         if(scope.ntype=='module'){prefix='$globals'}
@@ -2406,17 +2403,30 @@ function $augmented_assign(context,op){
                 prefix = '$globals'
             }
         }
-        js += ';'+prefix+'["'+context.tree[0].value+'"]='+context.to_js()
     }
-    js += '}'
-    new $NodeJSCtx(new_node,js)
-    parent.insert(rank+1,new_node)
 
+
+    // insert shortcut node if op is += and both args are numbers
+    var offset = 1
+    if(prefix){
+        var new_node = new $Node('expression')
+        var js = 'if($temp.$fast_augm && '
+        js += context.to_js()+'.$fast_augm){'
+        js += context.to_js()+op+'$temp'
+        js += ';'+prefix+'["'+context.tree[0].value+'"]='+context.to_js()
+        js += '}'
+        new $NodeJSCtx(new_node,js)
+        parent.insert(rank+offset,new_node)
+        offset++
+    }
     // insert node 'if(!hasattr(foo,"__iadd__"))
     var new_node = new $Node('expression')
-    var js = 'else if(!hasattr('+context.to_js()+',"'+func+'"))'
+    var js = ''
+    if(prefix){js += 'else '}
+    js += 'if(!hasattr('+context.to_js()+',"'+func+'"))'
     new $NodeJSCtx(new_node,js)
-    parent.insert(rank+2,new_node)
+    parent.insert(rank+offset,new_node)
+    offset ++
 
     // create node for "foo = foo + bar"
     var aa1 = new $Node('expression')
@@ -2438,7 +2448,7 @@ function $augmented_assign(context,op){
     // create node for "else"
     var aa2 = new $Node('expression')
     new $NodeJSCtx(aa2,'else')
-    parent.insert(rank+3,aa2)
+    parent.insert(rank+offset,aa2)
 
     // create node for "foo.__iadd__(bar)    
     var aa3 = new $Node('expression')
