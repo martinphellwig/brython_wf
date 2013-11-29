@@ -2374,7 +2374,6 @@ function $augmented_assign(context,op){
     var func = '__'+$operators[op]+'__'
     var ctx = context
     while(ctx.parent!==undefined){ctx=ctx.parent}
-    console.log('augm assign '+ctx)
     var node = ctx.node
     var parent = node.parent
     for(var i=0;i<parent.children.length;i++){
@@ -2396,7 +2395,20 @@ function $augmented_assign(context,op){
     var new_node = new $Node('expression')
     var js = 'if($temp.$fast_augm && '
     js += context.to_js()+'.$fast_augm){'
-    js += context.to_js()+op+'$temp}'
+    js += context.to_js()+op+'$temp'
+    var prefix = ''
+    if(context.type=='expr' && context.tree[0].type=='id'){
+        var scope = $get_scope(context)
+        prefix='$locals'
+        if(scope.ntype=='module'){prefix='$globals'}
+        else if(['def','generator'].indexOf(scope.ntype)>-1){
+            if(scope.globals && scope.globals.indexOf(context.tree[0].value)>-1){
+                prefix = '$globals'
+            }
+        }
+        js += ';'+prefix+'["'+context.tree[0].value+'"]='+context.to_js()
+    }
+    js += '}'
     new $NodeJSCtx(new_node,js)
     parent.insert(rank+1,new_node)
 
@@ -2430,7 +2442,9 @@ function $augmented_assign(context,op){
 
     // create node for "foo.__iadd__(bar)    
     var aa3 = new $Node('expression')
-    var js3 = context.to_js()+'=getattr('+context.to_js()
+    var js3 = context.to_js()
+    if(prefix){js3 += '='+prefix+'["'+context.to_js()+'"]'}
+    js3 += '=getattr('+context.to_js()
     js3 += ',"'+func+'")($temp)'
     new $NodeJSCtx(aa3,js3)
     aa2.add(aa3)

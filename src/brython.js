@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131129-174138
+// version 1.2.20131129-221011
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -2055,9 +2055,28 @@ var assign=new $AssignCtx(C)
 assign.tree[0]=_id
 _id.parent=assign
 var new_node=new $Node('expression')
-var js='if(!hasattr('+C.to_js()+',"'+func+'"))'
+var js='if($temp.$fast_augm && '
+js +=C.to_js()+'.$fast_augm){'
+js +=C.to_js()+op+'$temp'
+var prefix=''
+if(C.type=='expr' && C.tree[0].type=='id'){
+var scope=$get_scope(C)
+prefix='$locals'
+if(scope.ntype=='module'){prefix='$globals'}
+else if(['def','generator'].indexOf(scope.ntype)>-1){
+if(scope.globals && scope.globals.indexOf(C.tree[0].value)>-1){
+prefix='$globals'
+}
+}
+js +=';'+prefix+'["'+C.tree[0].value+'"]='+C.to_js()
+}
+js +='}'
 new $NodeJSCtx(new_node,js)
 parent.insert(rank+1,new_node)
+var new_node=new $Node('expression')
+var js='else if(!hasattr('+C.to_js()+',"'+func+'"))'
+new $NodeJSCtx(new_node,js)
+parent.insert(rank+2,new_node)
 var aa1=new $Node('expression')
 var ctx1=new $NodeCtx(aa1)
 var expr1=new $ExprCtx(ctx1,'clone',false)
@@ -2075,9 +2094,11 @@ expr1.parent.tree.push(assign1)
 new_node.add(aa1)
 var aa2=new $Node('expression')
 new $NodeJSCtx(aa2,'else')
-parent.insert(rank+2,aa2)
+parent.insert(rank+3,aa2)
 var aa3=new $Node('expression')
-var js3=C.to_js()+'=getattr('+C.to_js()
+var js3=C.to_js()
+if(prefix){js3 +='='+prefix+'["'+C.to_js()+'"]'}
+js3 +='=getattr('+C.to_js()
 js3 +=',"'+func+'")($temp)'
 new $NodeJSCtx(aa3,js3)
 aa2.add(aa3)
@@ -5035,9 +5056,7 @@ return p
 }
 property.__class__=$factory
 property.$dict=$PropertyDict
-$RangeDict={__class__:$type,__name__:'range',
-$native:true,
-$has_length_items:true}
+$RangeDict={__class__:$type,__name__:'range',$native:true}
 $RangeDict.__contains__=function(self,other){
 var x=iter(self)
 while(true){
@@ -5047,14 +5066,6 @@ if(getattr(y,'__eq__')(other)){return true}
 }catch(err){return false}
 }
 return false
-}
-$RangeDict.$fast_loop=function(self){
-self.$counter +=self.step
-if((self.step>0 && self.$counter >=self.stop)
-||(self.step<0 && self.$counter <=self.stop)){
-return undefined
-}
-return self.$counter
 }
 $RangeDict.__getitem__=function(self,rank){
 var res=self.start + rank*self.step
@@ -6306,6 +6317,7 @@ for($op in $comps){
 eval("$IntDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 Number.prototype.__class__=$IntDict
+Number.prototype.$fast_augm=true 
 $IntDict.$dict=$IntDict
 int=function(value){
 var res
