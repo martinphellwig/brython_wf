@@ -256,8 +256,9 @@ function $ternary(env,cond,expr1,expr2){
     return $res
 }
 
-function $lambda($env,$args,$body){
-    for(var $attr in $env){eval('var '+$attr+'=$env["'+$attr+'"]')}
+function $lambda($globals,$locals,$args,$body){
+    for(var $attr in $globals){eval('var '+$attr+'=$globals["'+$attr+'"]')}
+    for(var $attr in $locals){eval('var '+$attr+'=$locals["'+$attr+'"]')}
     var $res = 'res'+Math.random().toString(36).substr(2,8)
     var $py = 'def '+$res+'('+$args+'):\n'
     $py += '    return '+$body

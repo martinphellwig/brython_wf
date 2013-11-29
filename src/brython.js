@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.2.20131129-230010
+// version 1.2.20131129-230918
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -1553,18 +1553,6 @@ this.args_start=$pos+6
 this.vars=[]
 this.locals=[]
 this.to_js=function(){
-var env=[]
-for(var i=0;i<this.vars.length;i++){
-if(this.locals.indexOf(this.vars[i])===-1){
-env.push(this.vars[i])
-}
-}
-env_str='{'
-for(var i=0;i<env.length;i++){
-env_str+="'"+env[i]+"':"+env[i]
-if(i<env.length-1){env_str+=','}
-}
-env_str +='}'
 var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
@@ -1573,7 +1561,7 @@ var qesc=new RegExp('"',"g")
 var args=src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
 var body=src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
 body=body.replace(/\n/g,' ')
-return '$lambda('+env_str+',"'+args+'","'+body+'")'
+return '$lambda($globals,$locals,"'+args+'","'+body+'")'
 }
 }
 function $ListOrTupleCtx(C,real){
@@ -3677,8 +3665,9 @@ res +='    var $res = '+unescape(expr2)+'\n}'
 eval(res)
 return $res
 }
-function $lambda($env,$args,$body){
-for(var $attr in $env){eval('var '+$attr+'=$env["'+$attr+'"]')}
+function $lambda($globals,$locals,$args,$body){
+for(var $attr in $globals){eval('var '+$attr+'=$globals["'+$attr+'"]')}
+for(var $attr in $locals){eval('var '+$attr+'=$locals["'+$attr+'"]')}
 var $res='res'+Math.random().toString(36).substr(2,8)
 var $py='def '+$res+'('+$args+'):\n'
 $py +='    return '+$body
