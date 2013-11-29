@@ -95,17 +95,6 @@ function $isEvent(obj){
     return true
 }
 
-// class for all DOM objects
-function DOMObject(){}
-DOMObject.__class__ = $type
-DOMObject.__str__ = function(){return "<class 'DOMObject'>"}
-DOMObject.toString = function(){return "<class 'DOMObject'>"}
-
-$DOMtoString = function(){
-    var res = "<DOMObject object type '" 
-    return res+$NodeTypes[this.nodeType]+"' name '"+this.nodeName+"'>"
-}
-
 // DOM node types
 $NodeTypes = {1:"ELEMENT",
     2:"ATTRIBUTE",
@@ -339,7 +328,7 @@ function $DOMNode(elt){
         elt.$brython_id=Math.random().toString(36).substr(2, 8)
         // add attributes of Node to element
         res.__repr__ = res.__str__ = res.toString = function(){
-            var res = "<DOMObject object type '"
+            var res = "<DOMNode object type '"
             return res+$NodeTypes[elt.nodeType]+"' name '"+elt.nodeName+"'>"
         }
     }
@@ -522,7 +511,7 @@ DOMNode.__radd__ = function(self,other){ // add to a string
 DOMNode.__repr__ = function(self){
     if(self===undefined){return "<class 'DOMNode'>"}
     else{
-        var res = "<DOMObject object type '"
+        var res = "<DOMNode object type '"
         return res+$NodeTypes[self.elt.nodeType]+"' name '"+self.elt.nodeName+"'>"
     }
 }
