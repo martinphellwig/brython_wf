@@ -3681,14 +3681,17 @@ function $tokenize(src,module,parent){
                 src = src.substr(0,pos)+'0'+src.substr(pos)
                 continue
             } 
-            if(pos<src.length-2 && '.' == src.charAt(pos+1) && '.' == src.charAt(pos+2)) {
+            // because ... also occurs at 'from ... import x'
+            // we'll just comment this out until we have time to
+            // fix it.
+            //if(pos<src.length-2 && '.' == src.charAt(pos+1) && '.' == src.charAt(pos+2)) {
                 // this is an ellipsis
                 // I'm not sure what should go here, or if we need to
                 // create an EllipsisCtx or something, so lets just
                 // substitute 'Ellipsis' for '...'
-                src = src.substr(0,pos)+'Ellipsis'+src.substr(pos+3)
-                continue
-            }
+            //    src = src.substr(0,pos)+'Ellipsis'+src.substr(pos+3)
+            //    continue
+            //}
             $pos = pos
             context = $transition(context,'.')
             pos++;continue
