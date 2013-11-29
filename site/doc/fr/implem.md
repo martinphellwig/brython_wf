@@ -279,15 +279,17 @@ Elle est définie pour les objets de type fonction par
         print('autre erreur')
 </code></pre></td>
 <td>
-    x='brython'
-    try{
+    x=$globals["x"]='brython'
+    $failed48=false;try{
         getattr(x,"__setitem__")(Number(2),'a')
-    }catch($err51){
-        if(false){void(0)}
-        else if(["TypeError"].indexOf($err51.__name__)>-1){
-            getattr(log,"__call__")('error')
-        }else{
-            getattr(log,"__call__")('another error')
+    }
+    catch($err48){
+        var $failed48=true;if(false){void(0)}
+        else if($is_exc($err48,[TypeError])){
+            getattr($print,"__call__")('erreur')
+        }
+        else{
+            getattr($print,"__call__")('autre erreur')
         }
     }
 </td>
@@ -296,6 +298,7 @@ Elle est définie pour les objets de type fonction par
        if(false){void(0)} </b></pre><p>
 sont ajoutées avant toutes les clauses `except`, qui sont traduites en `else if` si un nom d'exception est précisé ou `else` sinon
 
+_$is\_exc(exception,exc\_classes)_ est une fonction qui indique si l'_exception_ est une instance d'une des classes de la liste _exc\_classes_
 </tr>
 
 <tr>
