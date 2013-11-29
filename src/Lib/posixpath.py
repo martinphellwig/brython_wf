@@ -88,8 +88,7 @@ def join(a, *p):
                           for s in (a, ) + p)
         if valid_types:
             # Must have a mixture of text and binary data
-            raise TypeError("Can't mix strings and bytes in path "
-                            "components.") from None
+            raise TypeError("Can't mix strings and bytes in path components.")
         raise
     return path
 
@@ -370,7 +369,9 @@ def normpath(path):
     comps = new_comps
     path = sep.join(comps)
     if initial_slashes:
-        path = sep*initial_slashes + path
+        #fixme bython
+        #path = sep*initial_slashes + path
+        path = sep*int(initial_slashes) + path
     return path or dot
 
 

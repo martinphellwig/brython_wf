@@ -3872,6 +3872,7 @@ function brython(options){
     document.$py_src = {}
     __BRYTHON__.$py_module_path = {}
     __BRYTHON__.$py_module_alias = {}
+    __BRYTHON__.path_hooks = []
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
     __BRYTHON__.imported = {}
@@ -3967,7 +3968,7 @@ function brython(options){
                 var _mod = $globals
                 _mod.__class__ = $ModuleDict
                 _mod.__name__ = '__main__'
-                _mod.__file__ = __BRYTHON__.$py_module_path['__main__']                
+                _mod.__file__ = __BRYTHON__.$py_module_path['__main__']
                 __BRYTHON__.imported['__main__'] = _mod
             }catch($err){
                 console.log('PY2JS '+$err)
