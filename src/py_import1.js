@@ -187,14 +187,18 @@ $default_import_module = { // Module Finder
     __init__:function(path) {
        //console.log('in $default_import_module.__init__')
        //console.log(__BRYTHON__.brython_path);
-       if (path == __BRYTHON__.brython_path+'libs' || 
-           path == __BRYTHON__.brython_path + 'Lib') {
+       if (path.length >= __BRYTHON__.brython_path.length+3 && (
+           path.substring(0,__BRYTHON__.brython_path.length+3) == __BRYTHON__.brython_path+'libs' 
+        || path.substring(0,__BRYTHON__.brython_path.length+3) == __BRYTHON__.brython_path + 'Lib')) {
           self.fullpath=path;
        } else {
           throw ImportError('Path is not supported:' + path)
        }
     },
     find_module:function(name){
+       if (__BRYTHON__.modules[name] !== undefined) {
+          return this;
+       }
        var module={}
        module.name=name
        var import_funcs = [$import_js, $import_module_search_path]
@@ -205,7 +209,8 @@ $default_import_module = { // Module Finder
           try{
             var mod=import_funcs[j](module)
             if (mod !== undefined) {
-               this.mod=mod;
+               __BRYTHON__.modules[name]=mod;
+               this.name=name;
                return this
             }
             throw ImportError('Cannot find module:' + name)
@@ -223,7 +228,7 @@ $default_import_module = { // Module Finder
     },
 
     load_module: function( ) {
-       return this.mod;
+       return __BRYTHON__.modules[this.name]
     }
 }
 $default_import_module.__class__ = $default_import_module 

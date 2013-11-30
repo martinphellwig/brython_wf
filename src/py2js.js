@@ -1707,9 +1707,9 @@ function $ImportCtx(context){
         path =elts.join('/')
         // temporarily add module path to __BRYTHON__.path
         var res = ''
-        //res += 'var $flag=false;'
-        //res += 'if(__BRYTHON__.path.indexOf("'+path+'")==-1)'
-        //res += '{__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
+        res += 'var $flag=false;'
+        res += 'if(__BRYTHON__.path.indexOf("'+path+'")==-1)'
+        res += '{__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
         //res += '$import_list(['+$to_js(this.tree)+']);'
         for(var i=0;i<this.tree.length;i++){
             var parts = this.tree[i].name.split('.')
@@ -1737,7 +1737,7 @@ function $ImportCtx(context){
             }
         }
         // clean up __BRYTHON__.path
-        //res += 'if($flag){__BRYTHON__.path.shift()};None'
+        res += 'if($flag){__BRYTHON__.path.shift()};None'
         console.log(res);
         return res
     }
