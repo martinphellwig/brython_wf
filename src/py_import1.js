@@ -57,7 +57,8 @@ function $__import__(name, globals, locals, fromlist, level, curpath) {
              try {
                _mod.__init__(_path)
                _found=True
-             } catch (err) {console.log('catch:' + err.message) }
+             } catch (err) { //console.log('catch:' + err.message) 
+             }
              if (_found) { // this hook thinks it can find/load the module
                 _loader=_mod.find_module(name, _path)
              }
@@ -74,7 +75,7 @@ function $__import__(name, globals, locals, fromlist, level, curpath) {
    return _loader.load_module(name)
 }
 
-function import_js_module(module_contents, name, filepath){
+function import_js_module(module_contents, path, name){
     eval(module_contents)
     // check that module name is in namespace
     if(eval('$module')===undefined){
@@ -83,9 +84,9 @@ function import_js_module(module_contents, name, filepath){
     // add class
     $module.__class__ = $ModuleDict
     $module.__name__ = name
-    $module.__repr__ = function(){return "<module '"+name+"' from "+filepath + " >"}
-    $module.__str__ = function(){return "<module '"+module.name+"' from "+filepath + " >"}
-    $module.__file__ = filepath
+    $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
+    $module.__str__ = function(){return "<module '"+module.name+"' from "+path + " >"}
+    $module.__file__ = path
 
     return $module
 }
@@ -95,7 +96,7 @@ function import_py_module(module_contents, path, name) {
 
     //console.log(module_contents)
     var root = __BRYTHON__.py2js(module_contents,name)
-    console.log('after py2js')
+    //console.log('after py2js')
     var body = root.children
     root.children = []
     // use the module pattern : module name returns the results of an anonymous$
@@ -122,28 +123,29 @@ function import_py_module(module_contents, path, name) {
            console.log(js);
         }
         eval(js)
-        // check that module name is in namespace
-        if(eval('$module')===undefined){
-          throw ImportError("name '$module' is not defined in module")
-        }
-
-        // add names defined in the module as attributes of $module
-        for(var attr in __BRYTHON__.scope[name].__dict__){
-            $module[attr] = __BRYTHON__.scope[name].__dict__[attr]
-        }
-        // add class and __str__
-        $module.__class__ = $ModuleDict
-        $module.__name__ = name
-        $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
-        $module.__str__ = function(){return "<module '"+name+"' from "+path + " >"}
-        $module.__file__ = path
-
-        return $module
 
     }catch(err){
         console.log(''+err+' '+err.__name__)
         throw err
     }
+
+    // check that module name is in namespace
+    if(eval('$module')===undefined){
+      throw ImportError("name '$module' is not defined in module")
+    }
+
+    // add names defined in the module as attributes of $module
+    for(var attr in __BRYTHON__.scope[name].__dict__){
+       $module[attr] = __BRYTHON__.scope[name].__dict__[attr]
+    }
+    // add class and __str__
+    $module.__class__ = $ModuleDict
+    $module.__name__ = name
+    $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
+    $module.__str__ = function(){return "<module '"+name+"' from "+path + " >"}
+    $module.__file__ = path
+
+    return $module
 }
 
 //function $import_pyj_module(module,alias,names,path,module_contents) {

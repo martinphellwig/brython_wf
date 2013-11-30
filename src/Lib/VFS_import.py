@@ -54,7 +54,7 @@ class VFSModuleLoader:
         
         _src=self.get_source()
         if self._filepath.endswith('.js'):
-           mod=JSObject(import_js_module(_src))
+           mod=JSObject(import_js_module(_src, self._filepath, self._name))
         elif self._filepath.endswith('.py'):
            mod=JSObject(import_py_module(_src, self._filepath, self._name))
         elif self._filepath.endswith('.pyj'):

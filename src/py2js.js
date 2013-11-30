@@ -1339,7 +1339,7 @@ function $FromCtx(context){
             //var search_path_parts = parent_path.split('/')
             // remove as many parts as the number of leading dots
             var mod = this.module
-            var _level=1     // number of levels above current level
+            var _level=0     // number of levels above current level
             while(mod && mod.charAt(0)=='.'){
                _level+=1;
                //search_path_parts.pop()
@@ -1348,8 +1348,8 @@ function $FromCtx(context){
             //if(mod){
             //   search_path_parts.push(mod)
             //}
-            res+="$mod=$__import__('"+this.module+"',undefined,undefined,",
-            res+="'"+parent_path+"',"+_level+');' 
+            res+="var $mod=$__import__('"+this.module+"',undefined,undefined,"
+            res+="'"+parent_path+"',"+_level+');'
 
             //var search_path = search_path_parts.join('/')
             //res +="$mod=$import_list_intra('"+this.module+"','"
@@ -1374,16 +1374,16 @@ function $FromCtx(context){
             }
         }else{
            if(this.names[0]=='*'){
-             res+="$__import__('"+this.module+"');"
+             res+="var $mod=$__import__('"+this.module+"');"
 
              //res += '$import_list(["'+this.module+'"])\n'
-             res += head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
+             //res += head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
              res += head+'for(var $attr in $mod){\n'
              res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
              if(scope.ntype==="module"){
                   res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
              }
-             res += '=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x)}}'
+             res += '=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x);console.log($x)}}'
            }else{
              res+="var $mod=$__import__('"+this.module+"');"
 
@@ -1399,7 +1399,8 @@ function $FromCtx(context){
                     res += this.aliases[this.names[i]]||this.names[i]
                     res += '"]'
                 }
-                res += '=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'")\n'
+                //res += '=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'")\n'
+                res += '=getattr($mod,"'+this.names[i]+'")\n'
              }
            }
         }
@@ -1718,7 +1719,7 @@ function $ImportCtx(context){
             // "a", "a.b" and "a.b.c", values are the matching modules
             for(j=0;j<parts.length;j++){
                 var key = parts.slice(0,j+1).join('.')
-                res+="$__import__('" + key + "');"
+                res+="var $mod=$__import__('" + key + "');"
                 if(j==0 && 
                     ['def','class'].indexOf(scope.ntype)>-1){
                     res += 'var '
@@ -1734,6 +1735,7 @@ function $ImportCtx(context){
                     res += '=$globals["'+alias+'"]'
                 }
                 res += '=__BRYTHON__.modules["'+key+'"];'
+                //res += '=$mod;'
             }
         }
         // clean up __BRYTHON__.path
