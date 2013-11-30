@@ -21,7 +21,7 @@ def process(filename):
   print "generating %s" % filename
   _main_root=os.path.dirname(filename)
   _vfs=open(filename, "w")
-  _vfs.write("__BRYTHON__.$py_VFS={\n")
+  _vfs.write("__BRYTHON__.py_VFS={\n")
 
   _flag=False
   for _mydir in ("libs", "Lib"):
@@ -85,97 +85,12 @@ function readFromVFS(lib){
       }
    }
 
-   if (__BRYTHON__.$py_VFS[lib] === undefined) return undefined
+   if (__BRYTHON__.py_VFS[lib] === undefined) return undefined
    //retrieve module from virutal file system and return contents
-   return window.atob(__BRYTHON__.$py_VFS[lib])
+   return window.atob(__BRYTHON__.py_VFS[lib])
 }
 
-
-function $import_pyj_module(module,alias,names,path,module_contents) {
-    __BRYTHON__.$py_module_path[module]=path
-    __BRYTHON__.$py_module_alias[module]=alias
-    __BRYTHON__.scope[module+'.py']={}
-    __BRYTHON__.scope[module+'.py'].__dict__={}
-
-   try {
-     eval(module_contents);
-     // add names defined in the module as attributes of $module
-     for(var attr in __BRYTHON__.scope[module].__dict__){
-       $module[attr] = __BRYTHON__.scope[module].__dict__[attr]
-     }
-        
-     // add class and __str__
-     $module.__class__ = $type
-     $module.__repr__ = function(){return "<module '"+module+"' from "+path+" >"}
-     $module.__str__ = function(){return "<module '"+module+"' from "+path+" >"}
-     $module.__file__ = path
-     return $module
-   } catch(err) {
-     eval('throw '+err.name+'(err.message)')
-   }
-}
-
-//define import procedure to look up module in VFS
-$import_via_VFS=function(module,alias,names){
-  var ext=['.js', '.pyj', '.py']
-  var search_path=__BRYTHON__.path
-  var root = __BRYTHON__.brython_path;
-  if (root.endswith('/')) {
-     root=root.substring(0,root.length-1); 
-  }
-  if (search_path.indexOf(root+'/libs') == -1) {
-     search_path.unshift(root+'/libs')
-  }
-
-  if (search_path.indexOf(root+'/Lib') == -1) {
-     search_path.unshift(root+'/Lib')
-  }
-
-  for(var i=0; i<search_path.length; i++) {
-     for (var j=0; j<ext.length; j++) {
-         var path=search_path[i].replace(root, '')
-         path+='/'+module+ext[j]
-         
-         //console.log("searching for " + path + " in VFS");
-         var module_contents=readFromVFS(path)
-         if(module_contents !== undefined) {
-           console.log("imported ("+module+") via VFS:" + path)
-           if (ext[j] == '.js') {
-              return $import_js_module(module,alias,names,path,module_contents)
-           }
-           if (ext[j] == '.pyj') {
-              return $import_pyj_module(module,alias,names,path,module_contents)
-           }
-           return $import_py_module(module,alias,names,path,module_contents)
-         }
-     }
-  }
-  res = Error()
-  res.name = 'NotFoundError'
-  res.message = "No module named '"+module+"'"
-  throw res
-}
-
-// since $import_funcs is now a local variable (import_funcs), we have
-// to over write the $import_single function to get VFS to work
-$import_single=function (module){
-    var import_funcs = [$import_via_VFS, $import_js, $import_module_search_path]
-    if(module.name.search(/\./)>-1){import_funcs = [$import_module_search_path]}
-    for(var j=0;j<import_funcs.length;j++){
-        try{
-            return import_funcs[j](module)
-        } catch(err){
-            if(err.name==="NotFoundError"){
-                if(j==import_funcs.length-1){
-                    throw ImportError("no module named '"+module.name+"'")
-                }else{
-                    continue
-                }
-            }else{throw(err)}
-        }
-    }
-}
-  """)
+""")
 
   _vfs.close()
 
