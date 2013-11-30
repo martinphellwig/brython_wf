@@ -1374,10 +1374,10 @@ function $FromCtx(context){
             }
         }else{
            if(this.names[0]=='*'){
-             res+="var $mod=$__import__('"+this.module+"');"
+             res+="$__import__('"+this.module+"');"
 
              //res += '$import_list(["'+this.module+'"])\n'
-             //res += head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
+             res += head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
              res += head+'for(var $attr in $mod){\n'
              res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
              if(scope.ntype==="module"){
@@ -1403,6 +1403,7 @@ function $FromCtx(context){
              }
            }
         }
+        console.log(res)
         res += '\n'+head+'None'
         return res
     }
@@ -3904,7 +3905,7 @@ function brython(options){
     document.$py_src = {}
     __BRYTHON__.$py_module_path = {}
     __BRYTHON__.$py_module_alias = {}
-    __BRYTHON__.path_hooks = []
+    __BRYTHON__.path_hooks = [$default_import_module]
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
     __BRYTHON__.imported = {}
