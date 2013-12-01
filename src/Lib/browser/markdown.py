@@ -1,4 +1,4 @@
-import html
+import browser.html
 import re
 
 class URL:
