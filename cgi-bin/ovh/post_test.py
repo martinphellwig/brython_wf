@@ -1,9 +1,7 @@
-#!c:/python33/python.exe
-
+#!/usr/bin/python
 import cgi
 
 print('Content-type: text/html\n\n')
-print()
 
 print('script cgi with post<p>')
 fs = cgi.FieldStorage()
