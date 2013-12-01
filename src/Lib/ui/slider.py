@@ -1,8 +1,10 @@
 import Widget
-from browser import html
+from browser import doc,html
 
 class Slider(Widget.Widget):
-  def __init__(self, id=None, document=doc, label=False):
+
+  def __init__(self, id=None, label=False):
+
       self._div_shell=html.DIV(Class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all")
 
       Widget.Widget.__init__(self, self._div_shell, 'slider', id)
@@ -19,19 +21,19 @@ class Slider(Widget.Widget):
           pos = Widget.getMousePosition(e)
           self._startMouseX=pos['x']
 
-          self._lastElementLeft = parseInt(self._handle.elt.style.left) #- parseInt(self._div_shell.elt.style.left)
-          #print(self._upperBound)
+          self._lastElementLeft = parseInt(self._handle.style.left)
           updatePosition(e)
 
       def updatePosition(e):
           pos = Widget.getMousePosition(e)
+          print('mose pos',pos)
           _newPos = self._lastElementLeft + pos['x'] - self._startMouseX
           
           _newPos = max(0, _newPos)
           _newPos = min(_newPos, self._upperBound)
 
-          #print(_newPos)
-          self._handle.elt.style.left = '%spx' % _newPos
+          self._handle.style.left = '%spx' % _newPos
+          print('new position',self._handle.style.left)
           self._lastElementLeft = _newPos
 
       def moving(e):

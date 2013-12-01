@@ -1,5 +1,5 @@
 import Widget
-from browser import html, doc as document
+from browser import html, doc
 
 class Dialog(Widget.DraggableWidget):
   def __init__(self, id=None):
