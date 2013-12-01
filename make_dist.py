@@ -4,6 +4,9 @@ import re
 import datetime
 import os
 
+# version info
+version = [1,3,None,"alpha",0]
+
 try:
   import slimit 
   minify=slimit.minify
@@ -58,27 +61,25 @@ def custom_minify(src):
 
     return _res
 
+abs_path = lambda path:os.path.join(os.getcwd(),'src',path)
+
+
 now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
-sources = ['brython_builtins','py2js','py_utils','py_object',
+# update version number
+out = open(abs_path('version_info.js'),'w')
+version[2] = now
+out.write('__BRYTHON__.version_info = %s' %str(version))
+out.close()
+
+sources = ['brython_builtins','version_info','py2js','py_utils','py_object',
     'py_builtin_functions','js_objects','py_import',
     'py_float','py_int','py_dict','py_list','py_string','py_set','py_dom']
 
-abs_path = lambda path:os.path.join(os.getcwd(),'src',path)
-
-# update version number in module sys
-bltins_src = open(abs_path('brython_builtins.js')).read()
-
-bltins_src = re.sub('version_info = \[1,2,".*?"\]',
-    'version_info = [1,2,"%s"]' %now,bltins_src)
-out = open(abs_path('brython_builtins.js'),'w')
-out.write(bltins_src)
-out.close()
-
 loader_src = open(abs_path('py_loader.js')).read()
 
-loader_src = re.sub('version_info = \[1,2,".*?"\]',
-    'version_info = [1,2,"%s"]' %now,loader_src)
+loader_src = re.sub('version_info = \[1,2,".*?"\,"alpha",0]',
+    'version_info = [1,2,"%s","alpha",0]' %now,loader_src)
 out = open(abs_path('py_loader.js'),'w')
 out.write(loader_src)
 out.close()
