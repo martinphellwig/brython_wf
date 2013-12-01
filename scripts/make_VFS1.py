@@ -61,4 +61,4 @@ def process(filename):
 
 if __name__ == '__main__':
    _main_root=os.path.join(os.getcwd(), '../src')
-   process(os.path.join(_main_root, "py_VFS.data"))
+   process(os.path.join(_main_root, "py_VFS.json"))
