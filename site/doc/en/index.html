@@ -8,10 +8,11 @@
 <script src="/src/brython.js"></script>
 
 <script type="text/python3">
+from browser import doc
 from ... import header
 header.show('../../')
 
-import markdown
+import browser.markdown as markdown
 import time
 
 def load(url,target):
@@ -52,15 +53,17 @@ language = "en"
 <br><a class="navig" href="#" onClick="load('events.md','content')">Events</a>
 <br><a class="navig" href="#" onClick="load('query.md','content')">Query string</a>
 <br><a class="navig" href="#" onClick="load('jsobjects.md','content')">Using Javascript objects and libraries</a>
+</div>
 
-<h4>Libraries</h4>
-<a class="navig" href="#" onClick="load('ajax.md','content')">ajax</a>
-<br><a class="navig" href="#" onClick="load('html.md','content')">html</a>
-<br><a class="navig" href="#" onClick="load('local_storage.md','content')">local_storage</a>
-<br><a class="navig" href="#" onClick="load('markdown.md','content')">markdown</a>
-<br><a class="navig" href="#" onClick="load('svg.md','content')">svg</a>
-<br><a class="navig" href="#" onClick="load('time.md','content')">time</a>
-<br><a class="navig" href="#" onClick="load('websockets.md','content')">websocket</a>
+<h4><a class="navig" href="#" onClick="load('browser.md','content')">The built-in package `browser`</a></h4>
+<div style="padding-left:10px;">
+<a class="navig" href="#" onClick="load('ajax.md','content')">browser.ajax</a>
+<br><a class="navig" href="#" onClick="load('html.md','content')">browser.html</a>
+<br><a class="navig" href="#" onClick="load('local_storage.md','content')">browser.local_storage</a>
+<br><a class="navig" href="#" onClick="load('markdown.md','content')">browser.markdown</a>
+<br><a class="navig" href="#" onClick="load('svg.md','content')">browser.svg</a>
+<br><a class="navig" href="#" onClick="load('timer.md','content')">browser.timer</a>
+<br><a class="navig" href="#" onClick="load('websockets.md','content')">browser.websocket</a>
 </div>
 <h4>Working with Brython</h4>
 <div style="padding-left:10px;">

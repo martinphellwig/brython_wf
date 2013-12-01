@@ -31,7 +31,7 @@ Mots clés et fonctions intégrées
 
 Brython supporte l'essentiel des mots-clés et des fonctions de Python 3 :
 - mots clés : `as, assert, break, class, continue, def, del, elif, else, except, False, finally, for, from, global, if, import, is, lambda, None, pass, return, True, try, while, with, yield`
-- fonctions intégrées : `abs(), all(), any(), ascii(), bin(), bool(), bytes(), callable(), chr(), classmethod(), delattr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), globals(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), locals(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), property(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), tuple(), type(), zip()`
+- fonctions intégrées : `abs(), all(), any(), ascii(), bin(), bool(), bytes(), callable(), chr(), classmethod(), delattr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), globals(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), locals(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), property(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), super(), tuple(), type(), zip(), __import__`
 
 Quelques particularités liées au contexte d'exécution dans un navigateur :
 
@@ -41,15 +41,14 @@ Quelques particularités liées au contexte d'exécution dans un navigateur :
 
 - `sys.stdin` n'est pas implémenté, mais on peut utiliser la fonction intégrée `input()` qui ouvre une fenêtre d'invite
 
-- pour lancer une impression sur imprimante, utiliser `win.print`
+- pour lancer une impression sur imprimante, utiliser la méthode `print()` de l'objet `win` défini dans le module **browser** :
+
+>>    from browser import win
+>>    win.print(text)
 
 Ne sont pas pris en charge dans la version actuelle : 
 
 - le mot-clé `nonlocal`
-- les fonctions intégrées `bytearray(), compile(), complex(), format(), help(),  memoryview(), super(), vars(), __import__`
+- les fonctions intégrées `bytearray(), compile(), complex(), format(), help(),  memoryview(),  vars()`
 - les nombres complexes
 
-Enfin, certains mots clés et fonctions intégrées adaptés au fonctionnement dans un navigateur sont ajoutés :
-
-- les fonctions intégrées `alert(), confirm(), prompt()` correspondent à leur équivalent Javascript
-- le mot clé `win` représente la fenêtre (objet _window_ en JS) et `doc` représente le document HTML (_document_ en JS)

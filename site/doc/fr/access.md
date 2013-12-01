@@ -7,9 +7,10 @@ Pour accéder à un élément, on peut utiliser plusieurs méthodes. La plus cou
 
 on peut obtenir une référence à ce champ par 
 
+>    from browser import doc
 >    data = doc["data"]
 
-`doc` est un mot-clé intégré de Brython qui référence le document HTML. Il se comporte comme un dictionnaire dont les clés sont les identifiants des éléments de la page. Si aucun élément ne possède l'identifiant spécifié, le programme déclenche une exception `KeyError`
+L'objet `doc` du module **browser** référence le document HTML. Il se comporte comme un dictionnaire dont les clés sont les identifiants des éléments de la page. Si aucun élément ne possède l'identifiant spécifié, le programme déclenche une exception `KeyError`
 
 On peut aussi récupérer tous les éléments d'un certain type, par exemple tous les liens hypertexte (balise HTML `A`), en  utilisant la syntaxe
 

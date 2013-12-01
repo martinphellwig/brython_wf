@@ -14,12 +14,12 @@ A page is made of elements (texts, images, sounds...) that can be included in th
 >    </body>
 >    </html>
 
-- or writing Python code, using the built-in module `html` (described in the section Libraries)
+- or writing Python code, using the built-in module **browser.html**
 
 >    <html>
 >    <body>
 >    <script type="text/python">
->    from html import A,B
+>    from browser.html import A,B
 >    doc <= B("Brython")+"is an implementation of "
 >    doc <= A("Python",href="http://www.python.org")+" for web browsers"
 >    </script>

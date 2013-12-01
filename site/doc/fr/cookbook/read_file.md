@@ -13,6 +13,7 @@ On utilise la fonction intégrée `open()` pour récupérer le contenu du fichie
 <tr>
 <td style="width:40%;padding-right:10px;">
 
+    from browser import doc
     import time
     fake_qs = '?foo=%s' %time.time()
     doc['zone'].value = open('cookbook/file.txt'+fake_qs).read()
@@ -37,6 +38,7 @@ Noter la chaine de requête (query string) avec une valeur aléatoire à la fin 
 
 L'exemple suivant ajoute une fonction de dépassement de délai qui affiche un message au cas où le fichier n'aurait pas été trouvé au bout de 4 secondes :
 
+    from browser import doc
     import time
 
     def on_complete(req):

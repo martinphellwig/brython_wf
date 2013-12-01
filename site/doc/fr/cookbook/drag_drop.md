@@ -23,6 +23,9 @@ Dans l'exemple, quand l'objet déplaçable a été déposé, on ne peut plus le 
 </div>
 
 <div id="py_source">
+
+    from browser import doc
+    
     panel = doc["panel"] # zone jaune
     
     source = doc["source"] # zone rouge

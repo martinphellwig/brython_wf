@@ -18,6 +18,7 @@ Solution
     <body onload="brython()">
     
     <script type="text/python">
+    from browser import doc
     doc['zone'] <= "blah "
     </script>
     
@@ -32,6 +33,7 @@ Solution
 </table>
 
 <script type="text/python3">
+from browser import doc
 def fill_zone():
     doc["zone"] <= "blah "
 </script>

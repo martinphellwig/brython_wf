@@ -1,5 +1,5 @@
-Cration d'un document
----------------------
+Création d'un document
+----------------------
 
 Brython est fait pour programmer des applications web, donc des pages HTML avec lesquelles l'utilisateur peut interagir
 
@@ -14,12 +14,14 @@ Une page est constituée d'élements (textes, images, sons...) qu'on peut intég
 >    </body>
 >    </html>
 
-- ou écrire du code Python, en utilisant le module intégré `html` (décrit dans la section Librairies)
+- ou écrire du code Python, en utilisant le module intégré **browser.html** (décrit dans la section Librairies)
 
 >    <html>
 >    <body>
 >    <script type="text/python">
->    from html import A,B
+>    from browser import doc
+>    from browser.html import A,B
+>
 >    doc <= B("Brython")+"est une implémentation de "
 >    doc <= A("Python",href="http://www.python.org")+" pour les navigateurs web"
 >    </script>

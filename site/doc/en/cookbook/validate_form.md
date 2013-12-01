@@ -47,6 +47,7 @@ For this, we use the function _validate()_ when clicking on "Send". If there is 
 <td style="width:40%;padding-right:10px;" id="py_source">
 
     import re
+    from browser import doc,alert
     
     def validate():
         if not doc['name'].value:

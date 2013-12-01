@@ -1,12 +1,19 @@
-## Web Sockets
+module **browser.websocket**
+----------------------------
 
-Les Web sockets sont un moyen de gérer une communication bidirectionnelle entre le client et le serveur. Elle ont été spécifiées dans le cadre de HTML5
+Les Web sockets, définies dans HTML5, sont un moyen de gérer une communication bidirectionnelle entre le client et le serveur
 
-La communication avec le serveur est établie en se servant du module `websocket`, qui possède une fonction <code>websocket(_hote_)</code> où _hote_ est l'adresse d'un serveur qui supporte le protocole WebSocket. Si le navigateur ne gère pas ce protocole, une exception `NotImplementedError` est déclenchée
+Le module définit une fonction :
 
-L'appel renvoie une instance de la classe `WebSocket`, qui possède les méthodes suivantes :
+`websocket(`_hote_`)`
+> _hote_ est l'adresse d'un serveur qui supporte le protocole WebSocket. Renvoie un objet `WebSocket`
 
-- <code>bind(_evt,fonction_)</code> associe la _fonction_ à l'événement _evt_. Les événements gérés et les arguments de la fonction sont :
+> Si le navigateur ne gère pas ce protocole, une exception `NotImplementedError` est déclenchée. 
+
+Les objets `WebSocket` possèdent les méthodes suivantes :
+
+`bind(`_evt,fonction_`)`
+> associe la _fonction_ à l'événement _evt_. Les événements gérés et les arguments de la fonction sont :
 
 <blockquote>
 <table border=1 cellpadding=5>
@@ -33,14 +40,17 @@ L'appel renvoie une instance de la classe `WebSocket`, qui possède les méthode
 </table>
 </blockquote>
 
-- <code>send(_data_)</code> : envoie la chaine _data_ au serveur
-- `close()` : ferme la connection
+`send(`_data_`)`
+> envoie la chaine _data_ au serveur
+
+`close()`
+> ferme la connection
 
 Exemple :
 <table>
 <tr>
 <td id="py_source">
-    import websocket
+    from browser import websocket, doc, alert
     
     def on_open(evt):
         doc['send_button'].disabled = False

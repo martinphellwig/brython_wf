@@ -1,15 +1,19 @@
-module websocket
-----------------
+module **browser.websocket**
+----------------------------
 
-Web sockets are a way to handle bi directional communication between client and server. They have been specified in HTML5
+Web sockets, defined in HTML5, are a way to handle bi directional communication between client and server
 
-The communication with the server is established using the module `websocket` that exposes a function <code>websocket(_host_)</code> where _host_ is the location of a server that supports the WebSocket protocol
+The module defines one function :
 
-If your browser doesn't support WebSocket, a `NotImplementedError` will be raised
+`websocket(`_host_`)`
+> _host_ is the location of a server that supports the WebSocket protocol. Returns a `WebSocket` object
 
-The call returns an instance of the `WebSocket` class, it has the following methods :
+> If the browser doesn't support WebSocket, a `NotImplementedError` will be raised
 
-- <code>bind(_evt,function_)</code> attaches the _function_ to the event _evt_. The events and the corresponding function arguments are :
+`WebSocket` objects have the following methods :
+
+`bind(`_evt,function_`)`
+> attaches the _function_ to the event _evt_. The events and the corresponding function arguments are :
 
 <blockquote>
 <table border=1 cellpadding=5>
@@ -36,14 +40,17 @@ The call returns an instance of the `WebSocket` class, it has the following meth
 </table>
 </blockquote>
 
-- <code>send(_data_)</code> : sends the string _data_ to the server
-- `close()` : closes the connection
+`send(`_data_`)`
+> sends the string _data_ to the server
+
+`close()`
+> closes the connection
 
 Example :
 <table>
 <tr>
 <td id="py_source">
-    import websocket
+    from browser import doc,alert,websocket
     
     def on_open(evt):
         doc['send_button'].disabled = False

@@ -39,6 +39,7 @@ Exemple :
 <tr>
 <td>
     <script type='text/python'>
+    from browser import doc
     def mouse_move(ev):
         doc["trace"].value = '%s %s' %(ev.x,ev.y)
     
@@ -52,6 +53,7 @@ Exemple :
 </td>
 <td>
 <script type='text/python'>
+from browser import doc
 def mouse_move(ev):
     doc["trace"].value = '%s %s' %(ev.x,ev.y)
 

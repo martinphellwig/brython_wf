@@ -7,15 +7,16 @@ Store objects locally, using HTML5 Local Storage
 Solution
 --------
 
-Brython provides a built-in module `local_storage` that stores string values associated to string keys
+Brython provides a built-in module `browser.local_storage` that stores string values associated to string keys
 
 
-    from local_storage import storage
+    from browser.local_storage import storage
     storage['brython_test'] = doc['zone'].value
     
 <input id="zone" value="Local Storage">
 <button onclick="show_locstor(0)">Store value</button>
 
+    from browser import alert
     alert(storage['brython_test'])
 
 <button onclick="show_locstor(1)">Show stored value</button>
@@ -29,7 +30,8 @@ def show_locstor(num):
 
 If a Python object can be serialized by the `json` module, you can store the serialized version, then retrieve the original object :
 
-    from local_storage import storage
+    from browser import alert
+    from browser.local_storage import storage
     import json
     
     a = {'foo':1,1515:'Marignan'}

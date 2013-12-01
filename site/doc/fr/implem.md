@@ -104,13 +104,14 @@ _$test\_item_ retourne un booléen Javascript (`true` ou `false`) et stocke la v
         (...)
 </td>
 <td>
-    var $iter1=iter(iterable)
-    var $no_break1=true
+    var $iter48=iter(y)
+    var $no_break48=true
     while(true){
         try{
-            obj=getattr($iter1,"__next__")()
-        }catch($err){
-            if($err.__name__=="StopIteration"){
+            x=$globals["x"]=getattr($iter48,"__next__")()
+        }
+        catch($err){
+            if($is_exc($err,[StopIteration])){
                 $pop_exc();break
             }else{
                 throw($err)
@@ -118,10 +119,14 @@ _$test\_item_ retourne un booléen Javascript (`true` ou `false`) et stocke la v
         }
         (...)
     }
-</td>
-<td>_$no\_break1_ est un booléen utilisé si la boucle `for` possède une clause `else`
 
-_$pop\_exc()_ est une fonction interne qui enlève la dernière exception de la pile</td>
+</td>
+<td>_$no\_break_ est un booléen utilisé si la boucle `for` possède une clause `else`
+
+_$pop\_exc()_ est une fonction interne qui enlève la dernière exception de la pile
+
+_$is\_exc(exc,classes)_ est une fonction interne qui indique si l'exception _exc_ est une instance d'une des _classes_
+</td>
 </tr>
 
 <tr>
@@ -279,15 +284,19 @@ Elle est définie pour les objets de type fonction par
         print('autre erreur')
 </code></pre></td>
 <td>
-    x='brython'
+    x=$globals["x"]='brython'
+    $failed49=false
     try{
         getattr(x,"__setitem__")(Number(2),'a')
-    }catch($err51){
+    }
+    catch($err49){
+        var $failed49=true
         if(false){void(0)}
-        else if(["TypeError"].indexOf($err51.__name__)>-1){
-            getattr(log,"__call__")('error')
-        }else{
-            getattr(log,"__call__")('another error')
+        else if($is_exc($err49,[TypeError])){
+            getattr($print,"__call__")('erreur')
+        }
+        else{
+            getattr($print,"__call__")('autre erreur')
         }
     }
 </td>

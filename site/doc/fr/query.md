@@ -1,6 +1,6 @@
 ## Chaîne de requête
 
-`doc` possède un attribut `query` qui contient la chaine de requête _(query string)_ sous la forme d'un objet dont l'interface est la suivante :
+L'objet `doc` du module **browser** possède un attribut `query` qui contient la chaine de requête _(query string)_ sous la forme d'un objet dont l'interface est la suivante :
 
 - <code>doc.query[<i>cle</i>]</code> : renvoie la valeur associée à _`cle`_. Si une clé a plus d'une valeur (ce qui peut se produire avec une balise SELECT avec l'attribut MULTIPLE, ou pour des balises `<INPUT type="checkbox">`), renvoie une liste de valeurs. Déclenche `KeyError` s'il n'y a pas de valeur pour cette clé
 

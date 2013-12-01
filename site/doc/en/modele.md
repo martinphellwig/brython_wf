@@ -120,7 +120,6 @@ At runtime the generated script can use :
 
  - _$MakeArgs_ called at the beginning of each function if its signature has at least one argument. It builds a namespace based on the function arguments, calling the function _$JS2Py_ on all arguments
  - _$class\_constructor_ is called for class definition
- - _$resolve\_attr_ is called to resolve class instances attributes and handles multiple inheritance
  - _$list\_comp_ is called for list comprehensions
  - _$lambda_ is called for anonymous functions defined by `lambda`
  - _$test\_expr_ and _$test\_item_ are used in evaluation of conditions combined by `and` or `or`

@@ -38,7 +38,7 @@ Instances of `JSObject` are used as ordinary Python objects ; here, the value of
 
 An HTML document can use Javascript scripts or libraries, and Python scripts or libraries. Brython can't use Javascript objects directly : for instance attribute lookup uses the attribute _\_\_class\_\__, which doesn't exist for Javascript objects
 
-To be able to use them in a Python script, they must be explicitely transformed by the built-in function `JSObject()`
+To be able to use them in a Python script, they must be explicitely transformed by the function `JSObject()` defined in the built-in module **javascript**
 
 For instance :
 
@@ -47,14 +47,18 @@ For instance :
     </script>
     
     <script type="text/python">
+    from browser import doc
+    from javascript import JSObject
     doc['result'].value = JSObject(circle).surface(10)
     </script>
 
 ### Using Javascript constructors
 
-If a Javascript function is an object constructor, that can be called in Javascript code with the keyword `new`, it can be used in Brython by transforming it with the built-in function `JSConstructor()`
+If a Javascript function is an object constructor, that can be called in Javascript code with the keyword `new`, it can be used in Brython by transforming it with the function `JSConstructor()` defined in module **javascript**
 
-<code>JSConstructor(_constr_)</code> returns a function that, when called with arguments, returns a Python object matching the Javascript object built by the constructor _constr_
+`JSConstructor(`_constr_`)`
+
+> returns a function that, when called with arguments, returns a Python object matching the Javascript object built by the constructor _constr_
 
 For instance :
 
@@ -69,6 +73,8 @@ For instance :
     </script>
     
     <script type="text/python">
+    from browser import alert
+    from javascript import JSConstructor
     rectangle = JSConstructor(Rectangle)
     alert(rectangle(10,10,30,30).surface())
     </script>
