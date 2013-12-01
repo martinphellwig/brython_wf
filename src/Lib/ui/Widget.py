@@ -1,5 +1,5 @@
 import random
-from browser import doc as document  # :( document doesn't work
+from browser import doc
 
 def getMousePosition(e):
     if e is None:
