@@ -81,13 +81,24 @@ function $import_js_module(module,filepath,module_contents){
     return $module
 }
 
-function $import_module_search_path(module){
+function $import_module_search_path(module,origin){
   // this module is needed by $import_from, so don't remove
-  return $import_module_search_path_list(module,__BRYTHON__.path);
+  var path_list = __BRYTHON__.path.slice()
+  return $import_module_search_path_list(module,__BRYTHON__.path,origin);
 }
 
-function $import_module_search_path_list(module,path_list){
+function $import_module_search_path_list(module,path_list,origin){
     var search = []
+    if(origin!==undefined){
+        // add path of origin script to list of paths to search
+        var origin_path = __BRYTHON__.$py_module_path[origin]
+        var elts = origin_path.split('/')
+        elts.pop()
+        origin_path = elts.join('/')
+        if(path_list.indexOf(origin_path)==-1){
+            path_list.splice(0,0,origin_path)
+        }
+    }
     if(module.name.substr(0,2)=='$$'){module.name=module.name.substr(2)}
     mod_path = module.name.replace(/\./g,'/')
     if(!module.package_only){
@@ -123,7 +134,7 @@ function $import_py(module,path){
 }
 
 function $import_py_module(module,path,module_contents) {
-    __BRYTHON__.$py_module_path[module.name]=path
+    __BRYTHON__.$py_module_path[module.name]=path //.substr(__BRYTHON__.brython_path.length)
 
     var root = __BRYTHON__.py2js(module_contents,module.name)
     var body = root.children
@@ -169,12 +180,12 @@ function $import_py_module(module,path,module_contents) {
     }
 }
 
-function $import_single(module){
+function $import_single(module,origin){
     var import_funcs = [$import_js, $import_module_search_path]
     if(module.name.search(/\./)>-1){import_funcs = [$import_module_search_path]}
     for(var j=0;j<import_funcs.length;j++){
         try{
-            return import_funcs[j](module)
+            return import_funcs[j](module,origin)
         } catch(err){
             if(err.__name__==="FileNotFoundError"){
                 if(j==import_funcs.length-1){
@@ -188,7 +199,7 @@ function $import_single(module){
     }
 }
 
-function $import_list(modules){
+function $import_list(modules,origin){
     var res = []
     for(var i=0;i<modules.length;i++){
         var mod_name=modules[i]
@@ -210,7 +221,7 @@ function $import_list(modules){
                     __BRYTHON__.imported[module.name]={}
                     // indicate if package only, or package or file
                     if(i<parts.length-1){module.package_only = true}
-                    __BRYTHON__.modules[module.name] = $import_single(module)
+                    __BRYTHON__.modules[module.name] = $import_single(module,origin)
                     __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
                 }
             }
@@ -222,10 +233,11 @@ function $import_list(modules){
     return res
 }
 
-function $import_from(mod_name,names){
+function $import_from(mod_name,names,origin){
     // used for "from X import A,B,C
     // mod_name is the name of the module
     // names is a list of names
+    // origin : name of the module where the import is requested
     // if mod_name matches a module, the names are searched in the module
     // if mod_name matches a package (file mod_name/__init__.py) the names
     // are searched in __init__.py, or as module names in the package
@@ -237,7 +249,7 @@ function $import_from(mod_name,names){
         if(mod_ns[names[i]]===undefined){
             if(mod.$package){
                 var sub_mod = mod_name+'.'+names[i]
-                $import_list([sub_mod])
+                $import_list([sub_mod],origin)
                 mod[names[i]] = __BRYTHON__.modules[sub_mod]
             }else{
                 throw ImportError("cannot import name "+names[i])
