@@ -1,7 +1,7 @@
-import Widget
+import widget
 from browser import doc,html
 
-class Slider(Widget.Widget):
+class Slider(widget.Widget):
 
   def __init__(self, id=None, label=False):
 

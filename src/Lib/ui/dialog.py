@@ -1,14 +1,14 @@
-import Widget
+import widget
 from browser import html, doc
 
-class Dialog(Widget.DraggableWidget):
+class Dialog(widget.DraggableWidget):
   def __init__(self, id=None):
       self._div_shell=html.DIV(
          Class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-draggable ui-resizable",
          style={'position': 'absolute', 'height': 'auto', 'width': '300px',
                 'top': '98px', 'left': '140px', 'display': 'block'})
 
-      Widget.DraggableWidget.__init__(self, self._div_shell, 'dialog', id)
+      widget.DraggableWidget.__init__(self, self._div_shell, 'dialog', id)
 
       _div_titlebar=html.DIV(Id="titlebar",
            Class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix")

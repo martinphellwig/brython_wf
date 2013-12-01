@@ -1,10 +1,10 @@
-import Widget
+import widget
 from browser import html
 
-class ProgressBar(Widget.Widget):
+class ProgressBar(widget.Widget):
   def __init__(self, id=None, label=False):
       self._div_shell=html.DIV(Class="ui-progressbar ui-widget ui-widget-content ui-corner-all")
-      Widget.Widget.__init__(self, self._div_shell, 'progressbar', id)
+      widget.Widget.__init__(self, self._div_shell, 'progressbar', id)
 
       self._show_label=label
       if label:
