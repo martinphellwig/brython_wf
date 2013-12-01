@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131201-210038
+// version 1.3.20131201-221358
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131201-210038', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131201-221358', 'alpha', 0]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
 "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",

@@ -169,7 +169,7 @@ dist_zip.close()
 print('end of mirror')
 
 # minimum package
-name = 'Brython1.2-%s' %now
+name = 'Brython%s.%s-%s' %(version[0],version[1],now)
 dest_path = os.path.join(dest_dir,name)
 dist1 = tarfile.open(dest_path+'.gz',mode='w:gz')
 dist2 = tarfile.open(dest_path+'.bz2',mode='w:bz2')
@@ -191,15 +191,17 @@ for arc,wfunc in (dist1,dist1.add),(dist2,dist2.add),(dist3,dist3.write):
     wfunc(os.path.join(os.getcwd(),'src','brython.js'),
             arcname=os.path.join(name,'brython.js'))
     
+    base = os.path.join(os.getcwd(),'src')
     folders = ['libs','Lib']
     for folder in folders:
-        for path in os.listdir(os.path.join(os.getcwd(),'src',folder)):
-            if os.path.splitext(path)[1] not in ['.js','.py']:
-                continue
-            #abs_path = os.path.join(os.getcwd(),'src',folder,path)
-            print('add',path)
-            wfunc(os.path.join(os.getcwd(),'src',folder,path),
-                arcname=os.path.join(name,folder,path))
+        for dirpath,dirnames,filenames in os.walk(os.path.join(base,folder)):
+            for path in filenames:
+                if os.path.splitext(path)[1] not in ['.js','.py']:
+                    continue
+                #abs_path = os.path.join(os.getcwd(),'src',folder,path)
+                print('add',path,dirpath[len(base):])
+                wfunc(os.path.join(dirpath,path),
+                    arcname=os.path.join(name,dirpath[len(base)+1:],path))
 
     arc.close()
 
