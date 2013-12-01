@@ -1287,7 +1287,7 @@ function $ForExpr(context){
         try_node.add(iter_node)
 
         var catch_node = new $Node('expression')
-        var js = 'catch($err){if($err.__name__=="StopIteration"){$pop_exc();break}'
+        var js = 'catch($err){if($is_exc($err,[StopIteration])){$pop_exc();break}'
         js += 'else{throw($err)}}'
         new $NodeJSCtx(catch_node,js)
         node.insert(1,catch_node)
@@ -1325,7 +1325,9 @@ function $FromCtx(context){
         path =elts.join('/')
         // temporarily add module path to __BRYTHON__.path
         var res = ''
-        //var res = 'var $flag=false;if(__BRYTHON__.path.indexOf("'+path+'")==-1){__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
+        var indent = $get_node(this).indent
+        var head = ''
+        for(var i=0;i<indent;i++){head += ' '}
 
         if (this.module.charAt(0)=='.'){
             // intra-package reference : "from . import x"
@@ -1351,7 +1353,7 @@ function $FromCtx(context){
             for(var i=0;i<this.names.length;i++){
                 res += '"'+this.names[i]+'",'
             }
-            res += ']);'
+            res += '])\n'+head
             for(var i=0;i<this.names.length;i++){
                 if(['def','class','module'].indexOf(scope.ntype)>-1){
                     res += 'var '
@@ -1363,33 +1365,36 @@ function $FromCtx(context){
                 }else if(scope.ntype=='module'){
                     res += '=$globals["'+alias+'"]'
                 }          
-                res += '=getattr($mod,"'+this.names[i]+'");'
+                res += '=getattr($mod,"'+this.names[i]+'")\n'
             }
-        } else {
-           res += '$import_list(["'+this.module+'"])[0];'
-        
-           if(this.names[0]!=='*'){
-             for(var i=0;i<this.names.length;i++){
-              res += (this.aliases[this.names[i]]||this.names[i])
-              if(scope.ntype==="module"){
-                  res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__["'
-                  res += this.aliases[this.names[i]]||this.names[i]
-                  res += '"]'
-              }
-              res += '=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'");'
-             }
-           }else{
-             res += 'var $mod=__BRYTHON__.modules["'+this.module+'"];'
-             res +='for(var $attr in $mod){'
-             res +="if($attr.substr(0,1)!=='_'){var $x = 'var '+$attr+'"
+        }else{
+           if(this.names[0]=='*'){
+             res += '$import_list(["'+this.module+'"])\n'
+             res += head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
+             res += head+'for(var $attr in $mod){\n'
+             res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
               if(scope.ntype==="module"){
                   res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
               }
-             res += '=$mod["'+"'+$attr+'"+'"]'+"'"+';eval($x)}}'
+             res += '=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x)}}'
+           }else{
+             res += '$import_from("'+this.module+'",['
+             for(var i=0;i<this.names.length;i++){
+                 res += '"'+this.names[i]+'",'
+             }
+             res += '])\n'
+             for(var i=0;i<this.names.length;i++){
+                res += head+'var '+(this.aliases[this.names[i]]||this.names[i])
+                if(scope.ntype==="module"){
+                    res += '=$globals["'
+                    res += this.aliases[this.names[i]]||this.names[i]
+                    res += '"]'
+                }
+                res += '=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'")\n'
+             }
            }
         }
-        //res += ';if($flag){__BRYTHON__.path.shift()};None'
-        res += ';None'
+        res += '\n'+head+'None'
         return res
     }
 }
@@ -1812,18 +1817,6 @@ function $LambdaCtx(context){
     this.vars = []
     this.locals = []
     this.to_js = function(){
-        var env = []
-        for(var i=0;i<this.vars.length;i++){
-            if(this.locals.indexOf(this.vars[i])===-1){
-                env.push(this.vars[i])
-            }
-        }
-        env_str = '{'
-        for(var i=0;i<env.length;i++){
-            env_str+="'"+env[i]+"':"+env[i]
-            if(i<env.length-1){env_str+=','}
-        }
-        env_str += '}'
         var ctx_node = this
         while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
         var module = ctx_node.node.module
@@ -1833,7 +1826,7 @@ function $LambdaCtx(context){
         var args = src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
         var body = src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
         body = body.replace(/\n/g,' ')
-        return '$lambda('+env_str+',"'+args+'","'+body+'")'
+        return '$lambda($globals,$locals,"'+args+'","'+body+'")'
     }
 }
 
@@ -2386,11 +2379,42 @@ function $augmented_assign(context,op){
     assign.tree[0] = _id
     _id.parent = assign
 
+    var prefix = ''
+
+    if(['+=','-=','*=','/='].indexOf(op)>-1 && 
+        context.type=='expr' && context.tree[0].type=='id'){
+        var scope = $get_scope(context)
+        prefix='$locals'
+        if(scope.ntype=='module'){prefix='$globals'}
+        else if(['def','generator'].indexOf(scope.ntype)>-1){
+            if(scope.globals && scope.globals.indexOf(context.tree[0].value)>-1){
+                prefix = '$globals'
+            }
+        }
+    }
+
+
+    // insert shortcut node if op is += and both args are numbers
+    var offset = 1
+    if(prefix){
+        var new_node = new $Node('expression')
+        var js = 'if($temp.$fast_augm && '
+        js += context.to_js()+'.$fast_augm){'
+        js += context.to_js()+op+'$temp'
+        js += ';'+prefix+'["'+context.tree[0].value+'"]='+context.to_js()
+        js += '}'
+        new $NodeJSCtx(new_node,js)
+        parent.insert(rank+offset,new_node)
+        offset++
+    }
     // insert node 'if(!hasattr(foo,"__iadd__"))
     var new_node = new $Node('expression')
-    var js = 'if(!hasattr('+context.to_js()+',"'+func+'"))'
+    var js = ''
+    if(prefix){js += 'else '}
+    js += 'if(!hasattr('+context.to_js()+',"'+func+'"))'
     new $NodeJSCtx(new_node,js)
-    parent.insert(rank+1,new_node)
+    parent.insert(rank+offset,new_node)
+    offset ++
 
     // create node for "foo = foo + bar"
     var aa1 = new $Node('expression')
@@ -2412,11 +2436,13 @@ function $augmented_assign(context,op){
     // create node for "else"
     var aa2 = new $Node('expression')
     new $NodeJSCtx(aa2,'else')
-    parent.insert(rank+2,aa2)
+    parent.insert(rank+offset,aa2)
 
     // create node for "foo.__iadd__(bar)    
     var aa3 = new $Node('expression')
-    var js3 = context.to_js()+'=getattr('+context.to_js()
+    var js3 = context.to_js()
+    if(prefix){js3 += '='+prefix+'["'+context.to_js()+'"]'}
+    js3 += '=getattr('+context.to_js()
     js3 += ',"'+func+'")($temp)'
     new $NodeJSCtx(aa3,js3)
     aa2.add(aa3)
@@ -2471,6 +2497,12 @@ function $get_module(context){
     scope = tree_node.parent // module
     scope.ntype = "module"
     return scope
+}
+
+function $get_node(context){
+    var ctx = context
+    while(ctx.parent){ctx=ctx.parent}
+    return ctx.node
 }
 
 function $get_ids(ctx){
@@ -3681,17 +3713,6 @@ function $tokenize(src,module,parent){
                 src = src.substr(0,pos)+'0'+src.substr(pos)
                 continue
             } 
-            // because ... also occurs at 'from ... import x'
-            // we'll just comment this out until we have time to
-            // fix it.
-            //if(pos<src.length-2 && '.' == src.charAt(pos+1) && '.' == src.charAt(pos+2)) {
-                // this is an ellipsis
-                // I'm not sure what should go here, or if we need to
-                // create an EllipsisCtx or something, so lets just
-                // substitute 'Ellipsis' for '...'
-            //    src = src.substr(0,pos)+'Ellipsis'+src.substr(pos+3)
-            //    continue
-            //}
             $pos = pos
             context = $transition(context,'.')
             pos++;continue
@@ -3864,10 +3885,10 @@ function brython(options){
     document.$py_src = {}
     __BRYTHON__.$py_module_path = {}
     __BRYTHON__.$py_module_alias = {}
+    __BRYTHON__.path_hooks = []
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
     __BRYTHON__.imported = {}
-    __BRYTHON__.path_hooks = []   // used for special imports (PEP 302)
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
 
     // debug level
@@ -3960,7 +3981,7 @@ function brython(options){
                 var _mod = $globals
                 _mod.__class__ = $ModuleDict
                 _mod.__name__ = '__main__'
-                _mod.__file__ = __BRYTHON__.$py_module_path['__main__']                
+                _mod.__file__ = __BRYTHON__.$py_module_path['__main__']
                 __BRYTHON__.imported['__main__'] = _mod
             }catch($err){
                 console.log('PY2JS '+$err)
