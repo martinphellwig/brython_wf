@@ -447,7 +447,7 @@ function id(obj) {
    if (obj.__hash__ === undefined || isinstance(obj, set) ||
       isinstance(obj, list) || isinstance(obj, dict)) {
       __BRYTHON__.$py_next_hash+=1
-      obj.__hashvalue__=__BRYTHON__.$py_next_hash
+      obj.__hashvalue=__BRYTHON__.$py_next_hash
       return obj.__hashvalue__
    }
    if (obj.__hash__ !== undefined) {
@@ -902,7 +902,7 @@ property.__class__ = $factory
 property.$dict = $PropertyDict
 
 // range
-$RangeDict = {__class__:$type,__name__:'range'}
+$RangeDict = {__class__:$type,__name__:'range',$native:true}
 
 $RangeDict.__contains__ = function(self,other){
     var x = iter(self)
