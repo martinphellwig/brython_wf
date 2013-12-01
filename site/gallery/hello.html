@@ -10,6 +10,7 @@
 <body onLoad="brython()">
 <img src="../brython.png">
 <script type="text/python">
+from browser import doc
 def echo():
     alert("Hello %s !" %doc["zone"].value)
 </script>

@@ -21,9 +21,9 @@
 
 <script type="text/python">
 
-
 import math
-import time
+
+from browser import doc,timer
 
 map = None
 canvas = None
@@ -236,7 +236,7 @@ def shoot():
     canvas.closePath()
     canvas.stroke()
     canvas.restore()
-    time.set_timeout(drawCanvas,100)
+    timer.set_timeout(drawCanvas,100)
 
 def update():
     global total,jumpCycle,playerVelY,playerDir
@@ -313,7 +313,7 @@ def stop():
     
 def move(x):
     changeKey(x,1)
-    time.set_timeout(stop,50)
+    timer.set_timeout(stop,50)
     
 def key_down(e):
     if not e:
@@ -395,7 +395,7 @@ def init():
     doc["sky"].style.backgroundPosition="%spx 0" %floor(-playerDir/(2*pi)*2400)
     drawCanvas()
     initUnderMap()
-    time.set_interval(update, 35)
+    timer.set_interval(update, 35)
 
 init()    
 </script>
