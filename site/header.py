@@ -1,4 +1,5 @@
-from html import *
+from browser import doc
+from browser.html import *
 
 trans_menu = { 
     'menu_console':{'en':'Console','es':'Consola','fr':'Console', 'pt':'Console'},

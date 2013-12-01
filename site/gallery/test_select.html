@@ -14,7 +14,8 @@ a.sort_link{margin-left:10px;text-decoration:none}
 <body onLoad="brython(1)">
 
         <script type="text/python">
-        from html import *
+        from browser import doc
+        from browser.html import *
         items = ['unan','daou','tri','pevar','pemp']
         
         def swap(src,dest):
