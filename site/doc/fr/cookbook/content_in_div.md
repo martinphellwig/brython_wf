@@ -18,6 +18,7 @@ Solution
     <body onload="brython()">
     
     <script type="text/python">
+    from browser import doc
     doc['zone'] <= "bla "
     </script>
     

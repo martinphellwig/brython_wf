@@ -1,6 +1,6 @@
 ## Query string
 
-`doc` supports the attribute `query`, that returns the query string as an object with the following attributes and methods :
+**browser**.`doc` supports the attribute `query`, that returns the query string as an object with the following attributes and methods :
 
 - <code>doc.query[<i>key</i>]</code> : returns the value associated with _`key`_. If a key has more than one value (which might be the case for SELECT tags with the attribute MULTIPLE set, or for `<INPUT type="checkbox">` tags), returns a list of the values. Raises `KeyError` if there is no value for the key
 

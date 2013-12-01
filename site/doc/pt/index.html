@@ -8,10 +8,11 @@
 <script src="/src/brython.js"></script>
 
 <script type="text/python3">
+from browser import doc
 from ... import header
 header.show('../../')
 
-import markdown
+import browser.markdown as markdown
 import time
 
 def load(url,target):

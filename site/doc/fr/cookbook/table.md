@@ -20,7 +20,8 @@ Voici un exemple simple :
 <tr>
 <td style="width:50%;">
 
-    from html import TABLE,TR,TH,TD
+    from browser import doc
+    from browser.html import TABLE,TR,TH,TD
     table = TABLE()
     row = TR() # create a row
     # add header cells

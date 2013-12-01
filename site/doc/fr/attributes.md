@@ -32,8 +32,9 @@ Comme le nom des attributs peut être différent d'un navigateur à l'autre, Bry
 </tr>
 </table>
 
-Pour ajouter un descendant à un élément, on utilise l'opérateur `<=` 
+Pour ajouter un descendant à un élément, on utilise l'opérateur `<=` (à visualiser comme une flèche vers la gauche, pas comme "inférieur ou égal")
 
+>    from browser import doc
 >    doc['zone'] <= INPUT(Id="data")
 
 On peut itérer sur les enfants d'un élément par la syntaxe classique Python : 

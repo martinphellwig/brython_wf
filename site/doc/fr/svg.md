@@ -1,7 +1,11 @@
-module svg
-----------
+module **browser.svg**
+----------------------
 
 Pour créer des graphiques au format SVG, supporté par la plupart des navigateurs, on utilise le module intégré `svg`, qui contient les noms des éléments disponibles pour tracer des formes ou écrire du texte
+
+Le module définit les noms suivants : `a, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, circle, clipPath, color_profile,  cursor, defs, desc, ellipse, feBlend, g, image, line, linearGradient, marker, mask, path, pattern, polygon, polyline, radialGradient, rect, stop, svg, text, tref, tspan, use`
+
+(noter `color_profile` à la place de `color-profile`)
 
 Par exemple, si le document HTML possède une zone de graphique SVG définie par 
 
@@ -15,7 +19,7 @@ on peut intégrer des tracés et des textes par :
 <table>
 <tr>
 <td>
-    import svg
+    from browser import svg
     titre = svg.text('Titre',x=70,y=25,font_size=22,
         text_anchor="middle")
     cercle = svg.circle(cx="70",cy="120",r="40",
@@ -31,7 +35,7 @@ on peut intégrer des tracés et des textes par :
 <td>
 <script type="text/python">
 def run_svg():
-    import svg
+    from browser import svg
     titre = svg.text('Titre',x=70,y=25,font_size=22,
         text_anchor="middle")
     cercle = svg.circle(cx=70,cy=120,r=40,

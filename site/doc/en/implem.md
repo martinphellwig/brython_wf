@@ -93,13 +93,14 @@ _float_ is a Javascript function defined in __py\_builtin\_functions.js__</td>
         (...)
 </td>
 <td>
-    var $iter1=iter(iterable)
-    var $no_break1=true
+    var $iter48=iter(y)
+    var $no_break48=true
     while(true){
         try{
-            obj=getattr($iter1,"__next__")()
-        }catch($err){
-            if($err.__name__=="StopIteration"){
+            x=$globals["x"]=getattr($iter48,"__next__")()
+        }
+        catch($err){
+            if($is_exc($err,[StopIteration])){
                 $pop_exc();break
             }else{
                 throw($err)
@@ -107,10 +108,14 @@ _float_ is a Javascript function defined in __py\_builtin\_functions.js__</td>
         }
         (...)
     }
+
 </td>
-<td>_$no\_break1_ is a boolean used if the `for` loop has an `else` clause
+<td>_$no\_break_ is a boolean used if the `for` loop has an `else` clause
 
 _$pop\_exc()_ is an internal function that removes the last exception from the exception stack
+
+_$is\_exc(exc,classes)_ is an internal function that checks if the exception _exc_ in an instance of one of the _classes_
+
 </td></tr>
 
 <tr>
@@ -259,22 +264,27 @@ The function attribute _$type_ is used internally to sort module-level function 
     try:
         x[2]='a'
     except TypeError:
-        log('error')
+        print('error')
     except:
-        log('another error')
+        print('another error')
 </td>
 <td>
-    x='brython'
+    x=$globals["x"]='brython'
+    $failed49=false
     try{
         getattr(x,"__setitem__")(Number(2),'a')
-    }catch($err51){
+    }
+    catch($err49){
+        var $failed49=true
         if(false){void(0)}
-        else if(["TypeError"].indexOf($err51.__name__)>-1){
-            getattr(log,"__call__")('error')
-        }else{
-            getattr(log,"__call__")('another error')
+        else if($is_exc($err49,[TypeError])){
+            getattr($print,"__call__")('error')
+        }
+        else{
+            getattr($print,"__call__")('another error')
         }
     }
+
 </td>
 <td>the lines
     catch($err51){

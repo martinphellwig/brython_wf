@@ -1,44 +1,70 @@
-module ajax
------------
+module **browser.ajax**
+-----------------------
 
-The `ajax` module exposes a function `ajax()` that returns an object able to run Ajax requests. It has the following methods :
+This module allows running Ajax requests. It defines a single function :
 
-- <code>bind(_evt,function_)</code> : attaches the _function_ to the event _evt_. The events match the different request states :
+`ajax()`
+> returns an `ajax` object
+
+This object has the following attributes and methods :
+
+`bind(`_evt,function_`)`
+> attaches the _function_ to the event _evt_. _evt_ is a string that matches the different request states :
+
+- "uninitialized"
+- "loading"
+- "loaded"
+- "interactive"
+- "complete"
+
+The _function_ takes a single argument, the `ajax` object
+
+`open(`_method, url, async_`)`
+> _method_ is the HTTP method used for the request (usually GET or POST), _url_ is the url to call, _async_ is a boolean that indicates whether the call is asynchronous or not
+
+`readyState`
+> an integer representing the request state (cf table below)
+
 <blockquote>
-
-<table cellspacing=0 cellpadding=0 border=1>
+<table cellspacing=0 cellpadding=4 border=1>
 <tr><th>
-request state
+readyState
 </th><th>
-event
+request state
 </th></tr>
-<tr><td align="center">0</td><td>`uninitialized`</td></tr>
-<tr><td align="center">1</td><td align="center">`loading`</td></tr>
-<tr><td align="center">2</td><td align="center">`loaded`</td></tr>
-<tr><td align="center">3</td><td align="center">`interactive`</td></tr>
-<tr><td align="center">4</td><td align="center">`complete`</td></tr>
+<tr><td align="center">0</td><td>"uninitialized"</td></tr>
+<tr><td align="center">1</td><td align="center">"loading"</td></tr>
+<tr><td align="center">2</td><td align="center">"loaded"</td></tr>
+<tr><td align="center">3</td><td align="center">"interactive"</td></tr>
+<tr><td align="center">4</td><td align="center">"complete"</td></tr>
 </table>
-
-The _function_ takes a single argument, the `ajax` object. This object has the following attributes :
-
-- `readyState` : an integer representing the request state (cf table above)
-- `status` : an integer representing the HTTP status of the request
-- `text` : the server response as a string of characters
-- `xml` : the server response as a DOM object
-
 </blockquote>
 
-- <code>open(_method, url, async_)</code> : _method_ is the HTTP method used for the request (usually GET or POST), _url_ is the url to call, _async_ is a boolean that indicates whether the call is asynchronous or not
-- <code>set\_header(_name, value_)</code> : sets the _value_ of the header _name_
-- <code>set\_timeout(_duration, function_)</code> : if the query did not return response 
-  within _duration_ in seconds, it will cancel the query and execute the 
-  _function_. This function cannot have arguments
-- `send()` : send (starts) the request
+`set_header(`_name, value_`)`
+> sets the _value_ of the header _name_
+
+`set_timeout(`_duration, function_`)`
+> if the query did not return response within _duration_ in seconds, it will cancel the query and execute the _function_. This function cannot have arguments
+
+`send()`
+> sends (starts) the request
+
+`status`
+> an integer representing the HTTP status of the request. The most usual are 200 (ok) and 404 (file not found)
+
+`text`
+> the server response as a string of characters
+
+`xml`
+> the server response as a DOM object
+
 
 
 ### Example
 We suppose there is a DIV with id _result_ in the HTML page
 
+>    from browser import doc,ajax
+>
 >    def on_complete(req):
 >        if req.status==200 or req.status==0:
 >            doc["result"].html = req.text
@@ -47,7 +73,6 @@ We suppose there is a DIV with id _result_ in the HTML page
 >    
 >    req = ajax()
 >    req.on_complete = on_complete
->    req.set_timeout(timeout,err_msg)
 >    req.open('POST',url,True)
 >    req.set_header('content-type','application/x-www-form-urlencoded')
 >    req.send(data)

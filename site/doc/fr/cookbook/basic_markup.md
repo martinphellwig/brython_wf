@@ -19,7 +19,7 @@ Solution
     <body onload="brython()">
     
     <script type="text/python">
-    import html
+    from browser import doc, html
     doc['zone'] <= html.H1("Introduction à Brython")
     doc['zone'] <= html.H4(html.I("Python dans le navigateur"))
     doc['zone'] <= html.B("Salut !")
@@ -37,7 +37,7 @@ Solution
 
 <script type="text/python3">
 def fill_zone():
-    import html
+    from browser import doc, html
     doc['zone'] <= html.H1("Introduction à Brython")
     doc['zone'] <= html.H4(html.I("Python dans le navigateur"))
     doc['zone'] <= html.B("Salut !")

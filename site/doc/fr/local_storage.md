@@ -1,5 +1,5 @@
-module local_storage
---------------------
+module **browser.local_storage**
+--------------------------------
 
 Le stockage local défini par HTML5 permet de stocker des données localement, sur le terminal du navigateur, en les indexant par une chaine de caractères
 
@@ -9,6 +9,6 @@ Le module `local_storage` définit un objet `storage` qui est utilisé comme un 
 
 >    from local_storage import storage
 >    storage['foo']='bar'
->    log(storage['foo'])
+>    print(storage['foo'])
 >    del storage['foo']
->    log(storage['foo']) # déclenche KeyError
+>    print(storage['foo']) # déclenche KeyError

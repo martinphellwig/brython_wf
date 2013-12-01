@@ -9,8 +9,8 @@ Solution
 
 Brython fournit un module intégré `local_storage` qui stocke des valeurs associées à des clés (clés et valeurs sont des chaines de caractères)
 
-
-    from local_storage import storage
+    from browser import alert, doc
+    from browser.local_storage import storage
     storage['brython_test'] = doc['zone'].value
     
 <input id="zone" value="Local Storage">
@@ -22,6 +22,7 @@ Brython fournit un module intégré `local_storage` qui stocke des valeurs assoc
 
 
 <script type="text/python3">
+from browser import doc
 def show_locstor(num):
     src = doc.get(selector="pre.marked")[num].text
     exec(src)
@@ -29,7 +30,8 @@ def show_locstor(num):
 
 Si un objet Python peut être sérialisé par le module `json`, on peut stocker la version sérialisée, puis récupérer l'objet original :
 
-    from local_storage import storage
+    from browser import alert
+    from browser.local_storage import storage
     import json
     
     a = {'foo':1,1515:'Marignan'}

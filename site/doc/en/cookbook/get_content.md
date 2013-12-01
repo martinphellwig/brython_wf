@@ -10,6 +10,7 @@ Solution
 <tr>
 <td style="width:50%;">
 
+    from browser import alert,doc
     # doc['zone'] is the colored cell
     alert(doc['zone'].text)
 
@@ -32,6 +33,7 @@ Solution
 </table>
 
 <script type="text/python3">
+from browser import doc
 def show_text():
     src = doc.get(selector="pre.marked")[0].text
     exec(src)
@@ -50,4 +52,4 @@ It also has an attribute `html`, a string with the HTML code inside the element
 
 Input fields have an attribute `value`, a string with the current field value
 
-`alert()` is a built-in function that shows its argument in a popup window
+`alert()` is a function defined in module **browser** that shows its argument in a popup window

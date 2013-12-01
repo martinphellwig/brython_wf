@@ -1,7 +1,9 @@
-module svg
-----------
+module **browser.svg**
+----------------------
 
 To create graphics in the SVG format, supported by most browsers, use the built-in module `svg`. It holds the name of the components available to draw forms or write text
+
+The module defines the following names : `a, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, circle, clipPath, color_profile,  cursor, defs, desc, ellipse, feBlend, g, image, line, linearGradient, marker, mask, path, pattern, polygon, polyline, radialGradient, rect, stop, svg, text, tref, tspan, use`
 
 For instance, if the HTML document has an SVG graphics zone defined by
 
@@ -15,7 +17,7 @@ you can insert forms and text by :
 <table>
 <tr>
 <td>
-    import svg
+    from browser import doc, svg
     title = svg.text('Title',x=70,y=25,font_size=22,
         text_anchor="middle")
     circle = svg.circle(cx="70",cy="120",r="40",
@@ -31,8 +33,8 @@ you can insert forms and text by :
 
 <td>
 <script type="text/python">
+from browser import doc, svg
 def run_svg():
-    import svg
     title = svg.text('Title',x=70,y=25,font_size=22,
         text_anchor="middle")
     circle = svg.circle(cx=70,cy=120,r=40,stroke="black",

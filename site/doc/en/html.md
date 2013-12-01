@@ -1,20 +1,24 @@
-module html
------------
+module **browser.html**
+-----------------------
 
-This module exposes the HTML tags. The tag name is in uppercase letters. As for all Python modules, you can 
+This module exposes the HTML tags. The tag name is in uppercase letters
 
-- either only import the module name : `import html`, then reference the tags by `html.DIV`
-- or import the names required in the programe : `from html import A,B,DIV`, or if there is no risk of naming conflicts : `from html import *`
+The classes defined are :
+
+- HTML4 tags : `A, ABBR, ACRONYM, ADDRESS, APPLET, B, BDO, BIG, BLOCKQUOTE, BUTTON, CAPTION, CENTER, CITE, CODE, DEL, DFN, DIR, DIV, DL,EM, FIELDSET, FONT, FORM, FRAMESET,H1, H2, H3, H4, H5, H6,I, IFRAME, INS, KBD, LABEL, LEGEND,MAP, MENU, NOFRAMES, NOSCRIPT, OBJECT,OL, OPTGROUP, PRE, Q, S, SAMP,SCRIPT, SELECT, SMALL, SPAN, STRIKE,STRONG, STYLE, SUB, SUP, TABLE,TEXTAREA, TITLE, TT, U, UL, VAR, BODY, COLGROUP, DD, DT, HEAD, HTML, LI, P, TBODY, OPTION, TD, TFOOT, TH, THEAD, TR,AREA, BASE, BASEFONT, BR, COL, FRAME, HR, IMG, INPUT, ISINDEX, LINK, META, PARAM`
+- HTML5 tags : `ARTICLE, ASIDE, AUDIO, BDI, CANVAS, COMMAND, DATALIST, DETAILS, DIALOG, EMBED, FIGCAPTION, FIGURE, FOOTER, HEADER, KEYGEN, MARK, METER, NAV, OUTPUT, PROGRESS, RP, RT, RUBY, SECTION, SOURCE, SUMMARY,TIME,TRACK,VIDEO,WBR`
 
 The syntax to create an object (eg a hyperlink) is :
-><code>A(_[content,[attributes]]_)</code>
 
-- _content_ is the child node of the the object ; it can be a Python object such as a string, a number, a list etc., or an instance of another class in the `html` module
-- _attributes_ is a sequence of keywords corresponding to the attributes of the HTML tag. These attributes must be provided as Javascript syntax, not CSS: *backgroundColor* instead of *background-color*
-</dl>
+`A(`_[content,[attributes]]_`)`
+
+> _content_ is the child node of the the object ; it can be a Python object such as a string, a number, a list etc., or an instance of another class in the **html** module
+
+> _attributes_ is a sequence of keywords corresponding to the attributes of the HTML tag. These attributes must be provided as Javascript syntax, not CSS: *backgroundColor* instead of *background-color*
+
 Example :
 
->    import html
+>    from browser import html
 >    link1 = html.A('Brython', href='http://www.brython.info')
 >    link2 = html.A(html.B('Python'), href='http://www.python.org')
 

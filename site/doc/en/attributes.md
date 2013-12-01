@@ -34,6 +34,7 @@ Since their name may vary depending on the browser, Brython defines additinal at
 
 To add a child to an element, use the operator `<=` (think of it as a left arrow for assignment)
 
+>    from browser import doc
 >    doc['zone'] <= INPUT(Id="data")
 
 Iterating on an element's children can be done using the usual Python syntax : 

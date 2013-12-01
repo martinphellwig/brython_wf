@@ -24,7 +24,7 @@ Si le code est dans un fichier externe, il est récupéré par un appel Ajax
 création de l'arbre représentant le code Python
 </td>
 <td>
-fonction <code>$py2js(_source,module_)</code> dans __py2js.js__
+fonction `__BRYTHON__.py2js(`_source,module_`)` dans __py2js.js__
 
 Cette fonction appelle :
 
@@ -33,13 +33,13 @@ Cette fonction appelle :
 - <code>transform(_root_)</code> : transforme l'arbre pour préparer la conversion en Javascript (cf ci-dessous)
 - `$add_line_num()` pour ajouter les numéros de ligne si le mode de débogage est supérieur à 0
 
-La fonction `$py2js` renvoie la racine de l'arbre
+Renvoie la racine de l'arbre
 </td>
 </tr>
 
 <tr>
 <td>génération du code Javascript</td>
-<td>méthode `to_js()` de l'arbre renvoyé par `$py2js`
+<td>méthode `to_js()` de l'arbre renvoyé par `__BRYTHON__.py2js()`
 
 Cette fonction appelle la méthode de même nom sur tous les éléments de syntaxe rencontrés dans l'arbre. Elle renvoie la chaine de caractères contenant le code Javascript. Si le mode de débogage vaut 2, cette chaine est affichée dans la console du navigateur
 </td>
@@ -61,15 +61,19 @@ exécution du code Javascript
 
 Le fichier __brython.js__ est généré par compilation de plusieurs scripts :
 
+'brython_builtins','py2js','py_utils','py_object',
+    'py_builtin_functions','js_objects','py_import',
+    'py_float','py_int','py_dict','py_list','py_string','py_set','py_dom'
+
 - __brython\_builtins.js.js__ : définit l'objet `__BRYTHON__` qui sert de passerelle entre les objets natifs Javascript (`Date, RegExp, Storage`...) et Brython
 - __py2js.js__ : opère la conversion entre le code Python et le code Javascript
 - __py\_utils.js__ : fonctions utilitaires (conversion de types entre Javascript et Python)
-- __py\_string.js__ : implémentation de la classe str de Python à partir de l'objet Javascript String
-- __py\_list.js__ : implémentation de la classe list de Python à partir de l'objet Javascript Array
-- __py\_classes.js__ : regroupe tous les autres types et fonctions intégrés de Python
+- __py\_object.js__ : implémentation de la classe object
+- __py\_builtin\_function.js__ : fonctions intégrées Python
+- __js\_object.js__ : implémentation de `JSObject` et `JSConstructor` pour l'interaction avec les objets Javascript
 - __py\_import.js__ : implémentation du mot-clé `import`
+- __py\_float.js__, __py\_int.js__, __py\_dict.js__, __py\_list.js__, __py\_string.js__, __py\_set.js__ : implémentation des classes Python correspondantes
 - __py\_dom.js__ : interaction avec le document HTML (DOM)
-- __py\_ajax.js__ : implémentation d'Ajax
 
 ###Compléments sur la traduction et l'exécution
 
@@ -119,7 +123,7 @@ Cette étape sert aussi à mémoriser les variables déclarées par `global`
 
 Le script généré peut faire appel en cours d'exécution :
 
-- aux classes intégrées définies dans __py\_classes.js, py\_string.js, py\_list.js, py\_dom.js, py\_ajax.js, py\_local\_storage.js, py\_svg.js__
+- aux classes intégrées définies dans les fichiers listés ci-dessus (__py\_int, py\_list__, etc.)
 
 - à des fonctions internes, non accessibles en Python (leur nom commence systématiquement par $) qui sont pour la plupart définies dans  __py\_utils.js__. Les plus importantes sont :
 
@@ -129,12 +133,11 @@ Le script généré peut faire appel en cours d'exécution :
   - une instance de JSObject "enveloppant" l'argument sinon
  - _$MakeArgs_ appelée au début de l'exécution de chaque fonction dont la signature comporte au moins un argument. Elle construit un espace de noms à partir des arguments passés à la fonction, en appelant notamment la fonction $JS2Py sur tous les arguments
  - _$class\_constructor_ est appelée pour la définition des classes
- - _$resolve\_attr_ est appelée pour la résolution des attributs d'instances de classes, en gérant l'héritage multiple
  - _$list\_comp_ est appelée pour chaque liste en extansion
  - _$lambda_ est appelée pour les fonctions anonymes définies par `lambda`
  - _$test\_expr_ et _$test\_item_ sont utilisés dans l'évaluation de conditions combinées par `and` ou `or`
 
-- aux fonctions définies dans le script __py\_import.js__ pour la gestion des imports
+- aux fonctions définies dans __py\_import.js__ pour la gestion des imports
 
 En cas d'erreur d'exécution, une trace aussi proche que possible de celle générée par Python est imprimée dans la console du navigateur, ou vers un autre élément défini par `sys.stderr`
 

@@ -13,6 +13,7 @@ On utilise l'attribut `onmouseover` de la balise HTML `area` en lui affectant un
 <tr>
 <td style="width:40%;padding-right:10px;">
 
+    from browser import doc
     def writetext(txt):
         doc["description"].text = ""
         doc["description"] <= txt
@@ -40,6 +41,7 @@ On utilise l'attribut `onmouseover` de la balise HTML `area` en lui affectant un
 </table>
 
 <script type="text/python3">
+from browser import doc
 def writetext(txt):
     doc["description"].text = ""
     doc["description"] <= txt

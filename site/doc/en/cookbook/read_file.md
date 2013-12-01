@@ -14,6 +14,8 @@ We use the built-in function `open()` to load the file content
 <td style="width:40%;padding-right:10px;">
 
     import time
+    from browser import doc
+
     fake_qs = '?foo=%s' %time.time()
     doc['zone'].value = open('cookbook/file.txt'+fake_qs).read()
 
@@ -38,6 +40,7 @@ Note the query string with a random value at the end of the file name : it is re
 The next example adds a timeout function to print a message in case the file was not found after 4 seconds :
 
     import time
+    from browser import doc    
 
     def on_complete(req):
         if req.status==200 or req.status==0:
@@ -58,6 +61,4 @@ The next example adds a timeout function to print a message in case the file was
         req.send()
 
     go('cookbook/file.txt?foo=%s' %time.time())
-
-
 

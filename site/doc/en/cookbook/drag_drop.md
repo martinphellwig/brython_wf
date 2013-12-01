@@ -23,6 +23,8 @@ In the example, when the draggable object has been dropped, it can't be dragged 
 </div>
 
 <div id="py_source">
+    from browser import doc
+
     panel = doc["panel"] # yellow zone
     
     source = doc["source"] # red zone

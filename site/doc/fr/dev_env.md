@@ -7,7 +7,7 @@ Il faut un serveur web pour tester les scripts localement dans la phase de déve
 
 Une fois que le serveur est lancé, pointez votre navigateur web sur _http://localhost:8000/site_ : vous devriez voir la même page que la page d'accueil du [site Brython](http://www.brython.info)
 
-Créez un nouveau répertoire (par exemple "test") dans le répertoire Brython. Avez un éditeur de texte, créez un fichier appelé _index.html_ conteneant le texte ci-dessous, et sauvegardez-le dans le répertoire _test_
+Créez un nouveau répertoire (par exemple "test") dans le répertoire Brython. Avez un éditeur de texte, créez un fichier appelé _index.html_ contenant le texte ci-dessous, et sauvegardez-le dans le répertoire _test_
 
     <html>
     <head>
@@ -16,6 +16,7 @@ Créez un nouveau répertoire (par exemple "test") dans le répertoire Brython. 
     </head>
     <body onLoad="brython()">
     <script type="text/python">
+    from browser import doc
     def echo():
         alert("Salut %s !" %doc["zone"].value)
     </script>

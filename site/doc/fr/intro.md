@@ -11,6 +11,7 @@ Un exemple simple :
     </head>
     <body onload="brython()">
     <script type="text/python">
+    from browser import doc,alert
     def echo():
         alert(doc["zone"].value)
     </script>
@@ -23,6 +24,8 @@ Un exemple simple :
 
 essayez :<p>
 <script type="text/python">
+from browser import doc,alert
+print(doc)
 def echo():
     alert(doc["zone"].value)
 </script>
@@ -61,10 +64,10 @@ Ajax : il doit donc se trouver dans le même domaine que la page HTML
 
 Quand on clique sur le bouton, la fonction `echo()` définie dans le script 
 Python est exécutée. Cette fonction récupère la valeur de l'élément INPUT 
-par son id _zone_, en utilisant la syntaxe `doc["zone"]` : `doc` est un mot-clé 
-de Brython, il se comporte comme un dictionnaire indexé par les id des éléments 
+par son id _zone_, en utilisant la syntaxe `doc["zone"]` : `doc` est un attribut 
+du module intégré **browser**, il se comporte comme un dictionnaire indexé par les id des éléments 
 DOM. `doc["zone"]` est un objet correspondant à l'élément INPUT ; on accède à la
  valeur par l'attribut _value_
 
-L'affichage est réalisé par une fonction intégrée de Brython, `alert()`, qui 
-affiche une fenêtre avec le texte passé en paramètre
+L'affichage est réalisé par la fonction `alert()` définie dans le même module
+**browser**, qui affiche une fenêtre avec le texte passé en paramètre

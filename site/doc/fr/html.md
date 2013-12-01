@@ -1,20 +1,23 @@
-module html
------------
+module **browser.html**
+-----------------------
 
-Le module intégré `html` définit des classes correspondant aux balises HTML, en majuscules. Comme pour tous les modules Python, on peut 
-- soit importer seulement le nom du module : `import html`, puis faire référence aux balises par `html.DIV`
-- soit importer les noms dont on a besoin : `from html import A,B,DIV`, ou si on ne craint pas les conflits de noms : `from html import *`
+Ce module définit des classes correspondant aux balises HTML, en majuscules
+
+Les classes définies sont :
+
+- les balises HTML4 : `A, ABBR, ACRONYM, ADDRESS, APPLET, B, BDO, BIG, BLOCKQUOTE, BUTTON, CAPTION, CENTER, CITE, CODE, DEL, DFN, DIR, DIV, DL,EM, FIELDSET, FONT, FORM, FRAMESET,H1, H2, H3, H4, H5, H6,I, IFRAME, INS, KBD, LABEL, LEGEND,MAP, MENU, NOFRAMES, NOSCRIPT, OBJECT,OL, OPTGROUP, PRE, Q, S, SAMP,SCRIPT, SELECT, SMALL, SPAN, STRIKE,STRONG, STYLE, SUB, SUP, TABLE,TEXTAREA, TITLE, TT, U, UL, VAR, BODY, COLGROUP, DD, DT, HEAD, HTML, LI, P, TBODY, OPTION, TD, TFOOT, TH, THEAD, TR,AREA, BASE, BASEFONT, BR, COL, FRAME, HR, IMG, INPUT, ISINDEX, LINK, META, PARAM`
+- les balises HTML5 : `ARTICLE, ASIDE, AUDIO, BDI, CANVAS, COMMAND, DATALIST, DETAILS, DIALOG, EMBED, FIGCAPTION, FIGURE, FOOTER, HEADER, KEYGEN, MARK, METER, NAV, OUTPUT, PROGRESS, RP, RT, RUBY, SECTION, SOURCE, SUMMARY,TIME,TRACK,VIDEO,WBR`
 
 La syntaxe pour créer un objet (par exemple un lien hypertexte) est :
 
-><code>A([_content,[attributes]_]])</code>
+`A(`_[content,[attributes]]_`)`
+> _content_ est le noeud "fils" de l'objet ; il peut s'agir d'un objet Python comme une chaine de caractères, une liste, etc, ou bien une instance d'une autre classe du module **html**
 
-- *content* est le noeud "fils" de l'objet ; il peut s'agir d'un objet Python comme une chaine de caractères, une liste, etc, ou bien une instance d'une autre classe du module `html`
-- *attributes* est une suite de mots-clés correspondant aux attributs de la balise HTML. Ces attributs doivent être fournis avec la syntaxe Javascript, pas CSS : *backgroundColor* et pas *background-color*
+> _attributes_ est une suite de mots-clés correspondant aux attributs de la balise HTML. Ces attributs doivent être fournis avec la syntaxe Javascript, pas CSS : _backgroundColor_ et pas _background-color_
 
 Exemple :
 
->    import html
+>    from browser import html
 >    link1 = html.A('Brython',href='http://www.brython.info')
 >    link2 = html.A(html.B('Python'),href='http://www.python.org')
 

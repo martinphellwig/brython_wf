@@ -12,6 +12,7 @@ A simple example :
     </head>
     <body onload="brython()">
     <script type="text/python">
+    from browser import doc
     def echo():
         alert(doc["zone"].value)
     </script>
@@ -25,6 +26,7 @@ A simple example :
 Try it!
 
 <script type="text/python">
+from browser import doc, alert
 def echo():
     alert(doc["zone"].value)
 </script>
@@ -52,6 +54,6 @@ If the Python program is large, another option is to write it in a separate file
 
 Please note that in this case the Python script will be loaded through an Ajax call : it must be in the same domain as the HTML page
 
-In the above two examples of code, when we click on the button, the onclick event calls and run the `echo()` function, which was defined in the Python script. This function gets the value of the INPUT element, through its id (_zone_). This is accomplished by the syntax `doc["zone"]` : `doc` is a keyword in Brython, which behaves just like a dictionary whose keys are the ids of the elements of the DOM. Hence, in our example, `doc["zone"]` is an object that maps to the INPUT element ; the _value_ property holds, interestingly enough, the value of the object
+In the above two examples of code, when we click on the button, the onclick event calls and run the `echo()` function, which was defined in the Python script. This function gets the value of the INPUT element, through its id (_zone_). This is accomplished by the syntax `doc["zone"]` : `doc`, defined in module **browser**, is an object that represents the document currently displayed in the browser. It behaves like a dictionary whose keys are the ids of the elements of the DOM. Hence, in our example, `doc["zone"]` is an object that maps to the INPUT element ; the _value_ property holds, interestingly enough, the value of the object
 
-In Brython, the output can be accomplished in various ways, including with the `alert()` built-in function which shows a popup window with the text passed as an argument
+In Brython, the output can be accomplished in various ways, including with the function `alert()` (also defined in **browser**) which shows a popup window with the text passed as an argument

@@ -49,6 +49,7 @@ Pour cela, on exécute la fonction _validate()_ au moment d'appuyer sur "Envoi".
 <td style="width:40%;padding-right:10px;" id="py_source">
 
     import re
+    from browser import alert, doc
     
     def validate():
         if not doc['name'].value:

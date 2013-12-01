@@ -1,14 +1,14 @@
-module local_storage
---------------------
+module **browser.local_storage**
+--------------------------------
 
-The local storage defined by HTML5 can be accessed with the module 
-`local_storage`. The object `storage` defined in this module is used as a 
-typical Python dictionary
+This module uses the local storage defined in HTML5 : a way of storing key/value pairs in a file attached to the browser. Keys and values are strings
+
+The module defines an object, `storage`, which is used as a typical Python dictionary
 
 ### Example
 
->    from local_storage import storage
+>    from browser.local_storage import storage
 >    storage['foo']='bar'
->    log(storage['foo'])
+>    print(storage['foo'])
 >    del storage['foo']
->    log(storage['foo']) # raises KeyError
+>    print(storage['foo']) # raises KeyError

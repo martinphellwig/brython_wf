@@ -10,6 +10,7 @@ Solution
 <tr>
 <td style="width:50%;">
 
+    from browser import doc, alert
     # doc['zone'] est la cellule colorée
     alert(doc['zone'].text)
 
@@ -32,6 +33,7 @@ Solution
 </table>
 
 <script type="text/python3">
+from browser import doc
 def show_text():
     src = doc.get(selector="pre.marked")[0].text
     exec(src)

@@ -16,6 +16,7 @@ Create a new directory (eg "test") in the Brython directory. With a text editor,
     </head>
     <body onLoad="brython()">
     <script type="text/python">
+    from browser import doc
     def echo():
         alert("Hello %s !" %doc["zone"].value)
     </script>
