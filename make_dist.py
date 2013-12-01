@@ -85,7 +85,7 @@ out.write(loader_src)
 out.close()
 
 res = '// brython.js www.brython.info\n'
-res += '// version 1.2.%s\n' %now
+res += '// version %s.%s.%s\n' %(version[0],version[1],now)
 res += '// version compiled from commented, indented source files '
 res += 'at https://bitbucket.org/olemis/brython/src\n'
 src_size = 0
@@ -120,7 +120,7 @@ import zipfile
 dest_dir = os.path.join(os.getcwd(),'dist')
 if not os.path.exists(dest_dir):
     os.mkdir(dest_dir)
-name = 'Brython1.2_site_mirror-%s' %now
+name = 'Brython%s.%s_site_mirror-%s' %(version[0],version[1],now)
 dest_path = os.path.join(dest_dir,name)
 
 def is_valid(filename):
