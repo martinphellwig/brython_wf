@@ -1369,7 +1369,7 @@ function $FromCtx(context){
             }
         }else{
            if(this.names[0]=='*'){
-             res += '$import_list(["'+this.module+'"])\n'
+             res += '$import_list(["'+this.module+'"],"'+mod+'")\n'
              res += head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
              res += head+'for(var $attr in $mod){\n'
              res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
@@ -1382,7 +1382,7 @@ function $FromCtx(context){
              for(var i=0;i<this.names.length;i++){
                  res += '"'+this.names[i]+'",'
              }
-             res += '])\n'
+             res += '],"'+mod+'")\n'
              for(var i=0;i<this.names.length;i++){
                 res += head+'var '+(this.aliases[this.names[i]]||this.names[i])
                 if(scope.ntype==="module"){
