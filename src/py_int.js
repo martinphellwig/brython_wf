@@ -192,6 +192,7 @@ for($op in $comps){
 }
 
 Number.prototype.__class__ = $IntDict
+Number.prototype.$fast_augm = true // used to speed up augmented assigns
 
 $IntDict.$dict = $IntDict
 
