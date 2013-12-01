@@ -103,6 +103,7 @@ function $import_module_search_path_list(module,path_list){
            try {
                mod = $import_py(module,path)
                flag = true
+               if(j==search.length-1){mod.$package=true}
            }catch(err){if(err.__name__!=="FileNotFoundError"){throw err}}
            if(flag){break}
         }
@@ -221,6 +222,32 @@ function $import_list(modules){
     return res
 }
 
+function $import_from(mod_name,names){
+    // used for "from X import A,B,C
+    // mod_name is the name of the module
+    // names is a list of names
+    // if mod_name matches a module, the names are searched in the module
+    // if mod_name matches a package (file mod_name/__init__.py) the names
+    // are searched in __init__.py, or as module names in the package
+    if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
+    var mod = __BRYTHON__.imported[mod_name]
+    if(mod===undefined){$import_list([mod_name]);mod=__BRYTHON__.modules[mod_name]}
+    var mod_ns = __BRYTHON__.modules[mod_name]
+    for(var i=0;i<names.length;i++){
+        if(mod_ns[names[i]]===undefined){
+            if(mod.$package){
+                var sub_mod = mod_name+'.'+names[i]
+                $import_list([sub_mod])
+                mod[names[i]] = __BRYTHON__.modules[sub_mod]
+            }else{
+                throw ImportError("cannot import name "+names[i])
+            }
+        }
+    }
+    return mod
+}
+
+
 function $import_list_intra(src,current_url,names){
     // form "from . import A,B" or "from ..X import A,B"
     // "src" is the item after "from" : '.' and '..X' in the examples above
@@ -258,26 +285,4 @@ function $import_list_intra(src,current_url,names){
         }
     }
     return mod
-}
-
-function $import_from(module,names,parent_module,alias){
-    if (parent_module !== undefined) {
-       //this is a relative path import
-       // ie,  from .mymodule import a,b,c
-       //get parent module
-
-       var relpath=__BRYTHON__.$py_module_path[parent_module]
-       var i=relpath.lastIndexOf('/')
-       relpath=relpath.substring(0, i)
-    
-       // todo: does the next statement make sense? 
-       alias=__BRYTHON__.$py_module_alias[parent_module]
-      // console.log(parent_module+','+alias+','+relpath)
-       console.log('in import from, call import_md_s_p_l for module '+module)
-       return $import_module_search_path_list(module,alias,names,[relpath])
-    } else if (alias !== undefined) {
-       return $import_single(modules,alias,names)
-    } 
-
-    return $import_single(modules,names,names)
 }
