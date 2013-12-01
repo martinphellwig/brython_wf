@@ -8,6 +8,236 @@ $ModuleDict.__repr__ = function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__str__ = function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
 
+
+function $__import__(name, globals, locals, fromlist, level, curpath) {
+   // doc: http://docs.python.org/dev/library/functions.html#__import__
+   // curpath is the location of the code where this import takes place
+   // curpath = '__main__' means its in the main script 
+   // if 'import a' takes place in module '/src/Lib/mymodule'
+   // curpath = '/src/Lib'
+   // note: curpath is ignored if level =0 (absolute import)
+   // level > 0 (is a relative import)
+
+   if(globals === undefined) {
+
+   }
+   if(locals === undefined) {
+
+   }
+   if(fromlist === undefined) {fromlist=[]}
+   if(level === undefined){level=0}
+
+   var _loader=None
+   if(level > 0) {
+     // this is a relative import! so our search path is set..
+     var elts = cur_path.split('/')
+     var pymod_elts = elts.slice(0,elts.length-level)
+     var _path=pymod_elts.join('/')
+
+     for (var j=0; j < __BRYTHON__.path_hooks.length; j++) {
+         if (_loader != None) continue;
+         var _mod=__BRYTHON__.path_hooks[j]
+         var _found=False
+         console.log(_mod)
+         try {_mod(_path)
+              _found=True
+         } catch (ImportError) {}
+         if (_found) { // this hook thinks it can find/load the module
+            _loader=_mod.find_module(name, _path)
+         }
+     }
+   } else {
+     for (var i=0; i < __BRYTHON__.path.length; i++) {
+         if (_loader != None) continue;
+         var _path=__BRYTHON__.path[i]
+         for (var j=0; j < __BRYTHON__.path_hooks.length; j++) {
+             if (_loader != None) continue;
+             var _mod=__BRYTHON__.path_hooks[j]
+             var _found=False
+             try {
+               _mod.__init__(_path)
+               _found=True
+             } catch (err) { //console.log('catch:' + err.message) 
+             }
+             if (_found) { // this hook thinks it can find/load the module
+                _loader=_mod.find_module(name, _path)
+             }
+         }
+     }
+   }
+
+   if(_loader == None) {
+     throw ImportError('Could not find module:' + name)
+     return
+   }
+
+   // _loader is not None, so lets run the loader
+   return _loader.load_module(name)
+}
+
+function import_js_module(module_contents, path, name){
+    eval(module_contents)
+    // check that module name is in namespace
+    if(eval('$module')===undefined){
+        throw ImportError("name '$module' is not defined in module")
+    }
+    // add class
+    $module.__class__ = $ModuleDict
+    $module.__name__ = name
+    $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
+    $module.__str__ = function(){return "<module '"+module.name+"' from "+path + " >"}
+    $module.__file__ = path
+
+    return $module
+}
+
+function import_py_module(module_contents, path, name) {
+    __BRYTHON__.$py_module_path[name]=path
+
+    //console.log(module_contents)
+    var root = __BRYTHON__.py2js(module_contents,name)
+    //console.log('after py2js')
+    var body = root.children
+    root.children = []
+    // use the module pattern : module name returns the results of an anonymous$
+    var mod_node = new $Node('expression')
+    new $NodeJSCtx(mod_node,'$module=(function()')
+    root.insert(0,mod_node)
+    mod_node.children = body
+
+    // $globals will be returned when the anonymous function is run
+    var ret_node = new $Node('expression')
+    new $NodeJSCtx(ret_node,'return $globals')
+
+    mod_node.add(ret_node)
+    // add parenthesis for anonymous function execution
+
+    var ex_node = new $Node('expression')
+    new $NodeJSCtx(ex_node,')()')
+    root.add(ex_node)
+
+    try{
+        var js = root.to_js()
+        if (__BRYTHON__.$options.debug == 10) {
+           console.log('code for module '+name)
+           console.log(js);
+        }
+        eval(js)
+
+    }catch(err){
+        console.log(''+err+' '+err.__name__)
+        throw err
+    }
+
+    // check that module name is in namespace
+    if(eval('$module')===undefined){
+      throw ImportError("name '$module' is not defined in module")
+    }
+
+    // add names defined in the module as attributes of $module
+    for(var attr in __BRYTHON__.scope[name].__dict__){
+       $module[attr] = __BRYTHON__.scope[name].__dict__[attr]
+    }
+    // add class and __str__
+    $module.__class__ = $ModuleDict
+    $module.__name__ = name
+    $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
+    $module.__str__ = function(){return "<module '"+name+"' from "+path + " >"}
+    $module.__file__ = path
+
+    return $module
+}
+
+//function $import_pyj_module(module,alias,names,path,module_contents) {
+function import_pyj_module(module_contents,path,name) {
+    __BRYTHON__.$py_module_path[name]=path
+    //__BRYTHON__.$py_module_alias[module]=alias
+    __BRYTHON__.scope[name]={}
+    __BRYTHON__.scope[name].__dict__={}
+
+   try {
+     eval(module_contents);
+
+     // check that module name is in namespace
+     if(eval('$module')===undefined){
+       throw ImportError("name '$module' is not defined in module")
+     }
+
+     // add names defined in the module as attributes of $module
+     for(var attr in __BRYTHON__.scope[name].__dict__){
+       $module[attr] = __BRYTHON__.scope[name].__dict__[attr]
+     }
+
+     // add class and __str__
+     $module.__class__ = $ModuleDict
+     $module.__name__ = name
+     $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
+     $module.__str__ = function(){return "<module '"+name+"' from "+path + " >"}
+     $module.__file__ = path
+
+     return $module
+   } catch(err) {
+     eval('throw '+err.name+'(err.message)')
+   }
+}
+
+// now work on default import module to import modules over ajax.
+// most other import modules (via path hooks) can be written in python. :)
+
+$default_import_module = { // Module Finder
+    __getattr__ : function(attr){return this[attr]},
+    __init__:function(path) {
+       //console.log('in $default_import_module.__init__')
+       //console.log(__BRYTHON__.brython_path);
+       if (path.length >= __BRYTHON__.brython_path.length+3 && (
+           path.substring(0,__BRYTHON__.brython_path.length+3) == __BRYTHON__.brython_path+'libs' 
+        || path.substring(0,__BRYTHON__.brython_path.length+3) == __BRYTHON__.brython_path + 'Lib')) {
+          self.fullpath=path;
+       } else {
+          throw ImportError('Path is not supported:' + path)
+       }
+    },
+    find_module:function(name){
+       if (__BRYTHON__.modules[name] !== undefined) {
+          return this;
+       }
+       var module={}
+       module.name=name
+       var import_funcs = [$import_js, $import_module_search_path]
+       if(module.name.search(/\./)>-1){import_funcs = [$import_module_search_path]}
+
+       for(var j=0;j<import_funcs.length;j++){
+          //console.log(import_func[j])
+          try{
+            var mod=import_funcs[j](module)
+            if (mod !== undefined) {
+               __BRYTHON__.modules[name]=mod;
+               this.name=name;
+               return this
+            }
+            throw ImportError('Cannot find module:' + name)
+          } catch(err){
+            if(err.__name__==="FileNotFoundError"){
+                if(j==import_funcs.length-1){
+                    // all possible locations failed : throw error
+                    throw err
+                }else{
+                    continue
+                }
+            }else{throw err}
+          }
+       }
+    },
+
+    load_module: function( ) {
+       return __BRYTHON__.modules[this.name]
+    }
+}
+$default_import_module.__class__ = $default_import_module 
+$default_import_module.__str__ = function(){return "<module 'default import module'>"}
+
+////////////////////////////////////////////////////////////////////////////
+
 function $importer(){
     // returns the XMLHTTP object to handle imports
     if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -63,23 +293,9 @@ function $import_js(module){
 
 function $import_js_generic(module,filepath) {
    var module_contents=$download_module(module.name, filepath+'.js')
-   return $import_js_module(module, filepath+'.js', module_contents)
+   return import_js_module(module_contents, filepath+'.js', module.name)
 }
 
-function $import_js_module(module,filepath,module_contents){
-    eval(module_contents)
-    // check that module name is in namespace
-    if(eval('$module')===undefined){
-        throw ImportError("name '$module' is not defined in module")
-    }
-    // add class and __str__
-    $module.__class__ = $ModuleDict
-    $module.__name__ = module.name
-    $module.__repr__ = function(){return "<module '"+module.name+"' from "+filepath+" >"}
-    $module.__str__ = function(){return "<module '"+module.name+"' from "+filepath+" >"}
-    $module.__file__ = filepath
-    return $module
-}
 
 function $import_module_search_path(module){
   // this module is needed by $import_from, so don't remove
@@ -119,170 +335,5 @@ function $import_py(module,path){
     // import Python modules, in the same folder as the HTML page with
     // the Brython script
     var module_contents=$download_module(module.name, path+'.py')
-    return $import_py_module(module,path+'.py',module_contents)
-}
-
-function $import_py_module(module,path,module_contents) {
-    __BRYTHON__.$py_module_path[module.name]=path
-
-    var root = __BRYTHON__.py2js(module_contents,module.name)
-    var body = root.children
-    root.children = []
-    // use the module pattern : module name returns the results of an anonymous function
-    var mod_node = new $Node('expression')
-    new $NodeJSCtx(mod_node,'$module=(function()')
-    root.insert(0,mod_node)
-    mod_node.children = body
-
-    // $globals will be returned when the anonymous function is run
-    var ret_node = new $Node('expression')
-    new $NodeJSCtx(ret_node,'return $globals')
-    mod_node.add(ret_node)
-    // add parenthesis for anonymous function execution
-    
-    var ex_node = new $Node('expression')
-    new $NodeJSCtx(ex_node,')()')
-    root.add(ex_node)
-    
-    try{
-        var js = root.to_js()
-        if (__BRYTHON__.$options.debug == 10) {
-            console.log('code for module '+module.name)
-           console.log(js);
-        }
-        eval(js)
-        // add names defined in the module as attributes of $module
-        for(var attr in __BRYTHON__.scope[module.name].__dict__){
-            $module[attr] = __BRYTHON__.scope[module.name].__dict__[attr]
-        }
-        // add class and __str__
-        $module.__class__ = $ModuleDict
-        $module.__repr__ = function(){return "<module '"+module.name+"' from "+path+" >"}
-        $module.__str__ = function(){return "<module '"+module.name+"' from "+path+" >"}
-        $module.toString = function(){return "module "+module.name}
-        $module.__file__ = path
-        $module.__initializing__ = false
-        return $module
-    }catch(err){
-        console.log(''+err+' '+err.__name__)
-        throw err
-    }
-}
-
-function $import_single(module){
-    var import_funcs = [$import_js, $import_module_search_path]
-    if(module.name.search(/\./)>-1){import_funcs = [$import_module_search_path]}
-    for(var j=0;j<import_funcs.length;j++){
-        try{
-            return import_funcs[j](module)
-        } catch(err){
-            if(err.__name__==="FileNotFoundError"){
-                if(j==import_funcs.length-1){
-                    // all possible locations failed : throw error
-                    throw err
-                }else{
-                    continue
-                }
-            }else{throw err}
-        }
-    }
-}
-
-function $import_list(modules){
-    var res = []
-    for(var i=0;i<modules.length;i++){
-        var mod_name=modules[i]
-        if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
-        var mod;
-        var stored = __BRYTHON__.imported[mod_name]
-        if(stored===undefined){
-            // if module is in a package (eg "import X.Y") then we must first import X
-            // by searching for the file X/__init__.py, then import X.Y searching either
-            // X/Y.py or X/Y/__init__.py
-            var mod = {}
-            var parts = mod_name.split('.')
-            for(var i=0;i<parts.length;i++){
-                var module = new Object()
-                module.name = parts.slice(0,i+1).join('.')
-                if(__BRYTHON__.modules[module.name]===undefined){
-                    // this could be a recursive import, so lets set modules={}
-                    __BRYTHON__.modules[module.name]={}
-                    __BRYTHON__.imported[module.name]={}
-                    // indicate if package only, or package or file
-                    if(i<parts.length-1){module.package_only = true}
-                    __BRYTHON__.modules[module.name] = $import_single(module)
-                    __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
-                }
-            }
-        }else{
-            mod=stored
-        }
-        res.push(mod)
-    }
-    return res
-}
-
-function $import_from(mod_name,names){
-    // used for "from X import A,B,C
-    // mod_name is the name of the module
-    // names is a list of names
-    // if mod_name matches a module, the names are searched in the module
-    // if mod_name matches a package (file mod_name/__init__.py) the names
-    // are searched in __init__.py, or as module names in the package
-    if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
-    var mod = __BRYTHON__.imported[mod_name]
-    if(mod===undefined){$import_list([mod_name]);mod=__BRYTHON__.modules[mod_name]}
-    var mod_ns = __BRYTHON__.modules[mod_name]
-    for(var i=0;i<names.length;i++){
-        if(mod_ns[names[i]]===undefined){
-            if(mod.$package){
-                var sub_mod = mod_name+'.'+names[i]
-                $import_list([sub_mod])
-                mod[names[i]] = __BRYTHON__.modules[sub_mod]
-            }else{
-                throw ImportError("cannot import name "+names[i])
-            }
-        }
-    }
-    return mod
-}
-
-
-function $import_list_intra(src,current_url,names){
-    // form "from . import A,B" or "from ..X import A,B"
-    // "src" is the item after "from" : '.' and '..X' in the examples above
-    // "current_url" is the URL of the script where the call was made
-    // "names" is the list of names to import
-    var mod;
-    var elts = current_url.split('/')
-    var nbpts = 0 // number of points in src
-    while(src.charAt(nbpts)=='.'){nbpts++}
-    var pymod_elts = elts.slice(0,elts.length-nbpts)
-    var pymod_name = src.substr(nbpts)
-    var pymod_path = pymod_elts.join('/')
-    if(pymod_name){ // form 'from ..Z import bar' : Z is a module name, 
-                    // bar is a name in Z namespace
-        //pymod_elts.push(pymod_name)
-        var stored = __BRYTHON__.imported[pymod_name]
-        if(stored!==undefined){return stored}
-        var pymod = {'name':pymod_name}
-        mod = $import_module_search_path_list(pymod,[pymod_path])
-        if(mod!=undefined){
-            __BRYTHON__.modules[pymod_name] = mod
-            __BRYTHON__.imported[pymod_name] = mod
-            return mod
-        }
-    }else{ // form 'from . import X' : X is a module name
-        var mod = {}
-        for(var i=0;i<names.length;i++){
-            var stored = __BRYTHON__.imported[names[i]]
-            if(stored!==undefined){mod[names[i]]=stored}
-            else{
-                mod[names[i]]=$import_module_search_path_list({'name':names[i]},[pymod_path])
-                __BRYTHON__.modules[names[i]] = mod[names[i]]
-                __BRYTHON__.imported[names[i]]=mod[names[i]]
-            }
-        }
-    }
-    return mod
+    return import_py_module(module_contents, path+'.py', module.name)
 }
