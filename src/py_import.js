@@ -76,19 +76,24 @@ function $__import__(name, globals, locals, fromlist, level, curpath) {
 }
 
 function import_js_module(module_contents, path, name){
-    eval(module_contents)
-    // check that module name is in namespace
-    if(eval('$module')===undefined){
-        throw ImportError("name '$module' is not defined in module")
-    }
-    // add class
-    $module.__class__ = $ModuleDict
-    $module.__name__ = name
-    $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
-    $module.__str__ = function(){return "<module '"+module.name+"' from "+path + " >"}
-    $module.__file__ = path
+   try {
+     eval(module_contents);
+   } catch(err) {
+     eval('throw '+err.name+'(err.message)')
+   }
 
-    return $module
+   // check that module name is in namespace
+   if(eval('$module')===undefined){
+     throw ImportError("name '$module' is not defined in module")
+   }
+   // add class
+   $module.__class__ = $ModuleDict
+   $module.__name__ = name
+   $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
+   $module.__str__ = function(){return "<module '"+module.name+"' from "+path + " >"}
+   $module.__file__ = path
+
+   return $module
 }
 
 function import_py_module(module_contents, path, name) {
@@ -148,37 +153,25 @@ function import_py_module(module_contents, path, name) {
     return $module
 }
 
-//function $import_pyj_module(module,alias,names,path,module_contents) {
 function import_pyj_module(module_contents,path,name) {
-    __BRYTHON__.$py_module_path[name]=path
-    //__BRYTHON__.$py_module_alias[module]=alias
-    __BRYTHON__.scope[name]={}
-    __BRYTHON__.scope[name].__dict__={}
+   __BRYTHON__.$py_module_path[name]=path
+   //__BRYTHON__.$py_module_alias[module]=alias
+   __BRYTHON__.scope[name]={}
+   __BRYTHON__.scope[name].__dict__={}
 
-   try {
-     eval(module_contents);
+   $module=import_js_module(module_contents, path, name)
 
-     // check that module name is in namespace
-     if(eval('$module')===undefined){
-       throw ImportError("name '$module' is not defined in module")
-     }
-
-     // add names defined in the module as attributes of $module
-     for(var attr in __BRYTHON__.scope[name].__dict__){
-       $module[attr] = __BRYTHON__.scope[name].__dict__[attr]
-     }
-
-     // add class and __str__
-     $module.__class__ = $ModuleDict
-     $module.__name__ = name
-     $module.__repr__ = function(){return "<module '"+name+"' from "+path + " >"}
-     $module.__str__ = function(){return "<module '"+name+"' from "+path + " >"}
-     $module.__file__ = path
-
-     return $module
-   } catch(err) {
-     eval('throw '+err.name+'(err.message)')
+   // check that module name is in namespace
+   if(eval('$module')===undefined){
+     throw ImportError("name '$module' is not defined in module")
    }
+
+   // add names defined in the module as attributes of $module
+   for(var attr in __BRYTHON__.scope[name].__dict__){
+      $module[attr] = __BRYTHON__.scope[name].__dict__[attr]
+   }
+
+   return $module
 }
 
 // now work on default import module to import modules over ajax.
