@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131201-221358
+// version 1.3.20131202-173528
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131201-221358', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131202-173528', 'alpha', 0]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
 "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
@@ -1095,7 +1095,9 @@ var iterable=this.tree[1]
 this.loop_num=$loop_num
 new_node.line_num=node.line_num
 new_node.module=node.module
-new $NodeJSCtx(new_node,'var $iter'+$loop_num+'=iter('+iterable.to_js()+')')
+var js='var $next'+$loop_num+'=getattr(iter('+iterable.to_js()
+js +='),"__next__")'
+new $NodeJSCtx(new_node,js)
 new_nodes.push(new_node)
 new_node=new $Node('expression')
 var js='var $no_break'+$loop_num+'=true;while(true)'
@@ -1115,7 +1117,7 @@ var C=new $NodeCtx(iter_node)
 var target_expr=new $ExprCtx(C,'left',true)
 target_expr.tree=target.tree
 var assign=new $AssignCtx(target_expr)
-assign.tree[1]=new $JSCode('getattr($iter'+$loop_num+',"__next__")()')
+assign.tree[1]=new $JSCode('$next'+$loop_num+'()')
 try_node.add(iter_node)
 var catch_node=new $Node('expression')
 var js='catch($err){if($is_exc($err,[StopIteration])){$pop_exc();break}'
