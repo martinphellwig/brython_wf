@@ -1399,8 +1399,9 @@ function $FromCtx(context){
                     res += this.aliases[this.names[i]]||this.names[i]
                     res += '"]'
                 }
-                //res += '=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'")\n'
-                res += '=getattr($mod,"'+this.names[i]+'")\n'
+                res += '=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'")\n'
+                // this sort of works, but gives an obj error a few lines down
+                //res += '=$mod["'+this.names[i]+'"]\n'
              }
            }
         }
