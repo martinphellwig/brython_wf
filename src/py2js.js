@@ -1255,7 +1255,9 @@ function $ForExpr(context){
         this.loop_num = $loop_num
         new_node.line_num = node.line_num
         new_node.module = node.module
-        new $NodeJSCtx(new_node,'var $iter'+$loop_num+'=iter('+iterable.to_js()+')')
+        var js = 'var $next'+$loop_num+'=getattr(iter('+iterable.to_js()
+        js += '),"__next__")'
+        new $NodeJSCtx(new_node,js)
         new_nodes.push(new_node)
 
         new_node = new $Node('expression')
@@ -1283,7 +1285,7 @@ function $ForExpr(context){
         var target_expr = new $ExprCtx(context,'left',true)
         target_expr.tree = target.tree
         var assign = new $AssignCtx(target_expr) // assignment to left operand
-        assign.tree[1] = new $JSCode('getattr($iter'+$loop_num+',"__next__")()')
+        assign.tree[1] = new $JSCode('$next'+$loop_num+'()')
         try_node.add(iter_node)
 
         var catch_node = new $Node('expression')
