@@ -9,7 +9,7 @@ $ModuleDict.__str__ = function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
 
 
-function $__import__(name, globals, locals, fromlist, level, curpath) {
+function $__import__(name, globals, locals, curpath, level) {
    // doc: http://docs.python.org/dev/library/functions.html#__import__
    // curpath is the location of the code where this import takes place
    // curpath = '__main__' means its in the main script 
@@ -24,22 +24,23 @@ function $__import__(name, globals, locals, fromlist, level, curpath) {
    if(locals === undefined) {
 
    }
-   if(fromlist === undefined) {fromlist=[]}
+   //if(fromlist === undefined) {fromlist=[]}
    if(level === undefined){level=0}
 
    var _loader=None
    if(level > 0) {
      // this is a relative import! so our search path is set..
-     var elts = cur_path.split('/')
+     var elts = curpath.split('/')
      var pymod_elts = elts.slice(0,elts.length-level)
      var _path=pymod_elts.join('/')
-
+     console.log(_path)
      for (var j=0; j < __BRYTHON__.path_hooks.length; j++) {
          if (_loader != None) continue;
          var _mod=__BRYTHON__.path_hooks[j]
          var _found=False
          console.log(_mod)
-         try {_mod(_path)
+         try {
+              _mod.__init__(_path)
               _found=True
          } catch (ImportError) {}
          if (_found) { // this hook thinks it can find/load the module

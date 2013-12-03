@@ -1,4 +1,5 @@
-from browser import doc
+from _browser import doc   # <==== this works
+#from browser import doc   # <==== this does not work.
 
 class NodeCollectionSelector(Selector):
   def __init__(self, selector, collection):

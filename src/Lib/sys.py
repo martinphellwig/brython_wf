@@ -2,6 +2,8 @@
 def __getattr__(None,attr):
     if attr=='modules':
         return dict(JSObject(__BRYTHON__.imported))
+    elif attr=='modules':
+        return list(JSObject(__BRYTHON__.path_hooks))
     else:
         raise ImportError("cannot import name "+attr)
 
