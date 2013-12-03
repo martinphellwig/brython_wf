@@ -1348,18 +1348,31 @@ function $FromCtx(context){
             //if(mod){
             //   search_path_parts.push(mod)
             //}
-            res+="var $mod=$__import__('"+this.module+"',undefined,undefined,"
-            res+="'"+parent_path+"',"+_level+');'
 
-            //var search_path = search_path_parts.join('/')
-            //res +="$mod=$import_list_intra('"+this.module+"','"
-            //res += __BRYTHON__.$py_module_path[parent_module]
-            //res += "',["
-            //for(var i=0;i<this.names.length;i++){
-            //    res += '"'+this.names[i]+'",'
-            //}
-            //res += '])\n'+head
-            for(var i=0;i<this.names.length;i++){
+            if(_level > 0 && this.module.length == _level) {
+              // this is probably a package, so from .. import blah
+              // blah is a module name so lets do a switcharoo... :)
+              for(var i=0;i<this.names.length;i++){
+                 res+="var $mod=$__import__('"+this.names[i]+"',undefined,undefined,"
+                 res+="'"+parent_path+"',"+_level+');'
+
+                 if(['def','class','module'].indexOf(scope.ntype)>-1){
+                    res += 'var '
+                 }
+                 var alias = this.aliases[this.names[i]]||this.names[i]
+                 res += alias
+                 if(scope.ntype == 'def'){
+                    res += '=$locals["'+alias+'"]'
+                 }else if(scope.ntype=='module'){
+                    res += '=$globals["'+alias+'"]'
+                 }          
+                 res += '=getattr($mod,"'+this.names[i]+'")\n'
+              }
+            } else {
+              res+="var $mod=$__import__('"+this.module+"',undefined,undefined,"
+              res+="'"+parent_path+"',"+_level+');'
+
+              for(var i=0;i<this.names.length;i++){
                 if(['def','class','module'].indexOf(scope.ntype)>-1){
                     res += 'var '
                 }
@@ -1371,6 +1384,7 @@ function $FromCtx(context){
                     res += '=$globals["'+alias+'"]'
                 }          
                 res += '=getattr($mod,"'+this.names[i]+'")\n'
+              }
             }
         }else{
            if(this.names[0]=='*'){
@@ -3909,6 +3923,7 @@ function brython(options){
     __BRYTHON__.$py_module_path = {}
     __BRYTHON__.$py_module_alias = {}
     __BRYTHON__.path_hooks = [$default_import_module]
+
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
     __BRYTHON__.imported = {}
@@ -3959,6 +3974,20 @@ function brython(options){
             }
         }
     }
+
+    // to be compatible with CPython, lets import site.py if we can find it.
+    __BRYTHON__.$py_module_path['__main__'] = $href
+    try {
+        var $root = __BRYTHON__.py2js('import site','__main__')
+        var $js = $root.to_js()
+        if(__BRYTHON__.debug>1){console.log($js)}
+        eval($js)
+    }catch($err){
+        console.log('PY2JS '+$err)
+        for(var attr in $err){
+           console.log(attr+' : '+$err[attr])
+        }
+    }    
 
     // get all scripts with type = text/python and run them
     
