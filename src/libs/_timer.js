@@ -11,5 +11,10 @@ $module =  {
     },
 
     set_timeout : function(func,interval){window.setTimeout(func,interval)},
+    
+    request_animation_frame: function(func){
+        return int(window.requestAnimationFrame(func))},
+    
+    cancel_animation_frame: function(int_id){window.cancelAnimationFrame(int_id)},
 
 }
