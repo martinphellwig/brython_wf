@@ -216,4 +216,3 @@ function object(){
 object.$dict = $ObjectDict
 object.__class__ = $factory
 $ObjectDict.$factory = object
-
