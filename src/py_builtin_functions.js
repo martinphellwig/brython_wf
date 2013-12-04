@@ -562,11 +562,13 @@ function len(obj){
 
 // list built in function is defined in py_list
 
-function locals(obj_id){
+function locals(obj_id,module){
     // used for locals() ; the translation engine adds the argument obj,
-    // a dictionary mapping local variable names to their values
+    // a dictionary mapping local variable names to their values, and the
+    // module name
     if(__BRYTHON__.scope[obj_id]===undefined){
-        var module=document.$line_info[1]
+        console.log('use $line info for locals')
+        //var module=document.$line_info[1]
         return globals(module)
     }
     var res = dict()

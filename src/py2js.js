@@ -386,24 +386,19 @@ function $AssignCtx(context){
                 left=left.tree[0]
             }
             var right = this.tree[1]
-            if(right.chained){
-                //console.log('right is chained '+right.chained.to_js()+' is left '+right.is_left)
-            }
-            if(left.type==='attribute'){ // assign to attribute or item ?
+            if(left.type==='attribute'){ // assign to attribute
                 left.func = 'setattr'
                 var res = left.to_js()
                 left.func = 'getattr'
                 res = res.substr(0,res.length-1) // remove trailing )
-                res += ','+right.to_js()+')'
+                res += ','+right.to_js()+');None'
                 return res
-            }else if(left.type==='sub'){
+            }else if(left.type==='sub'){ // assign to item
                 left.func = 'setitem' // just for to_js()
                 var res = left.to_js()
                 res = res.substr(0,res.length-1) // remove trailing )
                 left.func = 'getitem' // restore default function
-                res += ','+right.to_js()+')'
-                //last_str = last_str.substr(0,last_str.length-1) // remove trailing )
-                //res += last_str+','+right.to_js()+')'
+                res += ','+right.to_js()+');None'
                 return res
             }
             var scope = $get_scope(this)
@@ -413,7 +408,7 @@ function $AssignCtx(context){
                 if(left.to_js().charAt(0)!='$'){
                     res += '=$globals["'+left.to_js()+'"]'
                 }
-                res += '='+right.to_js()
+                res += '='+right.to_js()+';None'
                 return res
             }else if(scope.ntype==='def'||scope.ntype==="generator"){
                 // assignment in a function : depends if variable is local
@@ -428,7 +423,7 @@ function $AssignCtx(context){
                     }
                     var res = 'var '+left.to_js()+'='
                     res += '$locals["'+left.to_js()+'"]='
-                    res += right.to_js()
+                    res += right.to_js()+';None'
                     return res
                 }
             }else if(scope.ntype==='class'){
@@ -611,9 +606,9 @@ function $CallCtx(context){
         }else if(this.func!==undefined && this.func.value === 'classmethod'){
             return 'classmethod($class,'+$to_js(this.tree)+')'
         }else if(this.func!==undefined && this.func.value ==='locals'){
-            var scope = $get_scope(this)
-            if(scope !== null && scope.ntype==='def'){
-                return 'locals("'+scope.context.tree[0].id+'")'
+            var scope = $get_scope(this),mod = $get_module(this)
+            if(scope !== null && (scope.ntype==='def'||scope.ntype=='generator')){
+                return 'locals("'+scope.context.tree[0].id+'","'+mod.module+'")'
             }
         }else if(this.func!==undefined && this.func.value ==='globals'){
             var ctx_node = this
@@ -1085,13 +1080,15 @@ function $DelCtx(context){
     this.tree = []
     this.toString = function(){return 'del '+this.tree}
     this.to_js = function(){
+        console.log('del context '+this)
         res = []
         var tree = this.tree[0].tree
         for(var i=0;i<tree.length;i++){
             var expr = tree[i]
             if(expr.type==='expr'||expr.type==='id'){
                 var scope = $get_scope(this)
-                var js = '(function(){'
+                var js = 'console.log("ready to delete '+expr.to_js()+'");'
+                js = '(function(){'
                 js += 'try{getattr('+expr.to_js()+',"__del__")()}'
                 js += 'catch($err){$pop_exc();'
                 js += 'delete '+expr.to_js()+'};'
@@ -1123,6 +1120,7 @@ function $DelCtx(context){
                 $_SyntaxError(this,["can't delete "+expr.type])
             }
         }
+        console.log('code for del '+expr.to_js()+' : '+res.join(';'))
         return res.join(';')
     }
 }
