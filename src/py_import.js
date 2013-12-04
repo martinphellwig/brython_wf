@@ -175,7 +175,10 @@ function $import_py_module(module,path,module_contents) {
         $module.__initializing__ = false
         return $module
     }catch(err){
-        console.log(''+err+' '+err.__name__)
+        console.log(''+err+' '+' for module '+module.name)
+        for(var attr in err){
+            console.log(attr+' '+err[attr])
+        }
         throw err
     }
 }
