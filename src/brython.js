@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131202-173528
+// version 1.3.20131203-183630
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131202-173528', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131203-183630', 'alpha', 0]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
 "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
@@ -3168,7 +3168,7 @@ C=$transition(C,'op',name)
 }else{
 if(__BRYTHON__.forbidden.indexOf(name)>-1){name='$$'+name}
 $pos=pos-name.length
-C=$transition(C,'id',name)
+C=$transition(C,'id','$'+name)
 }
 name=""
 continue
@@ -5809,6 +5809,7 @@ return[$xmlhttp,fake_qs,timer]
 }
 function $download_module(module,url){
 var imp=$importer()
+url=url.replace(/\$/g,'')
 var $xmlhttp=imp[0],fake_qs=imp[1],timer=imp[2],res=null
 $xmlhttp.onreadystatechange=function(){
 if($xmlhttp.readyState==4){
@@ -5947,7 +5948,6 @@ function $import_list(modules,origin){
 var res=[]
 for(var i=0;i<modules.length;i++){
 var mod_name=modules[i]
-if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod
 var stored=__BRYTHON__.imported[mod_name]
 if(stored===undefined){
@@ -5956,6 +5956,7 @@ var parts=mod_name.split('.')
 for(var i=0;i<parts.length;i++){
 var module=new Object()
 module.name=parts.slice(0,i+1).join('.')
+console.log('load module '+module.name)
 if(__BRYTHON__.modules[module.name]===undefined){
 __BRYTHON__.modules[module.name]={}
 __BRYTHON__.imported[module.name]={}
@@ -5983,8 +5984,10 @@ var sub_mod=mod_name+'.'+names[i]
 $import_list([sub_mod],origin)
 mod[names[i]]=__BRYTHON__.modules[sub_mod]
 }else{
-throw ImportError("cannot import name "+names[i])
+throw ImportError("cannot import name ff"+names[i])
 }
+}else{
+console.log(names[i]+' found in module '+mod_name)
 }
 }
 return mod
