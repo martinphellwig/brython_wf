@@ -34,17 +34,20 @@ function $__import__(name, globals, locals, curpath, level) {
      var pymod_elts = elts.slice(0,elts.length-level)
      var _path=pymod_elts.join('/')
      console.log(_path)
+     console.log(name)
+     console.log('path_hooks.length='+__BRYTHON__.path_hooks.length)
      for (var j=0; j < __BRYTHON__.path_hooks.length; j++) {
          if (_loader != None) continue;
          var _mod=__BRYTHON__.path_hooks[j]
          var _found=False
          console.log(_mod)
+         var _obj;
          try {
-              _mod.__init__(_path)
+              _obj=_mod(_path)
               _found=True
-         } catch (ImportError) {}
+         } catch ($err) {}
          if (_found) { // this hook thinks it can find/load the module
-            _loader=_mod.find_module(name, _path)
+            _loader=_obj.find_module(name, _path)
          }
      }
    } else {
@@ -55,13 +58,14 @@ function $__import__(name, globals, locals, curpath, level) {
              if (_loader != None) continue;
              var _mod=__BRYTHON__.path_hooks[j]
              var _found=False
+             var _obj;
              try {
-               _mod.__init__(_path)
+               _obj=_mod(_path)
                _found=True
              } catch (err) { //console.log('catch:' + err.message) 
              }
              if (_found) { // this hook thinks it can find/load the module
-                _loader=_mod.find_module(name, _path)
+                _loader=_obj.find_module(name, _path)
              }
          }
      }
@@ -175,13 +179,29 @@ function import_pyj_module(module_contents,path,name) {
    return $module
 }
 
-// now work on default import module to import modules over ajax.
+// create default import module to import modules over ajax.
 // most other import modules (via path hooks) can be written in python. :)
 
+function $default_import() {
+//  return $instance_creator($default_import_module)
+//  console.log(' in $default_import ')
+//  var res={__class__:$default_import_module}
+//  var args=[res]
+//  for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+//  $default_import_module.__init__.apply(null,args)
+//  return res
+
+
 $default_import_module = { // Module Finder
-    __getattr__ : function(attr){return this[attr]},
-    __init__:function(path) {
-       //console.log('in $default_import_module.__init__')
+    __class__:$type,
+    __name__: 'default import module'
+}
+
+$default_import_module.__getattr__=function(self,attr){return this[attr]}
+$default_import_module.__init__=function(self,path) {
+       console.log('in $default_import_module.__init__')
+       var path=arguments[0];
+       console.log(path);
        //console.log(__BRYTHON__.brython_path);
        if (path.length >= __BRYTHON__.brython_path.length+3 && (
            path.substring(0,__BRYTHON__.brython_path.length+3) == __BRYTHON__.brython_path+'libs' 
@@ -190,10 +210,14 @@ $default_import_module = { // Module Finder
        } else {
           throw ImportError('Path is not supported:' + path)
        }
-    },
-    find_module:function(name){
+}
+$default_import_module.find_module=function(self,name,path){
+       var name=arguments[0]
+       var path=arguments[1]
+       //console.log(name)
+       //console.log(path)
        if (__BRYTHON__.modules[name] !== undefined) {
-          return this;
+          return self
        }
        var module={}
        module.name=name
@@ -201,13 +225,12 @@ $default_import_module = { // Module Finder
        if(module.name.search(/\./)>-1){import_funcs = [$import_module_search_path]}
 
        for(var j=0;j<import_funcs.length;j++){
-          //console.log(import_func[j])
+          //console.log(import_funcs[j])
           try{
             var mod=import_funcs[j](module)
             if (mod !== undefined) {
                __BRYTHON__.modules[name]=mod;
-               this.name=name;
-               return this
+               return self
             }
             throw ImportError('Cannot find module:' + name)
           } catch(err){
@@ -221,15 +244,20 @@ $default_import_module = { // Module Finder
             }else{throw err}
           }
        }
-    },
-
-    load_module: function( ) {
-       return __BRYTHON__.modules[this.name]
     }
-}
-$default_import_module.__class__ = $default_import_module 
-$default_import_module.__str__ = function(){return "<module 'default import module'>"}
 
+$default_import_module.load_module=function(self,name) {
+       var name = arguments[0]
+       return __BRYTHON__.modules[name]
+}
+
+$default_import_module.__class__ = $default_import_module 
+$default_import_module.__str__ = function(self){return "<module 'default import module'>"}
+$default_import_module.__repr__ = function(self){return "<module 'default import module'>"}
+$default_import_module.__mro__ = [$default_import_module,$ObjectDict]
+
+return $default_import_module
+}
 ////////////////////////////////////////////////////////////////////////////
 
 function $importer(){
@@ -282,6 +310,7 @@ function $download_module(module,url){
 
 function $import_js(module){
    var filepath=__BRYTHON__.brython_path+'libs/' + module.name
+   console.log(filepath)
    return $import_js_generic(module,filepath)
 }
 

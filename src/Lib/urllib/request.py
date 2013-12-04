@@ -1,4 +1,4 @@
-import ajax
+import browser.ajax
 
 class FileIO:
   def __init__(self, data):
@@ -15,7 +15,7 @@ def urlopen(url, data=None, timeout=None):
         global result
         result=req
 
-    _ajax=ajax.ajax()
+    _ajax=browser.ajax.ajax()
     _ajax.bind('complete', on_complete)
     if timeout is not None:
        _ajax.set_timeout(timeout)

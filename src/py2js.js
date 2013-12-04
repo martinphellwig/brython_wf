@@ -1366,7 +1366,7 @@ function $FromCtx(context){
                  }else if(scope.ntype=='module'){
                     res += '=$globals["'+alias+'"]'
                  }          
-                 res += '=getattr($mod,"'+this.names[i]+'")\n'
+                 res += '=$mod\n'
               }
             } else {
               res+="var $mod=$__import__('"+this.module+"',undefined,undefined,"
@@ -1397,7 +1397,7 @@ function $FromCtx(context){
              if(scope.ntype==="module"){
                   res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
              }
-             res += '=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x);console.log($x)}}'
+             res += '=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x)}}'
            }else{
              res+="var $mod=$__import__('"+this.module+"');"
 
@@ -1419,7 +1419,7 @@ function $FromCtx(context){
              }
            }
         }
-        console.log(res)
+        //console.log(res)
         res += '\n'+head+'None'
         return res
     }
@@ -1755,7 +1755,7 @@ function $ImportCtx(context){
         }
         // clean up __BRYTHON__.path
         res += 'if($flag){__BRYTHON__.path.shift()};None'
-        console.log(res);
+        //console.log(res);
         return res
     }
 }
@@ -3922,7 +3922,7 @@ function brython(options){
     document.$py_src = {}
     __BRYTHON__.$py_module_path = {}
     __BRYTHON__.$py_module_alias = {}
-    __BRYTHON__.path_hooks = [$default_import_module]
+    __BRYTHON__.path_hooks = [$default_import]
 
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
@@ -3982,6 +3982,11 @@ function brython(options){
         var $js = $root.to_js()
         if(__BRYTHON__.debug>1){console.log($js)}
         eval($js)
+        var _mod = $globals
+        _mod.__class__ = $ModuleDict
+        _mod.__name__ = '__main__'
+        _mod.__file__ = __BRYTHON__.$py_module_path['__site__']
+        __BRYTHON__.imported['site'] = _mod
     }catch($err){
         console.log('PY2JS '+$err)
         for(var attr in $err){
