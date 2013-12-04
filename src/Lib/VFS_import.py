@@ -9,6 +9,7 @@ from browser import doc
 VFS=dict(JSObject(__BRYTHON__.py_VFS))
 class VFSModuleFinder:
     def __init__(self, path_entry):
+        print("in VFSModuleFinder")
         if path_entry.startswith('/libs') or path_entry.startswith('/Lib'):
            self.path_entry=path_entry
         else:

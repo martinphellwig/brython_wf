@@ -8,7 +8,7 @@ import urllib.request
 
 class ModuleFinder:
     def __init__(self, path_entry):
-        print("external import here..")
+        print("external_import here..")
         #print(path_entry)
         self._module=None
         if path_entry.startswith('http://'):
@@ -23,7 +23,7 @@ class ModuleFinder:
         path = path or self.path_entry
         #print('looking for "%s" in %s ...' % (fullname, path))
         for _ext in ['js', 'pyj', 'py']:
-            _fp=urllib.request.urlopen(path + '/' + '%s.%s' % (fullname, _ext))
+            _fp,_url,_headers=urllib.request.urlopen(path + '/' + '%s.%s' % (fullname, _ext))
             self._module=_fp.read()
             _fp.close()
             if self._module is not None:
