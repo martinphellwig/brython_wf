@@ -142,8 +142,8 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
 $JSObjectDict.__getitem__ = function(self,rank){
     try{return getattr(self.js,'__getitem__')(rank)}
     catch(err){
-        console.log('err in JSObject.__getitem__ : '+err)
-        throw AttributeError(self+' has no attribute __getitem__')
+        if(self.js[rank]!==undefined){return JSObject(self.js[rank])}
+        else{throw AttributeError(self+' has no attribute __getitem__')}
     }
 }
 
@@ -181,6 +181,8 @@ $JSObjectDict.__setattr__ = function(self,attr,value){
         self.js[attr]=value
     }
 }
+
+$JSObjectDict.__setitem__ = $JSObjectDict.__setattr__
 
 function JSObject(obj){
     if(obj===null){return new $JSObject(obj)}
