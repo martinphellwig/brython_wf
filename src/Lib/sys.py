@@ -1,7 +1,7 @@
 # hack to return special attributes
 def __getattr__(None,attr):
     if attr=='modules':
-        return dict(JSObject(__BRYTHON__.imported))
+        return JSObject(__BRYTHON__.imported)
     else:
         raise ImportError("cannot import name "+attr)
 
@@ -36,7 +36,7 @@ class __version_info(object):
      
 version_info=__version_info(__BRYTHON__.version_info)
 path=__BRYTHON__.path
-builtin_module_names=['posix']
+builtin_module_names=__BRYTHON__.builtin_module_names
 
 byteorder='little'
 maxsize=9007199254740992   #largest integer..
