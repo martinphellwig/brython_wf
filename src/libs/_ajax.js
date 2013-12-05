@@ -20,6 +20,7 @@ $XMLHttpDict.__repr__ = function(self){return '<object XMLHttp>'}
 $XMLHttpDict.__str__ = $XMLHttpDict.toString = $XMLHttpDict.__repr__
 
 $XMLHttpDict.text = function(self){return self.responseText}
+$XMLHttpDict.status = function(self){return self.status}
     
 $XMLHttpDict.xml = function(self){return $DomObject(self.responseXML)}
     

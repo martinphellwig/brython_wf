@@ -1,6 +1,7 @@
 import os
 from browser import doc
 import urllib.request
+import sys
 
 ## this module is able to download modules that are external to
 ## localhost/src
@@ -9,9 +10,12 @@ import urllib.request
 class ModuleFinder:
     def __init__(self, path_entry):
         print("external_import here..")
-        #print(path_entry)
-        self._module=None
-        if path_entry.startswith('http://'):
+        print(path_entry)
+        self._module_source=None
+
+        if path_entry.startswith('http://') and not \
+           path_entry.startswith(JSObject(__BRYTHON__.brython_path)): # and not \
+           #path.entry.startswith('http://localhost'):
            self.path_entry=path_entry
         else:
             raise ImportError()
@@ -19,25 +23,39 @@ class ModuleFinder:
     def __str__(self):
         return '<%s for "%s">' % (self.__class__.__name__, self.path_entry)
         
+    def load_module(self, name):
+        return sys.modules[name]
+
     def find_module(self, fullname, path=None):
-        path = path or self.path_entry
+        print(fullname)
+        if fullname in sys.modules:
+           return self
+
+        #path = path or self.path_entry
         #print('looking for "%s" in %s ...' % (fullname, path))
-        for _ext in ['js', 'pyj', 'py']:
-            _fp,_url,_headers=urllib.request.urlopen(path + '/' + '%s.%s' % (fullname, _ext))
-            self._module=_fp.read()
-            _fp.close()
-            if self._module is not None:
-               print("module found at %s:%s" % (path, fullname))
-               return ModuleLoader(path, fullname, self._module)
+        #for _ext in ['js', 'pyj', 'py']:
+        for _ext in ['js', 'py']:
+            _fp,_url,_headers=urllib.request.urlopen(self.path_entry + '/' + '%s.%s' % (fullname, _ext))
+            print(_headers)
+            if 'status' in _headers and _headers['status'] == '200':
+               self._module_source=_fp.read()
+            else:
+               continue   #give up something with wrong with this url
+
+            print(self._module_source)
+            #if self._module_source is not None:
+            print("external_import:module found at %s:%s" % (self.path_entry, fullname))
+            return ModuleLoader(self.path_entry, fullname, self._module_source)
 
         print('module %s not found' % fullname)
-        raise ImportError()
+        raise ImportError('')
         return None
 
 class ModuleLoader:
     """Load source for modules"""
     
     def __init__(self, filepath, name, module_source):
+        print(filepath, name, module_source)
         self._filepath=filepath
         self._name=name
         self._module_source=module_source
@@ -48,7 +66,7 @@ class ModuleLoader:
     def is_package(self):
         return '.' in self._name
             
-    def load_module(self):
+    def load_module(self, name):
         if self._name in sys.modules:
            #print('reusing existing module from previous import of "%s"' % fullname)
            mod = sys.modules[self._name]
