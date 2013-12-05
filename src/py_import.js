@@ -220,8 +220,8 @@ function $import_list(modules,origin){
                 module.name = parts.slice(0,i+1).join('.')
                 if(__BRYTHON__.modules[module.name]===undefined){
                     // this could be a recursive import, so lets set modules={}
-                    __BRYTHON__.modules[module.name]={}
-                    __BRYTHON__.imported[module.name]={}
+                    __BRYTHON__.modules[module.name]={__class__:$ModuleDict}
+                    __BRYTHON__.imported[module.name]={__class__:$ModuleDict}
                     // indicate if package only, or package or file
                     if(i<parts.length-1){module.package_only = true}
                     __BRYTHON__.modules[module.name] = $import_single(module,origin)
@@ -247,7 +247,7 @@ function $import_from(mod_name,names,origin){
     if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
     var mod = __BRYTHON__.imported[mod_name]
     if(mod===undefined){$import_list([mod_name]);mod=__BRYTHON__.modules[mod_name]}
-    var mod_ns = __BRYTHON__.modules[mod_name]
+    var mod_ns = mod
     for(var i=0;i<names.length;i++){
         if(mod_ns[names[i]]===undefined){
             if(mod.$package){

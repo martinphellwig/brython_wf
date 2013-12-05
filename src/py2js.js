@@ -1080,15 +1080,13 @@ function $DelCtx(context){
     this.tree = []
     this.toString = function(){return 'del '+this.tree}
     this.to_js = function(){
-        console.log('del context '+this)
         res = []
         var tree = this.tree[0].tree
         for(var i=0;i<tree.length;i++){
             var expr = tree[i]
             if(expr.type==='expr'||expr.type==='id'){
                 var scope = $get_scope(this)
-                var js = 'console.log("ready to delete '+expr.to_js()+'");'
-                js = '(function(){'
+                var js = '(function(){'
                 js += 'try{getattr('+expr.to_js()+',"__del__")()}'
                 js += 'catch($err){$pop_exc();'
                 js += 'delete '+expr.to_js()+'};'
@@ -1120,7 +1118,6 @@ function $DelCtx(context){
                 $_SyntaxError(this,["can't delete "+expr.type])
             }
         }
-        console.log('code for del '+expr.to_js()+' : '+res.join(';'))
         return res.join(';')
     }
 }
@@ -1390,7 +1387,7 @@ function $FromCtx(context){
                     res += this.aliases[this.names[i]]||this.names[i]
                     res += '"]'
                 }
-                res += '=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'")\n'
+                res += '=getattr(__BRYTHON__.imported["'+this.module+'"],"'+this.names[i]+'")\n'
              }
            }
         }
@@ -1722,7 +1719,7 @@ function $ImportCtx(context){
                 }else if(scope.ntype==="module"){
                     res += '=$globals["'+alias+'"]'
                 }
-                res += '=__BRYTHON__.modules["'+key+'"];'
+                res += '=__BRYTHON__.imported["'+key+'"];'
             }
         }
         // clean up __BRYTHON__.path
@@ -2308,7 +2305,21 @@ function $YieldCtx(context){ // subscription or slicing
             scope = $get_scope(scope.context.tree[0])
             if(scope.ntype==='class'){res = '$class.'}
         }
-        return res+'$'+this.func_name+'.$iter.push('+$to_js(this.tree)+')'
+        if(this.tree.length==1){
+            return res+'$'+this.func_name+'.$iter.push('+$to_js(this.tree)+')'
+        }else{ // form "yield from <expr>" : <expr> is this.tree[1]
+            var indent = $ws($get_module(this).indent)
+            res += '$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
+            res += indent+'while(true){\n'+indent+$ws(4)
+            res += 'try{$'+this.func_name+'.$iter.push('
+            res += '$subiter'+$loop_num+'())}\n'
+            res += indent+$ws(4)+'catch($err'+$loop_num+'){\n'
+            res += indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===StopIteration)'
+            res += '{$pop_exc();break}\n'
+            res += indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
+            $loop_num++
+            return res
+        }
     }
 }
 
@@ -2532,6 +2543,12 @@ function $get_ids(ctx){
             }
         }
     }
+    return res
+}
+
+function $ws(n){
+    var res = ''
+    for(var i=0;i<n;i++){res += ' '}
     return res
 }
 
@@ -3430,6 +3447,9 @@ function $transition(context,token){
 
     }else if(context.type==='yield'){
 
+        if(token=='from'){ // form "yield from <expr>"
+            return new $AbstractExprCtx(context,true)
+        }
         return $transition(context.parent,token)
 
     }
