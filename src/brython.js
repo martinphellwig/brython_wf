@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131204-092458
+// version 1.3.20131205-082445
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,23 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131204-092458', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131205-082445', 'alpha', 0]
+__BRYTHON__.builtin_module_names=["posix","builtins",
+"crypto_js",
+"hashlib",
+"javascript",
+"json",
+"math",
+"random",
+"re",
+"time",
+"_ajax",
+"_browser",
+"_html",
+"_os",
+"_svg",
+"_timer",
+"_websocket"]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
 "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
@@ -940,15 +956,13 @@ C.tree.push(this)
 this.tree=[]
 this.toString=function(){return 'del '+this.tree}
 this.to_js=function(){
-console.log('del C '+this)
 res=[]
 var tree=this.tree[0].tree
 for(var i=0;i<tree.length;i++){
 var expr=tree[i]
 if(expr.type==='expr'||expr.type==='id'){
 var scope=$get_scope(this)
-var js='console.log("ready to delete '+expr.to_js()+'");'
-js='(function(){'
+var js='(function(){'
 js +='try{getattr('+expr.to_js()+',"__del__")()}'
 js +='catch($err){$pop_exc();'
 js +='delete '+expr.to_js()+'};'
@@ -978,7 +992,6 @@ return 'delattr('+expr.value.to_js()+',"'+expr.name+'")'
 $_SyntaxError(this,["can't delete "+expr.type])
 }
 }
-console.log('code for del '+expr.to_js()+' : '+res.join(';'))
 return res.join(';')
 }
 }
@@ -1214,7 +1227,7 @@ res +='=$globals["'
 res +=this.aliases[this.names[i]]||this.names[i]
 res +='"]'
 }
-res +='=getattr(__BRYTHON__.modules["'+this.module+'"],"'+this.names[i]+'")\n'
+res +='=getattr(__BRYTHON__.imported["'+this.module+'"],"'+this.names[i]+'")\n'
 }
 }
 }
@@ -1478,7 +1491,7 @@ res +='=$locals["'+alias+'"]'
 }else if(scope.ntype==="module"){
 res +='=$globals["'+alias+'"]'
 }
-res +='=__BRYTHON__.modules["'+key+'"];'
+res +='=__BRYTHON__.imported["'+key+'"];'
 }
 }
 return res
@@ -1996,7 +2009,21 @@ if(scope.ntype==='generator'){
 scope=$get_scope(scope.C.tree[0])
 if(scope.ntype==='class'){res='$class.'}
 }
+if(this.tree.length==1){
 return res+'$'+this.func_name+'.$iter.push('+$to_js(this.tree)+')'
+}else{
+var indent=$ws($get_module(this).indent)
+res +='$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
+res +=indent+'while(true){\n'+indent+$ws(4)
+res +='try{$'+this.func_name+'.$iter.push('
+res +='$subiter'+$loop_num+'())}\n'
+res +=indent+$ws(4)+'catch($err'+$loop_num+'){\n'
+res +=indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===StopIteration)'
+res +='{$pop_exc();break}\n'
+res +=indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
+$loop_num++
+return res
+}
 }
 }
 var $loop_num=0
@@ -2178,6 +2205,11 @@ res.push(res1[j])
 }
 }
 }
+return res
+}
+function $ws(n){
+var res=''
+for(var i=0;i<n;i++){res +=' '}
 return res
 }
 function $to_js(tree,sep){
@@ -2933,6 +2965,9 @@ C.expect='id'
 return C
 }else{$_SyntaxError(C,'token '+token+' after '+C.expect)}
 }else if(C.type==='yield'){
+if(token=='from'){
+return new $AbstractExprCtx(C,true)
+}
 return $transition(C.parent,token)
 }
 }
@@ -5732,8 +5767,8 @@ throw AttributeError("no attribute "+attr+' for '+this)
 $JSObjectDict.__getitem__=function(self,rank){
 try{return getattr(self.js,'__getitem__')(rank)}
 catch(err){
-console.log('err in JSObject.__getitem__ : '+err)
-throw AttributeError(self+' has no attribute __getitem__')
+if(self.js[rank]!==undefined){return JSObject(self.js[rank])}
+else{throw AttributeError(self+' has no attribute __getitem__')}
 }
 }
 $JSObjectDict.__iter__=function(self){
@@ -5767,6 +5802,7 @@ self.js[attr]=value.js
 self.js[attr]=value
 }
 }
+$JSObjectDict.__setitem__=$JSObjectDict.__setattr__
 function JSObject(obj){
 if(obj===null){return new $JSObject(obj)}
 if(obj.__class__===$ListDict){
@@ -5961,8 +5997,8 @@ for(var i=0;i<parts.length;i++){
 var module=new Object()
 module.name=parts.slice(0,i+1).join('.')
 if(__BRYTHON__.modules[module.name]===undefined){
-__BRYTHON__.modules[module.name]={}
-__BRYTHON__.imported[module.name]={}
+__BRYTHON__.modules[module.name]={__class__:$ModuleDict}
+__BRYTHON__.imported[module.name]={__class__:$ModuleDict}
 if(i<parts.length-1){module.package_only=true}
 __BRYTHON__.modules[module.name]=$import_single(module,origin)
 __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
@@ -5979,7 +6015,7 @@ function $import_from(mod_name,names,origin){
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod=__BRYTHON__.imported[mod_name]
 if(mod===undefined){$import_list([mod_name]);mod=__BRYTHON__.modules[mod_name]}
-var mod_ns=__BRYTHON__.modules[mod_name]
+var mod_ns=mod
 for(var i=0;i<names.length;i++){
 if(mod_ns[names[i]]===undefined){
 if(mod.$package){
