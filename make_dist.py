@@ -69,7 +69,12 @@ now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 # update version number
 out = open(abs_path('version_info.js'),'w')
 version[2] = now
-out.write('__BRYTHON__.version_info = %s' %str(version))
+out.write('__BRYTHON__.version_info = %s\n' %str(version))
+# builtin module names = list of scripts in src/libs
+out.write('__BRYTHON__.builtin_module_names = ["posix",')
+out.write(',\n    '.join(['"%s"' %fname.split('.')[0]
+     for fname in os.listdir(os.path.join(os.getcwd(),'src','libs'))]))
+out.write(']\n')
 out.close()
 
 sources = ['brython_builtins','version_info','py2js','py_utils','py_object',
