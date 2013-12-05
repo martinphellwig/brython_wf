@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131205-082445
+// version 1.3.20131205-115401
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131205-082445', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131205-115401', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -3320,6 +3320,16 @@ if(current.C.tree.length===0){
 $pos=pos
 $_SyntaxError(C,'invalid syntax')
 }
+var pos1=pos+1
+var ends_line=false
+while(pos1<src.length){
+if(src.charAt(pos1)=='\n' || src.charAt(pos1)=='#'){
+ends_line=true;break
+}
+else if(src.charAt(pos1)==' '){pos1++}
+else{break}
+}
+if(ends_line){pos++;continue}
 new_node=new $Node()
 new_node.indent=current.indent
 new_node.line_num=lnum

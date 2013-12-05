@@ -3845,6 +3845,17 @@ function $tokenize(src,module,parent){
                 $pos=pos
                 $_SyntaxError(context,'invalid syntax')
             }
+            // if ; ends the line, ignore it
+            var pos1 = pos+1
+            var ends_line = false
+            while(pos1<src.length){
+                if(src.charAt(pos1)=='\n' || src.charAt(pos1)=='#'){
+                    ends_line=true;break
+                }
+                else if(src.charAt(pos1)==' '){pos1++}
+                else{break}
+            }
+            if(ends_line){pos++;continue}
             new_node = new $Node()
             new_node.indent = current.indent
             new_node.line_num = lnum
