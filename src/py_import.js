@@ -18,6 +18,8 @@ function $__import__(name, globals, locals, curpath, level) {
    // note: curpath is ignored if level =0 (absolute import)
    // level > 0 (is a relative import)
 
+
+   console.log(name, curpath, level)
    if(globals === undefined) {
 
    }
@@ -33,21 +35,31 @@ function $__import__(name, globals, locals, curpath, level) {
      var elts = curpath.split('/')
      var pymod_elts = elts.slice(0,elts.length-level)
      var _path=pymod_elts.join('/')
-     console.log(_path)
-     console.log(name)
-     console.log('path_hooks.length='+__BRYTHON__.path_hooks.length)
+     console.log('path:' + _path)
+     //console.log(name)
+     //console.log('path_hooks.length='+__BRYTHON__.path_hooks.length)
      for (var j=0; j < __BRYTHON__.path_hooks.length; j++) {
          if (_loader != None) continue;
          var _mod=__BRYTHON__.path_hooks[j]
          var _found=False
-         console.log(_mod)
+         //console.log(_mod)
          var _obj;
          try {
-              _obj=_mod(_path)
-              _found=True
+            _obj=_mod(_path)
+            //console.log(_obj)
+            _found=True
          } catch ($err) {}
          if (_found) { // this hook thinks it can find/load the module
-            _loader=_obj.find_module(name, _path)
+            //console.log(_obj)
+            if (_obj.find_module === undefined) {
+               try {
+                 _loader=getattr(_obj,'find_module')(name, _path)
+               } catch(err) {}  
+            } else {
+               try {
+                 _loader=_obj.find_module(name, _path)
+               } catch(err) {}  
+            }
          }
      }
    } else {
@@ -57,6 +69,7 @@ function $__import__(name, globals, locals, curpath, level) {
          for (var j=0; j < __BRYTHON__.path_hooks.length; j++) {
              if (_loader != None) continue;
              var _mod=__BRYTHON__.path_hooks[j]
+             //console.log(_mod)
              var _found=False
              var _obj;
              try {
@@ -65,7 +78,16 @@ function $__import__(name, globals, locals, curpath, level) {
              } catch (err) { //console.log('catch:' + err.message) 
              }
              if (_found) { // this hook thinks it can find/load the module
-                _loader=_obj.find_module(name, _path)
+                //console.log(_obj)
+                if (_obj.find_module === undefined) {
+                   try {
+                     _loader=getattr(_obj,'find_module')(name, _path)
+                   } catch(err) {}  
+                } else {
+                   try {
+                     _loader=_obj.find_module(name, _path)
+                   } catch(err) {}  
+                }
              }
          }
      }
@@ -75,8 +97,12 @@ function $__import__(name, globals, locals, curpath, level) {
      throw ImportError('Could not find module:' + name)
      return
    }
-
+   //console.log(_loader)
    // _loader is not None, so lets run the loader
+   if (_loader.load_module === undefined) {
+      return getattr(_loader, 'load_module')(name)
+   }
+
    return _loader.load_module(name)
 }
 
@@ -183,14 +209,6 @@ function import_pyj_module(module_contents,path,name) {
 // most other import modules (via path hooks) can be written in python. :)
 
 function $default_import() {
-//  return $instance_creator($default_import_module)
-//  console.log(' in $default_import ')
-//  var res={__class__:$default_import_module}
-//  var args=[res]
-//  for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-//  $default_import_module.__init__.apply(null,args)
-//  return res
-
 
 $default_import_module = { // Module Finder
     __class__:$type,
@@ -198,10 +216,10 @@ $default_import_module = { // Module Finder
 }
 
 $default_import_module.__getattr__=function(self,attr){return this[attr]}
-$default_import_module.__init__=function(self,path) {
+$default_import_module.__init__=function(self) {
        console.log('in $default_import_module.__init__')
        var path=arguments[0];
-       console.log(path);
+       //console.log(path);
        //console.log(__BRYTHON__.brython_path);
        if (path.length >= __BRYTHON__.brython_path.length+3 && (
            path.substring(0,__BRYTHON__.brython_path.length+3) == __BRYTHON__.brython_path+'libs' 
@@ -211,13 +229,14 @@ $default_import_module.__init__=function(self,path) {
           throw ImportError('Path is not supported:' + path)
        }
 }
-$default_import_module.find_module=function(self,name,path){
+//$default_import_module.find_module=function(self,name,path){
+$default_import_module.find_module=function(self){
        var name=arguments[0]
        var path=arguments[1]
        //console.log(name)
        //console.log(path)
        if (__BRYTHON__.modules[name] !== undefined) {
-          return self
+          return this
        }
        var module={}
        module.name=name
@@ -230,7 +249,7 @@ $default_import_module.find_module=function(self,name,path){
             var mod=import_funcs[j](module)
             if (mod !== undefined) {
                __BRYTHON__.modules[name]=mod;
-               return self
+               return this
             }
             throw ImportError('Cannot find module:' + name)
           } catch(err){
@@ -244,10 +263,12 @@ $default_import_module.find_module=function(self,name,path){
             }else{throw err}
           }
        }
-    }
+}
 
-$default_import_module.load_module=function(self,name) {
+$default_import_module.load_module=function(self) {
        var name = arguments[0]
+       //console.log(self)
+       //console.log(name)
        return __BRYTHON__.modules[name]
 }
 
@@ -310,7 +331,7 @@ function $download_module(module,url){
 
 function $import_js(module){
    var filepath=__BRYTHON__.brython_path+'libs/' + module.name
-   console.log(filepath)
+   //console.log(filepath)
    return $import_js_generic(module,filepath)
 }
 
