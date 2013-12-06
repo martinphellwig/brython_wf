@@ -20,6 +20,10 @@ def getloadavg():
 #pardir=".."
 #sep='/'
 
+def getcwd():
+    return '.'
+    #return _os.getcwd()
+
 def urandom(length):
     _c=[]
     for _i in range(length):
