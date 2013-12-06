@@ -19,7 +19,7 @@ function $__import__(name, globals, locals, curpath, level) {
    // level > 0 (is a relative import)
 
 
-   console.log(name, curpath, level)
+   //console.log(name, curpath, level)
    if(globals === undefined) {
 
    }
@@ -30,25 +30,30 @@ function $__import__(name, globals, locals, curpath, level) {
    if(level === undefined){level=0}
 
    var _loader=None
+   console.log('path_hooks.length='+__BRYTHON__.path_hooks.length)
    if(level > 0) {
      // this is a relative import! so our search path is set..
      var elts = curpath.split('/')
      var pymod_elts = elts.slice(0,elts.length-level)
      var _path=pymod_elts.join('/')
      console.log('path:' + _path)
-     //console.log(name)
-     //console.log('path_hooks.length='+__BRYTHON__.path_hooks.length)
      for (var j=0; j < __BRYTHON__.path_hooks.length; j++) {
          if (_loader != None) continue;
          var _mod=__BRYTHON__.path_hooks[j]
          var _found=False
-         //console.log(_mod)
+         console.log(_mod)
          var _obj;
          try {
-            _obj=_mod(_path)
-            //console.log(_obj)
-            _found=True
-         } catch ($err) {}
+            if(_mod == $default_import) {
+               _obj=_mod()
+               _obj.__init__(_path)
+               _found=True
+            } else {
+               _obj=getattr(_mod, '__init__')(null,_path)
+               _found=True
+            }
+         } catch (err) { console.log('catch:' + err.message)
+         } 
          if (_found) { // this hook thinks it can find/load the module
             //console.log(_obj)
             if (_obj.find_module === undefined) {
@@ -63,30 +68,37 @@ function $__import__(name, globals, locals, curpath, level) {
          }
      }
    } else {
-     for (var i=0; i < __BRYTHON__.path.length; i++) {
+     for (var j=0; j < __BRYTHON__.path_hooks.length; j++) {
          if (_loader != None) continue;
-         var _path=__BRYTHON__.path[i]
-         for (var j=0; j < __BRYTHON__.path_hooks.length; j++) {
+         var _mod=__BRYTHON__.path_hooks[j]
+         for (var i=0; i < __BRYTHON__.path.length; i++) {
+             var _path=__BRYTHON__.path[i]
              if (_loader != None) continue;
-             var _mod=__BRYTHON__.path_hooks[j]
-             //console.log(_mod)
+             console.log(_mod)
              var _found=False
              var _obj;
              try {
-               _obj=_mod(_path)
-               _found=True
-             } catch (err) { //console.log('catch:' + err.message) 
+               if(_mod == $default_import) {
+                 _obj=_mod()
+                 _obj.__init__(_path)
+                 _found=True
+               } else {
+                 _obj=getattr(_mod, '__init__')(null, _path)
+                 _found=True
+               }
+             } catch (err) { console.log('catch:' + err.message) 
              }
              if (_found) { // this hook thinks it can find/load the module
                 //console.log(_obj)
                 if (_obj.find_module === undefined) {
                    try {
                      _loader=getattr(_obj,'find_module')(name, _path)
-                   } catch(err) {}  
+                   } catch (err) { console.log('catch:' + err.message) 
+                   }
                 } else {
                    try {
                      _loader=_obj.find_module(name, _path)
-                   } catch(err) {}  
+                   } catch (err) { console.log('catch:' + err.message)} 
                 }
              }
          }
@@ -217,7 +229,7 @@ $default_import_module = { // Module Finder
 
 $default_import_module.__getattr__=function(self,attr){return this[attr]}
 $default_import_module.__init__=function(self) {
-       console.log('in $default_import_module.__init__')
+       //console.log('in $default_import_module.__init__')
        var path=arguments[0];
        //console.log(path);
        //console.log(__BRYTHON__.brython_path);
@@ -226,7 +238,7 @@ $default_import_module.__init__=function(self) {
         || path.substring(0,__BRYTHON__.brython_path.length+3) == __BRYTHON__.brython_path + 'Lib')) {
           self.fullpath=path;
        } else {
-          throw ImportError('Path is not supported:' + path)
+          throw ImportError('$default_import: Path is not supported:' + path)
        }
 }
 //$default_import_module.find_module=function(self,name,path){
