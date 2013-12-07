@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131207-150627
+// version 1.3.20131207-214932
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131207-150627', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131207-214932', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -125,7 +125,6 @@ if($first_op_letter.indexOf($op.charAt(0))==-1){
 $first_op_letter.push($op.charAt(0))
 }
 }
-console.log('firt op letter '+$first_op_letter)
 function $Node(type){
 this.type=type
 this.children=[]
@@ -5235,6 +5234,7 @@ try{var f=getattr(obj,'__setattr__')}
 catch(err){
 $pop_exc()
 obj[attr]=value
+return
 }
 f(attr,value)
 }
@@ -8248,7 +8248,10 @@ return obj
 }
 win=new $JSObject(window)
 $StyleDict={__class__:$type,__name__:'CSSProperty'}
-$StyleDict.__mro__=[$StyleDict,$JSObjectDict,$ObjectDict]
+$StyleDict.__mro__=[$StyleDict,$ObjectDict]
+$StyleDict.__getattr__=function(self,attr){
+return $ObjectDict.__getattribute__(self.js,attr)
+}
 $StyleDict.__setattr__=function(self,attr,value){
 if(attr.toLowerCase()==='float'){
 self.js.cssFloat=value
