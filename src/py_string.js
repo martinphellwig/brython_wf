@@ -377,7 +377,7 @@ $StringDict.count = function(self,elt){
 }
 
 $StringDict.encode = function(self) {
-  throw NotImplementedError("function encode not implemented yet");
+  return self // to fix
 }
 
 $StringDict.endswith = function(self){
