@@ -10,6 +10,9 @@ var $operators = {
     "or":"or","and":"and", "in":"in", //"not":"not",
     "is":"is","not_in":"not_in","is_not":"is_not" // fake
     }
+var $oplist = []
+for(var attr in $operators){$oplist.push(attr)}
+
 // operators weight for precedence
 var $op_order = [['or'],['and'],
     ['in','not_in'],
@@ -57,8 +60,13 @@ function $_SyntaxError(context,msg,indent){
     }else{throw $IndentationError(module,msg,$pos)}
 }
 
-var $first_op_letter = {}
-for($op in $operators){$first_op_letter[$op.charAt(0)]=0}
+var $first_op_letter = []
+for($op in $operators){
+    if($first_op_letter.indexOf($op.charAt(0))==-1){
+        $first_op_letter.push($op.charAt(0))
+    }
+}
+console.log('firt op letter '+$first_op_letter)
 
 function $Node(type){
     this.type = type
@@ -2575,7 +2583,7 @@ function $arbo(ctx){
 }
 function $transition(context,token){
     //console.log('arbo '+$arbo(context))
-    //console.log('context '+context+' token '+token+' '+arguments[2])
+    // console.log('context '+context+' token '+token+' '+arguments[2])
     //console.log('')
 
     if(context.type==='abstract_expr'){
@@ -3499,8 +3507,9 @@ __BRYTHON__.py2js = function(src,module,parent){
     return root
 }
 
-__BRYTHON__.forbidden = ['case','catch','Date','delete','default','document','history',
-    'function','location','Math','new','RegExp','this','throw','var','super','window']
+__BRYTHON__.forbidden = ['case','catch','constructor','Date','delete',
+    'default','document','history','function','location','Math','new','RegExp',
+    'this','throw','var','super','window']
 
 function $tokenize(src,module,parent){
     var delimiters = [["#","\n","comment"],['"""','"""',"triple_string"],
@@ -3714,7 +3723,7 @@ function $tokenize(src,module,parent){
                         $_SyntaxError(context,"Unsupported Python keyword '"+name+"'")                    
                     }
                     context = $transition(context,name)
-                } else if(name in $operators) { // and, or
+                } else if($oplist.indexOf(name)>-1) { // and, or
                     $pos = pos-name.length
                     context = $transition(context,'op',name)
                 } else {
@@ -3866,7 +3875,7 @@ function $tokenize(src,module,parent){
             pos++;continue
         }
         // operators
-        if(car in $first_op_letter){
+        if($first_op_letter.indexOf(car)>-1){
             // find longest match
             var op_match = ""
             for(op_sign in $operators){

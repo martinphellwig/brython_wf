@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131207-094336
+// version 1.3.20131207-150627
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131207-094336', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131207-150627', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -77,6 +77,8 @@ var $operators={
 "or":"or","and":"and", "in":"in", 
 "is":"is","not_in":"not_in","is_not":"is_not" 
 }
+var $oplist=[]
+for(var attr in $operators){$oplist.push(attr)}
 var $op_order=[['or'],['and'],
 ['in','not_in'],
 ['<','<=','>','>=','!=','==','is','is_not'],
@@ -117,8 +119,13 @@ $SyntaxError(module,'invalid syntax : triple string end not found',$pos)
 $SyntaxError(module,'invalid syntax',$pos)
 }else{throw $IndentationError(module,msg,$pos)}
 }
-var $first_op_letter={}
-for($op in $operators){$first_op_letter[$op.charAt(0)]=0}
+var $first_op_letter=[]
+for($op in $operators){
+if($first_op_letter.indexOf($op.charAt(0))==-1){
+$first_op_letter.push($op.charAt(0))
+}
+}
+console.log('firt op letter '+$first_op_letter)
 function $Node(type){
 this.type=type
 this.children=[]
@@ -3005,8 +3012,9 @@ if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
 __BRYTHON__.modules[module]=root
 return root
 }
-__BRYTHON__.forbidden=['case','catch','Date','delete','default','document','history',
-'function','location','Math','new','RegExp','this','throw','var','super','window']
+__BRYTHON__.forbidden=['case','catch','constructor','Date','delete',
+'default','document','history','function','location','Math','new','RegExp',
+'this','throw','var','super','window']
 function $tokenize(src,module,parent){
 var delimiters=[["#","\n","comment"],['"""','"""',"triple_string"],
 ["'","'","string"],['"','"',"string"],
@@ -3198,7 +3206,7 @@ if(unsupported.indexOf(name)>-1){
 $_SyntaxError(C,"Unsupported Python keyword '"+name+"'")
 }
 C=$transition(C,name)
-}else if(name in $operators){
+}else if($oplist.indexOf(name)>-1){
 $pos=pos-name.length
 C=$transition(C,'op',name)
 }else{
@@ -3339,7 +3347,7 @@ current=new_node
 C=new $NodeCtx(new_node)
 pos++;continue
 }
-if(car in $first_op_letter){
+if($first_op_letter.indexOf(car)>-1){
 var op_match=""
 for(op_sign in $operators){
 if(op_sign==src.substr(pos,op_sign.length)
@@ -4927,7 +4935,8 @@ $res=IOError('Could not open file '+file+' : status '+status)
 $res=req.responseText
 }
 }
-req.open('GET',file,false)
+var fake_qs='?foo='+Math.random().toString(36).substr(2,8)
+req.open('GET',file+fake_qs,false)
 req.send()
 if($res.constructor===Error){throw $res}
 var lines=$res.split('\n')
@@ -5578,7 +5587,7 @@ BaseException.__name__='BaseException'
 BaseException.__class__=$factory
 BaseException.$dict=$BaseExceptionDict
 __BRYTHON__.exception=function(js_exc){
-if(js_exc.py_error){console.log('info '+js_exc.info)}
+if(js_exc.py_error && __BRYTHON__.debug>0){console.log('info '+js_exc.info)}
 if(!js_exc.py_error){
 if(__BRYTHON__.debug>0 && js_exc.info===undefined){
 if(document.$line_info!==undefined){
@@ -7355,7 +7364,7 @@ if(pos>=0){n++;pos+=elt.length}else break
 return n
 }
 $StringDict.encode=function(self){
-throw NotImplementedError("function encode not implemented yet")
+return self 
 }
 $StringDict.endswith=function(self){
 var args=[]
