@@ -9,8 +9,7 @@ import sys
 
 class ModuleFinder:
     def __init__(self, path_entry):
-        print("external_import here..")
-        print(path_entry)
+        #print("external_import here..")
         self._module_source=None
 
         if path_entry.startswith('http://') and not \
@@ -27,16 +26,14 @@ class ModuleFinder:
         return sys.modules[name]
 
     def find_module(self, fullname, path=None):
-        print(fullname)
+        #print(fullname)
         if fullname in sys.modules:
            return self
 
         #path = path or self.path_entry
-        #print('looking for "%s" in %s ...' % (fullname, path))
-        #for _ext in ['js', 'pyj', 'py']:
         for _ext in ['js', 'py']:
             _fp,_url,_headers=urllib.request.urlopen(self.path_entry + '/' + '%s.%s' % (fullname, _ext))
-            print(_headers)
+            #print(_headers)
             if 'status' in _headers and _headers['status'] == '200':
                self._module_source=_fp.read()
             else:
@@ -47,8 +44,8 @@ class ModuleFinder:
             print("external_import:module found at %s:%s" % (self.path_entry, fullname))
             return ModuleLoader(self.path_entry, '%s.%s' % (fullname, _ext), self._module_source)
 
-        print('module %s not found' % fullname)
-        raise ImportError('')
+        #print('module %s not found' % fullname)
+        raise ImportError('module %s not found' % fullname)
         return None
 
 class ModuleLoader:
