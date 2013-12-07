@@ -3922,7 +3922,7 @@ function brython(options){
     document.$py_src = {}
     __BRYTHON__.$py_module_path = {}
     __BRYTHON__.$py_module_alias = {}
-    __BRYTHON__.path_hooks = [$default_import]
+    __BRYTHON__.path_hooks = [$default_import_module]
 
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
@@ -3969,12 +3969,17 @@ function brython(options){
                         if (!(__BRYTHON__.path.indexOf($path+'Lib')> -1)) {
                            __BRYTHON__.path.push($path+'Lib')
                         }
+                        if (!(__BRYTHON__.path.indexOf($path+'libs')> -1)) {
+                           __BRYTHON__.path.push($path+'libs')
+                        }
                         break
                 }
             }
         }
     }
 
+    //console.log(__BRYTHON__.path)
+ 
     // to be compatible with CPython, lets import site.py if we can find it.
     __BRYTHON__.$py_module_path['__main__'] = $href
     try {
