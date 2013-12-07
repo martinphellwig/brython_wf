@@ -310,6 +310,29 @@ function $Location(){ // used because of Firefox bug #814622
 
 win =  new $JSObject(window)
 
+$StyleDict = {__class__:$type,__name__:'CSSProperty'}
+
+$StyleDict.__mro__ = [$StyleDict,$JSObjectDict,$ObjectDict]
+
+$StyleDict.__setattr__ = function(self,attr,value){
+    if(attr.toLowerCase()==='float'){
+        self.js.cssFloat = value
+        self.js.styleFloat = value
+    }else{
+        if(['top','left','height','width','borderWidth'].indexOf(attr)>-1
+            && isinstance(value,int)){value = value+'px'}
+        self.js[attr] = value
+    }
+}
+
+function $Style(style){
+    // property "style"
+    return {__class__:$StyleDict,js:style}
+}
+$Style.__class__ = $factory
+$Style.$dict = $StyleDict
+$StyleDict.$factory = $Style
+
 function DOMNode(){} // define a Node object
 DOMNode.__class__ = $type
 DOMNode.__mro__ = [DOMNode,object]
@@ -381,7 +404,8 @@ DOMNode.__eq__ = function(self,other){
 }
 
 DOMNode.__getattribute__ = function(self,attr){
-    if(['children','html','left','parent','query','text','top','value'].indexOf(attr)>-1){
+    if(['children','html','left','parent','query','text',
+        'top','value','height','width'].indexOf(attr)>-1){
         return DOMNode[attr](self)
     }
     if(attr=='remove'){
@@ -422,6 +446,8 @@ DOMNode.__getattribute__ = function(self,attr){
             return func
         }else if(attr=='options'){
             return $Options(self.elt)
+        }else if(attr=='style'){
+            return $Style(self.elt[attr])
         }else{
             return $JS2Py(self.elt[attr])
         }
@@ -710,6 +736,10 @@ DOMNode.getSelectionRange = function(self){ // for TEXTAREA
     }
 }
 
+DOMNode.height = function(self){
+    return int($getPosition(self.elt)["height"])
+}
+
 DOMNode.left = function(self){
     return int($getPosition(self.elt)["left"])
 }
@@ -763,6 +793,7 @@ DOMNode.reset = function(self){ // for FORM
 DOMNode.style = function(self){
     // set attribute "float" for cross-browser compatibility
     self.elt.style.float = self.elt.style.cssFloat || self.style.styleFloat
+    console.log('get style')
     return new $JSObject(self.elt.style)
 }
 
@@ -798,6 +829,10 @@ DOMNode.html = function(self){return self.elt.innerHTML}
 
 DOMNode.value = function(self){return self.elt.value}
 
+DOMNode.width = function(self){
+    return int($getPosition(self.elt)["width"])
+}
+
 DOMNode.set_class = function(self,arg){self.elt.setAttribute('class',arg)}
 
 DOMNode.set_html = function(self,value){
@@ -806,12 +841,14 @@ DOMNode.set_html = function(self,value){
 
 DOMNode.set_style = function(self,style){ // style is a dict
     for(var i=0;i<style.$keys.length;i++){
-        if(style.$keys[i].toLowerCase()==='float'){
-            self.elt.style.cssFloat = style.$values[i]
-            self.elt.style.styleFloat = style.$values[i]
-        
+        var key = style.$keys[i],value=style.$values[i]
+        if(key.toLowerCase()==='float'){
+            self.elt.style.cssFloat = value
+            self.elt.style.styleFloat = value
         }else{
-            self.elt.style[style.$keys[i]] = style.$values[i]
+            if(['top','left','height','width','borderWidth'].indexOf(key)>-1
+                && isinstance(value,int)){value = value+'px'}
+            self.elt.style[key] = value
         }
     }
 }
