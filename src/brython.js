@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131207-091544
+// version 1.3.20131207-094336
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131207-091544', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131207-094336', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -5604,6 +5604,10 @@ console.log('error '+js_exc)
 var exc=Error()
 exc.__name__=js_exc.name
 exc.__class__=$ExceptionDict
+if(js_exc.name=='ReferenceError'){
+exc.__name__='NameError'
+exc.__class__=$NameErrorDict
+}
 exc.message=js_exc.message
 exc.info=''
 }else{
@@ -5613,6 +5617,9 @@ __BRYTHON__.exception_stack.push(exc)
 return exc
 }
 function $is_exc(exc,exc_list){
+if(exc.__class__===undefined){
+exc=__BRYTHON__.exception(exc)
+}
 var exc_class=exc.__class__.$factory
 for(var i=0;i<exc_list.length;i++){
 if(issubclass(exc_class,exc_list[i])){return true}
