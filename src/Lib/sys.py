@@ -65,3 +65,9 @@ flags=flag_class()
 
 def exit(i=None):
     raise SystemExit('')
+
+def getfilesystemencoding(*args,**kw):
+    """getfilesystemencoding() -> string    
+    Return the encoding used to convert Unicode filenames in
+    operating system filenames."""
+    return 'utf-8'
