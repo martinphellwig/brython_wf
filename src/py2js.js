@@ -66,7 +66,6 @@ for($op in $operators){
         $first_op_letter.push($op.charAt(0))
     }
 }
-console.log('firt op letter '+$first_op_letter)
 
 function $Node(type){
     this.type = type

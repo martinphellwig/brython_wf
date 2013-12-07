@@ -371,7 +371,7 @@ function getattr(obj,attr,_default){
     }
 
     var is_class = obj.__class__===$factory, mro, attr_func
-    //if(attr=='calc_v'){console.log('2 ! getattr '+attr+' of '+obj+' ('+type(obj)+') '+' class '+is_class)}
+    //if(attr=='__setattr__'){console.log('2 ! getattr '+attr+' of '+obj+' ('+type(obj)+') '+' class '+is_class)}
     if(is_class){
         attr_func=$type.__getattribute__
         if(obj.$dict===undefined){console.log('obj '+obj+' $dict undefined')}
@@ -1053,10 +1053,12 @@ function setattr(obj,attr,value){
     if(res!==undefined && res.__set__!==undefined){
         return res.__set__(res,obj,value)
     }
+    
     try{var f = getattr(obj,'__setattr__')}
     catch(err){
         $pop_exc()
         obj[attr]=value
+        return
     }
     f(attr,value)
 }
