@@ -242,7 +242,7 @@ function import_py_module(module_contents, path, name) {
         eval(js)
 
     }catch(err){
-        console.log(''+err+' '+err.__name__)
+        console.log(name+': '+err+' '+err.__name__)
         throw err
     }
 

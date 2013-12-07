@@ -356,16 +356,22 @@ class catch_warnings(object):
 # - a line number for the line being warning, or 0 to mean any line
 # If either if the compiled regexs are None, match anything.
 _warnings_defaults = False
-try:
-    from _warnings import (filters, _defaultaction, _onceregistry,
-                            warn, warn_explicit)
-    defaultaction = _defaultaction
-    onceregistry = _onceregistry
-    _warnings_defaults = True
-except ImportError:
-    filters = []
-    defaultaction = "default"
-    onceregistry = {}
+
+#fixme brython
+#try:
+#    from _warnings import (filters, _defaultaction, _onceregistry,
+#                            warn, warn_explicit)
+#    defaultaction = _defaultaction
+#    onceregistry = _onceregistry
+#    _warnings_defaults = True
+#except ImportError:
+#    filters = []
+#    defaultaction = "default"
+#    onceregistry = {}
+
+filters = []
+defaultaction = "default"
+onceregistry = {}
 
 
 # Module initialization

@@ -8,6 +8,7 @@ class VFSModuleFinder:
         if len(path_entry) > len(_root):
            path_entry=path_entry[len(_root):]
 
+        #print(path_entry)
         if path_entry.startswith('/libs') or path_entry.startswith('/Lib'):
            self.path_entry=path_entry
         elif path_entry.startswith('libs') or path_entry.startswith('Lib'):
@@ -19,7 +20,7 @@ class VFSModuleFinder:
         return '<%s for "%s">' % (self.__class__.__name__, self.path_entry)
     
     def load_module(self, name):
-        print(self)
+        #print(self)
         mod=sys.modules[self._fullname]
         return mod
 
@@ -34,7 +35,7 @@ class VFSModuleFinder:
         for _ext in ['js', 'py']:
             _filepath=self.path_entry +'/%s.%s' % (fullname, _ext)
             if _filepath in VFS:
-               print("VFS_import:module found at %s:%s" % (_filepath, fullname))
+               #print("VFS_import:module found at %s:%s" % (_filepath, fullname))
                return VFSModuleLoader(_filepath, fullname)
 
         #print('module %s not found' % fullname)
@@ -81,14 +82,14 @@ class VFSModuleLoader:
 
         
         if self.is_package():
-           print('adding path for package')
+           #print('adding path for package')
            # Set __path__ for packages
            # so we can find the sub-modules.
            mod.__path__ = [ self._filepath ]
-        else:
-            print('imported as regular module')
+        #else:
+        #    print('imported as regular module')
         
-        print('creating a new module object for "%s"' % self._name)
+        #print('creating a new module object for "%s"' % self._name)
         sys.modules[self._name]=mod
         #JSObject(__BRYTHON__.imported)[self._name]=mod
 

@@ -23,11 +23,12 @@ class ModuleFinder:
         return '<%s for "%s">' % (self.__class__.__name__, self.path_entry)
         
     def load_module(self, name):
-        return sys.modules[name]
+        return sys.modules[self.fullname]
 
     def find_module(self, fullname, path=None):
         #print(fullname)
         if fullname in sys.modules:
+           self.fullname=fullname
            return self
 
         #path = path or self.path_entry
