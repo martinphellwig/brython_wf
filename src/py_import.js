@@ -30,19 +30,19 @@ function $__import__(name, globals, locals, curpath, level) {
              //_obj=getattr(temp, '__call__')(path)
              _obj=getattr(import_module, '__call__')(path)
              _found=True
-        } catch (err) { console.log('catch:' + err.message) 
+        } catch (err) { //console.log('catch:' + err.message) 
         }
         if (_found) { // this hook thinks it can find/load the module
            try {
-                console.log('find_module')
-                console.log(_obj)
+                //console.log('find_module')
+                //console.log(_obj)
                 _loader=getattr(getattr(_obj,'find_module'), '__call__')(name, path)
                 //console.log(_loader)
-           } catch (err) { console.log('catch:' + err.message)
+           } catch (err) { //console.log('catch:' + err.message)
            } 
         }
 
-        return _loader;
+        return _loader
    }
 
    //console.log(name, curpath, level)
@@ -66,7 +66,7 @@ function $__import__(name, globals, locals, curpath, level) {
      var elts = curpath.split('/')
      var pymod_elts = elts.slice(0,elts.length-level)
      var _path=pymod_elts.join('/')
-     console.log('path:' + _path)
+     //console.log('path:' + _path)
      for (var j=0; j < __BRYTHON__.path_hooks.length; j++) {
          if (_loader != None) continue;
          _loader=_import_worker(__BRYTHON__.path_hooks[j], _path, name)
@@ -159,12 +159,12 @@ $default_import_module =(function() {
           //console.log(path.substring(path.length-4))
           //console.log(import_funcs)
           var mod=import_funcs(module, fullpath)
-          console.log('import_funcs' + mod)
+          //console.log('import_funcs' + mod)
           if (mod !== undefined) {
                   __BRYTHON__.modules[name]=mod
                   __BRYTHON__.imported[name]=mod
-                  console.log('setting module ' + name)
-                  console.log(__BRYTHON__.modules[name])
+                  //console.log('setting module ' + name)
+                  //console.log(__BRYTHON__.modules[name])
                   return this
           }
           throw ImportError('default_import_module:Cannot find module:' + name)
@@ -177,7 +177,7 @@ $default_import_module =(function() {
           for($var in $ns){eval("var "+$var+"=$ns[$var]")}
           //var $locals = __BRYTHON__.scope["$default_import_module"].__dict__=$ns
           var _name = getattr(self,"_name")
-          console.log('default_import_module.load_module')
+          //console.log('default_import_module.load_module')
           return __BRYTHON__.modules[_name]
        }
     })()
@@ -204,7 +204,7 @@ function import_js_module(module_contents, path, name){
    $module.__str__ = function(){return "<module '"+name+"' from "+path + " >"}
    $module.__file__ = path
 
-   console.log('import_js_module: ' + $module)
+   //console.log('import_js_module: ' + $module)
    return $module
 }
 
@@ -363,7 +363,7 @@ function $import_module_search_path_list(module,path_list){
         try {
                mod = $import_py(module,path)
                if(j==search.length-1){mod.$package=true}
-               console.log(mod)
+               //console.log(mod)
                return mod
         }catch(err){if(err.__name__!=="FileNotFoundError"){throw err}}
     }
