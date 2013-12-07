@@ -731,7 +731,6 @@ def _createenviron():
     else:
         # Where Env Var Names Can Be Mixed Case
         encoding = sys.getfilesystemencoding()
-        print('encoding',encoding)
         def encode(value):
             if not isinstance(value, str):
                 raise TypeError("str expected, not %s" % type(value).__name__)
