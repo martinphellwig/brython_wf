@@ -3922,7 +3922,7 @@ function brython(options){
     document.$py_src = {}
     __BRYTHON__.$py_module_path = {}
     __BRYTHON__.$py_module_alias = {}
-    __BRYTHON__.path_hooks = [$default_import_module]
+    __BRYTHON__.path_hooks = [$class_constructor('default_import_module',$default_import_module)]
 
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}

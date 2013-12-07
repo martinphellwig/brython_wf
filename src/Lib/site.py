@@ -1,8 +1,8 @@
 import sys
-import VFS_import
 
-sys.path_hooks.insert(0,VFS_import.VFSModuleFinder)
+#from VFS_import import VFSModuleFinder
+#sys.path_hooks.insert(VFSModuleFinder)
 
-import external_import
-sys.path_hooks.append(external_import.ModuleFinder)
+from external_import import ModuleFinder
+sys.path_hooks.append(ModuleFinder)
 

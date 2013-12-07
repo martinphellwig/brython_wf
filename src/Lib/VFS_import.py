@@ -24,10 +24,10 @@ class VFSModuleFinder:
         return mod
 
     def find_module(self, fullname, path=None):
-        print(fullname)
         if fullname in sys.modules:
-           self._fullname=fullname
-           return self
+           if sys.modules[fullname]['__file__'] is not None:
+              self._fullname=fullname
+              return self
 
         #path = path or self.path_entry
         #path = self.path_entry
