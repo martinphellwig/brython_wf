@@ -22,7 +22,7 @@ for key in dir(infos):
     if key in ['__doc__','__name__','__file__','__package__']:
         continue
     val = getattr(infos,key)
-    if isinstance(val,(int,float)):
+    if isinstance(val,(int,float,dict)):
         out.write('\n%s = %s\n' %(key,val))
     elif val in [True,False,None]:
         out.write('\n%s = %s\n' %(key,val))
