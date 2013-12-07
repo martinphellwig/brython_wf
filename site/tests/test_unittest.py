@@ -8,4 +8,4 @@ class IntegerArithmenticTestCase(unittest.TestCase):
         self.assertEqual((0 * 10), 0)
         self.assertEqual((5 * 8), 40)
 
-unittest.main()
+unittest.main(exit=False)
