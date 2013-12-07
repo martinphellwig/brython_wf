@@ -312,7 +312,11 @@ win =  new $JSObject(window)
 
 $StyleDict = {__class__:$type,__name__:'CSSProperty'}
 
-$StyleDict.__mro__ = [$StyleDict,$JSObjectDict,$ObjectDict]
+$StyleDict.__mro__ = [$StyleDict,$ObjectDict]
+
+$StyleDict.__getattr__ = function(self,attr){
+    return $ObjectDict.__getattribute__(self.js,attr)
+}
 
 $StyleDict.__setattr__ = function(self,attr,value){
     if(attr.toLowerCase()==='float'){
