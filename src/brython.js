@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131205-115401
+// version 1.3.20131207-091544
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131205-115401', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131207-091544', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -5578,6 +5578,7 @@ BaseException.__name__='BaseException'
 BaseException.__class__=$factory
 BaseException.$dict=$BaseExceptionDict
 __BRYTHON__.exception=function(js_exc){
+if(js_exc.py_error){console.log('info '+js_exc.info)}
 if(!js_exc.py_error){
 if(__BRYTHON__.debug>0 && js_exc.info===undefined){
 if(document.$line_info!==undefined){
@@ -8230,6 +8231,24 @@ obj.__repr__=obj.__str__=obj.toString
 return obj
 }
 win=new $JSObject(window)
+$StyleDict={__class__:$type,__name__:'CSSProperty'}
+$StyleDict.__mro__=[$StyleDict,$JSObjectDict,$ObjectDict]
+$StyleDict.__setattr__=function(self,attr,value){
+if(attr.toLowerCase()==='float'){
+self.js.cssFloat=value
+self.js.styleFloat=value
+}else{
+if(['top','left','height','width','borderWidth'].indexOf(attr)>-1
+&& isinstance(value,int)){value=value+'px'}
+self.js[attr]=value
+}
+}
+function $Style(style){
+return{__class__:$StyleDict,js:style}
+}
+$Style.__class__=$factory
+$Style.$dict=$StyleDict
+$StyleDict.$factory=$Style
 function DOMNode(){}
 DOMNode.__class__=$type
 DOMNode.__mro__=[DOMNode,object]
@@ -8285,7 +8304,8 @@ DOMNode.__eq__=function(self,other){
 return self.elt==other.elt
 }
 DOMNode.__getattribute__=function(self,attr){
-if(['children','html','left','parent','query','text','top','value'].indexOf(attr)>-1){
+if(['children','html','left','parent','query','text',
+'top','value','height','width'].indexOf(attr)>-1){
 return DOMNode[attr](self)
 }
 if(attr=='remove'){
@@ -8322,6 +8342,8 @@ func.__name__=attr
 return func
 }else if(attr=='options'){
 return $Options(self.elt)
+}else if(attr=='style'){
+return $Style(self.elt[attr])
 }else{
 return $JS2Py(self.elt[attr])
 }
@@ -8577,6 +8599,9 @@ if(self.elt['getSelectionRange']!==undefined){
 return self.elt.getSelectionRange.apply(null,arguments)
 }
 }
+DOMNode.height=function(self){
+return int($getPosition(self.elt)["height"])
+}
 DOMNode.left=function(self){
 return int($getPosition(self.elt)["left"])
 }
@@ -8618,6 +8643,7 @@ return function(){self.elt.reset()}
 }
 DOMNode.style=function(self){
 self.elt.style.float=self.elt.style.cssFloat || self.style.styleFloat
+console.log('get style')
 return new $JSObject(self.elt.style)
 }
 DOMNode.setSelectionRange=function(self){
@@ -8647,17 +8673,23 @@ return self.elt.innerText || self.elt.textContent
 }
 DOMNode.html=function(self){return self.elt.innerHTML}
 DOMNode.value=function(self){return self.elt.value}
+DOMNode.width=function(self){
+return int($getPosition(self.elt)["width"])
+}
 DOMNode.set_class=function(self,arg){self.elt.setAttribute('class',arg)}
 DOMNode.set_html=function(self,value){
 self.elt.innerHTML=str(value)
 }
 DOMNode.set_style=function(self,style){
 for(var i=0;i<style.$keys.length;i++){
-if(style.$keys[i].toLowerCase()==='float'){
-self.elt.style.cssFloat=style.$values[i]
-self.elt.style.styleFloat=style.$values[i]
+var key=style.$keys[i],value=style.$values[i]
+if(key.toLowerCase()==='float'){
+self.elt.style.cssFloat=value
+self.elt.style.styleFloat=value
 }else{
-self.elt.style[style.$keys[i]]=style.$values[i]
+if(['top','left','height','width','borderWidth'].indexOf(key)>-1
+&& isinstance(value,int)){value=value+'px'}
+self.elt.style[key]=value
 }
 }
 }
