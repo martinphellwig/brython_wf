@@ -1515,6 +1515,10 @@ __BRYTHON__.exception = function(js_exc){
         var exc = Error()
         exc.__name__ = js_exc.name
         exc.__class__ = $ExceptionDict
+        if(js_exc.name=='ReferenceError'){
+            exc.__name__='NameError'
+            exc.__class__=$NameErrorDict
+        }
         exc.message = js_exc.message
         exc.info = ''
     }else{
@@ -1527,6 +1531,9 @@ __BRYTHON__.exception = function(js_exc){
 function $is_exc(exc,exc_list){
     // used in try/except to check if an exception is an instance of
     // one of the classes in exc_list
+    if(exc.__class__===undefined){
+        exc = __BRYTHON__.exception(exc)
+    }
     var exc_class = exc.__class__.$factory
     for(var i=0;i<exc_list.length;i++){
         if(issubclass(exc_class,exc_list[i])){return true}
