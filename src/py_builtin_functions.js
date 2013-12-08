@@ -308,7 +308,7 @@ frozenset.__class__ = $factory
 frozenset.$dict = $FrozensetDict
 
 function getattr(obj,attr,_default){
-
+    if (obj === undefined) {console.log('getattr:', obj, attr, _default)}
     var klass = obj.__class__
     //if(attr=='show'){console.log('-- getattr '+attr+' of obj '+obj+' native '+klass.$native)}
     if(klass===undefined){

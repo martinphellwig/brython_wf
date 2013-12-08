@@ -20,7 +20,7 @@ class VFSModuleFinder:
         return '<%s for "%s">' % (self.__class__.__name__, self.path_entry)
     
     def load_module(self, name):
-        #print(self)
+        print("VFS_import:", self._fullname)
         mod=sys.modules[self._fullname]
         return mod
 
@@ -33,7 +33,7 @@ class VFSModuleFinder:
         #path = path or self.path_entry
         #path = self.path_entry
         for _ext in ['js', 'py']:
-            _filepath=self.path_entry +'/%s.%s' % (fullname, _ext)
+            _filepath=self.path_entry +'/%s.%s' % (fullname.replace('.', '/'), _ext)
             #print(_filepath)
             if _filepath in VFS:
                #print("VFS_import:module found at %s:%s" % (_filepath, fullname))
@@ -65,6 +65,7 @@ class VFSModuleLoader:
         return '.' in self._name
             
     def load_module(self, name):
+        print("VFS_import:", self._name)
         if self._name in sys.modules:
            print('reusing existing module from previous import of "%s"' % self._name)
            mod = sys.modules[self._name]
@@ -99,5 +100,6 @@ class VFSModuleLoader:
         #print('creating a new module object for "%s"' % self._name)
         sys.modules[self._name]=mod
         #JSObject(__BRYTHON__.imported)[self._name]=mod
+        #JSObject(__BRYTHON__.modules)[self._name]=mod
 
         return mod

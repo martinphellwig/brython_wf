@@ -18,6 +18,7 @@ function $__import__(name, globals, locals, curpath, level) {
    // note: curpath is ignored if level =0 (absolute import)
    // level > 0 (is a relative import)
 
+   console.log('$__import__', name, curpath, level)
    _import_worker=function(import_module, path, name) {
         var _obj
         var _found=False

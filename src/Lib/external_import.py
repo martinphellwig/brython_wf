@@ -43,7 +43,7 @@ class ModuleFinder:
             #print(self._module_source)
             #if self._module_source is not None:
             print("external_import:module found at %s:%s" % (self.path_entry, fullname))
-            return ModuleLoader(self.path_entry, '%s.%s' % (fullname, _ext), self._module_source)
+            return ModuleLoader('%s/%s.%s' % (self.path_entry, fullname, _ext), fullname, self._module_source)
 
         #print('module %s not found' % fullname)
         raise ImportError('module %s not found' % fullname)
@@ -54,7 +54,7 @@ class ModuleLoader:
     
     def __init__(self, filepath, name, module_source):
         print(filepath, name, module_source)
-        self._filepath=filepath + "/" + name
+        self._filepath=filepath
         self._name=name
         self._module_source=module_source
         
