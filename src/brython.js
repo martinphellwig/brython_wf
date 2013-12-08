@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131208-164923
+// version 1.3.20131208-182755
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131208-164923', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131208-182755', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -58,6 +58,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "random",
 "re",
 "time",
+"WS_FTP",
 "_ajax",
 "_browser",
 "_html",
@@ -421,14 +422,14 @@ left.func='setattr'
 var res=left.to_js()
 left.func='getattr'
 res=res.substr(0,res.length-1)
-res +=','+right.to_js()+');None'
+res +=','+right.to_js()+');None;'
 return res
 }else if(left.type==='sub'){
 left.func='setitem' 
 var res=left.to_js()
 res=res.substr(0,res.length-1)
 left.func='getitem' 
-res +=','+right.to_js()+');None'
+res +=','+right.to_js()+');None;'
 return res
 }
 var scope=$get_scope(this)
@@ -438,7 +439,7 @@ if(scope.module!=='__main__'){res='var '+res}
 if(left.to_js().charAt(0)!='$'){
 res +='=$globals["'+left.to_js()+'"]'
 }
-res +='='+right.to_js()+';None'
+res +='='+right.to_js()+';None;'
 return res
 }else if(scope.ntype==='def'||scope.ntype==="generator"){
 if(scope.globals && scope.globals.indexOf(left.value)>-1){
@@ -451,7 +452,7 @@ locals.push(left.to_js())
 }
 var res='var '+left.to_js()+'='
 res +='$locals["'+left.to_js()+'"]='
-res +=right.to_js()+';None'
+res +=right.to_js()+';None;'
 return res
 }
 }else if(scope.ntype==='class'){
@@ -570,6 +571,7 @@ res +='\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
 res +='eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
 }
 res +='var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
+res +='if(__BRYTHON__.debug>1){console.log($jscode)};'
 res +='var $res = eval($jscode);'
 res +='if($res===undefined){return None};return $res'
 res +='}catch(err){throw __BRYTHON__.exception(err)}'
@@ -968,7 +970,7 @@ for(var i=0;i<tree.length;i++){
 var expr=tree[i]
 if(expr.type==='expr'||expr.type==='id'){
 var scope=$get_scope(this)
-var js='(function(){'
+var js=';(function(){'
 js +='try{getattr('+expr.to_js()+',"__del__")()}'
 js +='catch($err){$pop_exc();'
 js +='delete '+expr.to_js()+'};'
@@ -998,7 +1000,7 @@ return 'delattr('+expr.value.to_js()+',"'+expr.name+'")'
 $_SyntaxError(this,["can't delete "+expr.type])
 }
 }
-return res.join(';')
+return res.join(';')+';'
 }
 }
 function $DictOrSetCtx(C){
@@ -1237,7 +1239,7 @@ res +='=getattr(__BRYTHON__.imported["'+this.module+'"],"'+this.names[i]+'")\n'
 }
 }
 }
-res +='\n'+head+'None'
+res +='\n'+head+'None;'
 return res
 }
 }
@@ -1500,6 +1502,7 @@ res +='=$globals["'+alias+'"]'
 res +='=__BRYTHON__.imported["'+key+'"];'
 }
 }
+res +='None;'
 return res
 }
 }
@@ -4803,7 +4806,6 @@ throw TypeError("object of type '"+obj.__class__.__name__+"' has no len()")}
 }
 function locals(obj_id,module){
 if(__BRYTHON__.scope[obj_id]===undefined){
-console.log('use $line info for locals')
 return globals(module)
 }
 var res=dict()

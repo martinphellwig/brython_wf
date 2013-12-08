@@ -567,8 +567,6 @@ function locals(obj_id,module){
     // a dictionary mapping local variable names to their values, and the
     // module name
     if(__BRYTHON__.scope[obj_id]===undefined){
-        console.log('use $line info for locals')
-        //var module=document.$line_info[1]
         return globals(module)
     }
     var res = dict()
