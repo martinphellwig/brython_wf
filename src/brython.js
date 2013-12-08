@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131207-214932
+// version 1.3.20131208-164923
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131207-214932', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131208-164923', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -5744,6 +5744,8 @@ for(var i=0;i<arguments.length;i++){
 arg=arguments[i]
 if(arg &&(arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
 args.push(arg.js)
+}else if(arg && arg.__class__===DOMNode){
+args.push(arg.elt)
 }else{
 args.push(arg)
 }
@@ -8844,19 +8846,24 @@ self.children.push(child)
 $TagSumDict.__add__=function(self,other){
 if(other.__class__===$TagSumDict){
 self.children=self.children.concat(other.children)
-}else if(isinstance(other,str)){
-self.children=self.children.concat(document.createTextNode(other))
+}else if(isinstance(other,[str,int,float,dict,set,list])){
+self.children=self.children.concat($DOMNode(document.createTextNode(other)))
 }else{self.children.push(other)}
 return self
 }
 $TagSumDict.__mro__=[$TagSumDict,$ObjectDict]
 $TagSumDict.__radd__=function(self,other){
 var res=$TagSum()
-res.children=self.children.concat(document.createTextNode(other))
+res.children=self.children.concat($DOMNode(document.createTextNode(other)))
 return res
 }
 $TagSumDict.__repr__=function(self){
-return '<object TagSum>'
+var res='<object TagSum> '
+for(var i=0;i<self.children.length;i++){
+res+=self.children[i]
+if(self.children[i].toString()=='[object Text]'){res +=' ['+self.children[i].textContent+']\n'}
+}
+return res
 }
 $TagSumDict.__str__=$TagSumDict.toString=$TagSumDict.__repr__
 $TagSumDict.clone=function(self){

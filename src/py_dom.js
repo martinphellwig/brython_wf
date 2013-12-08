@@ -1018,8 +1018,8 @@ $TagSumDict.appendChild = function(self,child){
 $TagSumDict.__add__ = function(self,other){
     if(other.__class__===$TagSumDict){
         self.children = self.children.concat(other.children)
-    }else if(isinstance(other,str)){
-        self.children = self.children.concat(document.createTextNode(other))
+    }else if(isinstance(other,[str,int,float,dict,set,list])){
+        self.children = self.children.concat($DOMNode(document.createTextNode(other)))
     }else{self.children.push(other)}
     return self
 }
@@ -1028,12 +1028,17 @@ $TagSumDict.__mro__ = [$TagSumDict,$ObjectDict]
 
 $TagSumDict.__radd__ = function(self,other){
     var res = $TagSum()
-    res.children = self.children.concat(document.createTextNode(other))
+    res.children = self.children.concat($DOMNode(document.createTextNode(other)))
     return res
 }
 
 $TagSumDict.__repr__ = function(self){
-    return '<object TagSum>'
+    var res = '<object TagSum> '
+    for(var i=0;i<self.children.length;i++){
+        res+=self.children[i]
+        if(self.children[i].toString()=='[object Text]'){res += ' ['+self.children[i].textContent+']\n'}
+    }
+    return res
 }
 
 $TagSumDict.__str__ = $TagSumDict.toString = $TagSumDict.__repr__
