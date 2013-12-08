@@ -34,12 +34,19 @@ class VFSModuleFinder:
         #path = self.path_entry
         for _ext in ['js', 'py']:
             _filepath=self.path_entry +'/%s.%s' % (fullname, _ext)
+            #print(_filepath)
             if _filepath in VFS:
                #print("VFS_import:module found at %s:%s" % (_filepath, fullname))
                return VFSModuleLoader(_filepath, fullname)
 
+        # try module/__init__.py
+        _filepath=self.path_entry +'/%s/__init__.py' % fullname
+        if _filepath in VFS:
+           #print("VFS_import:module found at %s:%s" % (_filepath, fullname))
+           return VFSModuleLoader(_filepath, fullname)
+
         #print('module %s not found' % fullname)
-        raise ImportError('VFS_import:module %s not found, path:%s' % (fullname, _filepath))
+        raise ImportError('VFS_import:module %s not found' % (fullname))
 
 class VFSModuleLoader:
     """Load source for modules"""

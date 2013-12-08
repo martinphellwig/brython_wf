@@ -4,6 +4,9 @@ import re
 import datetime
 import os
 
+# version info
+version = [1,2,None,"alpha",0]
+
 try:
   import slimit 
   minify=slimit.minify
@@ -58,33 +61,36 @@ def custom_minify(src):
 
     return _res
 
+abs_path = lambda path:os.path.join(os.getcwd(),'src',path)
+
+
 now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
-sources = ['brython_builtins','py2js','py_utils','py_object',
+# update version number
+out = open(abs_path('version_info.js'),'w')
+version[2] = now
+out.write('__BRYTHON__.version_info = %s\n' %str(version))
+# builtin module names = list of scripts in src/libs
+out.write('__BRYTHON__.builtin_module_names = ["posix",')
+out.write(',\n    '.join(['"%s"' %fname.split('.')[0]
+     for fname in os.listdir(os.path.join(os.getcwd(),'src','libs'))]))
+out.write(']\n')
+out.close()
+
+sources = ['brython_builtins','version_info','py2js','py_utils','py_object',
     'py_builtin_functions','js_objects','py_import',
     'py_float','py_int','py_dict','py_list','py_string','py_set','py_dom']
 
-abs_path = lambda path:os.path.join(os.getcwd(),'src',path)
-
-# update version number in module sys
-bltins_src = open(abs_path('brython_builtins.js')).read()
-
-bltins_src = re.sub('version_info = \[1,2,".*?"\]',
-    'version_info = [1,2,"%s"]' %now,bltins_src)
-out = open(abs_path('brython_builtins.js'),'w')
-out.write(bltins_src)
-out.close()
-
 loader_src = open(abs_path('py_loader.js')).read()
 
-loader_src = re.sub('version_info = \[1,2,".*?"\]',
-    'version_info = [1,2,"%s"]' %now,loader_src)
+loader_src = re.sub('version_info = \[1,2,".*?"\,"alpha",0]',
+    'version_info = [1,2,"%s","alpha",0]' %now,loader_src)
 out = open(abs_path('py_loader.js'),'w')
 out.write(loader_src)
 out.close()
 
 res = '// brython.js www.brython.info\n'
-res += '// version 1.2.%s\n' %now
+res += '// version %s.%s.%s\n' %(version[0],version[1],now)
 res += '// version compiled from commented, indented source files '
 res += 'at https://bitbucket.org/olemis/brython/src\n'
 src_size = 0
@@ -119,7 +125,7 @@ import zipfile
 dest_dir = os.path.join(os.getcwd(),'dist')
 if not os.path.exists(dest_dir):
     os.mkdir(dest_dir)
-name = 'Brython1.2_site_mirror-%s' %now
+name = 'Brython%s.%s_site_mirror-%s' %(version[0],version[1],now)
 dest_path = os.path.join(dest_dir,name)
 
 def is_valid(filename):
@@ -168,7 +174,7 @@ dist_zip.close()
 print('end of mirror')
 
 # minimum package
-name = 'Brython1.2-%s' %now
+name = 'Brython%s.%s-%s' %(version[0],version[1],now)
 dest_path = os.path.join(dest_dir,name)
 dist1 = tarfile.open(dest_path+'.gz',mode='w:gz')
 dist2 = tarfile.open(dest_path+'.bz2',mode='w:bz2')
@@ -190,15 +196,17 @@ for arc,wfunc in (dist1,dist1.add),(dist2,dist2.add),(dist3,dist3.write):
     wfunc(os.path.join(os.getcwd(),'src','brython.js'),
             arcname=os.path.join(name,'brython.js'))
     
+    base = os.path.join(os.getcwd(),'src')
     folders = ['libs','Lib']
     for folder in folders:
-        for path in os.listdir(os.path.join(os.getcwd(),'src',folder)):
-            if os.path.splitext(path)[1] not in ['.js','.py']:
-                continue
-            #abs_path = os.path.join(os.getcwd(),'src',folder,path)
-            print('add',path)
-            wfunc(os.path.join(os.getcwd(),'src',folder,path),
-                arcname=os.path.join(name,folder,path))
+        for dirpath,dirnames,filenames in os.walk(os.path.join(base,folder)):
+            for path in filenames:
+                if os.path.splitext(path)[1] not in ['.js','.py']:
+                    continue
+                #abs_path = os.path.join(os.getcwd(),'src',folder,path)
+                print('add',path,dirpath[len(base):])
+                wfunc(os.path.join(dirpath,path),
+                    arcname=os.path.join(name,dirpath[len(base)+1:],path))
 
     arc.close()
 
