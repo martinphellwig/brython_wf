@@ -179,6 +179,7 @@ function $import_py_module(module,path,module_contents) {
         for(var attr in err){
             console.log(attr+' '+err[attr])
         }
+        //console.log('js code\n'+js)
         throw err
     }
 }

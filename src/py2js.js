@@ -398,14 +398,14 @@ function $AssignCtx(context){
                 var res = left.to_js()
                 left.func = 'getattr'
                 res = res.substr(0,res.length-1) // remove trailing )
-                res += ','+right.to_js()+');None'
+                res += ','+right.to_js()+');None;'
                 return res
             }else if(left.type==='sub'){ // assign to item
                 left.func = 'setitem' // just for to_js()
                 var res = left.to_js()
                 res = res.substr(0,res.length-1) // remove trailing )
                 left.func = 'getitem' // restore default function
-                res += ','+right.to_js()+');None'
+                res += ','+right.to_js()+');None;'
                 return res
             }
             var scope = $get_scope(this)
@@ -415,7 +415,7 @@ function $AssignCtx(context){
                 if(left.to_js().charAt(0)!='$'){
                     res += '=$globals["'+left.to_js()+'"]'
                 }
-                res += '='+right.to_js()+';None'
+                res += '='+right.to_js()+';None;'
                 return res
             }else if(scope.ntype==='def'||scope.ntype==="generator"){
                 // assignment in a function : depends if variable is local
@@ -430,7 +430,7 @@ function $AssignCtx(context){
                     }
                     var res = 'var '+left.to_js()+'='
                     res += '$locals["'+left.to_js()+'"]='
-                    res += right.to_js()+';None'
+                    res += right.to_js()+';None;'
                     return res
                 }
             }else if(scope.ntype==='class'){
@@ -587,6 +587,7 @@ function $CallCtx(context){
             // the namespace built inside the function will be in
             // __BRYTHON__.scope[_name].__dict__
             res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
+            res += 'if(__BRYTHON__.debug>1){console.log($jscode)};'
             res += 'var $res = eval($jscode);'
             res += 'if($res===undefined){return None};return $res'
             res += '}catch(err){throw __BRYTHON__.exception(err)}'
@@ -1093,7 +1094,7 @@ function $DelCtx(context){
             var expr = tree[i]
             if(expr.type==='expr'||expr.type==='id'){
                 var scope = $get_scope(this)
-                var js = '(function(){'
+                var js = ';(function(){'
                 js += 'try{getattr('+expr.to_js()+',"__del__")()}'
                 js += 'catch($err){$pop_exc();'
                 js += 'delete '+expr.to_js()+'};'
@@ -1125,7 +1126,7 @@ function $DelCtx(context){
                 $_SyntaxError(this,["can't delete "+expr.type])
             }
         }
-        return res.join(';')
+        return res.join(';')+';'
     }
 }
 
@@ -1398,7 +1399,7 @@ function $FromCtx(context){
              }
            }
         }
-        res += '\n'+head+'None'
+        res += '\n'+head+'None;'
         return res
     }
 }
@@ -1729,8 +1730,8 @@ function $ImportCtx(context){
                 res += '=__BRYTHON__.imported["'+key+'"];'
             }
         }
-        // clean up __BRYTHON__.path
-        //res += 'if($flag){__BRYTHON__.path.shift()};None'
+        // add None for interactive console
+        res += 'None;'
         return res
     }
 }
