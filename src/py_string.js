@@ -433,6 +433,15 @@ $StringDict.find = function(self){
 $StringDict.format = function(self) {
     var $ns=$MakeArgs('str.format',arguments,['self'],{},'args', 'kw')
     console.log('args '+$ns['args']+' kw '+str($ns['kw']))
+    // use code from
+    // https://raw.github.com/florentx/stringformat/master/stringformat.py
+    // how should we import this code?
+    //   * we could translate to a javascript equivalent.
+    //   * create library to allow importing of python files directly,
+    //     kind of like a ctypes module (but in reverse)
+    //   * modify stringformat python code, and translate using something
+    //     like compile.js to a javascript equivalent file, and then
+    //     import that file with import_js function.
     return '<formatted string>'
 }
 
