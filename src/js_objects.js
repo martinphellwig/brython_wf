@@ -83,6 +83,8 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
                     arg = arguments[i]
                     if(arg && (arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
                         args.push(arg.js)
+                    }else if(arg && arg.__class__===DOMNode){
+                        args.push(arg.elt)
                     }else{
                         args.push(arg)
                     }
