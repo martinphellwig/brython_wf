@@ -3,7 +3,7 @@ def __getattr__(None,attr):
     if attr=='modules':
         return JSObject(__BRYTHON__.imported)
     else:
-        raise ImportError("cannot import name "+attr)
+        raise AttributeError("cannot import name "+attr)
 
 from browser import doc
 __stdout__=getattr(doc,"$stdout")

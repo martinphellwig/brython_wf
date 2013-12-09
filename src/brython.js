@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131208-210917
+// version 1.3.20131209-213430
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131208-210917', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131209-213430', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -58,7 +58,6 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "random",
 "re",
 "time",
-"WS_FTP",
 "_ajax",
 "_browser",
 "_html",
@@ -4665,11 +4664,7 @@ var res=attr_func(obj,attr)
 if(res!==undefined){return res}
 if(_default !==undefined){return _default}
 else{
-if(obj.__class__===$ModuleDict){
-throw ImportError(' cannot import name '+attr)
-}else{
 throw AttributeError("'"+type(obj).__name__+"' object has no attribute '"+attr+"'")
-}
 }
 }
 function globals(module){
