@@ -1387,15 +1387,18 @@ function $FromCtx(context){
              for(var i=0;i<this.names.length;i++){
                  res += '"'+this.names[i]+'",'
              }
-             res += '],"'+mod+'")\n'
+             res += '],"'+mod+'");\n'
              for(var i=0;i<this.names.length;i++){
-                res += head+'var '+(this.aliases[this.names[i]]||this.names[i])
+                res += head+'try{var '+(this.aliases[this.names[i]]||this.names[i])
                 if(scope.ntype==="module"){
                     res += '=$globals["'
                     res += this.aliases[this.names[i]]||this.names[i]
                     res += '"]'
                 }
-                res += '=getattr(__BRYTHON__.imported["'+this.module+'"],"'+this.names[i]+'")\n'
+                res += '=getattr(__BRYTHON__.imported["'+this.module+'"],"'+this.names[i]+'")}\n'
+                res += 'catch($err'+$loop_num+'){if($err'+$loop_num+'.__class__'
+                res += '===$AttributeErrorDict){$err'+$loop_num+'.__class__'
+                res += '=$ImportErrorDict};throw $err'+$loop_num+'};'
              }
            }
         }

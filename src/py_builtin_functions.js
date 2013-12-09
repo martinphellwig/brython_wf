@@ -397,11 +397,11 @@ function getattr(obj,attr,_default){
     if(res!==undefined){return res}
     if(_default !==undefined){return _default}
     else{
-        if(obj.__class__===$ModuleDict){
-            throw ImportError(' cannot import name '+attr)
-        }else{
+        //if(obj.__class__===$ModuleDict){
+        //    throw ImportError(' cannot import name '+attr)
+        //}else{
             throw AttributeError("'"+type(obj).__name__+"' object has no attribute '"+attr+"'")
-        }
+        //}
     }
 }
 
