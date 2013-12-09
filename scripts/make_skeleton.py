@@ -8,43 +8,51 @@ value
 import types
 import inspect
 
-
-stdlib_name = 'nt'
+stdlib_name = 'io'
 ns = {}
 exec('import %s;print(dir(%s))' %(stdlib_name,stdlib_name),ns)
 out = open('%s_skeleton.py' %stdlib_name,'w')
 
 infos = ns[stdlib_name]
-print(dir(infos))
-if infos.__doc__:
-    out.write('"""%s"""\n\n' %infos.__doc__)
-for key in dir(infos):
-    if key in ['__doc__','__name__','__file__','__package__']:
-        continue
-    val = getattr(infos,key)
-    if isinstance(val,(int,float,dict)):
-        out.write('\n%s = %s\n' %(key,val))
-    elif val in [True,False,None]:
-        out.write('\n%s = %s\n' %(key,val))
-    elif isinstance(val,str):
-        out.write('\n%s = """%s"""\n' %(key,val))
-    elif type(val)in [types.BuiltinFunctionType,
-        types.BuiltinMethodType,
-        types.FunctionType]:
-        out.write('\ndef %s(*args,**kw):\n' %key)
-        if val.__doc__:
-            lines = val.__doc__.split('\n')
-            out.write('    """')
-            if len(lines)==1:
-                out.write(lines[0]+'"""\n')
-            else:
-                out.write(lines[0])
-                for line in lines[1:-1]:
-                    out.write('    %s\n' %line)
-                out.write('    %s"""\n' %lines[-1])
-        out.write('    pass\n')
-    elif inspect.isclass(val):
-        out.write('\nclass %s:\n    pass\n' %key)
-    else:
-        out.write('\n%s = "%s"\n' %(key,val))
+
+def skeleton(infos):
+    res = ''
+    print(infos)
+    if infos.__doc__:
+        res += '"""%s"""\n\n' %infos.__doc__
+    for key in dir(infos):
+        if key in ['__class__','__doc__','__name__','__file__','__package__']:
+            continue
+        val = getattr(infos,key)
+        if isinstance(val,(int,float,dict)):
+            res += '\n%s = %s\n' %(key,val)
+        elif val in [True,False,None]:
+            res += '\n%s = %s\n' %(key,val)
+        elif isinstance(val,str):
+            res += '\n%s = """%s"""\n' %(key,val)
+        elif type(val)in [types.BuiltinFunctionType,
+            types.BuiltinMethodType,
+            types.FunctionType]:
+            res += '\ndef %s(*args,**kw):\n' %key
+            if val.__doc__:
+                lines = val.__doc__.split('\n')
+                res += '    """'
+                if len(lines)==1:
+                    res += lines[0]+'"""\n'
+                else:
+                    res += lines[0]
+                    for line in lines[1:-1]:
+                        res += '    %s\n' %line
+                    res += '    %s"""\n' %lines[-1]
+            res += '    pass\n'
+        elif inspect.isclass(val):
+            res += '\nclass %s' %key
+            if val.__bases__:
+                res += '('+','.join(x.__name__ for x in val.__bases__)+')'
+            res += ':\n'
+        else:
+            res += '\n%s = "%s"\n' %(key,val)
+    return res
+    
+out.write(skeleton(infos))
 out.close()
