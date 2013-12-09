@@ -20,3 +20,14 @@ class StringIO:
             res = self.value[self._pos:]
             self._pos = len(self.value)-1
         return res
+
+class RawIOBase:
+
+    def read(self,n=-1):
+        pass
+    def readall(self):
+        pass
+    def readinto(self,b):
+        pass
+    def write(self,b):
+        pass
