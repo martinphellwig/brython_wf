@@ -635,6 +635,13 @@ function $CallCtx(context){
                 }
             }
         }
+        else if(this.func!==undefined && this.func.type=='unary'){
+            // form " -(x+2) "
+            var op = this.func.op
+            if(op=='+'){return $to_js(this.tree)}
+            else if(op=='-'){return 'getattr('+$to_js(this.tree)+',"__neg__")()'}
+            else if(op=='~'){return 'getattr('+$to_js(this.tree)+',"__invert__")()'}
+        }
         if(this.tree.length>0){
             return 'getattr('+this.func.to_js()+',"__call__")('+$to_js(this.tree)+')'
         }else{return 'getattr('+this.func.to_js()+',"__call__")()'}

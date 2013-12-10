@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131210-083456
+// version 1.3.20131210-183320
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131210-083456', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131210-183320', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -611,6 +611,12 @@ new $IdCtx(this,scope.parent.C.tree[0].name)
 }
 }
 }
+}
+else if(this.func!==undefined && this.func.type=='unary'){
+var op=this.func.op
+if(op=='+'){return $to_js(this.tree)}
+else if(op=='-'){return 'getattr('+$to_js(this.tree)+',"__neg__")()'}
+else if(op=='~'){return 'getattr('+$to_js(this.tree)+',"__invert__")()'}
 }
 if(this.tree.length>0){
 return 'getattr('+this.func.to_js()+',"__call__")('+$to_js(this.tree)+')'
@@ -4708,7 +4714,7 @@ return obj.__hashvalue__
 if(obj.__hash__===undefined || isinstance(obj, set)||
 isinstance(obj, list)|| isinstance(obj, dict)){
 __BRYTHON__.$py_next_hash+=1
-obj.__hashvalue=__BRYTHON__.$py_next_hash
+obj.__hashvalue__=__BRYTHON__.$py_next_hash
 return obj.__hashvalue__
 }
 if(obj.__hash__ !==undefined){
