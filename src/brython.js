@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131209-213430
+// version 1.3.20131210-083456
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131209-213430', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131210-083456', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -1226,15 +1226,18 @@ res +='$import_from("'+this.module+'",['
 for(var i=0;i<this.names.length;i++){
 res +='"'+this.names[i]+'",'
 }
-res +='],"'+mod+'")\n'
+res +='],"'+mod+'");\n'
 for(var i=0;i<this.names.length;i++){
-res +=head+'var '+(this.aliases[this.names[i]]||this.names[i])
+res +=head+'try{var '+(this.aliases[this.names[i]]||this.names[i])
 if(scope.ntype==="module"){
 res +='=$globals["'
 res +=this.aliases[this.names[i]]||this.names[i]
 res +='"]'
 }
-res +='=getattr(__BRYTHON__.imported["'+this.module+'"],"'+this.names[i]+'")\n'
+res +='=getattr(__BRYTHON__.imported["'+this.module+'"],"'+this.names[i]+'")}\n'
+res +='catch($err'+$loop_num+'){if($err'+$loop_num+'.__class__'
+res +='===$AttributeErrorDict){$err'+$loop_num+'.__class__'
+res +='=$ImportErrorDict};throw $err'+$loop_num+'};'
 }
 }
 }
@@ -1796,20 +1799,24 @@ return '$ptuple('+$to_js(this.tree)+')'
 }
 function $StringCtx(C,value){
 this.type='str'
-this.value=value
-this.toString=function(){return 'string '+this.value+' '+(this.tree||'')}
+this.toString=function(){return 'string '+(this.tree||'')}
 this.parent=C
-this.tree=[]
+this.tree=[value]
 C.tree.push(this)
 this.to_js=function(){
-if(this.value.charAt(0)!='b'){
-return this.value.replace(/\n/g,'\\n\\\n')+$to_js(this.tree,'')
+var res=''
+for(var i=0;i<this.tree.length;i++){
+var value=this.tree[i]
+if(value.charAt(0)!='b'){
+res +=value.replace(/\n/g,'\\n\\\n')
 }else{
-var res='bytes('
-res +=this.value.substr(1).replace(/\n/g,'\\n\\\n')
-res +=$to_js(this.tree,'')+')'
-return res
+res +='bytes('
+res +=value.substr(1).replace(/\n/g,'\\n\\\n')
+res +=')'
 }
+if(i<this.tree.length-1){res+='+'}
+}
+return res
 }
 }
 function $SubCtx(C){
@@ -2886,8 +2893,10 @@ else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='str'){
 if(token==='['){return new $AbstractExprCtx(new $SubCtx(C.parent),false)}
 else if(token==='('){return new $CallCtx(C)}
-else if(token=='str'){C.value +='+'+arguments[2];return C}
-else{return $transition(C.parent,token,arguments[2])}
+else if(token=='str'){
+C.tree.push(arguments[2])
+return C
+}else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='sub'){
 if($expr_starters.indexOf(token)>-1){
 var expr=new $AbstractExprCtx(C,false)
