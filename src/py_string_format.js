@@ -1,6 +1,6 @@
 // https://raw.github.com/florentx/stringformat/master/stringformat.py
 
-__BRYTHON__.exception_stack=[]
+__BRYTHON__.exception_stack=[]   // need this since we don't call brython()
 
 _format_str_re = new RegExp(
     '(%)' +
@@ -8,14 +8,7 @@ _format_str_re = new RegExp(
     '|(?:}})+(?!})' +
     '|{(?:[^{](?:[^{}]+|{[^{}]*})*)?})'
 )
-/*
-_format_str_re = new RegExp(
-    '(%)' +
-    '|((?<!{)(?:{{)+' +
-    '|(?:}})+(?!})' +
-    '|{(?:[^{](?:[^{}]\\+|{[^{}]*})*)?})'
-)
-*/
+
 _format_sub_re = new RegExp('({[^{}]*})')  // nested replacement field
 
 _format_spec_re = new RegExp(
@@ -31,14 +24,6 @@ _field_part_re = new RegExp(
     '((?(1)[^]]*|[^.[]*))' +
     '(1)(?:\]|$)([^.[]+)?'
 )
-
-/*
-_field_part_re = new RegExp(
-    '(?:(\[)|.|^)' +           // start or '.' or '['
-    '((?(1)[^]]*|[^.[]*))' +    // part
-    '(?(1)(?:\]|$)([^.[]+)?)'   // ']' and invalid tail
-)
-*/
 
 
 function _center(s, width, fillchar) {
@@ -57,8 +42,8 @@ function _ljust(s, width, fillchar) {
 }
 
 function _partition(s, sep) {
-  var i=self.indexOf(sep)
-  return [s.substring(0,i), sep, self.substring(i+sep.length)]
+  var i=s.indexOf(sep)
+  return [s.substring(0,i), sep, s.substring(i+sep.length)]
 }
 
 function _rjust(s, width, fillchar) {
@@ -71,8 +56,6 @@ function _rjust(s, width, fillchar) {
 // code taken from py_string.js
 
 _old_format = function(format_string,args){
-    console.log(format_string)
-    console.log(args)
     // string formatting (old style with %)
     var flags = $List2Dict('#','0','-',' ','+')
     var ph = [] // placeholders for replacements
@@ -105,13 +88,11 @@ _old_format = function(format_string,args){
                 src=getattr(src,'__getitem__')(this.mapping_key)
             }
             if(this.type=="s"){
-                //var res = str(src)
-                var res = src.toString()
+                var res = str(src)
                 if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
                 return res
             }else if(this.type=="r"){
-                //var res = repr(src)
-                var res = src.toString()
+                var res = repr(src)
                 if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
                 return res
             }else if(this.type=="a"){
@@ -235,8 +216,8 @@ _old_format = function(format_string,args){
         }else{pos++}
     }
     elts.push(val.substr(start))
-    console.log(args)
-    console.log(isinstance(args, tuple))
+    //console.log(args)
+    //console.log(isinstance(args, tuple))
     if(!isinstance(args,tuple)){
        if(args.__class__==$DictDict && is_mapping){
           // convert all formats with the dictionary
@@ -265,7 +246,6 @@ _old_format = function(format_string,args){
 }
 
 
-/*
 function _strformat(value, format_spec) {
   if (format_spec === undefined) format_spec = ''
 
@@ -317,7 +297,10 @@ function _strformat(value, format_spec) {
     } 
     
     // fix me
-    _rv='%' + _prefix + _precision + (_conversion || 's')
+    //_rv='%' + _prefix + _precision + (_conversion || 's')
+    console.log("line 302")
+    _rv = _old_format(_rv, value)
+
     //console.log('%' + _prefix + _precision + (_conversion || 's')))
     //console.log(value) 
   } catch (err) {
@@ -354,7 +337,6 @@ function _strformat(value, format_spec) {
      _padding = _width - _rv.length
      // tweak the formatting if the padding is odd
      if (_padding % 2) {
-        //fix me
         _rv = _center(_rv,_width, _fill)
      }
   } else if (_align == '=' || (_zero && ! _align)) {
@@ -362,17 +344,13 @@ function _strformat(value, format_spec) {
        throw ValueError("'=' alignment not allowd in string format specifier")
     }
     if (_value < 0 || _sign != '-') {
-       //fix me
        _rv = _rv.substring(0,1) + _rjust(_rv.substring(1),_width - 1, _fill)
     } else {
-       //fix me
        _rv = _rjust(_rv, _width, _fill)
     }
   } else if ((_align == '>' || _align == '=') || (_is_numeric && ! _aligned)) {
-    //fix me
     _rv = _rjust(_rv,_width, _fill)
   } else {
-    //fix me
     _rv = _ljust(_rv,_width, _fill)
   }
 
@@ -396,6 +374,7 @@ function _format_field(value,parts,conv,spec,want_bytes) {
   if (conv) {
      // fix me
      //value = (conv == 'r') && '%r' || '%s' % value
+     console.log("line 378")
      value = _old_format((conv == 'r') && '%r' || '%s', value)
   }
   if (value__format__ !== undefined) {
@@ -419,25 +398,23 @@ function FormattableString(format_string) {
     this._nested = {}
 
     this.format_string=format_string
-    this._string = _format.str_sub(this._prepare, format_string)
-
-    this.eq = function(other) {
-       if (other.format_string !== undefined) {
-          return this.format_string == other.format_string
-       }
-       return this.format_string == other
-    }
+    this._string = ''
 
     this._prepare = function(match) {
+       console.log(match)
        if (match == '%') return '%%'
        if (match == '{{' || match == '}}') {
           // '{{' or '}}'
           return match.substring(0,1)
        }
 
+       console.log(match)
        var _repl = match.substring(1)
+       console.log(_repl)
        var _field, _dummy, _format_spec = _partition(_repl, ':')
+       console.log(_field, _dummy, _format_spec)
        var _literal, _sep, _conversion = _partition(_field, '!')
+       console.log(_literal, _sep, _conversion)
 
        if (_sep && ! _conversion) {
           throw ValueError("end of format while looking for conversion specifier")
@@ -447,7 +424,7 @@ function FormattableString(format_string) {
           throw ValueError("expected ':' after format specifier")
        }
 
-       if (_conversion != 'r' && _conversion != 's' && _conversion != 'a') {
+       if ('rsa'.indexOf(_conversion) == -1) {
           throw ValueError("Unknown conversation specifier " + _conversion)
        }
 
@@ -516,6 +493,13 @@ function FormattableString(format_string) {
        return '%%(' + id(_rv) + ')s'
     }
 
+    this.eq = function(other) {
+       if (other.format_string !== undefined) {
+          return this.format_string == other.format_string
+       }
+       return this.format_string == other
+    }
+
     this.format=function() {
        // same as str.format() and unicode.format in Python 2.6+
 
@@ -524,8 +508,7 @@ function FormattableString(format_string) {
 
        if (args) {
           for (var i=0; i < args.length; i++) {
-              var _a=args[i]
-              kwargs.put(_a[0].toString(),_a[1])
+              kwargs[str(i)]=args[i]
           }
        }
 
@@ -542,7 +525,7 @@ function FormattableString(format_string) {
                var _conv = _items[j][1]
                var _spec = _items[j][2]
 
-               params[id(_items[j]).toString()] = _format_field(_value, _parts, 
+               _params[id(_items[j]).toString()] = _format_field(_value, _parts, 
                                                       _conv, _spec, _want_bytes)
            }
        }
@@ -558,15 +541,30 @@ function FormattableString(format_string) {
                var _spec = _items[j][2]
 
                //_spec = _spec % _params
+               console.log("line 541")
                _spec=_old_format(_spec, _params)
 
-               params[id(_items[j]).toString()] = _format_field(_value, _parts, 
+               _params[id(_items[j]).toString()] = _format_field(_value, _parts, 
                                                       _conv, _spec, _want_bytes)
            }
        }
 
        // this._string % _params
+       console.log("line 550", this._string, _params)
        return _old_format(this._string , _params)
     }
+
+    var _result;
+    var _pos=0;
+    while ((_result=_format_str_re.exec(format_string)) !== null) {
+       console.log(_result[0], _result.index, _format_str_re.lastIndex)
+       if (_pos < _format_str_re.index) {
+          this._string+=format_string.substring(_pos, _format_str_re.index)
+       }
+       this._string+=this._prepare(_result[0])
+       _pos=_format_str_re.lastIndex
+    }
+    console.log(this._string)
+
+    return this
 }
-*/
