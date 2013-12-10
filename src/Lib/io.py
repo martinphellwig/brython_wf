@@ -31,3 +31,5 @@ class RawIOBase:
         pass
     def write(self,b):
         pass
+
+BufferedReader = RawIOBase

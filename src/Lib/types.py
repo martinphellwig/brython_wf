@@ -25,7 +25,8 @@ BuiltinFunctionType = type(len)
 BuiltinMethodType = type([].append)     # Same as BuiltinFunctionType
 
 ModuleType = type(sys)
-
+def foo():pass
+FunctionType = type(foo)
 #try:
 #    raise TypeError
 #except TypeError:
