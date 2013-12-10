@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131210-183320
+// version 1.3.20131210-223620
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131210-183320', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131210-223620', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -63,6 +63,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_html",
 "_os",
 "_svg",
+"_sys",
 "_timer",
 "_websocket"]
 var $operators={
@@ -918,6 +919,12 @@ node.parent.children.splice(rank+offset,0,new_node)
 offset++
 js=scope.ntype=='class' ? '$class.' : ''
 js +=this.name+'.__doc__='+(this.doc_string || 'None')
+new_node=new $Node('expression')
+new $NodeJSCtx(new_node,js)
+node.parent.children.splice(rank+offset,0,new_node)
+offset++
+js=scope.ntype=='class' ? '$class.' : ''
+js +=this.name+'.__code__= {__class__:$CodeDict}'
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 node.parent.children.splice(rank+offset,0,new_node)
@@ -3014,15 +3021,15 @@ var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 root.insert(0,new_node)
 var ds_node=new $Node('expression')
-new $NodeJSCtx(ds_node,'__doc__=$globals["__doc__"]='+root.doc_string)
+new $NodeJSCtx(ds_node,'var __doc__=$globals["__doc__"]='+root.doc_string)
 root.insert(1,ds_node)
 var name_node=new $Node('expression')
 var lib_module=module
 if(module.substr(0,9)=='__main__,'){lib_module='__main__'}
-new $NodeJSCtx(name_node,'__name__=$globals["__name__"]="'+lib_module+'"')
+new $NodeJSCtx(name_node,'var __name__=$globals["__name__"]="'+lib_module+'"')
 root.insert(2,name_node)
 var file_node=new $Node('expression')
-new $NodeJSCtx(file_node,'__file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
+new $NodeJSCtx(file_node,'var __file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
 root.insert(3,file_node)
 if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
 __BRYTHON__.modules[module]=root
@@ -4357,6 +4364,7 @@ object.$dict=$ObjectDict
 object.__class__=$factory
 $ObjectDict.$factory=object
 
+__debug__=false
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
 else if(isinstance(obj,float)){return float(Math.abs(obj.value))}
@@ -5526,6 +5534,8 @@ Function.prototype.__class__=Function
 Function.prototype.__get__=function(self,obj,objtype){
 return self
 }
+$CodeDict={__class__:$type,__name__:'code'}
+$CodeDict.__mro__=[$CodeDict,$ObjectDict]
 $BaseExceptionDict={
 __class__:$type,
 __name__:'BaseException'
@@ -6441,6 +6451,7 @@ throw TypeError(msg+"'"+(str(other.__class__)|| typeof other)+"'")
 }
 $DictDict.__bool__=function(self){return self.$keys.length>0}
 $DictDict.__contains__=function(self,item){
+if(self.$jsobj){return self.$jsobj[item]!==undefined}
 return $ListDict.__contains__(self.$keys,item)
 }
 $DictDict.__delitem__=function(self,arg){
@@ -6448,6 +6459,7 @@ for(var i=0;i<self.$keys.length;i++){
 if(getattr(arg,'__eq__')(self.$keys[i])){
 self.$keys.splice(i,1)
 self.$values.splice(i,1)
+if(self.$jsobj){delete self.$jsobj[arg]}
 return
 }
 }
@@ -6501,6 +6513,7 @@ $DictDict.__setitem__(res,attr,obj.js[attr])
 }
 self.$keys=res.$keys
 self.$values=res.$values
+self.$jsobj=obj.js 
 return
 }
 }
@@ -6571,11 +6584,13 @@ $pop_exc()
 }
 self.$keys.push(key)
 self.$values.push(value)
+if(self.$jsobj){self.$jsobj[key]=value}
 }
 $DictDict.__str__=$DictDict.__repr__
 $DictDict.clear=function(self){
 self.$keys=[]
 self.$values=[]
+if(self.$jsobj){self.$jsobj={}}
 }
 $DictDict.copy=function(self){
 var res=dict()
