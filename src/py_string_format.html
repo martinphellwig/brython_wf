@@ -24,8 +24,13 @@
 <script type="text/javascript" src="py_string_format.js"></script>
 
 <script type="text/javascript">
-var _a=_old_format('%s:%d', tuple("abc", 1))
-console.log(_a)
+//var _a=_old_format('%s:%d', tuple(["abc", 1]))
+//console.log(_a)
+
+var _fs=FormattableString("{} : {}")
+console.log(_fs)
+console.log(_fs.format("abc", 1))
+
 </script>
 </head>
 
