@@ -8,7 +8,7 @@ value
 import types
 import inspect
 
-stdlib_name = 'io'
+stdlib_name = '_imp'
 ns = {}
 exec('import %s;print(dir(%s))' %(stdlib_name,stdlib_name),ns)
 out = open('%s_skeleton.py' %stdlib_name,'w')
