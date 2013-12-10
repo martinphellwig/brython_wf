@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131210-223620
+// version 1.3.20131210-225949
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131210-223620', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131210-225949', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -61,6 +61,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_ajax",
 "_browser",
 "_html",
+"_io",
 "_os",
 "_svg",
 "_sys",
@@ -7437,7 +7438,7 @@ else{return start+res}
 $StringDict.format=function(self){
 var $ns=$MakeArgs('str.format',arguments,['self'],{},'args', 'kw')
 console.log('args '+$ns['args']+' kw '+str($ns['kw']))
-return '<formatted string>'
+return '<formatted string>'+self+' args '+$ns['args']+' kw '+str($ns['kw'])
 }
 $StringDict.format_map=function(self){
 throw NotImplementedError("function format_map not implemented yet")

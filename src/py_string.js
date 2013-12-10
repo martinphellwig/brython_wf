@@ -442,7 +442,7 @@ $StringDict.format = function(self) {
     //   * modify stringformat python code, and translate using something
     //     like compile.js to a javascript equivalent file, and then
     //     import that file with import_js function.
-    return '<formatted string>'
+    return '<formatted string>'+self+' args '+$ns['args']+' kw '+str($ns['kw'])
 }
 
 $StringDict.format_map = function(self) {
