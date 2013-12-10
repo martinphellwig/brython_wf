@@ -2073,20 +2073,24 @@ function $StarArgCtx(context){
 
 function $StringCtx(context,value){
     this.type = 'str'
-    this.value = value
-    this.toString = function(){return 'string '+this.value+' '+(this.tree||'')}
+    this.toString = function(){return 'string '+(this.tree||'')}
     this.parent = context
-    this.tree = []
+    this.tree = [value] // may be extended if consecutive strings eg 'a' 'b'
     context.tree.push(this)
     this.to_js = function(){
-        if(this.value.charAt(0)!='b'){
-            return this.value.replace(/\n/g,'\\n\\\n')+$to_js(this.tree,'')
-        }else{
-            var res = 'bytes('
-            res += this.value.substr(1).replace(/\n/g,'\\n\\\n')
-            res += $to_js(this.tree,'')+')'
-            return res
+        var res = ''
+        for(var i=0;i<this.tree.length;i++){
+            var value=this.tree[i]
+            if(value.charAt(0)!='b'){
+                res += value.replace(/\n/g,'\\n\\\n')
+            }else{
+                res += 'bytes('
+                res += value.substr(1).replace(/\n/g,'\\n\\\n')
+                res += ')'
+            }
+            if(i<this.tree.length-1){res+='+'}
         }
+        return res
     }
 }
 
@@ -3346,9 +3350,10 @@ function $transition(context,token){
 
         if(token==='['){return new $AbstractExprCtx(new $SubCtx(context.parent),false)}
         else if(token==='('){return new $CallCtx(context)}
-        //else if(token==='.'){return new $AttrCtx(context)}
-        else if(token=='str'){context.value += '+'+arguments[2];return context}
-        else{return $transition(context.parent,token,arguments[2])}
+        else if(token=='str'){
+            context.tree.push(arguments[2])
+            return context
+        }else{return $transition(context.parent,token,arguments[2])}
 
     }else if(context.type==='sub'){ 
     
