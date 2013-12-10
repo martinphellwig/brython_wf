@@ -1045,6 +1045,15 @@ function $DefCtx(context){
         new $NodeJSCtx(new_node,js)
         node.parent.children.splice(rank+offset,0,new_node)
         offset++
+
+        // add attribute __code__
+        js = scope.ntype=='class' ? '$class.' : ''
+        js += this.name+'.__code__= {__class__:$CodeDict}'
+        new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        node.parent.children.splice(rank+offset,0,new_node)
+        offset++
+        
         this.transformed = true
     }
     this.add_generator_declaration = function(){
@@ -3504,17 +3513,17 @@ __BRYTHON__.py2js = function(src,module,parent){
     root.insert(0,new_node)
     // module doc string
     var ds_node = new $Node('expression')
-    new $NodeJSCtx(ds_node,'__doc__=$globals["__doc__"]='+root.doc_string)
+    new $NodeJSCtx(ds_node,'var __doc__=$globals["__doc__"]='+root.doc_string)
     root.insert(1,ds_node)
     // name
     var name_node = new $Node('expression')
     var lib_module = module
     if(module.substr(0,9)=='__main__,'){lib_module='__main__'}
-    new $NodeJSCtx(name_node,'__name__=$globals["__name__"]="'+lib_module+'"')
+    new $NodeJSCtx(name_node,'var __name__=$globals["__name__"]="'+lib_module+'"')
     root.insert(2,name_node)
     // file
     var file_node = new $Node('expression')
-    new $NodeJSCtx(file_node,'__file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
+    new $NodeJSCtx(file_node,'var __file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
     root.insert(3,file_node)
         
     if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
