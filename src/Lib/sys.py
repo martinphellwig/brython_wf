@@ -1,9 +1,5 @@
 # hack to return special attributes
-def __getattr__(None,attr):
-    if attr=='modules':
-        return JSObject(__BRYTHON__.imported)
-    else:
-        raise AttributeError("cannot import name "+attr)
+from _sys import *
 
 from browser import doc
 __stdout__=getattr(doc,"$stdout")
