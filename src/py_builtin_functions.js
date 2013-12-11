@@ -447,7 +447,7 @@ function id(obj) {
    if (obj.__hash__ === undefined || isinstance(obj, set) ||
       isinstance(obj, list) || isinstance(obj, dict)) {
       __BRYTHON__.$py_next_hash+=1
-      obj.__hashvalue=__BRYTHON__.$py_next_hash
+      obj.__hashvalue__=__BRYTHON__.$py_next_hash
       return obj.__hashvalue__
    }
    if (obj.__hash__ !== undefined) {
