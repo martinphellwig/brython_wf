@@ -6,7 +6,7 @@ _format_str_re = new RegExp(
     '(%)' +
     '|((?!{)(?:{{)+' +
     '|(?:}})+(?!})' +
-    '|{(?:[^{](?:[^{}]+|{[^{}]*})*)?})'
+    '|{(?:[^{](?:[^{}]+|{[^{}]*})*)?})', 'g'
 )
 
 _format_sub_re = new RegExp('({[^{}]*})')  // nested replacement field
@@ -14,17 +14,49 @@ _format_sub_re = new RegExp('({[^{}]*})')  // nested replacement field
 _format_spec_re = new RegExp(
     '((?:[^{}]?[<>=^])?)' +      // alignment
     '([\\-\\+ ]?)' +                 // sign
-    '(#?)' + '(\d*)' + '(,?)' +    // base prefix, minimal width, thousands sep
-    '((?:\.\d\\+)?)' +             // precision
+    '(#?)' + '(\\d*)' + '(,?)' +    // base prefix, minimal width, thousands sep
+    '((?:\.\\d\\+)?)' +             // precision
     '(.?)$'                      // type
 )
 
-_field_part_re = new RegExp(
-    '(?:(\[)|\.|^)' +
-    '((?(1)[^]]*|[^.[]*))' +
-    '(1)(?:\]|$)([^.[]+)?'
-)
+//_field_part_re = new RegExp(
+//    '(?:(\\[)|\\.|^)' +            // start or '.' or '['
+//    '((?(1)[^]]*|[^.[]*))' +       // part
+//    '(?(1)(?:\\]|$)([^.[]+)?)'        // ']' and invalid tail
+//)
 
+function field_part(literal) {
+  var _matches=[]
+
+  var _pos=0
+  while (_pos < literal.length) {
+     var _start='', _middle='', _end=''
+
+     if (literal.substring(_pos,1) == '[') {
+        _start='['
+        _pos++
+        while (_pos < literal.length && literal.substring(_pos,1) !== ']') {
+           _middle += literal.substring(i,1)
+           _pos++
+        }
+        if (literal.substring(_pos, 1) == ']') _end=']'
+     } else {
+       if (literal.substring(_pos,1) == '.') {
+          _start='.'
+          _pos++
+       }
+       while (_pos < literal.length &&
+              literal.substring(_pos,1) !== '[' && 
+              literal.substring(_pos,1) !== '.') {
+           _middle += literal.substring(_pos,1)
+           _pos++
+       }
+     }
+     _matches.push([_start, _middle, _end])
+  }
+
+  return _matches
+}
 
 function _center(s, width, fillchar) {
   if (width <= self.length) return s
@@ -43,6 +75,7 @@ function _ljust(s, width, fillchar) {
 
 function _partition(s, sep) {
   var i=s.indexOf(sep)
+  if (i == -1) return [s, '', '']
   return [s.substring(0,i), sep, s.substring(i+sep.length)]
 }
 
@@ -358,13 +391,13 @@ function _strformat(value, format_spec) {
 }
 
 function _format_field(value,parts,conv,spec,want_bytes) {
-  if (want_bytes == undefined) want_bytes = False
+  if (want_bytes === undefined) want_bytes = False
 
   for (var i=0; i < parts.length; i++) {
       var _k = parts[i][0]
       var _part = parts[i][1]
 
-      if (!isNan(_part)) {
+      if (!isNaN(_part)) {
          value = value[parseInt(_part)]
       } else {
          value = value[_part]
@@ -393,27 +426,28 @@ function _format_field(value,parts,conv,spec,want_bytes) {
 }
 
 function FormattableString(format_string) {
-    this._index = 0
-    this._kwords = {}
-    this._nested = {}
-
     this.format_string=format_string
-    this._string = ''
 
     this._prepare = function(match) {
-       console.log(match)
+       console.log('match', match)
        if (match == '%') return '%%'
-       if (match == '{{' || match == '}}') {
+       if (match.substring(0,1) == match.substring(match.length)) {
           // '{{' or '}}'
-          return match.substring(0,1)
+          return match.substring(0, int(match.length/2))
        }
 
        console.log(match)
        var _repl = match.substring(1)
        console.log(_repl)
-       var _field, _dummy, _format_spec = _partition(_repl, ':')
+       var _out = _partition(_repl, ':')
+       var _field=_out[0]
+       var _dummy=_out[1]
+       var _format_spec=_out[2]
        console.log(_field, _dummy, _format_spec)
-       var _literal, _sep, _conversion = _partition(_field, '!')
+       _out= _partition(_field, '!')
+       var _literal=_out[0]
+       var _sep=_out[1]
+       var _conversion=_out[2]
        console.log(_literal, _sep, _conversion)
 
        if (_sep && ! _conversion) {
@@ -429,10 +463,15 @@ function FormattableString(format_string) {
        }
 
        //fix me
-       _name_parts = _field_part_re.search(_literal)
+       //_name_parts = _field_part_re.search(_literal)
+       console.log('literal', _literal)
+       _name_parts=field_part(_literal)
+       console.log('name_parts', _name_parts)
 
-       var _end=_liberal.substring(_liberal.length)
-       if (_end == '.' || _end == '[') {
+       var _start=_literal.substring(0,1)
+       console.log('start', _start)
+       if ('.['.indexOf(_start) != -1) {
+          // auto-numbering
           if (this._index === undefined) {
              throw ValueError("cannot switch from manual field specification to automatic field numbering")
           }
@@ -440,11 +479,11 @@ function FormattableString(format_string) {
           var _name = self._index.toString()
           this._index=1
           if (! _literal) {
-             _name_parts=_name_parts.substring(1)
+             _name_parts=_name_parts.pop()
           }
        } else {
          var _name = _name_parts.pop(0)[1]
-         if (this._index !== undefined && isNan(_name)) {
+         if (this._index !== undefined && !isNaN(_name)) {
             // manual specification
             if (this._index) {
                throw ValueError("cannot switch from automatic field " +
@@ -452,19 +491,19 @@ function FormattableString(format_string) {
                this._index=undefined
             }
          }
-
        }
 
        var _empty_attribute=false
 
        var _k;
        for (var i=0; i < _name_parts.length; i++) {
-           _k = _name.parts[i][0]
-           var _v = _name.parts[i][1]
-           var _tail = _name.parts[i][2]
+           _k = _name_parts[i][0]
+           var _v = _name_parts[i][1]
+           var _tail = _name_parts[i][2]
 
            if (! _v) {_empty_attribute = true}
-           if (_tail) {
+           if (_tail != '') {
+              console.log('tail = ' + _tail)
               throw ValueError("Only '.' or '[' may follow ']' " +
                                "in format field specifier")
            }
@@ -479,19 +518,22 @@ function FormattableString(format_string) {
           throw ValueError("Empty attribute in format string")
        }
 
-       if (format_spec.indexOf('{') != -1) {
-          format_spec = _format_sub_re.replace(self._prepare, format_spec)
-          _rv = (_name_parts, _conversion, format_spec)
+       var _rv=''
+       if (_format_spec.indexOf('{') != -1) {
+          _format_spec = _format_sub_re.replace(self._prepare, _format_spec)
+          _rv = (_name_parts, _conversion, _format_spec)
           if (this._nested[_name] === undefined) this._nested[_name]=[]
-          this._nested[_name].append(_rv) 
+          this._nested[_name].push(_rv) 
        } else {
-          _rv = (_name_parts, _conversion, format_spec)
+          _rv = (_name_parts, _conversion, _format_spec)
           if (this._kwords[_name] === undefined) this._kwords[_name]=[]
-          this._kwords[_name].append(_rv) 
+          this._kwords[_name].push(_rv) 
        }
 
-       return '%%(' + id(_rv) + ')s'
-    }
+       console.log('_rv', _rv)
+       //return '%%(' + id(_rv) + ')s'
+       return '%%(' + _rv + ')s'
+    } // this.prepare
 
     this.eq = function(other) {
        if (other.format_string !== undefined) {
@@ -550,20 +592,17 @@ function FormattableString(format_string) {
        }
 
        // this._string % _params
-       console.log("line 550", this._string, _params)
+       console.log("line 592", this._string, _params)
        return _old_format(this._string , _params)
-    }
+    } // this.format
 
-    var _result;
-    var _pos=0;
-    while ((_result=_format_str_re.exec(format_string)) !== null) {
-       console.log(_result[0], _result.index, _format_str_re.lastIndex)
-       if (_pos < _format_str_re.index) {
-          this._string+=format_string.substring(_pos, _format_str_re.index)
-       }
-       this._string+=this._prepare(_result[0])
-       _pos=_format_str_re.lastIndex
-    }
+
+    this._index = 0
+    this._kwords = {}
+    this._nested = {}
+
+    this._string=format_string.replace(_format_str_re, this._prepare)
+
     console.log(this._string)
 
     return this
