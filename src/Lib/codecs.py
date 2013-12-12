@@ -1,22 +1,20 @@
-# """ codecs -- Python Codec Registry, API and helpers.
-#
-#
-#Written by Marc-Andre Lemburg (mal@lemburg.com).
-#
-#(c) Copyright CNRI, All Rights Reserved. NO WARRANTY.
-#
-# """
+""" codecs -- Python Codec Registry, API and helpers.
 
-#import builtins, sys
-import sys
+
+Written by Marc-Andre Lemburg (mal@lemburg.com).
+
+(c) Copyright CNRI, All Rights Reserved. NO WARRANTY.
+
+"""#"
+
+import builtins, sys
 
 ### Registry and builtin stateless codec functions
 
-#try:
-#    #from _codecs import *
-#    #from interp_codecs import *
-#except ImportError as why:
-#    raise SystemError('Failed to load the builtin codecs: %s' % why)
+try:
+    from _codecs import *
+except ImportError as why:
+    raise SystemError('Failed to load the builtin codecs: %s' % why)
 
 __all__ = ["register", "lookup", "open", "EncodedFile", "BOM", "BOM_BE",
            "BOM_LE", "BOM32_BE", "BOM32_LE", "BOM64_BE", "BOM64_LE",
@@ -35,24 +33,19 @@ __all__ = ["register", "lookup", "open", "EncodedFile", "BOM", "BOM_BE",
 #
 
 # UTF-8
-# BOM_UTF8 = b'\xef\xbb\xbf'
-BOM_UTF8 = '\xef\xbb\xbf'
+BOM_UTF8 = b'\xef\xbb\xbf'
 
 # UTF-16, little endian
-# BOM_LE = BOM_UTF16_LE = b'\xff\xfe'
-BOM_LE = BOM_UTF16_LE = '\xff\xfe'
+BOM_LE = BOM_UTF16_LE = b'\xff\xfe'
 
 # UTF-16, big endian
-# BOM_BE = BOM_UTF16_BE = b'\xfe\xff'
-BOM_BE = BOM_UTF16_BE = '\xfe\xff'
+BOM_BE = BOM_UTF16_BE = b'\xfe\xff'
 
 # UTF-32, little endian
-# BOM_UTF32_LE = b'\xff\xfe\x00\x00'
-BOM_UTF32_LE = '\xff\xfe\x00\x00'
+BOM_UTF32_LE = b'\xff\xfe\x00\x00'
 
 # UTF-32, big endian
-# BOM_UTF32_BE = b'\x00\x00\xfe\xff'
-BOM_UTF32_BE = '\x00\x00\xfe\xff'
+BOM_UTF32_BE = b'\x00\x00\xfe\xff'
 
 if sys.byteorder == 'little':
 
@@ -275,8 +268,7 @@ class IncrementalDecoder(object):
         processed the contents of buffered_input.  In the initial state
         and after reset(), getstate() must return (b"", 0).
         """
-        #return (b"", 0)
-        return ("", 0)
+        return (b"", 0)
 
     def setstate(self, state):
         """
@@ -285,7 +277,6 @@ class IncrementalDecoder(object):
         state must have been returned by getstate().  The effect of
         setstate((b"", 0)) must be equivalent to reset().
         """
-        pass
 
 class BufferedIncrementalDecoder(IncrementalDecoder):
     """
@@ -296,8 +287,7 @@ class BufferedIncrementalDecoder(IncrementalDecoder):
     def __init__(self, errors='strict'):
         IncrementalDecoder.__init__(self, errors)
         # undecoded input that is kept between calls to decode()
-        #self.buffer = b""
-        self.buffer = ""
+        self.buffer = b""
 
     def _buffer_decode(self, input, errors, final):
         # Overwrite this method in subclasses: It must decode input
@@ -314,8 +304,7 @@ class BufferedIncrementalDecoder(IncrementalDecoder):
 
     def reset(self):
         IncrementalDecoder.reset(self)
-        #self.buffer = b""
-        self.buffer = ""
+        self.buffer = b""
 
     def getstate(self):
         # additional state info is always 0
@@ -429,8 +418,7 @@ class StreamReader(Codec):
         """
         self.stream = stream
         self.errors = errors
-        #self.bytebuffer = b""
-        self.bytebuffer = ""
+        self.bytebuffer = b""
         self._empty_charbuffer = self.charbuffertype()
         self.charbuffer = self._empty_charbuffer
         self.linebuffer = None
@@ -496,7 +484,7 @@ class StreamReader(Codec):
                 if firstline:
                     newchars, decodedbytes = \
                         self.decode(data[:exc.start], self.errors)
-                    lines = newchars.splitlines(True)
+                    lines = newchars.splitlines(keepends=True)
                     if len(lines)<=1:
                         raise
                 else:
@@ -538,7 +526,7 @@ class StreamReader(Codec):
                 self.charbuffer = self.linebuffer[0]
                 self.linebuffer = None
             if not keepends:
-                line = line.splitlines(False)[0]
+                line = line.splitlines(keepends=False)[0]
             return line
 
         readsize = size or 72
@@ -550,14 +538,12 @@ class StreamReader(Codec):
                 # If we're at a "\r" read one extra character (which might
                 # be a "\n") to get a proper line ending. If the stream is
                 # temporarily exhausted we return the wrong line ending.
-                #if (isinstance(data, str) and data.endswith("\r")) or \
-                #   (isinstance(data, bytes) and data.endswith(b"\r")):
                 if (isinstance(data, str) and data.endswith("\r")) or \
-                   (isinstance(data, bytes) and data.endswith("\r")):
+                   (isinstance(data, bytes) and data.endswith(b"\r")):
                     data += self.read(size=1, chars=1)
 
             line += data
-            lines = line.splitlines(True)
+            lines = line.splitlines(keepends=True)
             if lines:
                 if len(lines) > 1:
                     # More than one line result; the first line is a full line
@@ -573,10 +559,10 @@ class StreamReader(Codec):
                         # only one remaining line, put it back into charbuffer
                         self.charbuffer = lines[0] + self.charbuffer
                     if not keepends:
-                        line = line.splitlines(False)[0]
+                        line = line.splitlines(keepends=False)[0]
                     break
                 line0withend = lines[0]
-                line0withoutend = lines[0].splitlines(False)[0]
+                line0withoutend = lines[0].splitlines(keepends=False)[0]
                 if line0withend != line0withoutend: # We really have a line end
                     # Put the rest back together and keep it until the next call
                     self.charbuffer = self._empty_charbuffer.join(lines[1:]) + \
@@ -589,7 +575,7 @@ class StreamReader(Codec):
             # we didn't get anything or this was our only try
             if not data or size is not None:
                 if line and not keepends:
-                    line = line.splitlines(False)[0]
+                    line = line.splitlines(keepends=False)[0]
                 break
             if readsize < 8000:
                 readsize *= 2
@@ -619,8 +605,7 @@ class StreamReader(Codec):
             from decoding errors.
 
         """
-        #self.bytebuffer = b""
-        self.bytebuffer = ""
+        self.bytebuffer = b""
         self.charbuffer = self._empty_charbuffer
         self.linebuffer = None
 
@@ -818,7 +803,7 @@ class StreamRecoder:
 
         data = self.reader.read()
         data, bytesencoded = self.encode(data, self.errors)
-        return data.splitlines(1)
+        return data.splitlines(keepends=True)
 
     def __next__(self):
 
@@ -1043,8 +1028,7 @@ def iterdecode(iterator, encoding, errors='strict', **kwargs):
         output = decoder.decode(input)
         if output:
             yield output
-    #output = decoder.decode(b"", True)
-    output = decoder.decode("", True)
+    output = decoder.decode(b"", True)
     if output:
         yield output
 
@@ -1058,10 +1042,7 @@ def make_identity_dict(rng):
         mapped to themselves.
 
     """
-    res = {}
-    for i in rng:
-        res[i]=i
-    return res
+    return {i:i for i in rng}
 
 def make_encoding_map(decoding_map):
 
@@ -1092,8 +1073,7 @@ try:
     replace_errors = lookup_error("replace")
     xmlcharrefreplace_errors = lookup_error("xmlcharrefreplace")
     backslashreplace_errors = lookup_error("backslashreplace")
-#except LookupError:
-except:
+except LookupError:
     # In --disable-unicode builds, these error handler are missing
     strict_errors = None
     ignore_errors = None
