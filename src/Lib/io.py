@@ -21,6 +21,8 @@ class StringIO:
             self._pos = len(self.value)-1
         return res
 
+TextIOWrapper = StringIO
+
 class RawIOBase:
 
     def read(self,n=-1):
