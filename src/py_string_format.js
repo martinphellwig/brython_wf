@@ -1,6 +1,7 @@
 // https://raw.github.com/florentx/stringformat/master/stringformat.py
 
-__BRYTHON__.exception_stack=[]   // need this since we don't call brython()
+brython()
+//__BRYTHON__.exception_stack=[]   // need this since we don't call brython()
 
 _format_str_re = new RegExp(
     '(%)' +
@@ -29,6 +30,7 @@ function field_part(literal) {
   var _matches=[]
 
   var _pos=0
+  if (literal.length == 0) { _matches.push(['','',''])}
   while (_pos < literal.length) {
      var _start='', _middle='', _end=''
 
@@ -36,7 +38,7 @@ function field_part(literal) {
         _start='['
         _pos++
         while (_pos < literal.length && literal.substring(_pos,1) !== ']') {
-           _middle += literal.substring(i,1)
+           _middle += literal.substring(_pos,1)
            _pos++
         }
         if (literal.substring(_pos, 1) == ']') _end=']'
@@ -249,8 +251,6 @@ _old_format = function(format_string,args){
         }else{pos++}
     }
     elts.push(val.substr(start))
-    //console.log(args)
-    //console.log(isinstance(args, tuple))
     if(!isinstance(args,tuple)){
        if(args.__class__==$DictDict && is_mapping){
           // convert all formats with the dictionary
@@ -288,7 +288,15 @@ function _strformat(value, format_spec) {
     throw ValueError('Invalid conversion specification') 
   }
 
-  var _align,_sign,_prefix,_width,_comma,_precision,_conversion = _format_spec_re.match(format_spec)
+  var _match=_format_spec_re.exec(format_spec)
+  var _align=_match[0]
+  var _sign=_match[1]
+  var _prefix=_match[2]
+  var _width=_match[3]
+  var _comma=_match[4]
+  var _precision=_match[5]
+  var _conversion=_match[6]
+  console.log('align', _align,_sign,_prefix,_width,_comma,_precision,_conversion)
 
   var _is_numeric = isinstance(value, float)
   var _is_integer = isinstance(value, int)
@@ -318,27 +326,31 @@ function _strformat(value, format_spec) {
      // to do thousand separator
   }
 
+  console.log('329')
   var _rv
-  try {
-    if ((_is_numeric && _conversion == 's') || 
-        (! _is_integer && 'cdoxX'.indexOf(_conversion) != -1)) {
-       throw ValueError()
+  //try {
+    console.log('332')
+    console.log(_conversion)
+    if (_conversion != '' && ((_is_numeric && _conversion == 's') || 
+        (! _is_integer && 'cdoxX'.indexOf(_conversion) != -1))) {
+       throw ValueError('Fix me')
     }
+    console.log('336')
     if (_conversion == 'c') {
        _conversion = 's'
        //value = _chr(value)    // do we need to do this?
     } 
     
     // fix me
-    //_rv='%' + _prefix + _precision + (_conversion || 's')
+    _rv='%' + _prefix + _precision + (_conversion || 's')
     console.log("line 302")
     _rv = _old_format(_rv, value)
 
     //console.log('%' + _prefix + _precision + (_conversion || 's')))
     //console.log(value) 
-  } catch (err) {
-    throw ValueError(err)
-  }
+  //} catch (err) {
+  //  throw ValueError(err)
+  //}
 
   if (_sign != '-' && value >= 0) {
      _rv = _sign + _rv
@@ -393,14 +405,19 @@ function _strformat(value, format_spec) {
 function _format_field(value,parts,conv,spec,want_bytes) {
   if (want_bytes === undefined) want_bytes = False
 
+  console.log('parts', parts)
   for (var i=0; i < parts.length; i++) {
       var _k = parts[i][0]
       var _part = parts[i][1]
 
-      if (!isNaN(_part)) {
-         value = value[parseInt(_part)]
+      if (_k) {
+         if (!isNaN(_part)) {
+            value = value[parseInt(_part)]
+         } else {
+            value = value[_part]
+         }
       } else {
-         value = value[_part]
+        value = value[_part]
       }
   }
 
@@ -410,18 +427,20 @@ function _format_field(value,parts,conv,spec,want_bytes) {
      console.log("line 378")
      value = _old_format((conv == 'r') && '%r' || '%s', value)
   }
-  if (value__format__ !== undefined) {
-     value = value.__format__(_spec)
-  } else if (value.__strftime__ !== undefined && _spec) {
-     value = value.strftime(_spec.toString())
-  } else {
-     value = _strformat(value, _spec)
-  }
+  console.log(value)
+  //if (value.__format__ !== undefined) {
+  //   value = value.__format__(spec)
+  //} else if (value.__strftime__ !== undefined && spec) {
+  //   value = value.strftime(spec.toString())
+  //} else {
+  value = _strformat(value, spec)
+  //}
 
-  if (_want_bytes && isinstance(value, unicode)) {
+  if (want_bytes) { // && isinstance(value, unicode)) {
      return value.toString()
   }
 
+  console.log('value', value)
   return value
 }
 
@@ -429,26 +448,30 @@ function FormattableString(format_string) {
     this.format_string=format_string
 
     this._prepare = function(match) {
-       console.log('match', match)
-       if (match == '%') return '%%'
+       console.log('part', match)
+       //if (match == '%') return '%%'
        if (match.substring(0,1) == match.substring(match.length)) {
           // '{{' or '}}'
           return match.substring(0, int(match.length/2))
        }
 
-       console.log(match)
-       var _repl = match.substring(1)
-       console.log(_repl)
+       var _repl
+       if (match.length >= 2) {
+          _repl=''
+       } else {
+         _repl = match.substring(1)
+       }
+       //console.log(_repl)
        var _out = _partition(_repl, ':')
        var _field=_out[0]
        var _dummy=_out[1]
        var _format_spec=_out[2]
-       console.log(_field, _dummy, _format_spec)
+       //console.log(_field, _dummy, _format_spec)
        _out= _partition(_field, '!')
        var _literal=_out[0]
        var _sep=_out[1]
        var _conversion=_out[2]
-       console.log(_literal, _sep, _conversion)
+       //console.log(_literal, _sep, _conversion)
 
        if (_sep && ! _conversion) {
           throw ValueError("end of format while looking for conversion specifier")
@@ -469,20 +492,24 @@ function FormattableString(format_string) {
        console.log('name_parts', _name_parts)
 
        var _start=_literal.substring(0,1)
+       var _name=''
        console.log('start', _start)
-       if ('.['.indexOf(_start) != -1) {
+       if (_start == '' || '.['.indexOf(_start) != -1) {
           // auto-numbering
           if (this._index === undefined) {
              throw ValueError("cannot switch from manual field specification to automatic field numbering")
           }
 
-          var _name = self._index.toString()
+          _name = self._index.toString()
           this._index=1
-          if (! _literal) {
-             _name_parts=_name_parts.pop()
+          console.log('500:', _name_parts)
+          if (! _literal ) {
+             _name_parts.shift()
           }
+          console.log('504:', _name_parts)
        } else {
-         var _name = _name_parts.pop(0)[1]
+         console.log('504:_name_parts', _name_parts)
+         _name = _name_parts.shift()[1]
          if (this._index !== undefined && !isNaN(_name)) {
             // manual specification
             if (this._index) {
@@ -495,14 +522,15 @@ function FormattableString(format_string) {
 
        var _empty_attribute=false
 
-       var _k;
+       var _k
+       console.log('519:name_parts', _name_parts)
        for (var i=0; i < _name_parts.length; i++) {
            _k = _name_parts[i][0]
            var _v = _name_parts[i][1]
            var _tail = _name_parts[i][2]
 
-           if (! _v) {_empty_attribute = true}
-           if (_tail != '') {
+           if (_v == '') {_empty_attribute = true}
+           if (_tail !== undefined) {
               console.log('tail = ' + _tail)
               throw ValueError("Only '.' or '[' may follow ']' " +
                                "in format field specifier")
@@ -520,19 +548,23 @@ function FormattableString(format_string) {
 
        var _rv=''
        if (_format_spec.indexOf('{') != -1) {
-          _format_spec = _format_sub_re.replace(self._prepare, _format_spec)
-          _rv = (_name_parts, _conversion, _format_spec)
-          if (this._nested[_name] === undefined) this._nested[_name]=[]
+          _format_spec = _format_sub_re.replace(_format_spec, self._prepare)
+          _rv = list([_name_parts, _conversion, _format_spec])
+          if (this._nested[_name] === undefined) {
+             this._nested[_name]=[]
+             this._nested_array.push(_name)
+          }
           this._nested[_name].push(_rv) 
        } else {
-          _rv = (_name_parts, _conversion, _format_spec)
-          if (this._kwords[_name] === undefined) this._kwords[_name]=[]
+          _rv = list([_name_parts, _conversion, _format_spec])
+          if (this._kwords[_name] === undefined) {
+             this._kwords[_name]=[]
+             this._kwords_array.push(_name)
+          }
           this._kwords[_name].push(_rv) 
        }
-
-       console.log('_rv', _rv)
-       //return '%%(' + id(_rv) + ')s'
-       return '%%(' + _rv + ')s'
+       console.log('559 name_parts', _name_parts)
+       return '%(' + id(_rv) + ')s'
     } // this.prepare
 
     this.eq = function(other) {
@@ -557,25 +589,32 @@ function FormattableString(format_string) {
        //encode arguments to ASCII, if format string is bytes
        var _want_bytes = isinstance(this._string, str)
        var _params={}
-       for (var i=0; i < this._kwords.length; i++) {
-           var _name = $DictDict.get(this._kwords[i],'key',None)
-           var _items = $DictDict.get(this._kwords[i],'values',[])
-           var _value = kwargs.get(_name)
+       //var _params = $dict()
+       for (var i=0; i < this._kwords_array.length; i++) {
+           var _name = this._kwords_array[i]
+           var _items = this._kwords[_name]
+           console.log('name', _name)
+           console.log('kwargs', kwargs)
+           //var _value = kwargs.get(_name)
+           var _value = kwargs[_name]
 
            for (var j=0; j < _items.length; j++) {
                var _parts = _items[j][0]
                var _conv = _items[j][1]
                var _spec = _items[j][2]
 
-               _params[id(_items[j]).toString()] = _format_field(_value, _parts, 
-                                                      _conv, _spec, _want_bytes)
+               _params[id(_items[j]).toString()]= _format_field(_value, _parts, _conv,
+                                                    _spec, _want_bytes)
+
+               //_params[id(_items[j]).toString()] = _format_field(_value, _parts, 
+               //                                       _conv, _spec, _want_bytes)
            }
        }
 
-       for (var i=0; i < this._nested.length; i++) {
-           var _name = $DictDict.get(this._nested[i],'key',None)
-           var _items = $DictDict.get(this._nested[i],'values',[])
-           var _value = kwargs.get(_name)
+       for (var i=0; i < this._nested_array.length; i++) {
+           var _name = this._nested_array[i]
+           var _items = this._nested[i]
+           var _value = kwargs[_name]
 
            for (var j=0; j < _items.length; j++) {
                var _parts = _items[j][0]
@@ -593,17 +632,20 @@ function FormattableString(format_string) {
 
        // this._string % _params
        console.log("line 592", this._string, _params)
-       return _old_format(this._string , _params)
+       return _old_format(this._string, _params)
     } // this.format
 
 
     this._index = 0
     this._kwords = {}
+    this._kwords_array=[]
     this._nested = {}
+    this._nested_array=[]
 
-    this._string=format_string.replace(_format_str_re, this._prepare)
+    console.log(format_string)
+    this._string=format_string.replace(_format_str_re, this._prepare, 'g')
 
-    console.log(this._string)
+    console.log('self._string', this._string)
 
     return this
 }
