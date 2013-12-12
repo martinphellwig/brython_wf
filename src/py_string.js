@@ -432,7 +432,6 @@ $StringDict.find = function(self){
 
 $StringDict.format = function(self) {
     var $ns=$MakeArgs('str.format',arguments,['self'],{},'args', 'kw')
-    console.log('args '+$ns['args']+' kw '+str($ns['kw']))
     // use code from
     // https://raw.github.com/florentx/stringformat/master/stringformat.py
     // how should we import this code?
@@ -639,14 +638,20 @@ $StringDict.rjust = function(self) {
     return Array(width - self.length + 1).join(fillchar) + self
 }
 
-$StringDict.rpartition = function(self) {
+$StringDict.rpartition = function(self,sep) {
   if (sep === undefined) {
      throw Error("sep argument is required");
      return
   }
-  var i=self.lastindexOf(sep)
-  if (i== -1) { return $tuple(['', '', self])}
-  return $tuple([self.substring(0,i), sep, self.substring(i+sep.length)])
+  var pos=self.length-sep.length
+  while(true){
+      if(self.substr(pos,sep.length)==sep){
+          return $tuple([self.substr(0,pos),sep,self.substr(pos+sep.length)])
+      }else{
+          pos--
+          if(pos<0){return $tuple(['','',self])}
+      }
+  }
 }
 
 $StringDict.rsplit = function(self) {
