@@ -3,6 +3,7 @@ import tokenize
 import re
 import datetime
 import os
+import sys
 
 # version info
 version = [1,3,None,"alpha",0]
@@ -74,6 +75,13 @@ out.write('__BRYTHON__.version_info = %s\n' %str(version))
 out.write('__BRYTHON__.builtin_module_names = ["posix",')
 out.write(',\n    '.join(['"%s"' %fname.split('.')[0]
      for fname in os.listdir(os.path.join(os.getcwd(),'src','libs'))]))
+# add Python scripts in Lib that start with _ and are not found in CPython Lib
+stdlib_path = os.path.join(os.path.dirname(sys.executable),'Lib')
+stdlib_mods = [f for f in os.listdir(stdlib_path) if f.startswith('_')]
+brython_mods = [f for f in os.listdir(os.path.join(os.getcwd(),'src','Lib'))
+    if f.startswith('_') and f!='__pycache__']
+brython_py_builtins = [os.path.splitext(x)[0] for x in brython_mods if not x in stdlib_mods]
+out.write(',\n    '+',\n    '.join(['"%s"' %f for f in brython_py_builtins]))
 out.write(']\n')
 out.close()
 

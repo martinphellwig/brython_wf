@@ -1,3 +1,6 @@
+// built-in variable
+__debug__ = false
+
 // built-in functions
 
 function abs(obj){
@@ -371,7 +374,7 @@ function getattr(obj,attr,_default){
     }
 
     var is_class = obj.__class__===$factory, mro, attr_func
-    //if(attr=='__setattr__'){console.log('2 ! getattr '+attr+' of '+obj+' ('+type(obj)+') '+' class '+is_class)}
+    //if(attr=='impmods'){console.log('2 ! getattr '+attr+' of '+obj+' ('+type(obj)+') '+' class '+is_class)}
     if(is_class){
         attr_func=$type.__getattribute__
         if(obj.$dict===undefined){console.log('obj '+obj+' $dict undefined')}
@@ -404,7 +407,7 @@ function getattr(obj,attr,_default){
         //}
     }
 }
-
+getattr.__name__ = 'getattr'
 //globals() (built in function)
 function globals(module){
     // the translation engine adds the argument mdoule
@@ -458,7 +461,8 @@ function id(obj) {
 }
 
 function __import__(mod_name){
-    return $import_list([mod_name])[0]
+    $import_list([mod_name])
+    return __BRYTHON__.imported[mod_name]
 }
 //not a direct alias of prompt: input has no default value
 function input(src){
@@ -1401,7 +1405,10 @@ Function.prototype.__get__ = function(self,obj,objtype){
     // If it is an instance, it is called with (instance,type(instance))
     return self
 }
-//Function.prototype.__str__ = function(){return 'a function'}
+
+// class dict of functions attribute __code__
+$CodeDict = {__class__:$type,__name__:'code'}
+$CodeDict.__mro__ = [$CodeDict,$ObjectDict]
 
 // built-in exceptions
 
