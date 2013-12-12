@@ -407,7 +407,7 @@ function getattr(obj,attr,_default){
         //}
     }
 }
-
+getattr.__name__ = 'getattr'
 //globals() (built in function)
 function globals(module){
     // the translation engine adds the argument mdoule
@@ -461,7 +461,8 @@ function id(obj) {
 }
 
 function __import__(mod_name){
-    return $import_list([mod_name])[0]
+    $import_list([mod_name])
+    return __BRYTHON__.imported[mod_name]
 }
 //not a direct alias of prompt: input has no default value
 function input(src){
