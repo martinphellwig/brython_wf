@@ -164,8 +164,7 @@ def dup2(*args,**kw):
 
 environ = {}
 
-class error:
-    pass
+error = OSError
 
 def execv(*args,**kw):
     """execv(path, args)    
