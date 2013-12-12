@@ -15,13 +15,13 @@ def acquire_lock(*args,**kw):
 
 def extension_suffixes(*args,**kw):
     """extension_suffixes() -> list of strings    Returns the list of file suffixes used to identify extension modules."""
-    pass
+    return ['.pyd']
 
 def get_frozen_object(*args,**kw):
     pass
 
-def init_builtin(*args,**kw):
-    pass
+def init_builtin(module,*args,**kw):
+    return __import__(module)
 
 def init_frozen(*args,**kw):
     pass
