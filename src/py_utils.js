@@ -605,7 +605,7 @@ $type.__getattribute__=function(klass,attr){
                     // function called from a class
                     args = []
                     __repr__ = __str__ = function(){
-                        return '<function '+klass.__name__+'.'+attr+'>'
+                        return '<unbound method '+klass.__name__+'.'+attr+'>'
                     }
                 }else if(res.$type==='classmethod'){
                     // class method : called with the class as first argument
@@ -645,6 +645,7 @@ $type.__getattribute__=function(klass,attr){
                 method.__repr__ = __repr__
                 method.__self__ = __self__
                 method.__str__ = __str__
+                method.im_class = klass
                 return method
             }
         }else{
