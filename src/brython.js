@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131212-172442
+// version 1.3.20131212-181718
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131212-172442', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131212-181718', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -75,6 +75,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_imp",
 "_random",
 "_socket",
+"_string",
 "_struct",
 "_thread",
 "_weakref"]
@@ -4018,7 +4019,6 @@ if(attr=='__new__'){res.$type='staticmethod'}
 res1=res.__get__.apply(null,[res,None,klass])
 var args
 if(res1.__class__===Function){
-if(attr=='bar'){console.log('method '+attr)}
 var __self__,__func__,__repr__,__str__
 if(res.$type===undefined){
 args=[]
@@ -5915,9 +5915,7 @@ var $xmlhttp=imp[0],fake_qs=imp[1],timer=imp[2],res=null
 $xmlhttp.onreadystatechange=function(){
 if($xmlhttp.readyState==4){
 window.clearTimeout(timer)
-if($xmlhttp.status==200 || $xmlhttp.status==0){
-res=$xmlhttp.responseText
-}
+if($xmlhttp.status==200 || $xmlhttp.status==0){res=$xmlhttp.responseText}
 else{
 res=FileNotFoundError("No module named '"+module+"'")
 }
@@ -6057,7 +6055,6 @@ var res=[]
 for(var i=0;i<modules.length;i++){
 var mod_name=modules[i]
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
-if(mod_name=='imp'){console.log('import '+mod_name)}
 var mod
 var stored=__BRYTHON__.imported[mod_name]
 if(stored===undefined){
@@ -7455,9 +7452,7 @@ else{return start+res}
 }
 $StringDict.format=function(self){
 var $ns=$MakeArgs('str.format',arguments,['self'],{},'args', 'kw')
-var res='<formatted string>'+self+' args '+$ns['args']+' kw '+str($ns['kw'])
-console.log(res)
-return res
+return '<formatted string>'+self+' args '+$ns['args']+' kw '+str($ns['kw'])
 }
 $StringDict.format_map=function(self){
 throw NotImplementedError("function format_map not implemented yet")

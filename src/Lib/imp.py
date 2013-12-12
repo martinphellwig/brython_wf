@@ -6,12 +6,11 @@ functionality over this module.
 
 """
 # (Probably) need to stay in _imp
-print('imp 9')
+
 from _imp import (lock_held, acquire_lock, release_lock,
                   load_dynamic, get_frozen_object, is_frozen_package,
                   init_builtin, init_frozen, is_builtin, is_frozen,
                   _fix_co_filename)
-print('imp14')
 # Directly exposed by this module
 from importlib._bootstrap import new_module
 from importlib._bootstrap import cache_from_source, source_from_cache
@@ -21,9 +20,7 @@ from importlib import _bootstrap
 from importlib import machinery
 import os
 import sys
-print('imp24')
 import tokenize
-print('imp 26')
 import warnings
 
 # DEPRECATED
