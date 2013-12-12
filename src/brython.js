@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131210-225949
+// version 1.3.20131212-172442
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,12 +48,13 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131210-225949', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131212-172442', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
 "javascript",
 "json",
+"marshal",
 "math",
 "random",
 "re",
@@ -66,7 +67,17 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_svg",
 "_sys",
 "_timer",
-"_websocket"]
+"_websocket",
+"_codecs",
+"_collections",
+"_dummy_thread",
+"_functools",
+"_imp",
+"_random",
+"_socket",
+"_struct",
+"_thread",
+"_weakref"]
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
 "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
@@ -912,20 +923,18 @@ node.parent.children.splice(rank+offset,0,new_node)
 offset++
 }
 var module=$get_module(this)
-js=scope.ntype=='class' ? '$class.' : ''
-js +=this.name+'.__module__ = "'+module.module+'"'
+var prefix=scope.ntype=='class' ? '$class.' : ''
+js=prefix+this.name+'.__module__ = "'+module.module+'"'
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 node.parent.children.splice(rank+offset,0,new_node)
 offset++
-js=scope.ntype=='class' ? '$class.' : ''
-js +=this.name+'.__doc__='+(this.doc_string || 'None')
+js=prefix+this.name+'.__doc__='+(this.doc_string || 'None')
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 node.parent.children.splice(rank+offset,0,new_node)
 offset++
-js=scope.ntype=='class' ? '$class.' : ''
-js +=this.name+'.__code__= {__class__:$CodeDict}'
+js=prefix+this.name+'.__code__= {__class__:$CodeDict}'
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 node.parent.children.splice(rank+offset,0,new_node)
@@ -1228,7 +1237,7 @@ res +='=getattr($mod,"'+this.names[i]+'")\n'
 }else{
 if(this.names[0]=='*'){
 res +='$import_list(["'+this.module+'"],"'+mod+'")\n'
-res +=head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
+res +=head+'var $mod=__BRYTHON__.imported["'+this.module+'"]\n'
 res +=head+'for(var $attr in $mod){\n'
 res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
 if(scope.ntype==="module"){
@@ -1515,7 +1524,7 @@ res +='=$locals["'+alias+'"]'
 }else if(scope.ntype==="module"){
 res +='=$globals["'+alias+'"]'
 }
-res +='=__BRYTHON__.imported["'+key+'"];'
+res +='=__BRYTHON__.scope["'+key+'"].__dict__;'
 }
 }
 res +='None;'
@@ -3037,7 +3046,7 @@ __BRYTHON__.modules[module]=root
 return root
 }
 __BRYTHON__.forbidden=['case','catch','constructor','Date','delete',
-'default','document','history','function','location','Math','new','RegExp',
+'default','document','history','function','location','Math','new','Number','RegExp',
 'this','throw','var','super','window']
 function $tokenize(src,module,parent){
 var delimiters=[["#","\n","comment"],['"""','"""',"triple_string"],
@@ -4009,11 +4018,12 @@ if(attr=='__new__'){res.$type='staticmethod'}
 res1=res.__get__.apply(null,[res,None,klass])
 var args
 if(res1.__class__===Function){
+if(attr=='bar'){console.log('method '+attr)}
 var __self__,__func__,__repr__,__str__
 if(res.$type===undefined){
 args=[]
 __repr__=__str__=function(){
-return '<function '+klass.__name__+'.'+attr+'>'
+return '<unbound method '+klass.__name__+'.'+attr+'>'
 }
 }else if(res.$type==='classmethod'){
 args=[klass]
@@ -4047,6 +4057,7 @@ method.__func__=__func__
 method.__repr__=__repr__
 method.__self__=__self__
 method.__str__=__str__
+method.im_class=klass
 return method
 }
 }else{
@@ -4691,6 +4702,7 @@ else{
 throw AttributeError("'"+type(obj).__name__+"' object has no attribute '"+attr+"'")
 }
 }
+getattr.__name__='getattr'
 function globals(module){
 var res=dict()
 var scope=__BRYTHON__.scope[module].__dict__
@@ -4732,7 +4744,8 @@ return obj.__hash__()
 return null
 }
 function __import__(mod_name){
-return $import_list([mod_name])[0]
+$import_list([mod_name])
+return __BRYTHON__.imported[mod_name]
 }
 function input(src){
 return prompt(src)
@@ -5902,7 +5915,9 @@ var $xmlhttp=imp[0],fake_qs=imp[1],timer=imp[2],res=null
 $xmlhttp.onreadystatechange=function(){
 if($xmlhttp.readyState==4){
 window.clearTimeout(timer)
-if($xmlhttp.status==200 || $xmlhttp.status==0){res=$xmlhttp.responseText}
+if($xmlhttp.status==200 || $xmlhttp.status==0){
+res=$xmlhttp.responseText
+}
 else{
 res=FileNotFoundError("No module named '"+module+"'")
 }
@@ -5927,6 +5942,7 @@ eval(module_contents)
 if(eval('$module')===undefined){
 throw ImportError("name '$module' is not defined in module")
 }
+__BRYTHON__.scope[module.name]={__dict__:$module}
 $module.__class__=$ModuleDict
 $module.__name__=module.name
 $module.__repr__=function(){return "<module '"+module.name+"' from "+filepath+" >"}
@@ -6015,6 +6031,7 @@ console.log(''+err+' '+' for module '+module.name)
 for(var attr in err){
 console.log(attr+' '+err[attr])
 }
+if(__BRYTHON__.debug>0){console.log('line info '+document.$line_info)}
 throw err
 }
 }
@@ -6040,6 +6057,7 @@ var res=[]
 for(var i=0;i<modules.length;i++){
 var mod_name=modules[i]
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
+if(mod_name=='imp'){console.log('import '+mod_name)}
 var mod
 var stored=__BRYTHON__.imported[mod_name]
 if(stored===undefined){
@@ -7437,8 +7455,9 @@ else{return start+res}
 }
 $StringDict.format=function(self){
 var $ns=$MakeArgs('str.format',arguments,['self'],{},'args', 'kw')
-console.log('args '+$ns['args']+' kw '+str($ns['kw']))
-return '<formatted string>'+self+' args '+$ns['args']+' kw '+str($ns['kw'])
+var res='<formatted string>'+self+' args '+$ns['args']+' kw '+str($ns['kw'])
+console.log(res)
+return res
 }
 $StringDict.format_map=function(self){
 throw NotImplementedError("function format_map not implemented yet")
@@ -7596,14 +7615,20 @@ var width=$ns['width'],fillchar=$ns['fillchar']
 if(width <=self.length)return self
 return Array(width - self.length + 1).join(fillchar)+ self
 }
-$StringDict.rpartition=function(self){
+$StringDict.rpartition=function(self,sep){
 if(sep===undefined){
 throw Error("sep argument is required")
 return
 }
-var i=self.lastindexOf(sep)
-if(i==-1){return $tuple(['', '', self])}
-return $tuple([self.substring(0,i), sep, self.substring(i+sep.length)])
+var pos=self.length-sep.length
+while(true){
+if(self.substr(pos,sep.length)==sep){
+return $tuple([self.substr(0,pos),sep,self.substr(pos+sep.length)])
+}else{
+pos--
+if(pos<0){return $tuple(['','',self])}
+}
+}
 }
 $StringDict.rsplit=function(self){
 var args=[]

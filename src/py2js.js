@@ -1031,29 +1031,28 @@ function $DefCtx(context){
         }
         // add attribute __module__
         var module = $get_module(this)
-        js = scope.ntype=='class' ? '$class.' : ''
-        js += this.name+'.__module__ = "'+module.module+'"'
+        var prefix = scope.ntype=='class' ? '$class.' : ''
+        
+        js = prefix+this.name+'.__module__ = "'+module.module+'"'
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         node.parent.children.splice(rank+offset,0,new_node)
         offset++
         
         // if doc string, add it as attribute __doc__
-        js = scope.ntype=='class' ? '$class.' : ''
-        js += this.name+'.__doc__='+(this.doc_string || 'None')
+        js = prefix+this.name+'.__doc__='+(this.doc_string || 'None')
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         node.parent.children.splice(rank+offset,0,new_node)
         offset++
 
         // add attribute __code__
-        js = scope.ntype=='class' ? '$class.' : ''
-        js += this.name+'.__code__= {__class__:$CodeDict}'
+        js = prefix+this.name+'.__code__= {__class__:$CodeDict}'
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         node.parent.children.splice(rank+offset,0,new_node)
         offset++
-        
+
         this.transformed = true
     }
     this.add_generator_declaration = function(){
@@ -1391,7 +1390,7 @@ function $FromCtx(context){
         }else{
            if(this.names[0]=='*'){
              res += '$import_list(["'+this.module+'"],"'+mod+'")\n'
-             res += head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
+             res += head+'var $mod=__BRYTHON__.imported["'+this.module+'"]\n'
              res += head+'for(var $attr in $mod){\n'
              res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
               if(scope.ntype==="module"){
@@ -1746,7 +1745,7 @@ function $ImportCtx(context){
                 }else if(scope.ntype==="module"){
                     res += '=$globals["'+alias+'"]'
                 }
-                res += '=__BRYTHON__.imported["'+key+'"];'
+                res += '=__BRYTHON__.scope["'+key+'"].__dict__;'
             }
         }
         // add None for interactive console
@@ -3532,7 +3531,7 @@ __BRYTHON__.py2js = function(src,module,parent){
 }
 
 __BRYTHON__.forbidden = ['case','catch','constructor','Date','delete',
-    'default','document','history','function','location','Math','new','RegExp',
+    'default','document','history','function','location','Math','new','Number','RegExp',
     'this','throw','var','super','window']
 
 function $tokenize(src,module,parent){

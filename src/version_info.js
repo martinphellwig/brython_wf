@@ -1,9 +1,10 @@
-__BRYTHON__.version_info = [1, 3, '20131210-225949', 'alpha', 0]
+__BRYTHON__.version_info = [1, 3, '20131212-172442', 'alpha', 0]
 __BRYTHON__.builtin_module_names = ["posix","builtins",
     "crypto_js",
     "hashlib",
     "javascript",
     "json",
+    "marshal",
     "math",
     "random",
     "re",
@@ -16,4 +17,14 @@ __BRYTHON__.builtin_module_names = ["posix","builtins",
     "_svg",
     "_sys",
     "_timer",
-    "_websocket"]
+    "_websocket",
+    "_codecs",
+    "_collections",
+    "_dummy_thread",
+    "_functools",
+    "_imp",
+    "_random",
+    "_socket",
+    "_struct",
+    "_thread",
+    "_weakref"]
