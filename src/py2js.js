@@ -635,6 +635,13 @@ function $CallCtx(context){
                 }
             }
         }
+        else if(this.func!==undefined && this.func.type=='unary'){
+            // form " -(x+2) "
+            var op = this.func.op
+            if(op=='+'){return $to_js(this.tree)}
+            else if(op=='-'){return 'getattr('+$to_js(this.tree)+',"__neg__")()'}
+            else if(op=='~'){return 'getattr('+$to_js(this.tree)+',"__invert__")()'}
+        }
         if(this.tree.length>0){
             return 'getattr('+this.func.to_js()+',"__call__")('+$to_js(this.tree)+')'
         }else{return 'getattr('+this.func.to_js()+',"__call__")()'}
@@ -1024,20 +1031,28 @@ function $DefCtx(context){
         }
         // add attribute __module__
         var module = $get_module(this)
-        js = scope.ntype=='class' ? '$class.' : ''
-        js += this.name+'.__module__ = "'+module.module+'"'
+        var prefix = scope.ntype=='class' ? '$class.' : ''
+        
+        js = prefix+this.name+'.__module__ = "'+module.module+'"'
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         node.parent.children.splice(rank+offset,0,new_node)
         offset++
         
         // if doc string, add it as attribute __doc__
-        js = scope.ntype=='class' ? '$class.' : ''
-        js += this.name+'.__doc__='+(this.doc_string || 'None')
+        js = prefix+this.name+'.__doc__='+(this.doc_string || 'None')
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         node.parent.children.splice(rank+offset,0,new_node)
         offset++
+
+        // add attribute __code__
+        js = prefix+this.name+'.__code__= {__class__:$CodeDict}'
+        new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        node.parent.children.splice(rank+offset,0,new_node)
+        offset++
+
         this.transformed = true
     }
     this.add_generator_declaration = function(){
@@ -1375,7 +1390,7 @@ function $FromCtx(context){
         }else{
            if(this.names[0]=='*'){
              res += '$import_list(["'+this.module+'"],"'+mod+'")\n'
-             res += head+'var $mod=__BRYTHON__.modules["'+this.module+'"]\n'
+             res += head+'var $mod=__BRYTHON__.imported["'+this.module+'"]\n'
              res += head+'for(var $attr in $mod){\n'
              res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
               if(scope.ntype==="module"){
@@ -1730,7 +1745,7 @@ function $ImportCtx(context){
                 }else if(scope.ntype==="module"){
                     res += '=$globals["'+alias+'"]'
                 }
-                res += '=__BRYTHON__.imported["'+key+'"];'
+                res += '=__BRYTHON__.scope["'+key+'"].__dict__;'
             }
         }
         // add None for interactive console
@@ -2073,20 +2088,24 @@ function $StarArgCtx(context){
 
 function $StringCtx(context,value){
     this.type = 'str'
-    this.value = value
-    this.toString = function(){return 'string '+this.value+' '+(this.tree||'')}
+    this.toString = function(){return 'string '+(this.tree||'')}
     this.parent = context
-    this.tree = []
+    this.tree = [value] // may be extended if consecutive strings eg 'a' 'b'
     context.tree.push(this)
     this.to_js = function(){
-        if(this.value.charAt(0)!='b'){
-            return this.value.replace(/\n/g,'\\n\\\n')+$to_js(this.tree,'')
-        }else{
-            var res = 'bytes('
-            res += this.value.substr(1).replace(/\n/g,'\\n\\\n')
-            res += $to_js(this.tree,'')+')'
-            return res
+        var res = ''
+        for(var i=0;i<this.tree.length;i++){
+            var value=this.tree[i]
+            if(value.charAt(0)!='b'){
+                res += value.replace(/\n/g,'\\n\\\n')
+            }else{
+                res += 'bytes('
+                res += value.substr(1).replace(/\n/g,'\\n\\\n')
+                res += ')'
+            }
+            if(i<this.tree.length-1){res+='+'}
         }
+        return res
     }
 }
 
@@ -3346,9 +3365,10 @@ function $transition(context,token){
 
         if(token==='['){return new $AbstractExprCtx(new $SubCtx(context.parent),false)}
         else if(token==='('){return new $CallCtx(context)}
-        //else if(token==='.'){return new $AttrCtx(context)}
-        else if(token=='str'){context.value += '+'+arguments[2];return context}
-        else{return $transition(context.parent,token,arguments[2])}
+        else if(token=='str'){
+            context.tree.push(arguments[2])
+            return context
+        }else{return $transition(context.parent,token,arguments[2])}
 
     }else if(context.type==='sub'){ 
     
@@ -3492,17 +3512,17 @@ __BRYTHON__.py2js = function(src,module,parent){
     root.insert(0,new_node)
     // module doc string
     var ds_node = new $Node('expression')
-    new $NodeJSCtx(ds_node,'__doc__=$globals["__doc__"]='+root.doc_string)
+    new $NodeJSCtx(ds_node,'var __doc__=$globals["__doc__"]='+root.doc_string)
     root.insert(1,ds_node)
     // name
     var name_node = new $Node('expression')
     var lib_module = module
     if(module.substr(0,9)=='__main__,'){lib_module='__main__'}
-    new $NodeJSCtx(name_node,'__name__=$globals["__name__"]="'+lib_module+'"')
+    new $NodeJSCtx(name_node,'var __name__=$globals["__name__"]="'+lib_module+'"')
     root.insert(2,name_node)
     // file
     var file_node = new $Node('expression')
-    new $NodeJSCtx(file_node,'__file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
+    new $NodeJSCtx(file_node,'var __file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
     root.insert(3,file_node)
         
     if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
@@ -3511,7 +3531,7 @@ __BRYTHON__.py2js = function(src,module,parent){
 }
 
 __BRYTHON__.forbidden = ['case','catch','constructor','Date','delete',
-    'default','document','history','function','location','Math','new','RegExp',
+    'default','document','history','function','location','Math','new','Number','RegExp',
     'this','throw','var','super','window']
 
 function $tokenize(src,module,parent){
