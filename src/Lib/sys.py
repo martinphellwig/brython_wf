@@ -8,39 +8,26 @@ __stderr__=getattr(doc,"$stderr")
 stdout = getattr(doc,"$stdout")
 stderr = getattr(doc,"$stderr")
 
-path_hooks=list(JSObject(__BRYTHON__.path_hooks))
 
 has_local_storage=__BRYTHON__.has_local_storage
 has_json=__BRYTHON__.has_json
 
 argv = ['__main__']
 
-class __version_info(object):
-    def __init__(self, version_info):
-        self.version_info = version_info
-        self.major = version_info[0]
-        self.minor = version_info[1]
-        self.micro = version_info[2]
-        self.releaselevel = version_info[3]
-        self.serial = version_info[4]
+base_exec_prefix = __BRYTHON__.brython_path
 
-    def __getitem__(self, index):
-        return self.version_info[index]
+base_prefix = __BRYTHON__.brython_path
 
-    def __str__(self):
-        return str(self.version_info)
-     
-version_info=__version_info(__BRYTHON__.version_info)
-path=__BRYTHON__.path
 builtin_module_names=__BRYTHON__.builtin_module_names
 
 byteorder='little'
-maxsize=9007199254740992   #largest integer..
-maxint=9007199254740992   #largest integer..
-maxunicode=1114111
 
-platform="brython"
-warnoptions=[]
+exec_prefix = __BRYTHON__.brython_path
+
+executable = __BRYTHON__.brython_path+'/brython.js'
+
+def exit(i=None):
+    raise SystemExit('')
 
 class flag_class:
   def __init__(self):
@@ -59,11 +46,45 @@ class flag_class:
 
 flags=flag_class()
 
-def exit(i=None):
-    raise SystemExit('')
-
 def getfilesystemencoding(*args,**kw):
     """getfilesystemencoding() -> string    
     Return the encoding used to convert Unicode filenames in
     operating system filenames."""
     return 'utf-8'
+    
+maxsize=9007199254740992   #largest integer..
+
+maxint=9007199254740992   #largest integer..
+
+maxunicode=1114111
+
+path = __BRYTHON__.path
+
+path_hooks = list(JSObject(__BRYTHON__.path_hooks))
+
+platform="brython"
+
+prefix = __BRYTHON__.brython_path
+
+version = '.'.join(str(x) for x in __BRYTHON__.version_info)
+
+
+class __version_info(object):
+    def __init__(self, version_info):
+        self.version_info = version_info
+        self.major = version_info[0]
+        self.minor = version_info[1]
+        self.micro = version_info[2]
+        self.releaselevel = version_info[3]
+        self.serial = version_info[4]
+
+    def __getitem__(self, index):
+        return self.version_info[index]
+
+    def __str__(self):
+        return str(self.version_info)
+     
+version_info=__version_info(__BRYTHON__.version_info)
+
+warnoptions=[]
+
