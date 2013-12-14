@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131212-181718
+// version 1.3.20131214-081402
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131212-181718', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131214-081402', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -544,8 +544,12 @@ if(this.func!==undefined){
 this.func.parent=this
 }
 this.parent=C
+if(C.type!='class'){
 C.tree.pop()
 C.tree.push(this)
+}else{
+C.args=this
+}
 this.tree=[]
 this.start=$pos
 this.toString=function(){return '(call) '+this.func+'('+this.tree+')'}
@@ -643,12 +647,12 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.expect='id'
-this.toString=function(){return '(class) '+this.name+' '+this.tree}
+this.toString=function(){return '(class) '+this.name+' '+this.tree+' args '+this.args}
 this.transform=function(node,rank){
 if(this.transformed){return}
 this.doc_string=$get_docstring(node)
 var instance_decl=new $Node('expression')
-new $NodeJSCtx(instance_decl,'var $class = new Object()')
+new $NodeJSCtx(instance_decl,'var $class = {$def_line:document.$line_info}')
 node.insert(0,instance_decl)
 var ret_obj=new $Node('expression')
 new $NodeJSCtx(ret_obj,'return $class')
@@ -673,9 +677,28 @@ js='var '+this.name
 js='var '+this.name+' = $class.'+this.name
 }
 js +='=$class_constructor("'+this.name+'",$'+this.name
-if(this.tree.length>0 && this.tree[0].tree.length>0 &&
-this.tree[0].tree[0].tree.length>0){
-js +=','+$to_js(this.tree[0].tree)
+if(this.args!==undefined){
+var arg_tree=this.args.tree,args=[],kw=[]
+for(var i=0;i<arg_tree.length;i++){
+if(arg_tree[i].tree[0].type=='kwarg'){kw.push(arg_tree[i].tree[0])}
+else{args.push(arg_tree[i].to_js())}
+}
+js +=',tuple(['+args.join(',')+']),['
+for(var i=0;i<args.length;i++){
+js +='"'+args[i].replace(new RegExp('"','g'),'\\"')+'"'
+if(i<args.length-1){js +=','}
+}
+js +=']'
+if(kw.length>0){
+js+=',['
+for(var i=0;i<kw.length;i++){
+js+='["'+kw[i].tree[0].value+'",'+kw[i].tree[1].to_js()+']'
+if(i<kw.length-1){js+=','}
+}
+js+=']'
+}
+}else{
+js +=',tuple([]),[]'
 }
 js +=')'
 var cl_cons=new $Node('expression')
@@ -2380,10 +2403,8 @@ if(token==='id' && C.expect==='id'){
 C.name=arguments[2]
 C.expect='(:'
 return C
-}
-else if(token==='(' && C.expect==='(:'){
-return $transition(new $AbstractExprCtx(C,true),'(')
-}else if(token===':' && C.expect==='(:'){return $BodyCtx(C)}
+}else if(token==='('){return new $CallCtx(C)}
+else if(token===':'){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='comp_if'){
 return $transition(C.parent,token,arguments[2])
@@ -3850,21 +3871,21 @@ if(val!==null){return val}
 }
 throw AttributeError('class '+_class.__name__+" has no attribute '"+attr+"'")
 }
-function $class_constructor(class_name,factory,parents){
+function $class_constructor(class_name,class_obj,parents,parents_names){
 var cl_dict=dict(),bases=null
-for(var attr in factory){
-if(typeof factory[attr]=='function'){
-factory[attr].__str__=(function(x){
-return function(){return '<function '+class_name+'.'+x+'>'}
-})(attr)
-factory[attr].__name__=class_name+'.'+attr
+for(var attr in class_obj){
+$DictDict.__setitem__(cl_dict,attr,class_obj[attr])
 }
-$DictDict.__setitem__(cl_dict,attr,factory[attr])
+if(parents!==undefined){
+for(var i=0;i<parents.length;i++){
+if(parents[i]===undefined){
+document.$line_info=class_obj.$def_line
+throw NameError("name '"+parents_names[i]+"' is not defined")
 }
-if(parents===undefined){bases=tuple([object])}
-else if(!isinstance(parents,tuple)){bases=tuple([parents])}
-else{bases=parents}
-if(!bases.indexOf(object)==-1){bases=bases.concat(tuple([object]))}
+}
+}
+bases=parents
+if(bases.indexOf(object)==-1){bases=bases.concat(tuple([object]))}
 return type(class_name,bases,cl_dict)
 }
 function type(name,bases,cl_dict){

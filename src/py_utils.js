@@ -377,21 +377,24 @@ function $resolve_cl_attr(_class,attr){
 }
 
 // generic code for class constructor
-function $class_constructor(class_name,factory,parents){
+function $class_constructor(class_name,class_obj,parents,parents_names){
     var cl_dict=dict(),bases=null
-    for(var attr in factory){
-        if(typeof factory[attr]=='function'){
-            factory[attr].__str__ = (function(x){
-                return function(){return '<function '+class_name+'.'+x+'>'}
-              })(attr)
-            factory[attr].__name__ = class_name+'.'+attr
-        }
-        $DictDict.__setitem__(cl_dict,attr,factory[attr])
+    // transform class object into a dictionary
+    for(var attr in class_obj){
+        $DictDict.__setitem__(cl_dict,attr,class_obj[attr])
     }
-    if(parents===undefined){bases = tuple([object])}
-    else if(!isinstance(parents,tuple)){bases=tuple([parents])}
-    else{bases=parents}
-    if(!bases.indexOf(object)==-1){bases=bases.concat(tuple([object]))}
+    // check if parents are defined
+    if(parents!==undefined){
+        for(var i=0;i<parents.length;i++){
+            if(parents[i]===undefined){
+                // restore the line of class definition
+                document.$line_info = class_obj.$def_line
+                throw NameError("name '"+parents_names[i]+"' is not defined")
+            }
+        }
+    }
+    bases = parents
+    if(bases.indexOf(object)==-1){bases=bases.concat(tuple([object]))}
     return type(class_name,bases,cl_dict)
 }
 
@@ -412,7 +415,7 @@ function type(name,bases,cl_dict){
     // - a factory function that creates instances of the class
     // The dictionary is the attribute "$dict" of the factory function
     // type() returns the factory function
-
+    
     // Create the class dictionary    
     class_dict = new Object()
         
