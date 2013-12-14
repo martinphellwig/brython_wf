@@ -531,14 +531,18 @@ function $CallArgCtx(context){
 
 function $CallCtx(context){
     this.type = 'call'
-
     this.func = context.tree[0]
     if(this.func!==undefined){ // undefined for lambda
         this.func.parent = this
     }
     this.parent = context
-    context.tree.pop()
-    context.tree.push(this)
+    if(context.type!='class'){
+        context.tree.pop()
+        context.tree.push(this)
+    }else{
+        // class parameters
+        context.args = this
+    }
     this.tree = []
     this.start = $pos
 
@@ -654,9 +658,9 @@ function $ClassCtx(context){
     this.tree = []
     context.tree.push(this)
     this.expect = 'id'
-    this.toString = function(){return '(class) '+this.name+' '+this.tree}
+    this.toString = function(){return '(class) '+this.name+' '+this.tree+' args '+this.args}
     this.transform = function(node,rank){
-
+        
         // for an unknown reason, code like
         //
         // for base in foo:
@@ -671,7 +675,7 @@ function $ClassCtx(context){
 
         // insert "$class = new Object"
         var instance_decl = new $Node('expression')
-        new $NodeJSCtx(instance_decl,'var $class = new Object()')
+        new $NodeJSCtx(instance_decl,'var $class = {$def_line:document.$line_info}')
         node.insert(0,instance_decl)
 
         // return $class at the end of class definition
@@ -706,9 +710,31 @@ function $ClassCtx(context){
             js = 'var '+this.name+' = $class.'+this.name
         }
         js += '=$class_constructor("'+this.name+'",$'+this.name
-        if(this.tree.length>0 && this.tree[0].tree.length>0 &&
-            this.tree[0].tree[0].tree.length>0){
-            js += ','+$to_js(this.tree[0].tree)
+        if(this.args!==undefined){ // class def has arguments
+            var arg_tree = this.args.tree,args=[],kw=[]
+
+                for(var i=0;i<arg_tree.length;i++){
+                    if(arg_tree[i].tree[0].type=='kwarg'){kw.push(arg_tree[i].tree[0])}
+                    else{args.push(arg_tree[i].to_js())}
+                }
+                js += ',tuple(['+args.join(',')+']),['
+                // add the names - needed to raise exception if a value is undefined
+                for(var i=0;i<args.length;i++){
+                    js += '"'+args[i].replace(new RegExp('"','g'),'\\"')+'"'
+                    if(i<args.length-1){js += ','}
+                }
+                js += ']'
+
+            if(kw.length>0){
+                js+=',['
+                for(var i=0;i<kw.length;i++){
+                    js+='["'+kw[i].tree[0].value+'",'+kw[i].tree[1].to_js()+']'
+                    if(i<kw.length-1){js+=','}
+                }
+                js+=']'
+            }
+        }else{ // form "class foo:"
+            js += ',tuple([]),[]'
         }
         js += ')'
         var cl_cons = new $Node('expression')
@@ -2734,11 +2760,15 @@ function $transition(context,token){
             context.name = arguments[2]
             context.expect = '(:'
             return context
-        }
-        else if(token==='(' && context.expect==='(:'){
-            return $transition(new $AbstractExprCtx(context,true),'(')
-        }else if(token===':' && context.expect==='(:'){return $BodyCtx(context)}
+        }else if(token==='('){return new $CallCtx(context)}
+        else if(token===':'){return $BodyCtx(context)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
+
+        //}
+        //else if(token==='(' && context.expect==='(:'){
+        //    return $transition(new $AbstractExprCtx(context,true),'(')
+        //}else if(token===':' && context.expect==='(:'){return $BodyCtx(context)}
+        //else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='comp_if'){
 
