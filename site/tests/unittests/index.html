@@ -69,6 +69,7 @@ def run_all():
 #the code below works, but doesn't direct the output to the textarea
 # the exec function is probably causing problems..
 def choose_test(event):
+    doc["console"].value=''
     module=event.target.value
 
     exec("""
