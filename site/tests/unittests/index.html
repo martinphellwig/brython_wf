@@ -5,6 +5,7 @@
 
 <script type="text/javascript" src="../../../src/brython_builtins.js"></script>
 <script type="text/javascript" src="../../../src/py2js.js"></script>
+<script type="text/javascript" src="../../../src/version_info.js"></script>
 <script type="text/javascript" src="../../../src/py_utils.js"></script>
 <script type="text/javascript" src="../../../src/py_object.js"></script>
 <script type="text/javascript" src="../../../src/py_builtin_functions.js"></script>
@@ -20,6 +21,7 @@
 <script type="text/javascript" src="../../../src/py_dom.js"></script>
 
 <script type="text/python">
+from browser import doc
 import sys
 
 info = sys.version_info
@@ -45,8 +47,8 @@ doc["console"].value=''
 #import test_grammar
 #test_grammar.test_main()
 
-import test_math
-test_math.test_main()
+#import test_math
+#test_math.test_main()
 
 # run_all doesn't print all error messages, just 'invalid syntax'
 def run_all():
