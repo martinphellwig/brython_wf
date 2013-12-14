@@ -1,35 +1,5 @@
 from browser import doc
 
-class NodeCollectionSelector(Selector):
-  def __init__(self, selector, collection):
-      Selector.__init__(self, selector)
-      self._collection=collection
-
-      if self._selector_type == 'id':
-         self._match=self._match_id
-      elif self._selector_type =='tag':
-         self._match=self._match_tag
-      elif self._selector_type == 'classname':
-         self._match=self._match_classname
-
-  def _match_id(self, node):
-      if node.id is None: return False
-      return node.id == self._selector
-
-  def _match_tag(self, node):
-      return node.tagName == self._selector
-
-  def _match_classname(self, node):
-      return self._selector in node.classname
-
-  def get(self):
-      _c1=NodeCollection()
-      for _node in self._collection:
-          if self._match(_node):
-             _c1.append(_node)
-
-      return _c1
-
 class Selector:
   tags=['A','ABBR','ACRONYM','ADDRESS','APPLET','B','BDO','BIG','BLOCKQUOTE',
         'BUTTON','CAPTION','CENTER','CITE','CODE','DEL','DFN','DIR','DIV','DL',
@@ -93,6 +63,36 @@ class Selector:
       else:
          _matched_nodes=[]
       return NodeCollection(_matched_nodes)
+
+class NodeCollectionSelector(Selector):
+  def __init__(self, selector, collection):
+      Selector.__init__(self, selector)
+      self._collection=collection
+
+      if self._selector_type == 'id':
+         self._match=self._match_id
+      elif self._selector_type =='tag':
+         self._match=self._match_tag
+      elif self._selector_type == 'classname':
+         self._match=self._match_classname
+
+  def _match_id(self, node):
+      if node.id is None: return False
+      return node.id == self._selector
+
+  def _match_tag(self, node):
+      return node.tagName == self._selector
+
+  def _match_classname(self, node):
+      return self._selector in node.classname
+
+  def get(self):
+      _c1=NodeCollection()
+      for _node in self._collection:
+          if self._match(_node):
+             _c1.append(_node)
+
+      return _c1
 
 class NodeCollection:
   def __init__(self, nodes=[]):
