@@ -141,6 +141,8 @@ $BytesDict.__mro__ = [$BytesDict,$ObjectDict]
 
 $BytesDict.__repr__ = $BytesDict.__str__ = function(self){return self.source}
 
+$BytesDict.decode = function(self){return repr(self)} // fix ?
+
 function bytes(source, encoding, errors) {
     return {
         __class__:$BytesDict,
@@ -1157,7 +1159,7 @@ $SuperDict = {
 
 $SuperDict.__getattribute__ = function(self,attr){
     var mro = self.__thisclass__.$dict.__mro__,res
-    for(var i=1;i<mro.length;i++){ // ignores the class where super() is defined
+    for(var i=1;i<mro.length;i++){ // start with 1 = ignores the class where super() is defined
         res = mro[i][attr]
         if(res!==undefined){
             // if super() is called with a second argument, the result is bound
