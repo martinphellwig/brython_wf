@@ -570,16 +570,19 @@ function FormattableString(format_string) {
 
     this.format=function() {
        // same as str.format() and unicode.format in Python 2.6+
-       console.log(arguments)
        var $ns=$MakeArgs('format',arguments,[],{},'args','kwargs')
-       for($var in $ns){eval("var "+$var+"=$ns[$var]")}
-       //console.log($ns)
+       var args=$ns['args']
+       var kwargs=$ns['kwargs']
+
        if (args) {
-          for (var i=0; i < args.length; i++) {
-              kwargs[str(i)]=args[i]
+          for (var i=0; i < args[0].length; i++) {
+              //kwargs[str(i)]=args.$dict[i]
+              //console.log(args[0][i])
+              getattr(kwargs, '__setitem__')(str(i), args[0][i]) 
           }
        }
 
+       //console.log(kwargs)
        //encode arguments to ASCII, if format string is bytes
        var _want_bytes = isinstance(this._string, str)
        var _params=$dict()
@@ -590,7 +593,7 @@ function FormattableString(format_string) {
            //console.log('name', _name)
            //console.log('kwargs', kwargs)
            //var _value = kwargs.get(_name)
-           var _value = kwargs[_name]
+           var _value = getattr(kwargs, '__getitem__')(_name)
 
            for (var j=0; j < _items.length; j++) {
                var _parts = _items[j][0]
@@ -605,7 +608,8 @@ function FormattableString(format_string) {
        for (var i=0; i < this._nested_array.length; i++) {
            var _name = this._nested_array[i]
            var _items = this._nested[i]
-           var _value = kwargs[_name]
+           //var _value = kwargs[_name]
+           var _value = getattr(kwargs, '__getitem__')(_name)
 
            for (var j=0; j < _items.length; j++) {
                var _parts = _items[j][0]
@@ -622,7 +626,7 @@ function FormattableString(format_string) {
        }
 
        // this._string % _params
-       //console.log("line 592", this._string, _params)
+       console.log("line 592", this._string, _params)
        return _old_format(this._string, _params)
     }  // this.format
 
