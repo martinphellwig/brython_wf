@@ -5,6 +5,7 @@ $module = (function(){
     obj.A = obj.ASCII = 256
     obj.I = obj.IGNORECASE = 'i'
     obj.M = obj.MULTILINE = 'm'
+    obj.VERBOSE = 64
     $SRE_PatternDict = {
         __class__:$type,
         __name__:'SRE_Pattern'
@@ -21,6 +22,17 @@ $module = (function(){
             pattern:pattern,
             flags:flags
         }
+    }
+    obj.escape = function(string){
+        // Escape all the characters in pattern except ASCII letters, numbers 
+        // and '_'. This is useful if you want to match an arbitrary literal 
+        // string that may have regular expression metacharacters in it.
+        var res = ''
+        var ok = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+        for(var i=0;i<string.length;i++){
+            if(ok.search(string.charAt(i))>-1){res += string.charAt(i)}
+        }
+        return res
     }
     obj.findall = function(pattern,string,flags){
         var $ns=$MakeArgs('re.search',arguments,['pattern','string'],{},'args','kw')

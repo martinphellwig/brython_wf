@@ -1,5 +1,8 @@
 $module = {
-    __getattr__ : function(attr){return this[attr]},
+    var obj = {
+    choice:function(seq){
+        return getattr(seq,'__getitem__')(getattr(seq,'__len__')()*Math.random())
+    },
     random:function(){
       if(arguments.length > 0){
         throw TypeError("random() takes no arguments ("+arguments.length+" given)")
