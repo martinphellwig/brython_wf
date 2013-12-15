@@ -232,7 +232,7 @@ def getlogin(*args,**kw):
 def getpid(*args,**kw):
     """getpid() -> pid    
     Return the current process id"""
-    pass
+    return 0
 
 def getppid(*args,**kw):
     """getppid() -> ppid    
@@ -535,10 +535,10 @@ def unlink(*args,**kw):
       If it is unavailable, using it will raise a NotImplementedError."""
     pass
 
-def urandom(*args,**kw):
+def urandom(n):
     """urandom(n) -> str    
     Return n random bytes suitable for cryptographic use."""
-    pass
+    return 'a'*n
 
 def utime(*args,**kw):
     """utime(path, times=None, *, ns=None, dir_fd=None, follow_symlinks=True)    Set the access and modified time of path.

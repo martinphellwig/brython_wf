@@ -22,6 +22,10 @@ builtin_module_names=__BRYTHON__.builtin_module_names
 
 byteorder='little'
 
+def exc_info():
+    exc = __BRYTHON__.exception_stack[-1]
+    return (exc.__class__,exc,None)
+    
 exec_prefix = __BRYTHON__.brython_path
 
 executable = __BRYTHON__.brython_path+'/brython.js'
