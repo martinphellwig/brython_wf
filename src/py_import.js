@@ -196,11 +196,18 @@ function $import_single(module,origin){
             if(err.__name__==="FileNotFoundError"){
                 if(j==import_funcs.length-1){
                     // all possible locations failed : throw error
+                    // remove module name from __BRYTHON__.imported and .modules
+                    __BRYTHON__.imported[module.name] = undefined
+                    __BRYTHON__.modules[module.name] = undefined
                     throw err
                 }else{
                     continue
                 }
-            }else{throw err}
+            }else{
+                __BRYTHON__.imported[module.name] = undefined
+                __BRYTHON__.modules[module.name] = undefined
+                throw err
+            }
         }
     }
 }
