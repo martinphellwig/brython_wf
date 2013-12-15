@@ -1,6 +1,6 @@
 // class object for the built-in class 'object'
 $ObjectDict = {
-    __class__:$type,
+    //__class__:$type, : not here, added in py_type.js after $type is defined
     __name__:'object',
     $native:true
 }
@@ -182,6 +182,10 @@ $ObjectDict.__new__ = function(cls){
 
 $ObjectDict.__ne__ = function(self,other){return self!==other}
 
+$ObjectDict.__or__ = function(self,other){
+    if(bool(self)){return self}else{return other}
+}
+
 $ObjectDict.__repr__ = function(self){
     if(self===object){return "<class 'object'>"}
     else if(self===undefined){return "<class 'object'>"}
@@ -214,5 +218,5 @@ function object(){
     return {__class__:$ObjectDict}
 }
 object.$dict = $ObjectDict
-object.__class__ = $factory
+// object.__class__ = $factory : this is done in py_types
 $ObjectDict.$factory = object
