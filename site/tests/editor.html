@@ -9,8 +9,9 @@
 <script type="text/javascript" src="../../src/brython_builtins.js"></script>
 <script type="text/javascript" src="../../src/version_info.js"></script>
 <script type="text/javascript" src="../../src/py2js.js"></script>
-<script type="text/javascript" src="../../src/py_utils.js"></script>
 <script type="text/javascript" src="../../src/py_object.js"></script>
+<script type="text/javascript" src="../../src/py_type.js"></script>
+<script type="text/javascript" src="../../src/py_utils.js"></script>
 <script type="text/javascript" src="../../src/py_builtin_functions.js"></script>
 <script type="text/javascript" src="../../src/py_set.js"></script>
 <script type="text/javascript" src="../../src/js_objects.js"></script>
@@ -53,6 +54,13 @@ for key in trans:
 tplink = doc['test_page']
 if qs_lang:
     tplink.href += '?lang=%s' %qs_lang
+
+def set_debug():
+    v = doc['debug']
+    if v.checked:
+        __BRYTHON__.debug = 1
+    else:
+        __BRYTHON__.debug = 0
 </script>
 
 <script>
@@ -125,6 +133,7 @@ Theme: <select id="ace_theme" onChange="change_theme(event)">
   <div style="float:left">
     <button onClick="run()" id="run Python">run</button>
     <button onClick="run_js()" id="clear">run Javascript</button>
+    debug<input type="checkbox" id="debug" onchange="set_debug()" checked>
   </div>
 
   <div style="float:right">

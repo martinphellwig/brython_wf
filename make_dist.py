@@ -85,8 +85,8 @@ out.write(',\n    '+',\n    '.join(['"%s"' %f for f in brython_py_builtins]))
 out.write(']\n')
 out.close()
 
-sources = ['brython_builtins','version_info','py2js','py_utils','py_object',
-    'py_builtin_functions','js_objects','py_import',
+sources = ['brython_builtins','version_info','py2js','py_object','py_type',
+    'py_utils','py_builtin_functions','js_objects','py_import',
     'py_float','py_int','py_dict','py_list','py_string','py_set','py_dom']
 
 loader_src = open(abs_path('py_loader.js')).read()
