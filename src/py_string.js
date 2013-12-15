@@ -298,6 +298,8 @@ $StringDict.__ne__ = function(self,other){return other!==self.valueOf()}
 
 $StringDict.__not_in__ = function(self,item){return !$StringDict.__in__(self,item)}
 
+$StringDict.__or__ = $ObjectDict.__or__
+
 $StringDict.__repr__ = function(self){
     if(self===undefined){return "<class 'str'>"}
     var qesc = new RegExp("'","g") // to escape single quote
