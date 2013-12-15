@@ -549,6 +549,12 @@ function $CallCtx(context){
     this.toString = function(){return '(call) '+this.func+'('+this.tree+')'}
 
     this.to_js = function(){
+        if(this.tree.length>0){
+            if(this.tree[this.tree.length-1].tree.length==0){
+                // from "foo(x,)"
+                this.tree.pop()
+            }
+        }
         if(this.func!==undefined && 
             ['eval','exec'].indexOf(this.func.value)>-1){
             // get module
@@ -725,16 +731,15 @@ function $ClassCtx(context){
                 }
                 js += ']'
 
-            if(kw.length>0){
                 js+=',['
                 for(var i=0;i<kw.length;i++){
                     js+='["'+kw[i].tree[0].value+'",'+kw[i].tree[1].to_js()+']'
                     if(i<kw.length-1){js+=','}
                 }
                 js+=']'
-            }
+
         }else{ // form "class foo:"
-            js += ',tuple([]),[]'
+            js += ',tuple([]),[],[]'
         }
         js += ')'
         var cl_cons = new $Node('expression')
@@ -1129,16 +1134,21 @@ function $DelCtx(context){
     this.tree = []
     this.toString = function(){return 'del '+this.tree}
     this.to_js = function(){
-        res = []
-        var tree = this.tree[0].tree
-        for(var i=0;i<tree.length;i++){
-            var expr = tree[i]
-            if(expr.type==='expr'||expr.type==='id'){
-                var scope = $get_scope(this)
-                var js = ';(function(){'
-                js += 'try{getattr('+expr.to_js()+',"__del__")()}'
-                js += 'catch($err){$pop_exc();'
-                js += 'delete '+expr.to_js()+'};'
+        if(this.tree[0].type=='list_or_tuple'){
+            var res = ''
+            for(var i=0;i<this.tree[0].tree.length;i++){
+                var subdel = new $DelCtx(context) // this adds an element to context.tree
+                subdel.tree = [this.tree[0].tree[i]]
+                res += subdel.to_js()+';'
+                context.tree.pop() // remove the element from context.tree
+            }
+            this.tree = []
+            return res
+        }else{
+            var expr = this.tree[0].tree[0]
+            var scope = $get_scope(this)
+            if(expr.type==='id'){
+                var js = 'delete '+expr.to_js()+';'
                 // remove name from dictionaries
                 if(scope.ntype==='module'){
                     js+='delete $globals["'+expr.to_js()+'"]'
@@ -1150,12 +1160,12 @@ function $DelCtx(context){
                         js+='delete $locals["'+expr.to_js()+'"]'
                     }
                 }
-                js += '})()'
-                res.push(js)
+                return js
             }else if(expr.type==='sub'){
                 expr.func = 'delitem'
-                res.push(expr.to_js())
+                js = expr.to_js()
                 expr.func = 'getitem'
+                return js
             }else{
                 if(expr.type==='op'){
                     $_SyntaxError(this,["can't delete operator"])
@@ -1163,11 +1173,11 @@ function $DelCtx(context){
                     $_SyntaxError(this,["can't delete function call"])
                 }else if(expr.type==='attribute'){
                     return 'delattr('+expr.value.to_js()+',"'+expr.name+'")'
+                }else{
+                    $_SyntaxError(this,["can't delete "+expr.type])
                 }
-                $_SyntaxError(this,["can't delete "+expr.type])
             }
         }
-        return res.join(';')+';'
     }
 }
 
@@ -2740,7 +2750,7 @@ function $transition(context,token){
             }else if(op==='*'){context.expect=',';return new $StarArgCtx(context)}
             else if(op==='**'){context.expect=',';return new $DoubleStarArgCtx(context)}
             else{$_SyntaxError(context,'token '+token+' after '+context)}
-        }else if(token===')' && context.expect===','){
+        }else if(token===')'){
             if(context.tree.length>0){
                 var son = context.tree[context.tree.length-1]
                 if(son.type==='list_or_tuple'&&son.real==='gen_expr'){
