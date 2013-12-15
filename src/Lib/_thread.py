@@ -149,3 +149,7 @@ def interrupt_main():
     else:
         global _interrupt
         _interrupt = True
+
+# Brython-specific to avoid circular references between threading and _threading_local
+class _local:
+    pass

@@ -359,7 +359,12 @@ def setdefaulttimeout(*args,**kw):
     pass
 
 class socket:
-    pass
+    def __init__(self,*args,**kw):
+        pass
+    def bind(self,*args,**kw):
+        pass
+    def close(self):
+        pass
 
 class timeout:
     pass
