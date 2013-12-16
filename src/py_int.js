@@ -203,7 +203,7 @@ int = function(value){
     else if(value===True){res = Number(1)}
     else if(value===False){res = Number(0)}
     else if(typeof value=="number"){res = Number(parseInt(value))}
-    else if(typeof value=="string" && (new RegExp(/^[+-]?\d+$/)).test(value)){
+    else if(typeof value=="string" && (new RegExp(/^[ ]*[+-]?\d+[ ]*$/)).test(value)){
         res = Number(parseInt(value))
     }else if(isinstance(value,float)){
         res = Number(parseInt(value.value))
