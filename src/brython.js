@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131215-220844
+// version 1.3.20131216-174047
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131215-220844', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131216-174047', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -1542,8 +1542,8 @@ var elts=path.split('/')
 elts.pop()
 path=elts.join('/')
 var res=''
-res +='$import_list(['+$to_js(this.tree)+']);'
 for(var i=0;i<this.tree.length;i++){
+res +='$import_list(['+this.tree[i].to_js()+']);'
 var parts=this.tree[i].name.split('.')
 for(j=0;j<parts.length;j++){
 if(j==0 && 
@@ -3081,7 +3081,7 @@ __BRYTHON__.modules[module]=root
 return root
 }
 __BRYTHON__.forbidden=['case','catch','constructor','Date','delete',
-'default','document','history','function','location','Math','new','Number','RegExp',
+'default','document','Error','history','function','location','Math','new','Number','RegExp',
 'this','throw','var','super','window']
 function $tokenize(src,module,parent){
 var delimiters=[["#","\n","comment"],['"""','"""',"triple_string"],
@@ -5606,8 +5606,20 @@ $BaseExceptionDict={
 __class__:$type,
 __name__:'BaseException'
 }
+$BaseExceptionDict.__init__=function(self){
+console.log(self.__class__.__name__+' '+arguments[1])
+self.msg=arguments[1]
+}
 $BaseExceptionDict.__repr__=$BaseExceptionDict.__str__=function(){return 'BaseException'}
 $BaseExceptionDict.__mro__=[$BaseExceptionDict,$ObjectDict]
+$BaseExceptionDict.__new__=function(cls){
+console.log('new exception')
+var err=BaseException()
+err.__name__=cls.$dict.__name__
+err.__class__=cls.$dict
+console.log('info '+err.info)
+return err
+}
 BaseException=function(msg,js_exc){
 var err=Error()
 err.info='Traceback (most recent call last):'
@@ -6500,7 +6512,7 @@ else if(isinstance(value,int)){res=Number(value)}
 else if(value===True){res=Number(1)}
 else if(value===False){res=Number(0)}
 else if(typeof value=="number"){res=Number(parseInt(value))}
-else if(typeof value=="string" &&(new RegExp(/^[+-]?\d+$/)).test(value)){
+else if(typeof value=="string" &&(new RegExp(/^[]*[+-]?\d+[]*$/)).test(value)){
 res=Number(parseInt(value))
 }else if(isinstance(value,float)){
 res=Number(parseInt(value.value))
