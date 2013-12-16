@@ -1759,8 +1759,8 @@ function $ImportCtx(context){
         //res += 'var $flag=false;'
         //res += 'if(__BRYTHON__.path.indexOf("'+path+'")==-1)'
         //res += '{__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
-        res += '$import_list(['+$to_js(this.tree)+']);'
         for(var i=0;i<this.tree.length;i++){
+            res += '$import_list(['+this.tree[i].to_js()+']);'
             var parts = this.tree[i].name.split('.')
             // $import_list returns an object
             // for "import a.b.c" this object has attributes
@@ -3571,7 +3571,7 @@ __BRYTHON__.py2js = function(src,module,parent){
 }
 
 __BRYTHON__.forbidden = ['case','catch','constructor','Date','delete',
-    'default','document','history','function','location','Math','new','Number','RegExp',
+    'default','document','Error','history','function','location','Math','new','Number','RegExp',
     'this','throw','var','super','window']
 
 function $tokenize(src,module,parent){
