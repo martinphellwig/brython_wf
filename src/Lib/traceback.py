@@ -13,3 +13,6 @@ def format_exc(limit=None,chain=True):
     if exc.message:
         res += ': '+exc.message
     return res+'\n'
+
+def format_exception(_type, value, tb, limit=None, chain=True):
+    return ['%s\n' %_type,'%s\n' %value]    
