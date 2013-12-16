@@ -1,7 +1,6 @@
 // https://raw.github.com/florentx/stringformat/master/stringformat.py
 
-brython()
-//__BRYTHON__.exception_stack=[]   // need this since we don't call brython()
+//brython()
 
 _format_str_re = new RegExp(
     '(%)' +
@@ -19,12 +18,6 @@ _format_spec_re = new RegExp(
     '((?:\.\\d\\+)?)' +             // precision
     '(.?)$'                      // type
 )
-
-//_field_part_re = new RegExp(
-//    '(?:(\\[)|\\.|^)' +            // start or '.' or '['
-//    '((?(1)[^]]*|[^.[]*))' +       // part
-//    '(?(1)(?:\\]|$)([^.[]+)?)'        // ']' and invalid tail
-//)
 
 function field_part(literal) {
   var _matches=[]
@@ -241,7 +234,7 @@ _old_format = function(format_string,args){
                     if(is_mapping===null){is_mapping=f.mapping_key!==null}
                     else if(is_mapping!==(f.mapping_key!==null)){
                         // can't mix mapping keys with non-mapping
-                        console.log(f+' not mapping')
+                        //console.log(f+' not mapping')
                         throw TypeError('format required a mapping')
                     }
                 }else{ // form %%
@@ -272,6 +265,7 @@ _old_format = function(format_string,args){
     }
 
     var res = ''
+    //console.log(elts)
     for(var i=0;i<elts.length;i++){res+=elts[i]}
     // finally, replace %% by %
     res = res.replace(/%%/g,'%')
@@ -296,7 +290,7 @@ function _strformat(value, format_spec) {
   var _comma=_match[4]
   var _precision=_match[5]
   var _conversion=_match[6]
-  console.log('align', _align,_sign,_prefix,_width,_comma,_precision,_conversion)
+  //console.log('align', _align,_sign,_prefix,_width,_comma,_precision,_conversion)
 
   var _is_numeric = isinstance(value, float)
   var _is_integer = isinstance(value, int)
@@ -326,16 +320,16 @@ function _strformat(value, format_spec) {
      // to do thousand separator
   }
 
-  console.log('329')
+  //console.log('329')
   var _rv
   //try {
-    console.log('332')
-    console.log(_conversion)
+    //console.log('332')
+    //console.log(_conversion)
     if (_conversion != '' && ((_is_numeric && _conversion == 's') || 
         (! _is_integer && 'cdoxX'.indexOf(_conversion) != -1))) {
        throw ValueError('Fix me')
     }
-    console.log('336')
+    //console.log('336')
     if (_conversion == 'c') {
        _conversion = 's'
        //value = _chr(value)    // do we need to do this?
@@ -343,7 +337,7 @@ function _strformat(value, format_spec) {
     
     // fix me
     _rv='%' + _prefix + _precision + (_conversion || 's')
-    console.log("line 302")
+    //console.log("line 302")
     _rv = _old_format(_rv, value)
 
     //console.log('%' + _prefix + _precision + (_conversion || 's')))
@@ -405,7 +399,7 @@ function _strformat(value, format_spec) {
 function _format_field(value,parts,conv,spec,want_bytes) {
   if (want_bytes === undefined) want_bytes = False
 
-  console.log('parts', parts)
+  //console.log('parts', parts)
   for (var i=0; i < parts.length; i++) {
       var _k = parts[i][0]
       var _part = parts[i][1]
@@ -424,10 +418,10 @@ function _format_field(value,parts,conv,spec,want_bytes) {
   if (conv) {
      // fix me
      //value = (conv == 'r') && '%r' || '%s' % value
-     console.log("line 378")
+     //console.log("line 378")
      value = _old_format((conv == 'r') && '%r' || '%s', value)
   }
-  console.log(value)
+  //console.log(value)
   //if (value.__format__ !== undefined) {
   //   value = value.__format__(spec)
   //} else if (value.__strftime__ !== undefined && spec) {
@@ -440,7 +434,7 @@ function _format_field(value,parts,conv,spec,want_bytes) {
      return value.toString()
   }
 
-  console.log('value', value)
+  //console.log('value', value)
   return value
 }
 
@@ -448,7 +442,7 @@ function FormattableString(format_string) {
     this.format_string=format_string
 
     this._prepare = function(match) {
-       console.log('part', match)
+       //console.log('part', match)
        //if (match == '%') return '%%'
        if (match.substring(0,1) == match.substring(match.length)) {
           // '{{' or '}}'
@@ -487,13 +481,13 @@ function FormattableString(format_string) {
 
        //fix me
        //_name_parts = _field_part_re.search(_literal)
-       console.log('literal', _literal)
+       //console.log('literal', _literal)
        _name_parts=field_part(_literal)
-       console.log('name_parts', _name_parts)
+       //console.log('name_parts', _name_parts)
 
        var _start=_literal.substring(0,1)
        var _name=''
-       console.log('start', _start)
+       //console.log('start', _start)
        if (_start == '' || '.['.indexOf(_start) != -1) {
           // auto-numbering
           if (this._index === undefined) {
@@ -502,13 +496,13 @@ function FormattableString(format_string) {
 
           _name = self._index.toString()
           this._index=1
-          console.log('500:', _name_parts)
+          //console.log('500:', _name_parts)
           if (! _literal ) {
              _name_parts.shift()
           }
-          console.log('504:', _name_parts)
+          //console.log('504:', _name_parts)
        } else {
-         console.log('504:_name_parts', _name_parts)
+         //console.log('504:_name_parts', _name_parts)
          _name = _name_parts.shift()[1]
          if (this._index !== undefined && !isNaN(_name)) {
             // manual specification
@@ -523,7 +517,7 @@ function FormattableString(format_string) {
        var _empty_attribute=false
 
        var _k
-       console.log('519:name_parts', _name_parts)
+       //console.log('519:name_parts', _name_parts)
        for (var i=0; i < _name_parts.length; i++) {
            _k = _name_parts[i][0]
            var _v = _name_parts[i][1]
@@ -531,7 +525,7 @@ function FormattableString(format_string) {
 
            if (_v == '') {_empty_attribute = true}
            if (_tail !== undefined) {
-              console.log('tail = ' + _tail)
+              //console.log('tail = ' + _tail)
               throw ValueError("Only '.' or '[' may follow ']' " +
                                "in format field specifier")
            }
@@ -563,7 +557,7 @@ function FormattableString(format_string) {
           }
           this._kwords[_name].push(_rv) 
        }
-       console.log('559 name_parts', _name_parts)
+       //console.log('559 name_parts', _name_parts)
        return '%(' + id(_rv) + ')s'
     } // this.prepare
 
@@ -576,45 +570,46 @@ function FormattableString(format_string) {
 
     this.format=function() {
        // same as str.format() and unicode.format in Python 2.6+
-
        var $ns=$MakeArgs('format',arguments,[],{},'args','kwargs')
-       for($var in $ns){eval("var "+$var+"=$ns[$var]")}
+       var args=$ns['args']
+       var kwargs=$ns['kwargs']
 
        if (args) {
-          for (var i=0; i < args.length; i++) {
-              kwargs[str(i)]=args[i]
+          for (var i=0; i < args[0].length; i++) {
+              //kwargs[str(i)]=args.$dict[i]
+              //console.log(args[0][i])
+              getattr(kwargs, '__setitem__')(str(i), args[0][i]) 
           }
        }
 
+       //console.log(kwargs)
        //encode arguments to ASCII, if format string is bytes
        var _want_bytes = isinstance(this._string, str)
-       var _params={}
+       var _params=$dict()
        //var _params = $dict()
        for (var i=0; i < this._kwords_array.length; i++) {
            var _name = this._kwords_array[i]
            var _items = this._kwords[_name]
-           console.log('name', _name)
-           console.log('kwargs', kwargs)
+           //console.log('name', _name)
+           //console.log('kwargs', kwargs)
            //var _value = kwargs.get(_name)
-           var _value = kwargs[_name]
+           var _value = getattr(kwargs, '__getitem__')(_name)
 
            for (var j=0; j < _items.length; j++) {
                var _parts = _items[j][0]
                var _conv = _items[j][1]
                var _spec = _items[j][2]
 
-               _params[id(_items[j]).toString()]= _format_field(_value, _parts, _conv,
-                                                    _spec, _want_bytes)
-
-               //_params[id(_items[j]).toString()] = _format_field(_value, _parts, 
-               //                                       _conv, _spec, _want_bytes)
+               getattr(_params,'__setitem__')(id(_items[j]).toString(), _format_field(_value, _parts, 
+                                                      _conv, _spec, _want_bytes))
            }
        }
 
        for (var i=0; i < this._nested_array.length; i++) {
            var _name = this._nested_array[i]
            var _items = this._nested[i]
-           var _value = kwargs[_name]
+           //var _value = kwargs[_name]
+           var _value = getattr(kwargs, '__getitem__')(_name)
 
            for (var j=0; j < _items.length; j++) {
                var _parts = _items[j][0]
@@ -622,18 +617,18 @@ function FormattableString(format_string) {
                var _spec = _items[j][2]
 
                //_spec = _spec % _params
-               console.log("line 541")
+               //console.log("line 541")
                _spec=_old_format(_spec, _params)
 
-               _params[id(_items[j]).toString()] = _format_field(_value, _parts, 
-                                                      _conv, _spec, _want_bytes)
+               getattr(_params,'__setitem__')(id(_items[j]).toString(), _format_field(_value, _parts, 
+                                                      _conv, _spec, _want_bytes))
            }
        }
 
        // this._string % _params
        console.log("line 592", this._string, _params)
        return _old_format(this._string, _params)
-    } // this.format
+    }  // this.format
 
 
     this._index = 0
@@ -642,10 +637,10 @@ function FormattableString(format_string) {
     this._nested = {}
     this._nested_array=[]
 
-    console.log(format_string)
+    //console.log(format_string)
     this._string=format_string.replace(_format_str_re, this._prepare, 'g')
 
-    console.log('self._string', this._string)
+    //console.log('self._string', this._string)
 
     return this
 }
