@@ -1418,9 +1418,24 @@ $BaseExceptionDict = {
     __class__:$type,
     __name__:'BaseException'
 }
+
+$BaseExceptionDict.__init__ = function(self){
+    console.log(self.__class__.__name__+' '+arguments[1])
+    self.msg = arguments[1]
+}
+
 $BaseExceptionDict.__repr__ = $BaseExceptionDict.__str__ = function(){return 'BaseException'}
 
 $BaseExceptionDict.__mro__ = [$BaseExceptionDict,$ObjectDict]
+
+$BaseExceptionDict.__new__ = function(cls){
+    console.log('new exception')
+    var err = BaseException()
+    err.__name__ = cls.$dict.__name__
+    err.__class__ = cls.$dict
+    console.log('info '+err.info)
+    return err
+}
 
 BaseException = function (msg,js_exc){
     var err = Error()
