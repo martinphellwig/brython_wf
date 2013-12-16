@@ -395,7 +395,7 @@ DOMNode.__del__ = function(self){
 
 DOMNode.__delitem__ = function(self,key){
     if(self.elt.nodeType===9){ // document : remove by id
-        var res = document.getElementById(key)
+        var res = this.getElementById(key)
         if(res){res.parentNode.removeChild(res)}
         else{throw KeyError(key)}
     }else{ // other node : remove by rank in child nodes
@@ -463,12 +463,12 @@ DOMNode.__getattribute__ = function(self,attr){
 DOMNode.__getitem__ = function(self,key){
     if(self.elt.nodeType===9){ // Document
         if(typeof key==="string"){
-            var res = document.getElementById(key)
+            var res = this.getElementById(key)
             if(res){return $DOMNode(res)}
             else{throw KeyError(key)}
         }else{
             try{
-                var elts=document.getElementsByTagName(key.name),res=[]
+                var elts=this.getElementsByTagName(key.name),res=[]
                 for(var $i=0;$i<elts.length;$i++){res.push($DOMNode(elts[$i]))}
                 return res
             }catch(err){
