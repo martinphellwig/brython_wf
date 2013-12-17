@@ -85,7 +85,7 @@ $DictDict.__init__ = function(self){
             self.$values = obj.$values
             return
         }
-        else if(isinstance(obj,JSObject)){
+        else if(obj.__class__===JSObject.$dict){
             // convert a JSObject into a Python dictionary
             var res = new $DictClass([],[])
             for(var attr in obj.js){

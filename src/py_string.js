@@ -1,6 +1,6 @@
 str = function(){
 
-$StringDict = {__class:$type,
+$StringDict = {__class__:$type,
     __name__:'str',
     $native:true
 }
@@ -817,7 +817,6 @@ $StringDict.zfill = function(self, width) {
 
 // set String.prototype attributes
 String.prototype.__class__ = $StringDict
-
 
 function str(arg){
     if(arg===undefined){return ''}

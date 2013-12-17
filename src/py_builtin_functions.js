@@ -219,7 +219,11 @@ function dir(obj){
     if(isinstance(obj,JSObject)){obj=obj.js}
     if(obj.__class__===$factory){obj=obj.$dict}
     var res = []
-    for(var attr in obj){if(attr.charAt(0)!=='$'){res.push(attr)}}
+    for(var attr in obj){
+        if(attr.charAt(0)!=='$' && attr!=='__class__'){
+            res.push(attr)
+        }
+    }
     res.sort()
     return res
 }
@@ -236,13 +240,16 @@ function divmod(x,y) {
     return list([int(Math.floor(x/y)), x.__class__.__mod__(x,y)])
 }
 
+$EnumerateDict = {__class__:$type,__name__:'enumerate'}
+$EnumerateDict.__mro__ = [$EnumerateDict,$ObjectDict]
+
 function enumerate(){
     var $ns = $MakeArgs("enumerate",arguments,["iterable"],
                 {"start":Number(0)}, null, null)
     var _iter = iter($ns["iterable"])
     var _start = $ns["start"]
     var res = {
-        __class__:enumerate,
+        __class__:$EnumerateDict,
         __getattr__:function(attr){return res[attr]},
         __iter__:function(){return res},
         __name__:'enumerate iterator',
@@ -263,9 +270,9 @@ function enumerate(){
     }
     return res
 }
-enumerate.__class__ = $type
-enumerate.__repr__ = function(){return "<class 'enumerate'>"}
-enumerate.__str__ = function(){return "<class 'enumerate'>"}
+enumerate.__class__ = $factory
+enumerate.$dict = $EnumerateDict
+$EnumerateDict.$factory = enumerate
 
 //eval() (built in function)
 //exec() (built in function)
@@ -313,7 +320,6 @@ frozenset.__class__ = $factory
 frozenset.$dict = $FrozensetDict
 
 function getattr(obj,attr,_default){
-
     var klass = obj.__class__
     //if(attr=='show'){console.log('-- getattr '+attr+' of obj '+obj+' native '+klass.$native)}
     if(klass===undefined){
@@ -354,8 +360,10 @@ function getattr(obj,attr,_default){
         }
         return obj
     }
+    //if(attr=='__eq__'){console.log('attr '+attr+' klass '+klass)}
     
     if(klass.$native){
+    
         if(klass[attr]===undefined){
             throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
         }
@@ -376,7 +384,7 @@ function getattr(obj,attr,_default){
     }
 
     var is_class = obj.__class__===$factory, mro, attr_func
-    //if(attr=='impmods'){console.log('2 ! getattr '+attr+' of '+obj+' ('+type(obj)+') '+' class '+is_class)}
+    //if(attr=='__eq__'){console.log('2 ! getattr '+attr+' of '+obj+' ('+obj.__class__+') '+' class '+is_class)}
     if(is_class){
         attr_func=$type.__getattribute__
         if(obj.$dict===undefined){console.log('obj '+obj+' $dict undefined')}
@@ -402,11 +410,7 @@ function getattr(obj,attr,_default){
     if(res!==undefined){return res}
     if(_default !==undefined){return _default}
     else{
-        //if(obj.__class__===$ModuleDict){
-        //    throw ImportError(' cannot import name '+attr)
-        //}else{
-            throw AttributeError("'"+type(obj).__name__+"' object has no attribute '"+attr+"'")
-        //}
+        throw AttributeError("'"+obj.__class__.__name__+"' object has no attribute '"+attr+"'")
     }
 }
 getattr.__name__ = 'getattr'
@@ -494,7 +498,7 @@ function isinstance(obj,arg){
             // class dictionary, ie arg.$dict
             //return obj.__class__===arg.$dict
             var klass = obj.__class__
-            if(klass.__mro__===undefined){console.log('mro undef for '+klass+' '+dir(klass)+' '+arg)}
+            if(klass.__mro__===undefined){console.log('mro undef for '+klass+' '+dir(klass)+'\n arg '+arg)}
             for(var i=0;i<klass.__mro__.length;i++){
                 if(klass.__mro__[i]===arg.$dict){return true}
             }
@@ -520,6 +524,7 @@ function issubclass(klass,classinfo){
         var res = klass.$dict.__mro__.indexOf(classinfo.$dict)>-1    
         return res
     }else{
+        console.log('error in is_subclass '+klass.$dict.__name+' classinfo '+str(classinfo))
         throw TypeError("issubclass() arg 2 must be a class or tuple of classes")
     }
 }
@@ -556,7 +561,7 @@ function $iterator_class(name){
     }
     res.__str__ = res.toString = res.__repr__
     res.__mro__ = [res,$ObjectDict]
-    res.$factory = res
+    res.$factory = {__class__:$factory,$dict:res}
     return res
 }
 
@@ -894,14 +899,15 @@ function property(fget, fset, fdel, doc) {
     }
     p.__delete__ = fdel;
 
-    p.getter = function(self, fget){
-        return type(self)(fget, self.fset, self.fdel, self.__doc__)
+    p.getter = function(fget){
+        return property(fget, p.fset, p.fdel, p.__doc__)
     }
-    p.setter = function(self, fset){
-        return type(self)(self.fget, fset, self.fdel, self.__doc__)
+    p.setter = function(fset){
+        console.log('setter, self '+self+' class '+self.__class__)
+        return property(p.fget, fset, p.fdel, p.__doc__)
     }
-    p.deleter = function(self, fdel){
-        return type(self)(self.fget, self.fset, fdel, self.__doc__)
+    p.deleter = function(fdel){
+        return property(p.fget, p.fset, fdel, p.__doc__)
     }
     return p
 }
@@ -1395,11 +1401,12 @@ for(var $func in None){
 $FunctionDict = {__class__:$type}
 $FunctionDict.__str__ = function(self){return '<function '+self.__name__+'>'}
 
-Function.prototype.__mro__ = [$FunctionDict,$ObjectDict]
+$FunctionDict.__mro__ = [$FunctionDict,$ObjectDict]
 Function.__name__ = 'function'
+Function.__class__ = $type
 
 Function.prototype.__call__ = function(){return this.apply(null,arguments)}
-Function.prototype.__class__ = Function
+Function.prototype.__class__ = $FunctionDict
 Function.prototype.__get__ = function(self,obj,objtype){
     // Functions are Python descriptors, so this function is called by
     // __getattribute__ if the attribute of an object is a function
@@ -1407,6 +1414,7 @@ Function.prototype.__get__ = function(self,obj,objtype){
     // If it is an instance, it is called with (instance,type(instance))
     return self
 }
+$FunctionDict.$factory = Function
 
 // class dict of functions attribute __code__
 $CodeDict = {__class__:$type,__name__:'code'}
