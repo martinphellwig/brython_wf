@@ -29,9 +29,9 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
         }
     }
     for(var $i=0;$i<upargs.length;$i++){
-        $arg=upargs[$i]
-        $PyVar=$JS2Py($arg)
-        if($arg && $arg.__class__===$Kw){ // keyword argument
+        var $arg=upargs[$i]
+        var $PyVar=$JS2Py($arg)
+        if($arg && $arg.__class__===$KwDict){ // keyword argument
             $PyVar = $arg.value
             if($set_vars.indexOf($arg.name)>-1){
                 throw new TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
@@ -394,18 +394,14 @@ function $UnsupportedOpType(op,class1,class2){
 
 // classes used for passing parameters to functions
 // keyword arguments : foo(x=1)
-function $KwClass(name,value){
-    this.__class__ = $Kw
-    this.name = name
-    this.value = value
-}
-$KwClass.prototype.toString = function(){
-    return '<kw '+this.name+' : '+this.value.toString()+'>'
-}
+$KwDict = {__class__:$type,__name__:'kw'}
+$KwDict.__mro__ = [$KwDict,$ObjectDict]
+
 function $Kw(name,value){
-    return new $KwClass(name,value)
+    return {__class__:$KwDict,name:name,value:value}
 }
-$Kw.$dict = $Kw // for insinstance
+$Kw.$dict = $KwDict // for insinstance
+$KwDict.$factory = $Kw
 
 // packed tuple : foo(*args)
 $ptupleDict = {

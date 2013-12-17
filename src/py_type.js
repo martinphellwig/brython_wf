@@ -41,7 +41,7 @@ function $class_constructor(class_name,class_obj,parents,parents_names,kwargs){
 
 function type(name,bases,cl_dict){
     // if called with a single argument, returns the class of the first argument
-    if(arguments.length==1){return name.__class__}
+    if(arguments.length==1){return name.__class__.$factory}
 
     // Else return a new type object. This is essentially a dynamic form of the 
     // class statement. The name string is the class name and becomes the 
@@ -197,11 +197,13 @@ function $instance_creator(klass){
 }
 $type.__class__ = $type
 $type.__getattribute__=function(klass,attr){
+    // klass is a class dictionary : in getattr(obj,attr), if obj is a factory,
+    // we call $type.__getattribute__(obj.$dict,attr)
     if(attr==='__call__'){return $instance_creator(klass)}
-    else if(attr==='__eq__'){return function(other){return klass==other.$dict}}
+    else if(attr==='__eq__'){return function(other){return klass.$factory===other}}
     else if(attr==='__repr__'){return function(){return "<class '"+klass.__name__+"'>"}}
     else if(attr==='__str__'){return function(){return "<class '"+klass.__name__+"'>"}}
-    else if(attr==='__class__'){return klass.__class__}
+    else if(attr==='__class__'){return klass.__class__.$factory}
     else if(attr==='__doc__'){return klass.__doc__}
     else if(attr==='__setattr__'){
         if(klass['__setattr__']!==undefined){return klass['__setattr__']}
@@ -237,7 +239,7 @@ $type.__getattribute__=function(klass,attr){
             if(attr=='__new__'){res.$type='staticmethod'}
             res1 = res.__get__.apply(null,[res,None,klass])
             var args
-            if(res1.__class__===Function){
+            if(typeof res1=='function'){
                 // method
                 var __self__,__func__,__repr__,__str__
                 if(res.$type===undefined){
@@ -299,3 +301,18 @@ $type.__mro__ = [$type,$ObjectDict]
 $type.__name__ = 'type'
 $type.__str__ = function(){return "<class 'type'>"}
 $type.toString = $type.__str__
+
+// used as the factory for method objects
+function $MethodFactory(){}
+$MethodFactory.__name__ = 'method'
+$MethodFactory.__class__ = $factory
+$MethodFactory.__repr__ = $MethodFactory.__str__ = $MethodFactory.toString = function(){return 'method'}
+
+$MethodDict = {__class__:$type,
+    __name__:'method',
+    __mro__:[$ObjectDict],
+    $factory:$MethodFactory
+}
+$MethodFactory.$dict = $MethodDict
+
+

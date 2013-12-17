@@ -626,7 +626,7 @@ function FormattableString(format_string) {
        }
 
        // this._string % _params
-       console.log("line 592", this._string, _params)
+       //console.log("line 592", this._string, _params)
        return _old_format(this._string, _params)
     }  // this.format
 
