@@ -98,11 +98,11 @@ def Drop(evt):
 
                 # valid move : there was a ball in the cell jumped over
 
-                # remove this bal
+                # remove this ball
                 del doc[filled[col][row].id]
 
                 # remove dragged ball
-                del DragTarget
+                del doc[DragTarget.id]
                 
                 # create new ball at target position
                 ball = svg.circle(id='%s_%s' %(target_pos[0],target_pos[1]),
