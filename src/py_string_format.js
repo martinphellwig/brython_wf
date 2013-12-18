@@ -561,12 +561,12 @@ function FormattableString(format_string) {
        return '%(' + id(_rv) + ')s'
     } // this.prepare
 
-    this.eq = function(other) {
-       if (other.format_string !== undefined) {
-          return this.format_string == other.format_string
-       }
-       return this.format_string == other
-    }
+  //  this.eq = function(other) {
+  //     if (other.format_string !== undefined) {
+  //        return this.format_string == other.format_string
+  //     }
+  //     return this.format_string == other
+  //  }
 
     this.format=function() {
        // same as str.format() and unicode.format in Python 2.6+
@@ -582,7 +582,7 @@ function FormattableString(format_string) {
           }
        }
 
-       //console.log(kwargs)
+       console.log(kwargs)
        //encode arguments to ASCII, if format string is bytes
        var _want_bytes = isinstance(this._string, str)
        var _params=$dict()
@@ -590,10 +590,17 @@ function FormattableString(format_string) {
        for (var i=0; i < this._kwords_array.length; i++) {
            var _name = this._kwords_array[i]
            var _items = this._kwords[_name]
-           //console.log('name', _name)
+           console.log('name', _name)
            //console.log('kwargs', kwargs)
            //var _value = kwargs.get(_name)
-           var _value = getattr(kwargs, '__getitem__')(_name)
+           console.log("596")
+           var _var = getattr(kwargs, '__getitem__')(_name)
+           var _value;
+           if (hasattr(_var, 'value')) {
+              _value = getattr(getattr(kwargs, '__getitem__')(_name), 'value')
+           } else {
+             _value=_var
+           }
 
            for (var j=0; j < _items.length; j++) {
                var _parts = _items[j][0]
@@ -609,7 +616,13 @@ function FormattableString(format_string) {
            var _name = this._nested_array[i]
            var _items = this._nested[i]
            //var _value = kwargs[_name]
-           var _value = getattr(kwargs, '__getitem__')(_name)
+           var _var = getattr(kwargs, '__getitem__')(_name)
+           var _value;
+           if (hasattr(_var, 'value')) {
+              _value = getattr(getattr(kwargs, '__getitem__')(_name), 'value')
+           } else {
+             _value=_var
+           }
 
            for (var j=0; j < _items.length; j++) {
                var _parts = _items[j][0]
@@ -626,7 +639,7 @@ function FormattableString(format_string) {
        }
 
        // this._string % _params
-       console.log("line 592", this._string, _params)
+       //console.log("line 592", this._string, _params)
        return _old_format(this._string, _params)
     }  // this.format
 
