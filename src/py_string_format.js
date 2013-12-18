@@ -53,32 +53,6 @@ function field_part(literal) {
   return _matches
 }
 
-function _center(s, width, fillchar) {
-  if (width <= self.length) return s
-
-  var pad = parseInt((width-s.length)/2)
-  var res = Array(pad+1).join(fillchar)
-  res = res + s + res
-  if(res.length<width){res += fillchar}
-  return res
-}
-
-function _ljust(s, width, fillchar) {
-   if (width <= s.length) return s
-   return s + Array(width - s.length +1).join(fillchar)
-}
-
-function _partition(s, sep) {
-  var i=s.indexOf(sep)
-  if (i == -1) return [s, '', '']
-  return [s.substring(0,i), sep, s.substring(i+sep.length)]
-}
-
-function _rjust(s, width, fillchar) {
-   if (width <= s.length) return s
-   return Array(width - s.length +1).join(fillchar) + s
-}
-
 // old format  ie, '%s' % 'blah'
 
 // code taken from py_string.js
@@ -376,21 +350,26 @@ function _strformat(value, format_spec) {
      _padding = _width - _rv.length
      // tweak the formatting if the padding is odd
      if (_padding % 2) {
-        _rv = _center(_rv,_width, _fill)
+        //_rv = _center(_rv,_width, _fill)
+        _rv = getattr(_rv, 'center')(_width, _fill)
      }
   } else if (_align == '=' || (_zero && ! _align)) {
     if (! _is_numeric) {
        throw ValueError("'=' alignment not allowd in string format specifier")
     }
     if (_value < 0 || _sign != '-') {
-       _rv = _rv.substring(0,1) + _rjust(_rv.substring(1),_width - 1, _fill)
+       //_rv = _rv.substring(0,1) + _rjust(_rv.substring(1),_width - 1, _fill)
+       _rv = _rv.substring(0,1) + getattr(_rv.substring(1),'rjust')(_width - 1, _fill)
     } else {
-       _rv = _rjust(_rv, _width, _fill)
+       //_rv = _rjust(_rv, _width, _fill)
+       _rv = getattr(_rv, 'rjust')(_width, _fill)
     }
   } else if ((_align == '>' || _align == '=') || (_is_numeric && ! _aligned)) {
-    _rv = _rjust(_rv,_width, _fill)
+    //_rv = _rjust(_rv,_width, _fill)
+    _rv = getattr(_rv, 'rjust')(_width, _fill)
   } else {
-    _rv = _ljust(_rv,_width, _fill)
+    //_rv = _ljust(_rv,_width, _fill)
+    _rv = getattr(_rv, 'ljust')(_width, _fill)
   }
 
   return _rv
@@ -456,12 +435,14 @@ function FormattableString(format_string) {
          _repl = match.substring(1)
        }
        //console.log(_repl)
-       var _out = _partition(_repl, ':')
+       var _out = getattr(_repl, 'partition')(':')
+       //var _out = _partition(_repl, ':')
        var _field=_out[0]
        var _dummy=_out[1]
        var _format_spec=_out[2]
        //console.log(_field, _dummy, _format_spec)
-       _out= _partition(_field, '!')
+       _out= getattr(_field, 'partition')('!')
+       //_out= _partition(_field, '!')
        var _literal=_out[0]
        var _sep=_out[1]
        var _conversion=_out[2]
@@ -582,7 +563,7 @@ function FormattableString(format_string) {
           }
        }
 
-       console.log(kwargs)
+       //console.log(kwargs)
        //encode arguments to ASCII, if format string is bytes
        var _want_bytes = isinstance(this._string, str)
        var _params=$dict()
@@ -590,10 +571,10 @@ function FormattableString(format_string) {
        for (var i=0; i < this._kwords_array.length; i++) {
            var _name = this._kwords_array[i]
            var _items = this._kwords[_name]
-           console.log('name', _name)
+           //console.log('name', _name)
            //console.log('kwargs', kwargs)
            //var _value = kwargs.get(_name)
-           console.log("596")
+           //console.log("596")
            var _var = getattr(kwargs, '__getitem__')(_name)
            var _value;
            if (hasattr(_var, 'value')) {
