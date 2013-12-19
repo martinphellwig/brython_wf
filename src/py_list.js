@@ -174,8 +174,7 @@ $ListDict.__init__ = function(self,arg){
 }
 
 $ListDict.__iter__ = function(self){
-    var items=self,klass=$list_iterator
-    return $iterator(items,klass)
+    return $iterator(self,$list_iterator)
 }
 
 $ListDict.__le__ = function(self,other){
@@ -367,7 +366,7 @@ $ListDict.sort = function(self){
     var reverse = false
     for(var i=1;i<arguments.length;i++){
         var arg = arguments[i]
-        if(arg.__class__==$Kw){
+        if(arg.__class__==$KwDict){
             if(arg.name==='key'){func=arg.value}
             else if(arg.name==='reverse'){reverse=arg.value}
         }

@@ -3,6 +3,7 @@ standardized by the C Standard and the POSIX standard (a thinly
 disguised Unix interface).  Refer to the library manual and
 corresponding Unix manual entries for more information on calls."""
 
+import datetime
 
 F_OK = 0
 
@@ -164,8 +165,7 @@ def dup2(*args,**kw):
 
 environ = {}
 
-class error:
-    pass
+error = OSError
 
 def execv(*args,**kw):
     """execv(path, args)    
@@ -217,7 +217,7 @@ def get_terminal_size(*args,**kw):
 def getcwd(*args,**kw):
     """getcwd() -> path    
     Return a unicode string representing the current working directory."""
-    pass
+    return __BRYTHON__.brython_path # XXX fix me
 
 def getcwdb(*args,**kw):
     """getcwdb() -> path    
@@ -232,7 +232,7 @@ def getlogin(*args,**kw):
 def getpid(*args,**kw):
     """getpid() -> pid    
     Return the current process id"""
-    pass
+    return 0
 
 def getppid(*args,**kw):
     """getppid() -> ppid    
@@ -291,7 +291,7 @@ def lstat(*args,**kw):
     """lstat(path, *, dir_fd=None) -> stat result    
     Like stat(), but do not follow symbolic links.
     Equivalent to stat(path, follow_symlinks=False)."""
-    pass
+    return stat_result()
 
 def mkdir(*args,**kw):
     """mkdir(path, mode=0o777, *, dir_fd=None)    
@@ -435,7 +435,7 @@ def stat(*args,**kw):
       link points to.
     It is an error to use dir_fd or follow_symlinks when specifying path as
       an open file descriptor."""
-    pass
+    return stat_result()
 
 def stat_float_times(*args,**kw):
     """stat_float_times([newval]) -> oldval    
@@ -447,7 +447,34 @@ def stat_float_times(*args,**kw):
     pass
 
 class stat_result:
-    pass
+
+    def __init__(self):
+        """st_mode - protection bits, 
+        st_ino - inode number, 
+        st_dev - device, 
+        st_nlink - number of hard links, 
+        st_uid - user id of owner, 
+        st_gid - group id of owner, 
+        st_size - size of file, in bytes, 
+        st_atime - time of most recent access expressed in seconds, 
+        st_mtime - time of most recent content modification expressed in 
+            seconds, 
+        st_ctime - platform dependent; time of most recent metadata change on 
+            Unix, or the time of creation on Windows, expressed in seconds 
+        st_atime_ns - time of most recent access expressed in nanoseconds as an
+             integer, 
+        st_mtime_ns - time of most recent content modification expressed in 
+            nanoseconds as an integer, 
+        st_ctime_ns - platform dependent; time of most recent metadata change 
+            on Unix, or the time of creation on Windows, expressed in 
+            nanoseconds as an integer """
+        # Brython : fake values
+        self.st_atime = datetime.datetime.now()
+        self.st_mtime = self.st_ctime = self.st_atime_ns = \
+            self.st_mtime_ns = self.st_ctime_ns = self.st_atime
+        self.st_uid = self.st_gid = self.st_ino = -1
+        self.st_mode = 0
+        self.st_size = 1
 
 class statvfs_result:
     pass
@@ -508,10 +535,10 @@ def unlink(*args,**kw):
       If it is unavailable, using it will raise a NotImplementedError."""
     pass
 
-def urandom(*args,**kw):
+def urandom(n):
     """urandom(n) -> str    
     Return n random bytes suitable for cryptographic use."""
-    pass
+    return 'a'*n
 
 def utime(*args,**kw):
     """utime(path, times=None, *, ns=None, dir_fd=None, follow_symlinks=True)    Set the access and modified time of path.

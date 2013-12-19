@@ -1,6 +1,6 @@
 str = function(){
 
-$StringDict = {__class:$type,
+$StringDict = {__class__:$type,
     __name__:'str',
     $native:true
 }
@@ -298,6 +298,8 @@ $StringDict.__mul__ = function(self,other){
 $StringDict.__ne__ = function(self,other){return other!==self.valueOf()}
 
 $StringDict.__not_in__ = function(self,item){return !$StringDict.__in__(self,item)}
+
+$StringDict.__or__ = $ObjectDict.__or__
 
 $StringDict.__repr__ = function(self){
     if(self===undefined){return "<class 'str'>"}
@@ -1026,14 +1028,20 @@ $StringDict.rjust = function(self) {
     return Array(width - self.length + 1).join(fillchar) + self
 }
 
-$StringDict.rpartition = function(self) {
+$StringDict.rpartition = function(self,sep) {
   if (sep === undefined) {
      throw Error("sep argument is required");
      return
   }
-  var i=self.lastindexOf(sep)
-  if (i== -1) { return $tuple(['', '', self])}
-  return $tuple([self.substring(0,i), sep, self.substring(i+sep.length)])
+  var pos=self.length-sep.length
+  while(true){
+      if(self.substr(pos,sep.length)==sep){
+          return $tuple([self.substr(0,pos),sep,self.substr(pos+sep.length)])
+      }else{
+          pos--
+          if(pos<0){return $tuple(['','',self])}
+      }
+  }
 }
 
 $StringDict.rsplit = function(self) {
@@ -1200,7 +1208,6 @@ $StringDict.zfill = function(self, width) {
 
 // set String.prototype attributes
 String.prototype.__class__ = $StringDict
-
 
 function str(arg){
     if(arg===undefined){return ''}

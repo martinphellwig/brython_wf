@@ -42,7 +42,10 @@ def show(prefix=''):
     _banner = doc['banner_row']
     
     for key in ['home','console','editor','gallery','doc','download','dev','groups']:
-        href = prefix+links[key]
+        if key in ['download','dev']:
+            href = links[key]
+        else:
+            href = prefix+links[key]
         if key in ['doc','gallery']:
             href = href %language
         if has_req and key not in ['download','dev']:
