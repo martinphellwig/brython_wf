@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131217-181624
+// version 1.3.20131219-081554
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131217-181624', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131219-081554', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -56,7 +56,6 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "json",
 "marshal",
 "math",
-"module1",
 "re",
 "time",
 "_ajax",
@@ -64,7 +63,6 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_html",
 "_io",
 "_os",
-"_random1",
 "_svg",
 "_sys",
 "_timer",
@@ -2038,7 +2036,7 @@ if(this.tree[0].alias===null){this.tree[0].alias='$temp'}
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,'catch($err'+$loop_num+')')
 var fbody=new $Node('expression')
-var js='console.log("with exc "+$err'+$loop_num+');if(!$ctx_manager_exit($err'+$loop_num+'.type,'
+var js='if(!$ctx_manager_exit($err'+$loop_num+'.type,'
 js +='$err'+$loop_num+'.value,$err'+$loop_num+'.traceback))'
 js +='{throw $err'+$loop_num+'}'
 new $NodeJSCtx(fbody,js)
@@ -6078,7 +6076,7 @@ new $NodeJSCtx(ex_node,')()')
 root.add(ex_node)
 try{
 var js=root.to_js()
-if(__BRYTHON__.$options.debug==10 || module.name=='runner'){
+if(__BRYTHON__.$options.debug==10){
 console.log('code for module '+module.name)
 console.log(js)
 }
@@ -7242,7 +7240,7 @@ var items=self.split('')
 return $iterator(items,$str_iterator)
 }
 $StringDict.__len__=function(self){return self.length}
-$StringDict.__mod__=function(self,args){
+$legacy_format=$StringDict.__mod__=function(self,args){
 var flags=$List2Dict('#','0','-',' ','+')
 var ph=[]
 function format(s){
@@ -7533,8 +7531,310 @@ var res=s.search(esc_sub)
 if(res==-1){return -1}
 else{return start+res}
 }
+var $FormattableString=function(format_string){
+this.format_string=format_string
+this._prepare=function(match){
+if(match.substring(0,1)==match.substring(match.length)){
+return match.substring(0, int(match.length/2))
+}
+var _repl
+if(match.length >=2){
+_repl=''
+}else{
+_repl=match.substring(1)
+}
+var _out=getattr(_repl, 'partition')(':')
+var _field=_out[0]
+var _dummy=_out[1]
+var _format_spec=_out[2]
+_out=getattr(_field, 'partition')('!')
+var _literal=_out[0]
+var _sep=_out[1]
+var _conversion=_out[2]
+if(_sep && ! _conversion){
+throw ValueError("end of format while looking for conversion specifier")
+}
+if(_conversion.length > 1){
+throw ValueError("expected ':' after format specifier")
+}
+if('rsa'.indexOf(_conversion)==-1){
+throw ValueError("Unknown conversation specifier " + _conversion)
+}
+_name_parts=this.field_part(_literal)
+var _start=_literal.substring(0,1)
+var _name=''
+if(_start=='' || '.['.indexOf(_start)!=-1){
+if(this._index===undefined){
+throw ValueError("cannot switch from manual field specification to automatic field numbering")
+}
+_name=self._index.toString()
+this._index=1
+if(! _literal ){
+_name_parts.shift()
+}
+}else{
+_name=_name_parts.shift()[1]
+if(this._index !==undefined && !isNaN(_name)){
+if(this._index){
+throw ValueError("cannot switch from automatic field " +
+"numbering to manual field specification")
+this._index=undefined
+}
+}
+}
+var _empty_attribute=false
+var _k
+for(var i=0;i < _name_parts.length;i++){
+_k=_name_parts[i][0]
+var _v=_name_parts[i][1]
+var _tail=_name_parts[i][2]
+if(_v==''){_empty_attribute=true}
+if(_tail !==undefined){
+throw ValueError("Only '.' or '[' may follow ']' " +
+"in format field specifier")
+}
+}
+if(_name_parts && _k=='[' && ! 
+_literal.substring(_literal.length)==']'){
+throw ValueError("Missing ']' in format string")
+}
+if(_empty_attribute){
+throw ValueError("Empty attribute in format string")
+}
+var _rv=''
+if(_format_spec.indexOf('{')!=-1){
+_format_spec=this.format_sub_re.replace(_format_spec, this._prepare)
+_rv=list([_name_parts, _conversion, _format_spec])
+if(this._nested[_name]===undefined){
+this._nested[_name]=[]
+this._nested_array.push(_name)
+}
+this._nested[_name].push(_rv)
+}else{
+_rv=list([_name_parts, _conversion, _format_spec])
+if(this._kwords[_name]===undefined){
+this._kwords[_name]=[]
+this._kwords_array.push(_name)
+}
+this._kwords[_name].push(_rv)
+}
+return '%(' + id(_rv)+ ')s'
+}
+this.format=function(){
+var $ns=$MakeArgs('format',arguments,[],{},'args','kwargs')
+var args=$ns['args']
+var kwargs=$ns['kwargs']
+if(args){
+for(var i=0;i < args[0].length;i++){
+getattr(kwargs, '__setitem__')(str(i), args[0][i])
+}
+}
+var _want_bytes=isinstance(this._string, str)
+var _params=$dict()
+for(var i=0;i < this._kwords_array.length;i++){
+var _name=this._kwords_array[i]
+var _items=this._kwords[_name]
+var _var=getattr(kwargs, '__getitem__')(_name)
+var _value
+if(hasattr(_var, 'value')){
+_value=getattr(getattr(kwargs, '__getitem__')(_name), 'value')
+}else{
+_value=_var
+}
+for(var j=0;j < _items.length;j++){
+var _parts=_items[j][0]
+var _conv=_items[j][1]
+var _spec=_items[j][2]
+getattr(_params,'__setitem__')(id(_items[j]).toString(), this.format_field(_value, _parts, 
+_conv, _spec, _want_bytes))
+}
+}
+for(var i=0;i < this._nested_array.length;i++){
+var _name=this._nested_array[i]
+var _items=this._nested[i]
+var _var=getattr(kwargs, '__getitem__')(_name)
+var _value
+if(hasattr(_var, 'value')){
+_value=getattr(getattr(kwargs, '__getitem__')(_name), 'value')
+}else{
+_value=_var
+}
+for(var j=0;j < _items.length;j++){
+var _parts=_items[j][0]
+var _conv=_items[j][1]
+var _spec=_items[j][2]
+_spec=$legacy_format(_spec, _params)
+getattr(_params,'__setitem__')(id(_items[j]).toString(), this.format_field(_value, _parts, 
+_conv, _spec, _want_bytes))
+}
+}
+return $legacy_format(this._string, _params)
+}
+this.format_field=function(value,parts,conv,spec,want_bytes){
+if(want_bytes===undefined)want_bytes=False
+for(var i=0;i < parts.length;i++){
+var _k=parts[i][0]
+var _part=parts[i][1]
+if(_k){
+if(!isNaN(_part)){
+value=value[parseInt(_part)]
+}else{
+value=value[_part]
+}
+}else{
+value=value[_part]
+}
+}
+if(conv){
+value=$legacy_format((conv=='r')&& '%r' || '%s', value)
+}
+value=this.strformat(value, spec)
+if(want_bytes){
+return value.toString()
+}
+return value
+}
+this.strformat=function(value, format_spec){
+if(format_spec===undefined)format_spec=''
+var _m=this.format_spec_re.test(format_spec)
+if(!_m){
+throw ValueError('Invalid conversion specification')
+}
+var _match=this.format_spec_re.exec(format_spec)
+var _align=_match[0]
+var _sign=_match[1]
+var _prefix=_match[2]
+var _width=_match[3]
+var _comma=_match[4]
+var _precision=_match[5]
+var _conversion=_match[6]
+var _is_numeric=isinstance(value, float)
+var _is_integer=isinstance(value, int)
+if(_prefix && ! _is_numeric){
+if(_is_numeric){
+throw ValueError('Alternate form (#) not allowed in float format specifier')
+}else{
+throw ValueError('Alternate form (#) not allowed in string format specification')
+}
+}
+if(_is_numeric && _conversion=='n'){
+_conversion=_is_integer && 'd' || 'g'
+}else{
+if(_sign){
+if(! _is_numeric){
+throw ValueError('Sign not allowd in string format specifification')
+}
+if(_conversation=='c'){
+throw("Sign not allowd with integer format specifier 'c'")
+}
+}
+}
+if(_comma){
+}
+var _rv
+if(_conversion !='' &&((_is_numeric && _conversion=='s')|| 
+(! _is_integer && 'cdoxX'.indexOf(_conversion)!=-1))){
+throw ValueError('Fix me')
+}
+if(_conversion=='c'){
+_conversion='s'
+}
+_rv='%' + _prefix + _precision +(_conversion || 's')
+_rv=$legacy_format(_rv, value)
+if(_sign !='-' && value >=0){
+_rv=_sign + _rv
+}
+var _zero=False
+if(_width){
+_zero=width.substring(0,1)=='0'
+_width=parseInt(_width)
+}else{
+_width=0
+}
+if(_width <=_rv.length){
+if(! _is_numeric &&(_align=='=' ||(_zero && ! _align))){
+throw ValueError("'=' alignment not allowd in string format specifier")
+}
+return _rv
+}
+_fill=_align.substring(0,_align.length-1)
+_align=_align.substring(_align.length)
+if(! _fill){_fill=_zero && '0' || ' '}
+if(_align=='^'){
+_padding=_width - _rv.length
+if(_padding % 2){
+_rv=getattr(_rv, 'center')(_width, _fill)
+}
+}else if(_align=='=' ||(_zero && ! _align)){
+if(! _is_numeric){
+throw ValueError("'=' alignment not allowd in string format specifier")
+}
+if(_value < 0 || _sign !='-'){
+_rv=_rv.substring(0,1)+ getattr(_rv.substring(1),'rjust')(_width - 1, _fill)
+}else{
+_rv=getattr(_rv, 'rjust')(_width, _fill)
+}
+}else if((_align=='>' || _align=='=')||(_is_numeric && ! _aligned)){
+_rv=getattr(_rv, 'rjust')(_width, _fill)
+}else{
+_rv=getattr(_rv, 'ljust')(_width, _fill)
+}
+return _rv
+}
+this.field_part=function(literal){
+var _matches=[]
+var _pos=0
+if(literal.length==0){_matches.push(['','',''])}
+while(_pos < literal.length){
+var _start='', _middle='', _end=''
+if(literal.substring(_pos,1)=='['){
+_start='['
+_pos++
+while(_pos < literal.length && literal.substring(_pos,1)!==']'){
+_middle +=literal.substring(_pos,1)
+_pos++
+}
+if(literal.substring(_pos, 1)==']')_end=']'
+}else{
+if(literal.substring(_pos,1)=='.'){
+_start='.'
+_pos++
+}
+while(_pos < literal.length &&
+literal.substring(_pos,1)!=='[' && 
+literal.substring(_pos,1)!=='.'){
+_middle +=literal.substring(_pos,1)
+_pos++
+}
+}
+_matches.push([_start, _middle, _end])
+}
+return _matches
+}
+this.format_str_re=new RegExp(
+'(%)' +
+'|((?!{)(?:{{)+' +
+'|(?:}})+(?!})' +
+'|{(?:[^{](?:[^{}]+|{[^{}]*})*)?})', 'g'
+)
+this.format_sub_re=new RegExp('({[^{}]*})')
+this.format_spec_re=new RegExp(
+'((?:[^{}]?[<>=^])?)' + 
+'([\\-\\+ ]?)' + 
+'(#?)' + '(\\d*)' + '(,?)' + 
+'((?:\.\\d\\+)?)' + 
+'(.?)$' 
+)
+this._index=0
+this._kwords={}
+this._kwords_array=[]
+this._nested={}
+this._nested_array=[]
+this._string=format_string.replace(this.format_str_re, this._prepare, 'g')
+return this
+}
 $StringDict.format=function(self){
-var _fs=FormattableString(self.valueOf())
+var _fs=$FormattableString(self.valueOf())
 var args=[]
 for(var i=1;i < arguments.length;i++){args.push(arguments[i])}
 return _fs.format(args)
@@ -8448,7 +8748,7 @@ self.elt.parentNode.removeChild(self.elt)
 }
 DOMNode.__delitem__=function(self,key){
 if(self.elt.nodeType===9){
-var res=document.getElementById(key)
+var res=self.elt.getElementById(key)
 if(res){res.parentNode.removeChild(res)}
 else{throw KeyError(key)}
 }else{
@@ -8509,12 +8809,12 @@ return $ObjectDict.__getattribute__(self,attr)
 DOMNode.__getitem__=function(self,key){
 if(self.elt.nodeType===9){
 if(typeof key==="string"){
-var res=document.getElementById(key)
+var res=self.elt.getElementById(key)
 if(res){return $DOMNode(res)}
 else{throw KeyError(key)}
 }else{
 try{
-var elts=document.getElementsByTagName(key.name),res=[]
+var elts=self.elt.getElementsByTagName(key.name),res=[]
 for(var $i=0;$i<elts.length;$i++){res.push($DOMNode(elts[$i]))}
 return res
 }catch(err){
