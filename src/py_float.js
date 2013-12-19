@@ -26,6 +26,11 @@ $FloatDict.__floordiv__ = function(self,other){
     }
 }
 
+$FloatDict.__getformat__ = function(self,arg){
+    if(['double','float'].indexOf(arg)){return 'IEEE, little-endian'}
+    throw ValueError("__getformat__() argument 1 must be 'double' or 'float'")
+}
+
 $FloatDict.__hash__ = function() {
     // http://cw.tactileint.com/++Floats/Ruby,JavaScript,Ruby
     frexp=function (re) {

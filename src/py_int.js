@@ -152,8 +152,11 @@ $IntDict.__truediv__ = function(self,other){
 
 $IntDict.__xor__ = function(self,other){return self ^ other} // bitwise XOR
 
-//Number.prototype.__repr__ = function(){return $IntDict.__repr__(this)}
-//Number.prototype.__str__ = function(){return $IntDict.__str__(this)}
+$IntDict.bit_length = function(self){
+    s = bin(self)
+    s = getattr(s,'lstrip')('-0b') // remove leading zeros and minus sign
+    return s.length       // len('100101') --> 6
+}
 
 // operations
 var $op_func = function(self,other){
@@ -194,8 +197,6 @@ for($op in $comps){
 Number.prototype.__class__ = $IntDict
 Number.prototype.$fast_augm = true // used to speed up augmented assigns
 
-$IntDict.$dict = $IntDict
-
 int = function(value){
     var res
     if(value===undefined){res = Number(0)}
@@ -203,7 +204,7 @@ int = function(value){
     else if(value===True){res = Number(1)}
     else if(value===False){res = Number(0)}
     else if(typeof value=="number"){res = Number(parseInt(value))}
-    else if(typeof value=="string" && (new RegExp(/^[+-]?\d+$/)).test(value)){
+    else if(typeof value=="string" && (new RegExp(/^[ ]*[+-]?\d+[ ]*$/)).test(value)){
         res = Number(parseInt(value))
     }else if(isinstance(value,float)){
         res = Number(parseInt(value.value))

@@ -1,6 +1,6 @@
 // class object for the built-in class 'object'
 $ObjectDict = {
-    __class__:$type,
+    //__class__:$type, : not here, added in py_type.js after $type is defined
     __name__:'object',
     $native:true
 }
@@ -32,7 +32,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
     if(res===undefined){
         // search in classes hierarchy, following method resolution order
         //if(attr=='show'){console.log('object getattr '+attr+' of obj '+obj)}
-        var mro = type(obj).__mro__
+        var mro = obj.__class__.__mro__
         for(var i=0;i<mro.length;i++){
             var v=mro[i][attr]
             if(v!==undefined){
@@ -53,8 +53,27 @@ $ObjectDict.__getattribute__ = function(obj,attr){
             res.__name__ = attr
             // __new__ is a static method
             if(attr=='__new__'){res.$type='staticmethod'}
-            res1 = res.__get__.apply(null,[res,obj,type(obj)])
-            if(res1.__class__===Function){
+            res1 = res.__get__.apply(null,[res,obj,obj.__class__])
+            if(typeof res1=='function'){
+                // if attribute is a class then return it as is
+                // example :
+                // ===============
+                // class A:
+                //    def __init__(self,x):
+                //        self.x = x
+                //
+                // class B:
+                //    foo = A
+                //    def __init__(self):
+                //        self.info = self.foo(18)
+                //
+                // B()
+                // ===============
+                // In class B, when we call self.foo(18), self.foo is the
+                // class A, its method __init__ must be called without B's
+                // self as first argument
+    
+                if(res1.__class__===$factory){return res}
                 // instance method object
                 var __self__,__func__,__repr__,__str__
                 if(res.$type===undefined || res.$type==='instancemethod'){
@@ -73,19 +92,19 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                     return res
                 }else if(res.$type==='classmethod'){
                     // class method : called with the class as first argument
-                    args = [type(obj)]
-                    __self__ = type(obj)
+                    args = [obj.__class__]
+                    __self__ = obj.__class_
                     __func__ = res1
                     __repr__ = __str__ = function(){
                         var x = '<bound method type'+'.'+attr
-                        x += ' of '+str(type(obj))+'>'
+                        x += ' of '+obj.__class__.__name__+'>'
                         return x
                     }
                 }else if(res.$type==='staticmethod'){
                     // static methods have no __self__ or __func__
                     args = []
                     __repr__ = __str__ = function(){
-                        return '<function '+type(obj).__name__+'.'+attr+'>'
+                        return '<function '+obj.__class__.__name__+'.'+attr+'>'
                     }
                 }
                 var method = (function(initial_args){
@@ -98,11 +117,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                         var x = res.apply(obj,local_args)
                         if(x===undefined){return None}else{return x}
                     }})(args)
-                method.__class__ = {
-                    __class__:$type,
-                    __name__:'method',
-                    __mro__:[$ObjectDict]
-                }
+                method.__class__ = $MethodDict
                 method.__func__ = __func__
                 method.__repr__ = __repr__
                 method.__self__ = __self__
@@ -117,7 +132,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
         // XXX search __getattr__
         var _ga = obj['__getattr__']
         if(_ga===undefined){
-            var mro = type(obj).__mro__
+            var mro = obj.__class__.__mro__
             if(mro===undefined){console.log('in getattr mro undefined for '+obj)}
             for(var i=0;i<mro.length;i++){
                 var v=mro[i]['__getattr__']
@@ -182,6 +197,10 @@ $ObjectDict.__new__ = function(cls){
 
 $ObjectDict.__ne__ = function(self,other){return self!==other}
 
+$ObjectDict.__or__ = function(self,other){
+    if(bool(self)){return self}else{return other}
+}
+
 $ObjectDict.__repr__ = function(self){
     if(self===object){return "<class 'object'>"}
     else if(self===undefined){return "<class 'object'>"}
@@ -214,5 +233,5 @@ function object(){
     return {__class__:$ObjectDict}
 }
 object.$dict = $ObjectDict
-object.__class__ = $factory
+// object.__class__ = $factory : this is done in py_types
 $ObjectDict.$factory = object

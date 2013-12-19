@@ -29,6 +29,7 @@ $SetDict.__contains__ = function(self,item){
 }
 
 $SetDict.__eq__ = function(self,other){
+    console.log('set eq')
     if(other===undefined){ // compare class set
         return self===set
     }
@@ -121,7 +122,7 @@ $SetDict.__or__ = function(self,other){
 }
 
 $SetDict.__repr__ = function(self){
-    if(self===undefined){return "<class '"+self.__class__.__name__+"'>"}
+    if(self===undefined){return "<class 'set'>"}
     var head='',tail=''
     frozen = self.$real === 'frozen'
     if(self.$items.length===0){
@@ -239,7 +240,7 @@ $SetDict.union = $SetDict.__or__
 
 function set(){
     var res = {__class__:$SetDict}
-    // apply __init__ with arguments of dict()
+    // apply __init__ with arguments of set()
     var args = [res]
     for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
     $SetDict.__init__.apply(null,args)

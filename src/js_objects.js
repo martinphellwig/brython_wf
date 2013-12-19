@@ -149,21 +149,9 @@ $JSObjectDict.__getitem__ = function(self,rank){
     }
 }
 
-$JSObjectDict.__iter__ = function(self){ // for iterator protocol
-    var res = {
-        __class__:JSObject,
-        __getattr__:function(attr){return res[attr]},
-        __iter__:function(){return res},
-        __next__:function(){
-            res.counter++
-            if(res.counter<self.js.length){return self.js[res.counter]}
-            else{throw StopIteration("StopIteration")}
-        },
-        __repr__:function(){return "<JSObject iterator object>"},
-        __str__:function(){return "<JSObject iterator object>"},
-        counter:-1
-    }
-    return res
+$JSObject_iterator = $iterator_class('JS object iterator')
+$JSObjectDict.__iter__ = function(self){
+    return $iterator(self.js,$JSObject_iterator)
 }
 
 $JSObjectDict.__len__ = function(self){
@@ -190,8 +178,13 @@ function JSObject(obj){
     if(obj===null){return new $JSObject(obj)}
     if(obj.__class__===$ListDict){
         // JS arrays not created by list() must be wrapped
-        if(obj.__brython__){return obj}
-        else{return new $JSObject(obj)}
+        console.log('js from list '+obj.__brython__)
+        if(obj.__brython__){console.log('return obj');return obj}
+        else{console.log('wrap list');var res = new $JSObject(obj)
+            console.log('wrapped '+res)
+            console.log('class '+res.__class__+' mro '+res.__class__.__mro__)
+            return res
+        }
     }
     if(obj.__class__!==undefined && (typeof obj!=='function')){return obj}
     return new $JSObject(obj)

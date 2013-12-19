@@ -22,6 +22,7 @@ $DictDict.__add__ = function(self,other){
 $DictDict.__bool__ = function (self) {return self.$keys.length>0}
 
 $DictDict.__contains__ = function(self,item){
+    if(self.$jsobj){return self.$jsobj[item]!==undefined}
     return $ListDict.__contains__(self.$keys,item)
 }
 
@@ -31,6 +32,7 @@ $DictDict.__delitem__ = function(self,arg){
         if(getattr(arg,'__eq__')(self.$keys[i])){
             self.$keys.splice(i,1)
             self.$values.splice(i,1)
+            if(self.$jsobj){delete self.$jsobj[arg]}
             return
         }
     }
@@ -83,7 +85,7 @@ $DictDict.__init__ = function(self){
             self.$values = obj.$values
             return
         }
-        else if(isinstance(obj,JSObject)){
+        else if(obj.__class__===JSObject.$dict){
             // convert a JSObject into a Python dictionary
             var res = new $DictClass([],[])
             for(var attr in obj.js){
@@ -91,6 +93,7 @@ $DictDict.__init__ = function(self){
             }
             self.$keys = res.$keys
             self.$values = res.$values
+            self.$jsobj = obj.js // used to reflect changes in underlying JS object
             return
         }
     }
@@ -172,6 +175,8 @@ $DictDict.__setitem__ = function(self,key,value){
     // create a new key/value
     self.$keys.push(key)
     self.$values.push(value)
+    // if dict wraps a JS object, set its attribute
+    if(self.$jsobj){self.$jsobj[key]=value}
 }
 
 $DictDict.__str__ = $DictDict.__repr__
@@ -180,6 +185,7 @@ $DictDict.clear = function(self){
     // Remove all items from the dictionary.
     self.$keys = []
     self.$values = []
+    if(self.$jsobj){self.$jsobj={}}
 }
 
 $DictDict.copy = function(self){

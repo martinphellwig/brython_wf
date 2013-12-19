@@ -8,7 +8,7 @@ value
 import types
 import inspect
 
-stdlib_name = 'io'
+stdlib_name = '_string'
 ns = {}
 exec('import %s;print(dir(%s))' %(stdlib_name,stdlib_name),ns)
 out = open('%s_skeleton.py' %stdlib_name,'w')
@@ -49,7 +49,7 @@ def skeleton(infos):
             res += '\nclass %s' %key
             if val.__bases__:
                 res += '('+','.join(x.__name__ for x in val.__bases__)+')'
-            res += ':\n'
+            res += ':\n    pass\n'
         else:
             res += '\n%s = "%s"\n' %(key,val)
     return res

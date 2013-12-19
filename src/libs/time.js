@@ -37,6 +37,8 @@ $module =  {
     },
     time : function(){return float((new Date().getTime())/1000)},
     
+    sleep : function(secs){},
+    
     strftime : function(format,arg){
         function ns(arg,nb){
             // left padding with 0
