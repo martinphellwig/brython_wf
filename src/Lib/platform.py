@@ -268,27 +268,8 @@ def _parse_release_file(firstline):
     # Default to empty 'version' and 'id' strings.  Both defaults are used
     # when 'firstline' is empty.  'id' defaults to empty when an id can not
     # be deduced.
-    version = ''
-    id = ''
 
-    # Parse the first line
-    m = _lsb_release_version.match(firstline)
-    if m is not None:
-        # LSB format: "distro release x.x (codename)"
-        return tuple(m.groups())
-
-    # Pre-LSB format: "distro x.x (codename)"
-    m = _release_version.match(firstline)
-    if m is not None:
-        return tuple(m.groups())
-
-    # Unkown format... take the first two words
-    l = firstline.strip().split()
-    if l:
-        version = l[0]
-        if len(l) > 1:
-            id = l[1]
-    return '', version, id
+    return '', '', ''
 
 _distributor_id_file_re = re.compile("(?:DISTRIB_ID\s*=)\s*(.*)", re.I)
 _release_file_re = re.compile("(?:DISTRIB_RELEASE\s*=)\s*(.*)", re.I)
@@ -320,54 +301,7 @@ def linux_distribution(distname='', version='', id='',
     """
     # check for the Debian/Ubuntu /etc/lsb-release file first, needed so
     # that the distribution doesn't get identified as Debian.
-    try:
-        etclsbrel = open("/etc/lsb-release", "rU")
-        for line in etclsbrel:
-            m = _distributor_id_file_re.search(line)
-            if m:
-                _u_distname = m.group(1).strip()
-            m = _release_file_re.search(line)
-            if m:
-                _u_version = m.group(1).strip()
-            m = _codename_file_re.search(line)
-            if m:
-                _u_id = m.group(1).strip()
-        if _u_distname and _u_version:
-            etclsbrel.close()
-            return (_u_distname, _u_version, _u_id)
-    except (EnvironmentError, UnboundLocalError):
-            pass
-    finally:
-        if etclsbrel:
-            etclsbrel.close()
 
-    try:
-        etc = os.listdir('/etc')
-    except os.error:
-        # Probably not a Unix system
-        return distname,version,id
-    etc.sort()
-    for file in etc:
-        m = _release_filename.match(file)
-        if m is not None:
-            _distname,dummy = m.groups()
-            if _distname in supported_dists:
-                distname = _distname
-                break
-    else:
-        return _dist_try_harder(distname,version,id)
-
-    # Read the first line
-    with open('/etc/'+file, 'r') as f:
-        firstline = f.readline()
-    _distname, _version, _id = _parse_release_file(firstline)
-
-    if _distname and full_distribution_name:
-        distname = _distname
-    if _version:
-        version = _version
-    if _id:
-        id = _id
     return distname, version, id
 
 # To maintain backwards compatibility:
@@ -403,17 +337,8 @@ def _norm_version(version, build=''):
     """ Normalize the version and build strings and return a single
         version string using the format major.minor.build (or patchlevel).
     """
-    l = version.split('.')
-    if build:
-        l.append(build)
-    try:
-        ints = map(int,l)
-    except ValueError:
-        strings = l
-    else:
-        strings = list(map(str,ints))
-    version = '.'.join(strings[:3])
-    return version
+
+    return '%s.%s.0' % (sys.version[0], sys.version[1])
 
 _ver_output = re.compile(r'(?:([\w ]+) ([\w.]+) '
                          '.*'
@@ -1283,7 +1208,6 @@ _pypy_sys_version_parser = re.compile(
 _sys_version_cache = {}
 
 def _sys_version(sys_version=None):
-
     """ Returns a parsed version of Python's sys.version as tuple
         (name, version, branch, revision, buildno, builddate, compiler)
         referring to the Python implementation name, version, branch,
@@ -1306,76 +1230,15 @@ def _sys_version(sys_version=None):
     if sys_version is None:
         sys_version = sys.version
 
-    # Try the cache first
-    result = _sys_version_cache.get(sys_version, None)
-    if result is not None:
-        return result
+    _builddate=sys_version[2][:8]
+    _version='%s.%s' % (sys_version[0], sys_version[1])
 
-    # Parse it
-    if sys_version[:10] == 'IronPython':
-        # IronPython
-        name = 'IronPython'
-        match = _ironpython_sys_version_parser.match(sys_version)
-        if match is None:
-            raise ValueError(
-                'failed to parse IronPython sys.version: %s' %
-                repr(sys_version))
-        version, alt_version, compiler = match.groups()
-        buildno = ''
-        builddate = ''
-
-    elif sys.platform[:4] == 'java':
-        # Jython
-        name = 'Jython'
-        match = _sys_version_parser.match(sys_version)
-        if match is None:
-            raise ValueError(
-                'failed to parse Jython sys.version: %s' %
-                repr(sys_version))
-        version, buildno, builddate, buildtime, _ = match.groups()
-        compiler = sys.platform
-
-    elif "PyPy" in sys_version:
-        # PyPy
-        name = "PyPy"
-        match = _pypy_sys_version_parser.match(sys_version)
-        if match is None:
-            raise ValueError("failed to parse PyPy sys.version: %s" %
-                             repr(sys_version))
-        version, buildno, builddate, buildtime = match.groups()
-        compiler = ""
-
-    else:
-        # CPython
-        match = _sys_version_parser.match(sys_version)
-        if match is None:
-            raise ValueError(
-                'failed to parse CPython sys.version: %s' %
-                repr(sys_version))
-        version, buildno, builddate, buildtime, compiler = \
-              match.groups()
-        name = 'CPython'
-        builddate = builddate + ' ' + buildtime
-
-    if hasattr(sys, '_mercurial'):
-        _, branch, revision = sys._mercurial
-    elif hasattr(sys, 'subversion'):
-        # sys.subversion was added in Python 2.5
-        _, branch, revision = sys.subversion
-    else:
-        branch = ''
-        revision = ''
-
-    # Add the patchlevel version if missing
-    l = version.split('.')
-    if len(l) == 2:
-        l.append('0')
-        version = '.'.join(l)
+    return ("Brython", _version, '', '', 'default', _builddate, '')
 
     # Build and cache the result
-    result = (name, version, branch, revision, buildno, builddate, compiler)
-    _sys_version_cache[sys_version] = result
-    return result
+    #result = (name, version, branch, revision, buildno, builddate, compiler)
+    #_sys_version_cache[sys_version] = result
+    #return result
 
 def python_implementation():
 
@@ -1388,7 +1251,7 @@ def python_implementation():
           'PyPy' (Python implementation of Python).
 
     """
-    return _sys_version()[0]
+    return "Brython"  #_sys_version()[0]
 
 def python_version():
 
@@ -1398,7 +1261,8 @@ def python_version():
         will always include the patchlevel (it defaults to 0).
 
     """
-    return _sys_version()[1]
+    #return _sys_version()[1]
+    return '%s.%s' % (sys.version[0], sys.version[1])
 
 def python_version_tuple():
 
@@ -1409,7 +1273,8 @@ def python_version_tuple():
         will always include the patchlevel (it defaults to 0).
 
     """
-    return tuple(_sys_version()[1].split('.'))
+    #return tuple(_sys_version()[1].split('.'))
+    return tuple(sys.version[0], sys.version[1], 0)
 
 def python_branch():
 
@@ -1423,7 +1288,8 @@ def python_branch():
 
     """
 
-    return _sys_version()[2]
+    #return _sys_version()[2]
+    return ''
 
 def python_revision():
 
@@ -1436,7 +1302,8 @@ def python_revision():
         If not available, an empty string is returned.
 
     """
-    return _sys_version()[3]
+    #return _sys_version()[3]
+    return ''
 
 def python_build():
 
@@ -1444,7 +1311,8 @@ def python_build():
         build number and date as strings.
 
     """
-    return _sys_version()[4:6]
+    #return _sys_version()[4:6]
+    return tuple('', '')
 
 def python_compiler():
 
@@ -1452,7 +1320,8 @@ def python_compiler():
         Python.
 
     """
-    return _sys_version()[6]
+    #return _sys_version()[6]
+    return ''
 
 ### The Opus Magnum of platform strings :-)
 
@@ -1477,66 +1346,8 @@ def platform(aliased=0, terse=0):
         absolute minimum information needed to identify the platform.
 
     """
-    result = _platform_cache.get((aliased, terse), None)
-    if result is not None:
-        return result
 
-    # Get uname information and then apply platform specific cosmetics
-    # to it...
-    system,node,release,version,machine,processor = uname()
-    if machine == processor:
-        processor = ''
-    if aliased:
-        system,release,version = system_alias(system,release,version)
-
-    if system == 'Windows':
-        # MS platforms
-        rel,vers,csd,ptype = win32_ver(version)
-        if terse:
-            platform = _platform(system,release)
-        else:
-            platform = _platform(system,release,version,csd)
-
-    elif system in ('Linux',):
-        # Linux based systems
-        distname,distversion,distid = dist('')
-        if distname and not terse:
-            platform = _platform(system,release,machine,processor,
-                                 'with',
-                                 distname,distversion,distid)
-        else:
-            # If the distribution name is unknown check for libc vs. glibc
-            libcname,libcversion = libc_ver(sys.executable)
-            platform = _platform(system,release,machine,processor,
-                                 'with',
-                                 libcname+libcversion)
-    elif system == 'Java':
-        # Java platforms
-        r,v,vminfo,(os_name,os_version,os_arch) = java_ver()
-        if terse or not os_name:
-            platform = _platform(system,release,version)
-        else:
-            platform = _platform(system,release,version,
-                                 'on',
-                                 os_name,os_version,os_arch)
-
-    elif system == 'MacOS':
-        # MacOS platforms
-        if terse:
-            platform = _platform(system,release)
-        else:
-            platform = _platform(system,release,machine)
-
-    else:
-        # Generic handler
-        if terse:
-            platform = _platform(system,release)
-        else:
-            bits,linkage = architecture(sys.executable)
-            platform = _platform(system,release,machine,processor,bits,linkage)
-
-    _platform_cache[(aliased, terse)] = platform
-    return platform
+    return "Browser"
 
 ### Command line interface
 
