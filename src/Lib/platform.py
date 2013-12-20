@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#! /usr/bin/python3.3
 
 """ This module tries to retrieve as much platform-identifying data as
     possible. It makes this information available via function APIs.
@@ -112,7 +112,7 @@ __copyright__ = """
 __version__ = '1.0.7'
 
 import collections
-import sys, os, re
+import sys, os, re, subprocess
 
 ### Globals & Constants
 
@@ -261,7 +261,7 @@ _release_version = re.compile(r'([^0-9]+)'
 _supported_dists = (
     'SuSE', 'debian', 'fedora', 'redhat', 'centos',
     'mandrake', 'mandriva', 'rocks', 'slackware', 'yellowdog', 'gentoo',
-    'UnitedLinux', 'turbolinux', 'arch', 'mageia')
+    'UnitedLinux', 'turbolinux', 'arch', 'mageia', 'Ubuntu')
 
 def _parse_release_file(firstline):
 
@@ -290,6 +290,10 @@ def _parse_release_file(firstline):
             id = l[1]
     return '', version, id
 
+_distributor_id_file_re = re.compile("(?:DISTRIB_ID\s*=)\s*(.*)", re.I)
+_release_file_re = re.compile("(?:DISTRIB_RELEASE\s*=)\s*(.*)", re.I)
+_codename_file_re = re.compile("(?:DISTRIB_CODENAME\s*=)\s*(.*)", re.I)
+
 def linux_distribution(distname='', version='', id='',
 
                        supported_dists=_supported_dists,
@@ -314,6 +318,29 @@ def linux_distribution(distname='', version='', id='',
         args given as parameters.
 
     """
+    # check for the Debian/Ubuntu /etc/lsb-release file first, needed so
+    # that the distribution doesn't get identified as Debian.
+    try:
+        etclsbrel = open("/etc/lsb-release", "rU")
+        for line in etclsbrel:
+            m = _distributor_id_file_re.search(line)
+            if m:
+                _u_distname = m.group(1).strip()
+            m = _release_file_re.search(line)
+            if m:
+                _u_version = m.group(1).strip()
+            m = _codename_file_re.search(line)
+            if m:
+                _u_id = m.group(1).strip()
+        if _u_distname and _u_version:
+            etclsbrel.close()
+            return (_u_distname, _u_version, _u_id)
+    except (EnvironmentError, UnboundLocalError):
+            pass
+    finally:
+        if etclsbrel:
+            etclsbrel.close()
+
     try:
         etc = os.listdir('/etc')
     except os.error:
@@ -595,8 +622,13 @@ def win32_ver(release='',version='',csd='',ptype=''):
                     release = '7'
                 else:
                     release = '2008ServerR2'
+            elif min == 2:
+                if product_type == VER_NT_WORKSTATION:
+                    release = '8'
+                else:
+                    release = '2012Server'
             else:
-                release = 'post2008Server'
+                release = 'post2012Server'
 
     else:
         if not release:
@@ -922,13 +954,15 @@ def _syscmd_file(target,default=''):
     if sys.platform in ('dos','win32','win16','os2'):
         # XXX Others too ?
         return default
-    target = _follow_symlinks(target).replace('"', '\\"')
+    target = _follow_symlinks(target)
     try:
-        f = os.popen('file -b "%s" 2> %s' % (target, DEV_NULL))
+        proc = subprocess.Popen(['file', target],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
     except (AttributeError,os.error):
         return default
-    output = f.read().strip()
-    rc = f.close()
+    output = proc.communicate()[0].decode('latin-1')
+    rc = proc.wait()
     if not output or rc:
         return default
     else:

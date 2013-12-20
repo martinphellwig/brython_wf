@@ -142,7 +142,13 @@ if hasattr(os, 'listxattr'):
 
         """
 
-        for name in os.listxattr(src, follow_symlinks=follow_symlinks):
+        try:
+            names = os.listxattr(src, follow_symlinks=follow_symlinks)
+        except OSError as e:
+            if e.errno not in (errno.ENOTSUP, errno.ENODATA):
+                raise
+            return
+        for name in names:
             try:
                 value = os.getxattr(src, name, follow_symlinks=follow_symlinks)
                 os.setxattr(dst, name, value, follow_symlinks=follow_symlinks)
@@ -375,19 +381,20 @@ def _rmtree_safe_fd(topfd, path, onerror):
     names = []
     try:
         names = os.listdir(topfd)
-    except os.error:
+    except OSError as err:
+        err.filename = path
         onerror(os.listdir, path, sys.exc_info())
     for name in names:
         fullname = os.path.join(path, name)
         try:
             orig_st = os.stat(name, dir_fd=topfd, follow_symlinks=False)
             mode = orig_st.st_mode
-        except os.error:
+        except OSError:
             mode = 0
         if stat.S_ISDIR(mode):
             try:
                 dirfd = os.open(name, os.O_RDONLY, dir_fd=topfd)
-            except os.error:
+            except OSError:
                 onerror(os.open, fullname, sys.exc_info())
             else:
                 try:
@@ -395,14 +402,23 @@ def _rmtree_safe_fd(topfd, path, onerror):
                         _rmtree_safe_fd(dirfd, fullname, onerror)
                         try:
                             os.rmdir(name, dir_fd=topfd)
-                        except os.error:
+                        except OSError:
                             onerror(os.rmdir, fullname, sys.exc_info())
+                    else:
+                        try:
+                            # This can only happen if someone replaces
+                            # a directory with a symlink after the call to
+                            # stat.S_ISDIR above.
+                            raise OSError("Cannot call rmtree on a symbolic "
+                                          "link")
+                        except OSError:
+                            onerror(os.path.islink, fullname, sys.exc_info())
                 finally:
                     os.close(dirfd)
         else:
             try:
                 os.unlink(name, dir_fd=topfd)
-            except os.error:
+            except OSError:
                 onerror(os.unlink, fullname, sys.exc_info())
 
 _use_fd_functions = ({os.open, os.stat, os.unlink, os.rmdir} <=
@@ -444,16 +460,18 @@ def rmtree(path, ignore_errors=False, onerror=None):
             onerror(os.lstat, path, sys.exc_info())
             return
         try:
-            if (stat.S_ISDIR(orig_st.st_mode) and
-                os.path.samestat(orig_st, os.fstat(fd))):
+            if os.path.samestat(orig_st, os.fstat(fd)):
                 _rmtree_safe_fd(fd, path, onerror)
                 try:
                     os.rmdir(path)
                 except os.error:
                     onerror(os.rmdir, path, sys.exc_info())
             else:
-                raise NotADirectoryError(20,
-                                         "Not a directory: '{}'".format(path))
+                try:
+                    # symlinks to directories are forbidden, see bug #1669
+                    raise OSError("Cannot call rmtree on a symbolic link")
+                except OSError:
+                    onerror(os.path.islink, path, sys.exc_info())
         finally:
             os.close(fd)
     else:
@@ -1065,12 +1083,19 @@ def which(cmd, mode=os.F_OK | os.X_OK, path=None):
         return (os.path.exists(fn) and os.access(fn, mode)
                 and not os.path.isdir(fn))
 
-    # Short circuit. If we're given a full path which matches the mode
-    # and it exists, we're done here.
-    if _access_check(cmd, mode):
-        return cmd
+    # If we're given a path with a directory part, look it up directly rather
+    # than referring to PATH directories. This includes checking relative to the
+    # current directory, e.g. ./script
+    if os.path.dirname(cmd):
+        if _access_check(cmd, mode):
+            return cmd
+        return None
 
-    path = (path or os.environ.get("PATH", os.defpath)).split(os.pathsep)
+    if path is None:
+        path = os.environ.get("PATH", os.defpath)
+    if not path:
+        return None
+    path = path.split(os.pathsep)
 
     if sys.platform == "win32":
         # The current directory takes precedence on Windows.
@@ -1081,10 +1106,12 @@ def which(cmd, mode=os.F_OK | os.X_OK, path=None):
         pathext = os.environ.get("PATHEXT", "").split(os.pathsep)
         # See if the given file matches any of the expected path extensions.
         # This will allow us to short circuit when given "python.exe".
-        matches = [cmd for ext in pathext if cmd.lower().endswith(ext.lower())]
         # If it does match, only test that one, otherwise we have to try
         # others.
-        files = [cmd] if matches else [cmd + ext.lower() for ext in pathext]
+        if any(cmd.lower().endswith(ext.lower()) for ext in pathext):
+            files = [cmd]
+        else:
+            files = [cmd + ext for ext in pathext]
     else:
         # On other platforms you don't have things like PATHEXT to tell you
         # what file suffixes are executable, so just pass on cmd as-is.
@@ -1092,9 +1119,9 @@ def which(cmd, mode=os.F_OK | os.X_OK, path=None):
 
     seen = set()
     for dir in path:
-        dir = os.path.normcase(dir)
-        if not dir in seen:
-            seen.add(dir)
+        normdir = os.path.normcase(dir)
+        if not normdir in seen:
+            seen.add(normdir)
             for thefile in files:
                 name = os.path.join(dir, thefile)
                 if _access_check(name, mode):
