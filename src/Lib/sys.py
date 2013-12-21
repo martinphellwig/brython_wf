@@ -71,7 +71,7 @@ platform="brython"
 prefix = __BRYTHON__.brython_path
 
 version = '.'.join(str(x) for x in __BRYTHON__.version_info)
-
+hexversion = 0x03000000   # python 3.0
 
 class __version_info(object):
     def __init__(self, version_info):
