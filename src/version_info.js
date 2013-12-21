@@ -1,4 +1,4 @@
-__BRYTHON__.version_info = [1, 3, '20131219-081554', 'alpha', 0]
+__BRYTHON__.version_info = [1, 3, '20131221-100511', 'alpha', 0]
 __BRYTHON__.builtin_module_names = ["posix","builtins",
     "crypto_js",
     "hashlib",
