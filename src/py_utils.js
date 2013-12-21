@@ -118,7 +118,9 @@ function $list_comp(){
     $root.caller = document.$line_info
     var $js = $root.to_js()
     __BRYTHON__.scope[$mod_name].__dict__ = $env
+    try{
     eval($js)
+    }catch(err){throw __BRYTHON__.exception(err)}
     return eval("res"+$ix)
 }
 

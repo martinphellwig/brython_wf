@@ -903,7 +903,6 @@ function property(fget, fset, fdel, doc) {
         return property(fget, p.fset, p.fdel, p.__doc__)
     }
     p.setter = function(fset){
-        console.log('setter, self '+self+' class '+self.__class__)
         return property(p.fget, fset, p.fdel, p.__doc__)
     }
     p.deleter = function(fdel){
@@ -1532,7 +1531,7 @@ __BRYTHON__.exception = function(js_exc){
                         // for list comprehension and the likes, replace
                         // by the line in the enclosing module
                         document.$line_info = module.caller
-                        var module = document.$line_info[1]
+                        var mod_name = document.$line_info[1]
                     }
                     var lib_module = mod_name
                     if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
@@ -1547,7 +1546,7 @@ __BRYTHON__.exception = function(js_exc){
             }
         }
         var exc = Error()
-        exc.__name__ = js_exc.name
+        exc.__name__ = js_exc.__name__ || js_exc.name
         exc.__class__ = $ExceptionDict
         if(js_exc.name=='ReferenceError'){
             exc.__name__='NameError'
