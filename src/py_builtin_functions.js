@@ -580,7 +580,7 @@ function locals(obj_id,module){
     if(__BRYTHON__.scope[obj_id]===undefined){
         return globals(module)
     }
-    var res = dict()
+    var res = $dict()
     var scope = __BRYTHON__.scope[obj_id].__dict__
     for(var name in scope){$DictDict.__setitem__(res,name,scope[name])}
     return res
@@ -1399,7 +1399,7 @@ for(var $func in None){
 
 // add attributes to native Function
 $FunctionDict = {__class__:$type}
-$FunctionDict.__str__ = function(self){return '<function '+self.__name__+'>'}
+$FunctionDict.__repr__=$FunctionDict.__str__ = function(self){return '<function '+self.__name__+'>'}
 
 $FunctionDict.__mro__ = [$FunctionDict,$ObjectDict]
 Function.__name__ = 'function'

@@ -939,10 +939,20 @@ function $DefCtx(context){
     this.locals = []
     context.tree.push(this)
     
+    // store id of enclosing functions
+    this.enclosing = []
+    var scope = $get_scope(this)
+    while(true){
+        if(scope.ntype=='def' || scope.ntype=='generator'){
+            this.enclosing.push(scope.context.tree[0].id)
+            scope = $get_scope(scope.context.tree[0])
+        }else{break}
+    }
+    
     this.set_name = function(name){
         this.name = name
-        // if function is defined inside another function, add the name
-        // to local names
+        // if function X is defined inside another function Y, add X
+        // to local names of Y
         var scope = $get_scope(this)
         if(scope.ntype=='def' || scope.ntype=='generator'){
             if(scope.context.tree[0].locals.indexOf(name)==-1){
@@ -983,19 +993,44 @@ function $DefCtx(context){
         this.env = env
         if(required.length>0){required=required.substr(0,required.length-1)}
         if(defaults.length>0){defaults=defaults.substr(0,defaults.length-1)}
-        // add 2 lines of code to node children
+
+        var nodes=[]
+
+        // add line to define local namespace
+        js = 'var $locals = __BRYTHON__.scope["'+this.id+'"].__dict__={}'
+        var new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        nodes.push(new_node)
+
+        // if function X is enclosed in other functions [Y,Z], add locals of Z and Y
+        // to locals of X
+        for(var i=this.enclosing.length-1;i>=0;i--){
+            var new_node = new $Node('expression')
+            js = 'for($var in __BRYTHON__.scope["'+this.enclosing[i]+'"].__dict__)'
+            js += '{$locals[$var]=__BRYTHON__.scope["'+this.enclosing[i]+'"].__dict__[$var];'
+            js += 'eval("var "+$var+"=$locals[$var]")};'
+            new $NodeJSCtx(new_node,js)
+            nodes.push(new_node)
+            offset++
+        }
+
         var js = 'var $ns=$MakeArgs("'+this.name+'",arguments,['+required+'],'
         js += '{'+defaults+'},'+other_args+','+other_kw+')'
-        var new_node1 = new $Node('expression')
-        new $NodeJSCtx(new_node1,js)
-        var js = 'for($var in $ns){eval("var "+$var+"=$ns[$var]")}'
-        var new_node2 = new $Node('expression')
-        new $NodeJSCtx(new_node2,js)
-        var js = 'var $locals = __BRYTHON__.scope["'+this.id+'"].__dict__=$ns'
-        var new_node3 = new $Node('expression')
-        new $NodeJSCtx(new_node3,js)
-        node.children.splice(0,0,new_node1,new_node2,new_node3)
+        var new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        nodes.push(new_node)
 
+        js = 'for($var in $ns){eval("var "+$var+"=$locals[$var]=$ns[$var]")}'
+        var new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        nodes.push(new_node)
+        
+        for(var i=nodes.length-1;i>=0;i--){
+            node.children.splice(0,0,nodes[i])
+        }
+
+        var offset = nodes.length-1
+        
         // wrap function body in a try/catch
         var def_func_node = new $Node('expression')
         new $NodeJSCtx(def_func_node,'return function()')
@@ -1026,7 +1061,6 @@ function $DefCtx(context){
         new $NodeJSCtx(ret_node,txt+')')
         node.parent.insert(rank+1,ret_node)
         
-        var offset = 2
         
         // add function name
         js = this.name+'.__name__'
