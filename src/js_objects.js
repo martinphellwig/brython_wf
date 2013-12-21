@@ -178,11 +178,8 @@ function JSObject(obj){
     if(obj===null){return new $JSObject(obj)}
     if(obj.__class__===$ListDict){
         // JS arrays not created by list() must be wrapped
-        console.log('js from list '+obj.__brython__)
-        if(obj.__brython__){console.log('return obj');return obj}
-        else{console.log('wrap list');var res = new $JSObject(obj)
-            console.log('wrapped '+res)
-            console.log('class '+res.__class__+' mro '+res.__class__.__mro__)
+        if(obj.__brython__){return obj}
+        else{var res = new $JSObject(obj)
             return res
         }
     }
