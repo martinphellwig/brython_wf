@@ -477,5 +477,18 @@ try:
 except TypeError:
     pass
 
+# issue 173
+def gofun(fun):
+    def ifun():
+        funi = fun
+        return [fun(i) for i in (0,1)]
+    return ifun()
+
+
+def pr(x):
+    return x
+
+zero_one = gofun(pr)
+assert zero_one == [0, 1], 'Expected [0, 1] but got: %s'% zero_one
 
 print('passed all tests')
