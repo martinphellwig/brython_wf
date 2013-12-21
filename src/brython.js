@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131221-100511
+// version 1.3.20131221-103244
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131221-100511', 'alpha', 0]
+__BRYTHON__.version_info=[1, 3, '20131221-103244', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -923,7 +923,7 @@ nodes.push(new_node)
 for(var i=nodes.length-1;i>=0;i--){
 node.children.splice(0,0,nodes[i])
 }
-var offset=nodes.length-1
+var offset=2 
 var def_func_node=new $Node('expression')
 new $NodeJSCtx(def_func_node,'return function()')
 var try_node=new $Node('expression')
@@ -4103,7 +4103,9 @@ var $root=__BRYTHON__.py2js($py,$mod_name,document.$line_info)
 $root.caller=document.$line_info
 var $js=$root.to_js()
 __BRYTHON__.scope[$mod_name].__dict__=$env
+try{
 eval($js)
+}catch(err){console.log('list comp err '+err);throw __BRYTHON__.exception(err)}
 return eval("res"+$ix)
 }
 function $gen_expr(){
@@ -5212,7 +5214,6 @@ p.getter=function(fget){
 return property(fget, p.fset, p.fdel, p.__doc__)
 }
 p.setter=function(fset){
-console.log('setter, self '+self+' class '+self.__class__)
 return property(p.fget, fset, p.fdel, p.__doc__)
 }
 p.deleter=function(fdel){
@@ -5729,7 +5730,7 @@ var module=__BRYTHON__.modules[mod_name]
 if(module){
 if(module.caller!==undefined){
 document.$line_info=module.caller
-var module=document.$line_info[1]
+var mod_name=document.$line_info[1]
 }
 var lib_module=mod_name
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
@@ -5744,7 +5745,7 @@ console.log('error '+js_exc)
 }
 }
 var exc=Error()
-exc.__name__=js_exc.name
+exc.__name__=js_exc.__name__ || js_exc.name
 exc.__class__=$ExceptionDict
 if(js_exc.name=='ReferenceError'){
 exc.__name__='NameError'

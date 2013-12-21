@@ -1029,7 +1029,7 @@ function $DefCtx(context){
             node.children.splice(0,0,nodes[i])
         }
 
-        var offset = nodes.length-1
+        var offset = 2 //nodes.length-1
         
         // wrap function body in a try/catch
         var def_func_node = new $Node('expression')
