@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.3.20131221-103244
+// version 1.4.20131222-160040
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 __BRYTHON__={}
@@ -48,7 +48,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 3, '20131221-103244', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20131222-160040', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -58,6 +58,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "math",
 "re",
 "time",
+"WS_FTP",
 "_ajax",
 "_browser",
 "_html",
@@ -898,32 +899,33 @@ this.env=env
 if(required.length>0){required=required.substr(0,required.length-1)}
 if(defaults.length>0){defaults=defaults.substr(0,defaults.length-1)}
 var nodes=[]
-js='var $locals = __BRYTHON__.scope["'+this.id+'"].__dict__={}'
+var js='var $locals = __BRYTHON__.scope["'+this.id+'"].__dict__={}'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
 for(var i=this.enclosing.length-1;i>=0;i--){
+var js='var $ns=__BRYTHON__.scope["'+this.enclosing[i]+'"].__dict__'
 var new_node=new $Node('expression')
-js='for($var in __BRYTHON__.scope["'+this.enclosing[i]+'"].__dict__)'
-js +='{$locals[$var]=__BRYTHON__.scope["'+this.enclosing[i]+'"].__dict__[$var];'
-js +='eval("var "+$var+"=$locals[$var]")};'
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
-offset++
+var js='for(var $var in $ns){$locals[$var]=$ns[$var]}'
+var new_node=new $Node('expression')
+new $NodeJSCtx(new_node,js)
+nodes.push(new_node)
 }
 var js='var $ns=$MakeArgs("'+this.name+'",arguments,['+required+'],'
 js +='{'+defaults+'},'+other_args+','+other_kw+')'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
-js='for($var in $ns){eval("var "+$var+"=$locals[$var]=$ns[$var]")}'
+var js='for(var $var in $ns){eval("var "+$var+"=$ns[$var]");'
+js +='$locals[$var]=$ns[$var]}'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
 for(var i=nodes.length-1;i>=0;i--){
 node.children.splice(0,0,nodes[i])
 }
-var offset=2 
 var def_func_node=new $Node('expression')
 new $NodeJSCtx(def_func_node,'return function()')
 var try_node=new $Node('expression')
@@ -948,6 +950,7 @@ if(i<this.env.length-1){txt +=','}
 }
 new $NodeJSCtx(ret_node,txt+')')
 node.parent.insert(rank+1,ret_node)
+var offset=2
 js=this.name+'.__name__'
 if(scope.ntype==='class'){
 js='$class.'+this.name+'.__name__'
@@ -4105,7 +4108,7 @@ var $js=$root.to_js()
 __BRYTHON__.scope[$mod_name].__dict__=$env
 try{
 eval($js)
-}catch(err){console.log('list comp err '+err);throw __BRYTHON__.exception(err)}
+}catch(err){throw __BRYTHON__.exception(err)}
 return eval("res"+$ix)
 }
 function $gen_expr(){
@@ -5957,11 +5960,8 @@ $JSObjectDict.__setitem__=$JSObjectDict.__setattr__
 function JSObject(obj){
 if(obj===null){return new $JSObject(obj)}
 if(obj.__class__===$ListDict){
-console.log('js from list '+obj.__brython__)
-if(obj.__brython__){console.log('return obj');return obj}
-else{console.log('wrap list');var res=new $JSObject(obj)
-console.log('wrapped '+res)
-console.log('class '+res.__class__+' mro '+res.__class__.__mro__)
+if(obj.__brython__){return obj}
+else{var res=new $JSObject(obj)
 return res
 }
 }
