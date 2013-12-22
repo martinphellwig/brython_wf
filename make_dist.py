@@ -6,7 +6,7 @@ import os
 import sys
 
 # version info
-version = [1,3,None,"alpha",0]
+version = [1,4,None,"alpha",0]
 
 try:
   import slimit 
@@ -233,7 +233,7 @@ make_VFS.process("src/py_VFS.js")
 try:
     _in = open('dist/changelog.txt').read()
     out = open('dist/changelog_%s.txt' %now,'w')
-    first = 'Changes in Brython version %s' %now
+    first = 'Changes in Brython version %s.%s-%s' %(version[0],version[1],now)
     out.write('%s\n' %first)
     out.write('%s\n\n' %('='*len(first)))
     out.write(_in)
