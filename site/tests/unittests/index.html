@@ -45,18 +45,6 @@ sys.stdout.write=write
 
 doc["console"].value=''
 
-#import test_grammar
-#test_grammar.test_main()
-
-#import test_math
-#test_math.test_main()
-
-#import test_format
-#test_format.test_main()
-
-#import test_int
-#test_int.test_main()
-
 # run_all doesn't print all error messages, just 'invalid syntax'
 def run_all():
     try:
@@ -85,29 +73,21 @@ def choose_test(event):
     exec("""
     try:
       import %s
-      %s.test_main()
+      _suite=unittest.TestLoader().loadTestsFromModule(%s)
+      unittest.TextTestRunner(sys.stdout, verbosity=2).run(_suite)
     except BaseException as e:
       print(e.args)
 """ % (module, module))
-
-    #print('Importing module %s\n' % module)
-    #exec('import %s' % module)
-
-    #print('Executing module %s\n\n' % module)
-    #exec('%s.test_main()' % module)
 </script>
 
 </head>
 
 <body onload="brython({debug:1, cache:'none'})">
-<center>
-<h1>UnitTests</h1>
-</center>
 <div style="text-align:center">
-<br>Brython version: <span id="version"></span>
+<h2>UnitTests</h2>
+Brython version: <span id="version"></span>
 </div>
 </center>
-
 
 <select onchange="choose_test(event)">
   <option value="">--choose test--</option>
@@ -118,7 +98,6 @@ def choose_test(event):
   <option value="test_math">test_math</option>
   <option value="test_with">test_with</option>
 </select>
-
 
 <div id="container">
 <textarea style="width:100%;height:100%" id="console"></textarea>
