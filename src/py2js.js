@@ -4032,6 +4032,12 @@ function brython(options){
     if(typeof options==='number'){options={'debug':options}}
     __BRYTHON__.debug = options.debug
 
+    if (options.open === undefined) {
+      $open=$url_open
+    } else {
+      $open=options.open
+    }
+
     __BRYTHON__.$options=options
     __BRYTHON__.exception_stack = []
     __BRYTHON__.call_stack = []
