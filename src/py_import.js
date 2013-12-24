@@ -159,7 +159,7 @@ function $import_py_module(module,path,module_contents) {
     try{
         var js = root.to_js()
         if (__BRYTHON__.$options.debug == 10) {
-            console.log('code for module '+module.name)
+           console.log('code for module '+module.name)
            console.log(js);
         }
         eval(js)
