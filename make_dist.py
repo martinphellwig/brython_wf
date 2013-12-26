@@ -76,7 +76,9 @@ out.write('__BRYTHON__.builtin_module_names = ["posix",')
 out.write(',\n    '.join(['"%s"' %fname.split('.')[0]
      for fname in os.listdir(os.path.join(os.getcwd(),'src','libs'))]))
 # add Python scripts in Lib that start with _ and are not found in CPython Lib
-stdlib_path = os.path.join(os.path.dirname(sys.executable),'Lib')
+#using sys.executable to find stdlib dir doesn't work under linux..
+stdlib_path = os.path.dirname(os.__file__)
+#stdlib_path = os.path.join(os.path.dirname(sys.executable),'Lib')
 stdlib_mods = [f for f in os.listdir(stdlib_path) if f.startswith('_')]
 brython_mods = [f for f in os.listdir(os.path.join(os.getcwd(),'src','Lib'))
     if f.startswith('_') and f!='__pycache__']

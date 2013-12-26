@@ -45,13 +45,13 @@ $ListDict.__delitem__ = function(self,arg){
         var res = [],i=null
         if(step>0){
             if(stop>start){
-                for(i=start;i<stop;i+=step){
+                for(var i=start;i<stop;i+=step){
                     if(self[i]!==undefined){res.push(i)}
                 }
             }
         } else {
             if(stop<start){
-                for(i=start;i>stop;i+=step.value){
+                for(var i=start;i>stop;i+=step.value){
                     if(self[i]!==undefined){res.push(i)}
                 }
                 res.reverse() // must be in ascending order
@@ -106,7 +106,7 @@ $ListDict.__getitem__ = function(self,arg){
         if(step>0){
             if(stop<=start){return res}
             else {
-                for(i=start;i<stop;i+=step){
+                for(var i=start;i<stop;i+=step){
                     if(items[i]!==undefined){res.push(items[i])}
                     else {res.push(None)}
                 }
@@ -115,7 +115,7 @@ $ListDict.__getitem__ = function(self,arg){
         } else {
             if(stop>=start){return res}
             else {
-                for(i=start;i>=stop;i+=step){
+                for(var i=start;i>=stop;i+=step){
                     if(items[i]!==undefined){res.push(items[i])}
                     else {res.push(None)}
                 }
