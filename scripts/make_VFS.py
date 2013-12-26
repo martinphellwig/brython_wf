@@ -27,8 +27,7 @@ def process(filename):
   for _mydir in ("libs", "Lib"):
     for _root, _dir, _files in os.walk(os.path.join(_main_root, _mydir)):
         print(_root)
-        if 'lib_migration' in _dir:
-            _dir.remove('lib_migration')
+        if 'lib_migration' in _root: continue
         #if _root.endswith('lib_migration'): continue  #skip these modules 
         for _file in _files:
             if _file.endswith('.py'):

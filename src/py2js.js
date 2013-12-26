@@ -1798,7 +1798,7 @@ function $ImportCtx(context){
             // $import_list returns an object
             // for "import a.b.c" this object has attributes
             // "a", "a.b" and "a.b.c", values are the matching modules
-            for(j=0;j<parts.length;j++){
+            for(var j=0;j<parts.length;j++){
                 if(j==0 && 
                     ['def','class'].indexOf(scope.ntype)>-1){
                     res += 'var '
