@@ -3,7 +3,7 @@ __BRYTHON__.VFS={"/Lib/stat.py": "\"\"\"Constants/functions for interpreting res
 
 //define import procedure to look up module in VFS
 $import_via_VFS=function(module,origin){
-  console.log("import_via_VFS")
+  console.log("import_via_VFS: " + module.name)
   var search_path=__BRYTHON__.path
   var root = __BRYTHON__.brython_path;
   if (root.substring(root.length) == '/') {
@@ -19,28 +19,36 @@ $import_via_VFS=function(module,origin){
 
   var _name=module.name
   _name=_name.replace('.', '/')
-  var mods=[_name, _name+'/__init__'];
+  var search=[_name, _name+'/__init__'];
   var exts=['.js', '.py']
-  for(var i=0; i<search_path.length; i++) {
-     for (var j=0; j<exts.length; j++) {
-         for(var k=0; k < mods.length; k++) {
+  for(var i=0; i < search_path.length; i++) {
+     for(var j=0; j < exts.length; j++) {
+        for(var k=0; k < search.length; k++) {
          
            var path=search_path[i].replace(root, '')
            var _ext=exts[j]
-           path+='/'+mods[k]+_ext
+           path+='/'+search[k]+_ext
          
            //console.log("searching for " + path + " in VFS:96");
-           var module_contents=__BRYTHON__.VFS[path];
+           var module_contents=__BRYTHON__.VFS[path]
            if(module_contents !== undefined) {
              console.log("imported ("+module.name+") via VFS:" + path)
              if (_ext == '.js') {
-                return $import_js_module(module,path,module_contents)
+                var mod=$import_js_module(module,path,module_contents)
+                if(k==search.length-1){mod.$package=true}
+                return mod
              }
-             return $import_py_module(module,path,module_contents)
+             var mod=$import_py_module(module,path,module_contents)
+             if(k==search.length-1){mod.$package=true}
+             return mod
            }
-         }
+        }
      }
   }
+
+  __BRYTHON__.imported[module.name] = undefined
+  __BRYTHON__.modules[module.name] = undefined
+
   throw ImportError("module " + module.name + " not found")
 }
 
@@ -49,34 +57,42 @@ $import_via_VFS=function(module,origin){
 $import_single=function (module,origin){
     var import_funcs = [$import_via_VFS, $import_js, $import_module_search_path]
 
+    if (module.name.indexOf('.') > -1) {
+       import_funcs = [$import_via_VFS, $import_module_search_path]
+    }
+
     for(var j=0;j<import_funcs.length;j++){
         try{
-            //console.log(j)
+            console.log(j)
             //console.log(import_funcs[j])
             var mod=import_funcs[j](module,origin)
             //console.log(mod)
             return mod
         } catch(err){
             console.log(err)
+            console.log(err.name)
             if(err.name==="FileNotFoundError" || err.name==='ImportError'){
                 if(j==import_funcs.length-1){
                     // all possible locations failed : throw error
                     // remove module name from __BRYTHON__.imported and .modules
-                    __BRYTHON__.imported[module.name] = undefined
-                    __BRYTHON__.modules[module.name] = undefined
-                    throw err
-                }else{
-                    continue
+                    //__BRYTHON__.imported[module.name] = undefined
+                    //__BRYTHON__.modules[module.name] = undefined
+                    //throw err
                 }
             }else{
               //  __BRYTHON__.imported[module.name] = undefined
               //  __BRYTHON__.modules[module.name] = undefined
-                //throw err
+              //  throw err
             }
         }
     }
-  throw ImportError("module " + module.name + " not found")
+    
+    //__BRYTHON__.imported[module.name] = undefined
+    //__BRYTHON__.modules[module.name] = undefined
 
+    throw ImportError("module " + module.name + " not found")
+
+    return undefined
 }
 
 
@@ -112,7 +128,7 @@ function $import_module_search_path_list(module,path_list,origin){
           var modpath = search[j]
           console.log(flag)
           for(var i=0;i<path_list.length;i++){
-             
+             console.log(path_list[i])
              var path
              if (path_list[i].substring(path_list[i].length) == '/') {
                 path = path_list[i] + modpath
@@ -121,7 +137,7 @@ function $import_module_search_path_list(module,path_list,origin){
              }
 
              var module_contents=__BRYTHON__.VFS[path + '.py'];
-             console.log('searching for ' + path + ' in VFS:166');
+             console.log('searching for ' + path + '.py'  + ' in VFS:166');
              //console.log(module_contents)
              if (module_contents !== undefined) {
                console.log("imported " + module.name + " via VFS")
@@ -129,13 +145,14 @@ function $import_module_search_path_list(module,path_list,origin){
                  mod=$import_py_module(module,path,module_contents)
                  flag=true
                  if(j==search.length-1){mod.$package=true}
+                 return mod
                }catch(err){
                   if(err.name==="FileNotFoundError" || err.name==='ImportError'){
                     if(j==search.length-1){
                       // all possible locations failed : throw error
                       // remove module name from __BRYTHON__.imported and .modules
-                      __BRYTHON__.imported[module.name] = undefined
-                      __BRYTHON__.modules[module.name] = undefined
+                     // __BRYTHON__.imported[module.name] = undefined
+                     // __BRYTHON__.modules[module.name] = undefined
                       throw err
                     }else{
                       continue
@@ -146,22 +163,23 @@ function $import_module_search_path_list(module,path_list,origin){
                     //throw err
                   }
                }
-               if(flag){break}
+              // if(flag){break}
              }
-             if(flag){break}
+             //if(flag){break}
 
              try {
                  console.log('searching for ' + path + _ext + ' :213');
                  mod = $import_py(module,path)
                  flag = true
                  if(j==search.length-1){mod.$package=true}
+                 return mod
              }catch(err){
                  if(err.name==="FileNotFoundError" || err.name==='ImportError'){
                     if(j==search.length-1){
                       // all possible locations failed : throw error
                       // remove module name from __BRYTHON__.imported and .modules
-                      __BRYTHON__.imported[module.name] = undefined
-                      __BRYTHON__.modules[module.name] = undefined
+                     // __BRYTHON__.imported[module.name] = undefined
+                     // __BRYTHON__.modules[module.name] = undefined
                       throw err
                     }else{
                       continue
@@ -178,10 +196,10 @@ function $import_module_search_path_list(module,path_list,origin){
        //}
        //if(flag){break}
     }
-    if(!flag){
-        throw ImportError("module "+module.name+" not found")
-    }
-    return mod
+    //if(!flag){
+    throw ImportError("module "+module.name+" not found")
+    //}
+    //return mod
 }
 
   
