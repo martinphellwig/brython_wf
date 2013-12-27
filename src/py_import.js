@@ -83,6 +83,7 @@ function $import_js_module(module,filepath,module_contents){
 }
 
 function $import_module_search_path(module,origin){
+  console.log("$import_module_search_path:" + module.name)
   // this module is needed by $import_from, so don't remove
   return $import_module_search_path_list(module,__BRYTHON__.path,origin);
 }
