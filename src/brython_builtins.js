@@ -1,3 +1,6 @@
+// Python __builtins__
+var __builtins__ = {}
+
 // global object with brython built-ins
 __BRYTHON__ = {}
 __BRYTHON__.__getattr__ = function(attr){return this[attr]}
@@ -12,6 +15,7 @@ __BRYTHON__.__setattr__ = function(attr,value){
 __BRYTHON__.language = window.navigator.userLanguage || window.navigator.language
 
 __BRYTHON__.date = function(){
+    var JSObject = __BRYTHON__.JSObject
     if(arguments.length===0){return JSObject(new Date())}
     else if(arguments.length===1){return JSObject(new Date(arguments[0]))}
     else if(arguments.length===7){return JSObject(new Date(arguments[0],
@@ -25,7 +29,7 @@ if(__BRYTHON__.has_local_storage){
         // in IE8, not 'function' as in other browsers. So we have to
         // return a specific object...
         if(typeof localStorage.getItem==='function'){
-            var res = JSObject(localStorage)
+            var res = __BRYTHON__.JSObject(localStorage)
         }else{
             var res = new Object()
             res.__getattr__ = function(attr){return this[attr]}
@@ -46,10 +50,10 @@ window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange
 
 __BRYTHON__.has_indexedDB = typeof(window.indexedDB) !== "undefined"
 if (__BRYTHON__.has_indexedDB) {
-   __BRYTHON__.indexedDB = function() {return JSObject(window.indexedDB)}
+   __BRYTHON__.indexedDB = function() {return __BRYTHON__.JSObject(window.indexedDB)}
 }
 
-__BRYTHON__.re = function(pattern,flags){return JSObject(new RegExp(pattern,flags))}
+__BRYTHON__.re = function(pattern,flags){return__BRYTHON__. JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json = typeof(JSON)!=="undefined"
 
 __BRYTHON__.has_websocket = (function(){

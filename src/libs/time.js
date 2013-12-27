@@ -1,7 +1,11 @@
-$module =  {
+$module = (function(){
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+var $JSObject = __BRYTHON__.$JSObject
+var JSObject = __BRYTHON__.JSObject
 
-    __getattr__ : function(attr){return this[attr]},
-    
+
+return  {
+
     __name__ : 'time',
 
     ctime: function(timestamp){
@@ -14,8 +18,8 @@ $module =  {
     },
     gmtime: function(){
        var d=new Date();
-       return list([d.getFullYear(), d.getMonth()+1, d.getDate(), d.getHours(),
-                    d.getMinutes(), d.getSeconds(), d.getDay(), 0, 0])
+       return [d.getFullYear(), d.getMonth()+1, d.getDate(), d.getHours(),
+                    d.getMinutes(), d.getSeconds(), d.getDay(), 0, 0]
     },
     perf_counter: function() {
         return float((new Date()).getTime()/1000.0);
@@ -31,8 +35,8 @@ $module =  {
        var jul = new Date(d.getFullYear(), 6, 1);
        var dst=int(d.getTimezoneOffset() < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset()));
 
-       return list([d.getFullYear(), d.getMonth()+1, d.getDate(), d.getHours(),
-                    d.getMinutes(), d.getSeconds(), d.getDay(), 0, dst])
+       return [d.getFullYear(), d.getMonth()+1, d.getDate(), d.getHours(),
+                    d.getMinutes(), d.getSeconds(), d.getDay(), 0, dst]
        //fixme  (second to last value is 0 which is the number of days in this year..)
     },
     time : function(){return float((new Date().getTime())/1000)},
@@ -74,6 +78,8 @@ $module =  {
     },
     
     struct_time : function(arg){
+        console.log('struct time')
+        console.log('list '+list)
         if(!isinstance(arg,[tuple,list])){
             throw TypeError('constructor requires a sequence')
         }
@@ -97,3 +103,5 @@ $module =  {
         return res
     }
 }
+
+})()

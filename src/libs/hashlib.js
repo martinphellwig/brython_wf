@@ -1,4 +1,9 @@
-$module = {
+$module = (function(){
+
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+
+$mod = {
+
     __getattr__ : function(attr){
         if (attr == 'new') {return $hashlib_new;}
         return this[attr]
@@ -89,5 +94,6 @@ function $hashlib_new(alg) {
     return this;
 }
 
-$module.__class__ = $module
-$module.__str__ = function() {return "<module 'hashlib'>"}
+return $mod
+
+})()

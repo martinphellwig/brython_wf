@@ -1,5 +1,7 @@
 $module = (function(){
 
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+
 $svgNS = "http://www.w3.org/2000/svg"
 $xlinkNS = "http://www.w3.org/1999/xlink"
 
@@ -7,7 +9,7 @@ function $SVGTag(tag_name,args){
     // represents an SVG tag
     var $i = null
     var $obj = this
-    var obj = $DOMNode(document.createElementNS($svgNS,tag_name))
+    var obj = __BRYTHON__.$DOMNode(document.createElementNS($svgNS,tag_name))
     if(args!=undefined && args.length>0){
         $start = 0
         $first = args[0]
@@ -32,9 +34,9 @@ function $SVGTag(tag_name,args){
             $arg = args[$i]
             if($arg && $arg.__class__===$KwDict){
                 if($arg.name.toLowerCase().substr(0,2)=="on"){ // events
-                    eval('DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
+                    eval('__BRYTHON__.DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
                 }else if($arg.name.toLowerCase()=="style"){
-                    DOMNode.set_style(obj,$arg.value)
+                    __BRYTHON__.DOMNode.set_style(obj,$arg.value)
                 }else if($arg.name.toLowerCase().indexOf("href") !== -1){ // xlink:href
                     obj.elt.setAttributeNS( "http://www.w3.org/1999/xlink","href",$arg.value)
                 } else {

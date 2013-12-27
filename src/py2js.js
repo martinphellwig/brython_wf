@@ -1,3 +1,7 @@
+
+
+brython = (function(){
+
 var $operators = {
     "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
     "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
@@ -10,6 +14,7 @@ var $operators = {
     "or":"or","and":"and", "in":"in", //"not":"not",
     "is":"is","not_in":"not_in","is_not":"is_not" // fake
     }
+
 var $oplist = []
 for(var attr in $operators){$oplist.push(attr)}
 
@@ -610,7 +615,7 @@ function $CallCtx(context){
             }else if(ns !=''){
                 // use specified namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{$DictDict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
+                res += '{__builtins__.dict.$dict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
             }else{
                 // namespace not specified copy the execution namespace in module namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
@@ -1052,8 +1057,11 @@ function $DefCtx(context){
 
         var txt = ')('
         for(var i=0;i<this.env.length;i++){
-            txt += '$class.'+this.env[i]+' != undefined ? '
-            txt += '$class.'+this.env[i]+' : '+this.env[i]
+            if(scope.ntype=='class'){
+                txt += '$class.'+this.env[i]+' != undefined ? '
+                txt += '$class.'+this.env[i]+' : '
+            }
+            txt += this.env[i]
             if(i<this.env.length-1){txt += ','}
         }
         new $NodeJSCtx(ret_node,txt+')')
@@ -1270,7 +1278,7 @@ function $ExceptCtx(context){
         else if(this.tree.length===1 && this.tree[0].name==='Exception'){
             return 'else if(true)'
         }else{
-            var res ='else if($is_exc('+this.error_name+',['
+            var res ='else if(__BRYTHON__.is_exc('+this.error_name+',['
             for(var i=0;i<this.tree.length;i++){
                 res+=this.tree[i].to_js()
                 if(i<this.tree.length-1){res+=','}
@@ -1376,7 +1384,7 @@ function $ForExpr(context){
         try_node.add(iter_node)
 
         var catch_node = new $Node('expression')
-        var js = 'catch($err){if($is_exc($err,[StopIteration])){$pop_exc();break}'
+        var js = 'catch($err){if(__BRYTHON__.is_exc($err,[StopIteration])){$pop_exc();break}'
         js += 'else{throw($err)}}'
         new $NodeJSCtx(catch_node,js)
         node.insert(1,catch_node)
@@ -1481,8 +1489,8 @@ function $FromCtx(context){
                 }
                 res += '=getattr(__BRYTHON__.imported["'+this.module+'"],"'+this.names[i]+'")}\n'
                 res += 'catch($err'+$loop_num+'){if($err'+$loop_num+'.__class__'
-                res += '===$AttributeErrorDict){$err'+$loop_num+'.__class__'
-                res += '=$ImportErrorDict};throw $err'+$loop_num+'};'
+                res += '===AttributeError.$dict){$err'+$loop_num+'.__class__'
+                res += '=ImportError.$dict};throw $err'+$loop_num+'};'
              }
            }
         }
@@ -1625,6 +1633,13 @@ function $IdCtx(context,value,minus){
 
     var scope = $get_scope(this)
     if(scope.ntype=='def' || scope.ntype=='generator'){
+        // if variable is declared inside a comprehension, don't add it to function
+        // namespace
+        var _ctx=this.parent
+        while(_ctx){
+            if(_ctx.type=='list_or_tuple' && _ctx.is_comp()){return}
+            _ctx = _ctx.parent
+        }
         if(context.type=='target_list'){
             if(context.parent.type=='for'){
                 // a "for" loop inside the function creates a local variable : 
@@ -1656,6 +1671,9 @@ function $IdCtx(context,value,minus){
                     scope.var2node[value].splice(i,1)
                 }
             }
+        }else if(context.type=='expr' && context.parent.type=='comp_if'){
+            // form {x for x in foo if x>5} : don't put x in referenced names
+            return
         }else if(context.type=='global'){
             if(scope.globals === undefined){
                 scope.globals = [value]
@@ -1711,7 +1729,7 @@ function $IdCtx(context,value,minus){
  
     this.to_js = function(arg){
         var val = this.value
-        if(['print','alert','eval','open'].indexOf(this.value)>-1){val = '$'+val}
+        if(['print','eval','open'].indexOf(this.value)>-1){val = '$'+val}
         if(['locals','globals'].indexOf(this.value)>-1){
             if(this.parent.type==='call'){
                 var scope = $get_scope(this)
@@ -1787,18 +1805,14 @@ function $ImportCtx(context){
         var elts = path.split('/')
         elts.pop()
         path =elts.join('/')
-        // temporarily add module path to __BRYTHON__.path
         var res = ''
-        //res += 'var $flag=false;'
-        //res += 'if(__BRYTHON__.path.indexOf("'+path+'")==-1)'
-        //res += '{__BRYTHON__.path.splice(0,0,"'+path+'");$flag=true};'
         for(var i=0;i<this.tree.length;i++){
             res += '$import_list(['+this.tree[i].to_js()+']);'
             var parts = this.tree[i].name.split('.')
-            // $import_list returns an object
+            // $import returns an object
             // for "import a.b.c" this object has attributes
             // "a", "a.b" and "a.b.c", values are the matching modules
-            for(var j=0;j<parts.length;j++){
+            for(j=0;j<parts.length;j++){
                 if(j==0 && 
                     ['def','class'].indexOf(scope.ntype)>-1){
                     res += 'var '
@@ -1939,6 +1953,7 @@ function $ListOrTupleCtx(context,real){
     this.parent = context
     this.tree = []
     context.tree.push(this)
+    
     this.is_comp = function(){
         return ['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1
     }
@@ -2245,7 +2260,7 @@ function $TernaryCtx(context){
         var args = '"'+this.tree[1].to_js().replace(qesc,'\\"')+'","' // condition
         args += escape(this.tree[0].to_js())+'","' // result if true
         args += escape(this.tree[2].to_js()) // result if false
-        return '$ternary('+env+','+args+'")'
+        return '__BRYTHON__.$ternary('+env+','+args+'")'
     }
 }
 
@@ -2561,6 +2576,32 @@ function $augmented_assign(context,op){
     return new $AbstractExprCtx(assign)
 }
 
+function $clear_ns(ctx){
+    // Function called when it turns out that the list or tuple is a comprehension
+    // If the list is in a function, the names defined in the display so far must 
+    // be removed from the function namespace
+    var scope = $get_scope(ctx)
+    if(scope.ntype=="def" || scope.ntype=="generator"){
+        if(scope.var2node){
+            for(var name in scope.var2node){
+                var remove = []
+                for(var j=0;j<scope.var2node[name].length;j++){
+                    var elt = scope.var2node[name][j].parent
+                    while(elt.parent){
+                        if(elt===ctx){remove.push(j);break}
+                        elt=elt.parent
+                    }
+                }
+                for(var k=remove.length-1;k>=0;k--){
+                    scope.var2node[name].splice(remove[k],1)
+                }
+                //if(scope.var2node[name].length==0){scope.var2node[name]==undefined}
+
+            }
+        }
+    }
+}
+
 function $get_docstring(node){
     var doc_string='""'
     if(node.children.length>0){
@@ -2765,6 +2806,7 @@ function $transition(context,token){
             return new $ExprCtx(new $KwArgCtx(context),'kw_value',false)
         }else if(token==='for'){
             // comprehension
+            $clear_ns(context) // if inside function
             var lst = new $ListOrTupleCtx(context,'gen_expr')
             lst.vars = context.vars // copy variables
             lst.locals = context.locals
@@ -2904,6 +2946,7 @@ function $transition(context,token){
                     }else{$_SyntaxError(context,'token '+token+' after '+context)}
                 }else if(token==='for'){
                     // comprehension
+                    $clear_ns(context) // if defined inside a function
                     if(context.real==='dict_or_set'){context.real = 'set_comp'}
                     else{context.real='dict_comp'}
                     var lst = new $ListOrTupleCtx(context,'dict_or_set_comp')
@@ -3308,6 +3351,9 @@ function $transition(context,token){
                     // comprehension
                     if(context.real==='list'){context.real = 'list_comp'}
                     else{context.real='gen_expr'}
+                    // remove names already referenced in list from the function
+                    // references
+                    $clear_ns(context)
                     context.intervals = [context.start+1]
                     context.expression = context.tree
                     context.tree = [] // reset tree
@@ -3579,7 +3625,10 @@ __BRYTHON__.py2js = function(src,module,parent){
     var root = $tokenize(src,module,parent)
     root.transform()
     // add variable $globals
-    js = 'var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $globals'
+    js = 'var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $globals\n'
+    js += 'for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
+    js += 'var JSObject = __BRYTHON__.JSObject\n'
+    js += 'var JSConstructor = __BRYTHON__.JSConstructor\n'
     var new_node = new $Node('expression')
     new $NodeJSCtx(new_node,js)
     root.insert(0,new_node)
@@ -3603,7 +3652,7 @@ __BRYTHON__.py2js = function(src,module,parent){
     return root
 }
 
-__BRYTHON__.forbidden = ['case','catch','constructor','Date','delete',
+__BRYTHON__.forbidden = ['alert','case','catch','constructor','Date','delete',
     'default','document','Error','history','function','location','Math','new','Number','RegExp',
     'this','throw','var','super','window']
 
@@ -4032,17 +4081,12 @@ function brython(options){
     if(typeof options==='number'){options={'debug':options}}
     __BRYTHON__.debug = options.debug
 
-    if (options.open === undefined) {
-      $open=$url_open
-    } else {
-      $open=options.open
-    }
-
+    if (options.open !== undefined) {__builtins__.$open = options.open}
     __BRYTHON__.$options=options
     __BRYTHON__.exception_stack = []
     __BRYTHON__.call_stack = []
     __BRYTHON__.scope = {}
-    __BRYTHON__.events = dict() // maps $brython_id of DOM elements to events
+    __BRYTHON__.events = __builtins__.dict() // maps $brython_id of DOM elements to events
     var $elts = document.getElementsByTagName("script")
     var $href = window.location.href
     var $href_elts = $href.split('/')
@@ -4050,7 +4094,7 @@ function brython(options){
     var $script_path = $href_elts.join('/')
 
     __BRYTHON__.path = []
-    if (isinstance(options.pythonpath, list)) {
+    if (options.pythonpath!==undefined) {
        __BRYTHON__.path = options.pythonpath
     }
     if (!(__BRYTHON__.path.indexOf($script_path) > -1)) {
@@ -4121,6 +4165,9 @@ function brython(options){
                 if(__BRYTHON__.debug>1){console.log($js)}
                 eval($js)
                 var _mod = $globals
+                for(var $attr in $globals){
+                    //console.log('var '+$attr)
+                }
                 _mod.__class__ = $ModuleDict
                 _mod.__name__ = '__main__'
                 _mod.__file__ = __BRYTHON__.$py_module_path['__main__']
@@ -4130,7 +4177,7 @@ function brython(options){
                 for(var attr in $err){
                     console.log(attr+' : '+$err[attr])
                 }
-                if($err.py_error===undefined){$err = RuntimeError($err+'')}
+                if($err.py_error===undefined){$err = __builtins__.RuntimeError($err+'')}
                 var $trace = $err.__name__+': '+$err.message
                 //if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
                     $trace += '\n'+$err.info
@@ -4142,3 +4189,8 @@ function brython(options){
         }
     }
 }
+__BRYTHON__.$operators = $operators
+__BRYTHON__.$Node = $Node
+__BRYTHON__.$NodeJSCtx = $NodeJSCtx
+return brython
+})()

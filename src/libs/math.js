@@ -1,3 +1,6 @@
+var $module = (function(){
+
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 
 var float_check=function(x) {
     if (isinstance(x, float)) return x.value;
@@ -9,7 +12,7 @@ var isinf=function(x) {
     return x1 == -Infinity || x1 == Infinity || x1 == Number.POSITIVE_INFINITY || x1 == Number.NEGATIVE_INFINITY;
 }
 
-$module = {
+var _mod = {
     __getattr__ : function(attr){
         var res = this[attr]
         if(res===undefined){$raise('AttributeError','module math has no attribute '+attr)}
@@ -184,6 +187,7 @@ $module = {
     sin : function(x){return float(Math.sin(float_check(x)))},
     sqrt : function(x){return float(Math.sqrt(float_check(x)))},
     trunc: function(x) {
+        console.log('trunc')
        try{return getattr(x,'__trunc__')()}catch(err){$pop_exc()}
        var x1=float_check(x);
        if (!isNaN(parseFloat(x1)) && isFinite(x1)) return int(Math.floor(x1));
@@ -192,11 +196,15 @@ $module = {
     }
 }
 
-for(var $attr in $module){
-    if(typeof $module[$attr]==='function'){
-        $module[$attr].__repr__=(function(func){
+for(var $attr in _mod){
+    if(typeof _mod[$attr]==='function'){
+        _mod[$attr].__repr__=(function(func){
             return function(){return '<built-in function '+func+'>'}})($attr)
-        $module[$attr].__str__=(function(func){
+        _mod[$attr].__str__=(function(func){
             return function(){return '<built-in function '+func+'>'}})($attr)
     }
 }
+
+return _mod
+
+})()

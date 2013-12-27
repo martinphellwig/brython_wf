@@ -1,4 +1,7 @@
-list = function(){
+;(function(br_obj){
+
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+var $ObjectDict = object.$dict
 
 function $list(){
     // used for list displays
@@ -9,7 +12,7 @@ function $list(){
     return new $ListDict(args)
 }
 
-$ListDict = {$native:true}
+var $ListDict = {$native:true}
 
 $ListDict.__add__ = function(self,other){
     var res = self.valueOf().concat(other.valueOf())
@@ -173,6 +176,7 @@ $ListDict.__init__ = function(self,arg){
     }
 }
 
+$list_iterator = $iterator_class('list_iterator')
 $ListDict.__iter__ = function(self){
     return $iterator(self,$list_iterator)
 }
@@ -199,6 +203,8 @@ $ListDict.__mul__ = function(self,other){
 $ListDict.__name__ = 'list'
 
 $ListDict.__ne__ = function(self,other){return !$ListDict.__eq__(self,other)}
+
+$ListDict.__new__ = $__new__(list)
 
 $ListDict.__not_in__ = function(self,item){return !$ListDict.__in__(self,item)}
 
@@ -422,6 +428,42 @@ Array.prototype.$dict = {
     'sort':function(){$ListDict.sort.apply(this,arguments)}
 }
 
+function $tuple(arg){return arg} // used for parenthesed expressions
+
+var $TupleDict = {__class__:$type,__name__:'tuple'}
+
+$TupleDict.__iter__ = function(self){
+    return $iterator(self,$tuple_iterator)
+}
+
+$TupleDict.toString = function(){return '$TupleDict'}
+
+// other attributes are defined in py_list.js, once list is defined
+
+var $tuple_iterator = $iterator_class('tuple_iterator')
+
+// type() is implemented in py_utils
+
+function tuple(){
+    var obj = __builtins__.list.apply(null,arguments)
+    obj.__class__ = $TupleDict
+
+    obj.__hash__ = function () {
+      // http://nullege.com/codes/show/src%40p%40y%40pypy-HEAD%40pypy%40rlib%40test%40test_objectmodel.py/145/pypy.rlib.objectmodel._hash_float/python
+      var x= 0x345678
+      for(var i=0; i < args.length; i++) {
+         var y=args[i].__hash__();
+         x=(1000003 * x) ^ y & 0xFFFFFFFF;
+      }
+      return x
+    }
+    return obj
+}
+tuple.__class__ = $factory
+tuple.$dict = $TupleDict
+$TupleDict.$factory = tuple
+$TupleDict.__new__ = $__new__(tuple) //function(arg){return tuple(arg)}
+
 // add tuple methods
 for(var attr in $ListDict){
     if(['__delitem__','__setitem__',
@@ -441,7 +483,6 @@ $TupleDict.__eq__ = function(self,other){
 $TupleDict.__mro__ = [$TupleDict,$ObjectDict]
 $TupleDict.__name__ = 'tuple'
 
-return list
-}()
-$list_iterator = $iterator_class('list_iterator')
-$ListDict.__new__ = $__new__(list)
+br_obj.list = list
+br_obj.tuple = tuple
+})(__builtins__)

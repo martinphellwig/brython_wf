@@ -83,8 +83,12 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
         msg += "and '"+missing.pop()+"'"
         throw TypeError(msg)
     }
-    if($other_kw!=null){$ns[$other_kw]=new $DictClass($dict_keys,$dict_values)}
-    if($other_args!=null){$ns[$other_args]=tuple($ns[$other_args])}
+    if($other_kw!=null){
+        $ns[$other_kw]=__builtins__.dict()
+        $ns[$other_kw].$keys = $dict_keys
+        $ns[$other_kw].$values = $dict_values
+    }
+    if($other_args!=null){$ns[$other_args]=__builtins__.tuple($ns[$other_args])}
     return $ns
 }
 
@@ -127,7 +131,15 @@ function $list_comp(){
 function $gen_expr(){ // generator expresssion
     var $env = arguments[0]
     for(var $arg in $env){
-        eval("var "+$arg+'=$env["'+$arg+'"]')
+        try{
+            if($arg.search(/\./)>-1){ // qualified name
+                eval($arg+'=$env["'+$arg+'"]')
+            }else{
+                eval("var "+$arg+'=$env["'+$arg+'"]')
+            }
+        }catch(err){
+            throw err
+        }
     }
     var $ix = Math.random().toString(36).substr(2,8)
     var $res = 'res'+$ix
@@ -152,8 +164,8 @@ function $gen_expr(){ // generator expresssion
         __name__:'generator',
         toString:function(){return '(generator)'}
     }
-    $GenExprDict.__mro__ = [$GenExprDict,$ObjectDict]
-    $GenExprDict.__iter__ = function(self){return $ListDict.__iter__(self.value)}
+    $GenExprDict.__mro__ = [$GenExprDict,__builtins__.object.$dict]
+    $GenExprDict.__iter__ = function(self){return __builtins__.list.$dict.__iter__(self.value)}
     $GenExprDict.__str__ = function(self){
         if(self===undefined){return "<class 'generator'>"}
         return '<generator object <genexpr>>'
@@ -182,9 +194,11 @@ function $dict_comp(){ // dictionary comprehension
     }
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.update({'+arguments[1]+'})'
-    var mod_name = 'dc'+$ix
-    var $js = __BRYTHON__.py2js($py,mod_name,document.$line_info).to_js()
-    __BRYTHON__.scope[mod_name].__dict__ = $env
+    var $mod_name = 'dc'+$ix
+    var $root = __BRYTHON__.py2js($py,$mod_name,document.$line_info)
+    $root.caller = document.$line_info
+    var $js = $root.to_js()
+    __BRYTHON__.scope[$mod_name].__dict__ = $env
     eval($js)
     return eval($res)
 }
@@ -213,7 +227,7 @@ function $generator(func){
         }
         else{throw StopIteration("")}
     }
-    $GeneratorDict.__mro__ = [$GeneratorDict,$ObjectDict]
+    $GeneratorDict.__mro__ = [$GeneratorDict,__builtins__.object.$dict]
 
     var res = function(){
         func.$iter = []
@@ -221,7 +235,7 @@ function $generator(func){
         // cheat ! capture all standard output
         var save_stdout = document.$stdout
         var output = {}
-        document.$stdout = JSObject({
+        document.$stdout = __BRYTHON__.JSObject({
             write : function(data){
                 var loop_num = func.$iter.length
                 if(output[loop_num]===undefined){
@@ -249,7 +263,11 @@ $generator.__repr__ = function(){return "<class 'generator'>"}
 $generator.__str__ = function(){return "<class 'generator'>"}
 $generator.__class__ = $type
 
-function $ternary(env,cond,expr1,expr2){
+__BRYTHON__.$ternary = function(env,cond,expr1,expr2){
+    // env is the environment to run the ternary expression
+    // built-in names must be available to evaluate the expression
+    for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+
     for(var attr in env){eval('var '+attr+'=env["'+attr+'"]')}
     var res = 'if ('+cond+'){\n'
     res += '    var $res = '+unescape(expr1)+'\n}else{\n'
@@ -271,13 +289,13 @@ function $lambda($globals,$locals,$args,$body){
 
 // transform native JS types into Brython types
 function $JS2Py(src){
-    if(src===null||src===undefined){return None}
+    if(src===null||src===undefined){return __builtins__.None}
     if(typeof src==='number'){
         if(src%1===0){return src}
         else{return float(src)}
     }
     if(src.__class__!==undefined){
-        if(src.__class__===$ListDict){
+        if(src.__class__===__builtins__.list.$dict){
             for(var i=0;i<src.length;i++){
                 src[i] = $JS2Py(src[i])
             }
@@ -285,9 +303,9 @@ function $JS2Py(src){
         return src
     }
     if(typeof src=="object"){
-        if($isNode(src)){return $DOMNode(src)}
-        else if($isEvent(src)){return $DOMEvent(src)}
-        else if(src.constructor===Array||$isNodeList(src)){
+        if(__BRYTHON__.$isNode(src)){return __BRYTHON__.$DOMNode(src)}
+        else if(__BRYTHON__.$isEvent(src)){return __BRYTHON__.$DOMEvent(src)}
+        else if(src.constructor===Array||__BRYTHON__.$isNodeList(src)){
             var res = []
             for(var i=0;i<src.length;i++){
                 res.push($JS2Py(src[i]))
@@ -295,7 +313,7 @@ function $JS2Py(src){
             return res
         }
     }
-    return JSObject(src)
+    return __BRYTHON__.JSObject(src)
 }
 
 // generic attribute getter
@@ -329,7 +347,7 @@ function $syntax_err_line(module,pos) {
     var lnum=1
     var src = document.$py_src[module]
     var line_pos = {1:0}
-    for(i=0;i<src.length;i++){
+    for(var i=0;i<src.length;i++){
         pos2line[i]=lnum
         if(src.charAt(i)=='\n'){lnum+=1;line_pos[lnum]=i}
     }
@@ -397,7 +415,7 @@ function $UnsupportedOpType(op,class1,class2){
 // classes used for passing parameters to functions
 // keyword arguments : foo(x=1)
 $KwDict = {__class__:$type,__name__:'kw'}
-$KwDict.__mro__ = [$KwDict,$ObjectDict]
+$KwDict.__mro__ = [$KwDict,__builtins__.object.$dict]
 
 function $Kw(name,value){
     return {__class__:$KwDict,name:name,value:value}
@@ -443,7 +461,7 @@ function $test_item(expr){
     // returns a Javascript boolean (true or false) and stores
     // the evaluation in a global variable $test_result
     document.$test_result = expr
-    return bool(expr)
+    return __builtins__.bool(expr)
 }
 
 function $test_expr(){
@@ -480,8 +498,7 @@ catch(err){
 }
 
 function $List2Dict(){
-    var res = {}
-    var i=0
+    var res = {},i
     if(arguments.length==1 && arguments[0].constructor==Array){
         // arguments passed as a list
         for(i=0;i<arguments[0].length;i++){
@@ -504,7 +521,7 @@ function $last(item){
 // to convert python style objects to a js object type
 
 function pyobject2jsobject(obj) {
-    if(isinstance(obj,dict)){
+    if(__builtins__.isinstance(obj,__builtins__.dict)){
         var temp = new Object()
         temp.__class__ = 'dict'
         for(var i=0;i<obj.$keys.length;i++){temp[obj.$keys[i]]=obj.$values[i]}
@@ -516,9 +533,9 @@ function pyobject2jsobject(obj) {
 }
 
 function jsobject2pyobject(obj) {
-    if(obj === undefined) return None
+    if(obj === undefined) return __builtins__.None
     if(obj.__class__ === 'dict'){
-       var d = dict()
+       var d = __builtins__.dict()
        for(var attr in obj){
           if (attr !== '__class__') d.__setitem__(attr, obj[attr])
        }
