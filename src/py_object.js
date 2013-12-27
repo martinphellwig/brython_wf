@@ -1,5 +1,29 @@
+// A function that builds the __new__ method for the factory function
+function $__new__(factory){
+    return function(cls){
+        if(cls===undefined){
+            throw TypeError(factory.$dict.__name__+'.__new__(): not enough arguments')
+        }
+        var res = factory.apply(null,[])
+        res.__class__ = cls.$dict
+        var init_func = null
+        try{init_func = __builtins__.getattr(res,'__init__')}
+        catch(err){$pop_exc()}
+        if(init_func!==null){
+            var args = []
+            for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+            init_func.apply(null,args)
+            res.__initialized__ = true
+        }
+        return res
+    }
+}
+
+__builtins__.object = (function(){
+
+
 // class object for the built-in class 'object'
-$ObjectDict = {
+var $ObjectDict = {
     //__class__:$type, : not here, added in py_type.js after $type is defined
     __name__:'object',
     $native:true
@@ -115,7 +139,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                             local_args.push(arguments[i])
                         }
                         var x = res.apply(obj,local_args)
-                        if(x===undefined){return None}else{return x}
+                        if(x===undefined){return __builtins__.None}else{return x}
                     }})(args)
                 method.__class__ = $MethodDict
                 method.__func__ = __func__
@@ -158,7 +182,7 @@ $ObjectDict.__hash__ = function (self) {
 }
 
 $ObjectDict.__in__ = function(self,other){
-    return getattr(other,'__contains__')(self)
+    return __builtins__.getattr(other,'__contains__')(self)
 }
 
 $ObjectDict.__le__ = $ObjectNI('__le__','<=')
@@ -166,27 +190,6 @@ $ObjectDict.__le__ = $ObjectNI('__le__','<=')
 $ObjectDict.__lt__ = $ObjectNI('__lt__','<')
 
 $ObjectDict.__mro__ = [$ObjectDict]
-
-// A funtion that builds the __new__ method for the factory function
-function $__new__(factory){
-    return function(cls){
-        if(cls===undefined){
-            throw TypeError(factory.$dict.__name__+'.__new__(): not enough arguments')
-        }
-        var res = factory.apply(null,[])
-        res.__class__ = cls.$dict
-        var init_func = null
-        try{init_func = getattr(res,'__init__')}
-        catch(err){$pop_exc()}
-        if(init_func!==null){
-            var args = []
-            for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-            init_func.apply(null,args)
-            res.__initialized__ = true
-        }
-        return res
-    }
-}
 
 $ObjectDict.__new__ = function(cls){
     if(cls===undefined){throw TypeError('object.__new__(): not enough arguments')}
@@ -198,7 +201,7 @@ $ObjectDict.__new__ = function(cls){
 $ObjectDict.__ne__ = function(self,other){return self!==other}
 
 $ObjectDict.__or__ = function(self,other){
-    if(bool(self)){return self}else{return other}
+    if(__builtins__.bool(self)){return self}else{return other}
 }
 
 $ObjectDict.__repr__ = function(self){
@@ -235,3 +238,7 @@ function object(){
 object.$dict = $ObjectDict
 // object.__class__ = $factory : this is done in py_types
 $ObjectDict.$factory = object
+
+return object
+
+})()

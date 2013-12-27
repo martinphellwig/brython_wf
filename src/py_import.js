@@ -83,8 +83,8 @@ function $import_js_module(module,filepath,module_contents){
 }
 
 function $import_module_search_path(module,origin){
-  console.log("$import_module_search_path:" + module.name)
   // this module is needed by $import_from, so don't remove
+  var path_list = __BRYTHON__.path.slice()
   return $import_module_search_path_list(module,__BRYTHON__.path,origin);
 }
 
@@ -135,6 +135,7 @@ function $import_py(module,path){
 }
 
 function $import_py_module(module,path,module_contents) {
+    var $Node = __BRYTHON__.$Node,$NodeJSCtx=__BRYTHON__.$NodeJSCtx
     __BRYTHON__.$py_module_path[module.name]=path //.substr(__BRYTHON__.brython_path.length)
 
     var root = __BRYTHON__.py2js(module_contents,module.name)
@@ -159,7 +160,7 @@ function $import_py_module(module,path,module_contents) {
     try{
         var js = root.to_js()
         if (__BRYTHON__.$options.debug == 10) {
-           console.log('code for module '+module.name)
+            console.log('code for module '+module.name)
            console.log(js);
         }
         eval(js)

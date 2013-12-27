@@ -1,3 +1,7 @@
+;(function(){
+
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+
 // set
 
 $SetDict = {
@@ -29,7 +33,6 @@ $SetDict.__contains__ = function(self,item){
 }
 
 $SetDict.__eq__ = function(self,other){
-    console.log('set eq')
     if(other===undefined){ // compare class set
         return self===set
     }
@@ -66,7 +69,7 @@ $SetDict.__init__ = function(self){
     else if(args.length==1){    // must be an iterable
         var arg=args[0]
         if(isinstance(arg,set)){
-            self.$items = arg.$item
+            self.$items = arg.$items
             return
         }
         try{
@@ -107,7 +110,7 @@ $SetDict.__lt__ = function(self,other){
     return $SetDict.__le__(self,other)&&$SetDict.__len__(self)<getattr(other,'__len__')()
 }
 
-$SetDict.__mro__ = [$SetDict,$ObjectDict]
+$SetDict.__mro__ = [$SetDict,__builtins__.object.$dict]
 
 $SetDict.__ne__ = function(self,other){return !$SetDict.__eq__(self,other)}
 
@@ -175,7 +178,6 @@ $SetDict.__xor__ = function(self,other){
 }
 
 $SetDict.add = function(self,item){
-    if(self.$real=='frozen'){throw AttributeError("'frozenset' object has no attribute 'add'")}
     for(var i=0;i<self.$items.length;i++){
         try{if(getattr(item,'__eq__')(self.$items[i])){return}}
         catch(err){void(0)} // if equality test throws exception
@@ -184,9 +186,6 @@ $SetDict.add = function(self,item){
 }
 
 $SetDict.clear = function(self){
-    if(self.__class__===frozenset.$dict){
-        throw AttributeError("'frozenset' object has no attribute 'clear'")
-    }
     self.$items = []
 }
 
@@ -197,9 +196,6 @@ $SetDict.copy = function(self){
 }
 
 $SetDict.discard = function(self,item){
-    if(self.$real=='frozen'){
-        throw AttributeError("'frozenset' object has no attribute 'discard'")
-    }
     try{$SetDict.remove(self,item)}
     catch(err){if(err.__name__!=='KeyError'){throw err}}
 }
@@ -212,17 +208,11 @@ $SetDict.isdisjoint = function(self,other){
 }
 
 $SetDict.pop = function(self){
-    if(self.$real=='frozen'){
-        throw AttributeError("'frozenset' object has no attribute 'pop'")
-    }
     if(self.$items.length===0){throw KeyError('pop from an empty set')}
     return self.$items.pop()
 }
 
 $SetDict.remove = function(self,item){
-    if(self.$real=='frozen'){
-        throw AttributeError("'frozenset' object has no attribute 'remove'")
-    }
     for(var i=0;i<self.$items.length;i++){
         if(getattr(self.$items[i],'__eq__')(item)){
             self.$items.splice(i,1)
@@ -250,3 +240,43 @@ set.__class__ = $factory
 set.$dict = $SetDict
 $SetDict.$factory = set
 $SetDict.__new__ = $__new__(set)
+
+$FrozensetDict = {__class__:$type,
+    __name__:'frozenset',
+}
+$FrozensetDict.__mro__ = [$FrozensetDict,object.$dict]
+
+$FrozensetDict.__repr__ = function(self){
+    if(self===undefined){return "<class 'frozenset'>"}
+    if(self.$items.length===0){return 'frozenset()'}
+    var res = "{"
+    for(var i=0;i<self.$items.length;i++){
+        res += repr(self.$items[i])
+        if(i<self.$items.length-1){res += ','}
+    }
+    res += '}'
+    return 'frozenset('+res+')'
+}
+
+$FrozensetDict.__str__ = $FrozensetDict.toString = $FrozensetDict.__repr__
+
+for(var attr in $SetDict){
+    if($FrozensetDict[attr]!==undefined){continue}
+    else if(['add','clear','discard','pop','remove'].indexOf(attr)>-1){continue}
+    $FrozensetDict[attr] = $SetDict[attr]
+}
+
+function frozenset(){
+    var res = set.apply(null,arguments)
+    res.__class__ = $FrozensetDict
+    return res
+}
+frozenset.__class__ = $factory
+frozenset.$dict = $FrozensetDict
+$FrozensetDict.__new__ = $__new__(frozenset)
+$FrozensetDict.$factory = frozenset
+
+__builtins__.set = set
+__builtins__.frozenset = frozenset
+
+})()

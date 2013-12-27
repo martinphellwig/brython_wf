@@ -1,4 +1,4 @@
-from browser import doc
+from browser import doc,win
 from browser.html import *
 
 # globals #########################

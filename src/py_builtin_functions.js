@@ -1,18 +1,58 @@
 // built-in variable
 __debug__ = false
 
+var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
+
+function $iterator(items,klass){
+    var res = {
+        __class__:klass,
+        __iter__:function(){return res},
+        __len__:function(){return items.length},
+        __next__:function(){
+            res.counter++
+            if(res.counter<items.length){return items[res.counter]}
+            else{throw StopIteration("StopIteration")}
+        },
+        __repr__:function(){return "<"+klass.__name__+" object>"},
+        counter:-1
+    }
+    res.__str__ = res.toString = res.__repr__
+    return res
+}
+
+function $iterator_class(name){
+    var res = {
+        __class__:$type,
+        __name__:name
+    }
+    res.__str__ = res.toString = res.__repr__
+    res.__mro__ = [res,__builtins__.object.$dict]
+    res.$factory = {__class__:$factory,$dict:res}
+    return res
+}
+
+// class dict of functions attribute __code__
+var $CodeDict = {__class__:$type,__name__:'code'}
+$CodeDict.__mro__ = [$CodeDict,__builtins__.object.$dict]
+
 // built-in functions
+;(function(py_env){
+
+// insert already defined builtins
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+$ObjectDict = __builtins__.object.$dict
 
 function abs(obj){
     if(isinstance(obj,int)){return int(Math.abs(obj))}
     else if(isinstance(obj,float)){return float(Math.abs(obj.value))}
     else if(hasattr(obj,'__abs__')){return getattr(obj,'__abs__')()}
-    else{throw TypeError("Bad operand type for abs(): '"+str(obj.__class__)+"'")}
+    else{throw TypeError("Bad operand type for abs(): '"+obj.__class__+"'")}
 }
 
-function $alert(src){alert(str(src))}
+function _alert(src){alert(__builtins__.str(src))}
 
-function all(iterable){
+function all(obj){
+    var iterable = iter(obj)
     while(true){
         try{
             var elt = next(iterable)
@@ -125,16 +165,31 @@ bool.__hash__ = function() {
 }
 
 //bytearray() (built in function)
-function bytearray(source, encoding, errors) {
-  throw NotImplementedError('bytearray has not been implemented')
+var $BytearrayDict = {__class__:$type,__name__:'bytearray'}
+
+$bytearray_iterator = $iterator_class('bytearray_iterator')
+$BytearrayDict.__iter__ = function(self){
+    return $iterator(self.source,$bytearray_iterator)
 }
+$BytearrayDict.__mro__ = [$BytearrayDict,$ObjectDict]
+
+function bytearray(source, encoding, errors) {
+  return {__class__:$BytearrayDict,source:source} // XXX fix me
+}
+bytearray.__class__=$factory
+bytearray.$dict = $BytearrayDict
+$BytearrayDict.$factory = bytearray
 
 //bytes() (built in function)
-$BytesDict = {
+var $BytesDict = {
     __class__ : $type,
     __name__ : 'bytes'
 }
 
+var $bytes_iterator = $iterator_class('bytes_iterator')
+$BytesDict.__iter__ = function(self){
+    return $iterator(self.source,$bytes_iterator)
+}
 $BytesDict.__len__ = function(self){return self.source.length}
 
 $BytesDict.__mro__ = [$BytesDict,$ObjectDict]
@@ -167,12 +222,16 @@ function chr(i) {
 }
 
 //classmethod() (built in function)
+var $ClassmethodDict = {__class__:$type,__name__:'classmethod'}
+$ClassmethodDict.__mro__=[$ClassmethodDict,$ObjectDict]
 function classmethod(klass,func) {
     // the first argument klass is added by py2js in $CallCtx
     func.$type = 'classmethod'
     return func
 }
-
+classmethod.__class__=$factory
+classmethod.$dict = $ClassmethodDict
+$ClassmethodDict.$factory = classmethod
 function $class(obj,info){
     this.obj = obj
     this.__name__ = info
@@ -186,7 +245,7 @@ function compile(source, filename, mode) {
     return __BRYTHON__.py2js(source, filename).to_js()
 }
 
-$ComplexDict = {__class__:$type,__name__:'complex'}
+var $ComplexDict = {__class__:$type,__name__:'complex'}
 $ComplexDict.__mro__ = [$ComplexDict,$ObjectDict]
 
 function complex(real,imag){
@@ -216,8 +275,9 @@ function delattr(obj, attr) {
 }
 
 function dir(obj){
-    if(isinstance(obj,JSObject)){obj=obj.js}
-    if(obj.__class__===$factory){obj=obj.$dict}
+    if(obj===null){return []}
+    if(isinstance(obj,__BRYTHON__.JSObject)){obj=obj.js}
+    if(obj.__class__.is_class){obj=obj.$dict}
     var res = []
     for(var attr in obj){
         if(attr.charAt(0)!=='$' && attr!=='__class__'){
@@ -237,10 +297,10 @@ function divmod(x,y) {
        } 
        return [int(Math.ceil(x/y)), x2]
     } 
-    return list([int(Math.floor(x/y)), x.__class__.__mod__(x,y)])
+    return [int(Math.floor(x/y)), x.__class__.__mod__(x,y)]
 }
 
-$EnumerateDict = {__class__:$type,__name__:'enumerate'}
+var $EnumerateDict = {__class__:$type,__name__:'enumerate'}
 $EnumerateDict.__mro__ = [$EnumerateDict,$ObjectDict]
 
 function enumerate(){
@@ -255,7 +315,7 @@ function enumerate(){
         __name__:'enumerate iterator',
         __next__:function(){
             res.counter++
-            return tuple([res.counter,next(_iter)])
+            return __builtins__.tuple([res.counter,next(_iter)])
         },
         __repr__:function(){return "<enumerate object>"},
         __str__:function(){return "<enumerate object>"},
@@ -277,7 +337,7 @@ $EnumerateDict.$factory = enumerate
 //eval() (built in function)
 //exec() (built in function)
 
-$FilterDict = {__class__:$type,__name__:'filter'}
+var $FilterDict = {__class__:$type,__name__:'filter'}
 $filter_iterator = $iterator_class('filter iterator')
 $FilterDict.__iter__ = function(self){
     return $iterator(self.$items,$filter_iterator)
@@ -304,24 +364,9 @@ function filter(){
 
 //format() (built in function)
 
-$FrozensetDict = {__class__:$type,
-    __name__:'frozenset',
-}
-$FrozensetDict.__mro__ = [$FrozensetDict,$ObjectDict]
-
-// __mro__ is defined after $ObjectDict
-function frozenset(){
-    var res = set.apply(null,arguments)
-    res.__class__ = $SetDict
-    res.$real = 'frozen'
-    return res
-}
-frozenset.__class__ = $factory
-frozenset.$dict = $FrozensetDict
-
 function getattr(obj,attr,_default){
     var klass = obj.__class__
-    //if(attr=='show'){console.log('-- getattr '+attr+' of obj '+obj+' native '+klass.$native)}
+    //if(attr=='alert'){console.log('-- getattr '+attr+' of obj '+obj+' native '+klass.$native)}
     if(klass===undefined){
         // for native JS objects used in Python code
         if(obj[attr]!==undefined){return obj[attr]}
@@ -338,7 +383,7 @@ function getattr(obj,attr,_default){
     // attribute __dict__ returns a dictionary of all attributes
     // of the underlying Javascript object
     if(attr==='__dict__'){
-        var res = dict()
+        var res = __builtins__.dict()
         for(var $attr in obj){
             if($attr.charAt(0)!='$'){
                 res.$keys.push($attr)
@@ -365,7 +410,9 @@ function getattr(obj,attr,_default){
     if(klass.$native){
     
         if(klass[attr]===undefined){
-            throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
+            if(_default===undefined){
+                throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
+            }else{return _default}
         }
         if(typeof klass[attr]=='function'){
             if(attr=='__new__'){ // new is a static method
@@ -383,8 +430,8 @@ function getattr(obj,attr,_default){
         return klass[attr]
     }
 
-    var is_class = obj.__class__===$factory, mro, attr_func
-    //if(attr=='__eq__'){console.log('2 ! getattr '+attr+' of '+obj+' ('+obj.__class__+') '+' class '+is_class)}
+    var is_class = obj.__class__.is_class, mro, attr_func
+    //if(attr=='register'){console.log('getattr '+attr+' of '+obj+' ('+obj.__class__+') '+' class '+is_class)}
     if(is_class){
         attr_func=$type.__getattribute__
         if(obj.$dict===undefined){console.log('obj '+obj+' $dict undefined')}
@@ -414,12 +461,13 @@ function getattr(obj,attr,_default){
     }
 }
 getattr.__name__ = 'getattr'
+
 //globals() (built in function)
 function globals(module){
-    // the translation engine adds the argument mdoule
-    var res = dict()
+    // the translation engine adds the argument module
+    var res = __builtins__.dict()
     var scope = __BRYTHON__.scope[module].__dict__
-    for(var name in scope){$DictDict.__setitem__(res,name,scope[name])}
+    for(var name in scope){res.$keys.push(name);res.$values.push(scope[name])}
     return res
 }
 
@@ -437,7 +485,7 @@ function hash(obj){
        return obj.__hashvalue__
     } else {
        throw AttributeError(
-        "'"+str(obj.__class__)+"' object has no attribute '__hash__'")
+        "'"+__builtins__.str(obj.__class__)+"' object has no attribute '__hash__'")
     }
 }
 
@@ -454,7 +502,7 @@ function id(obj) {
       return obj.__hashvalue__
    }
    if (obj.__hash__ === undefined || isinstance(obj, set) ||
-      isinstance(obj, list) || isinstance(obj, dict)) {
+      isinstance(obj, __builtins__.list) || isinstance(obj, __builtins__.dict)) {
       __BRYTHON__.$py_next_hash+=1
       obj.__hashvalue__=__BRYTHON__.$py_next_hash
       return obj.__hashvalue__
@@ -489,14 +537,13 @@ function isinstance(obj,arg){
         }
         if(arg===float){
             return ((typeof obj=="number" && obj.valueOf()%1!==0))||
-                (obj.__class__===$FloatDict)
+                (obj.__class__===__builtins__.float.$dict)
         }
-        if(arg===str){return (typeof obj=="string"||obj.__class__===str)}
-        if(arg===list){return (obj.constructor===Array)}
+        if(arg===__builtins__.str){return (typeof obj=="string"||obj.__class__===__builtins__.str)}
+        if(arg===__builtins__.list){return (obj.constructor===Array)}
         if(obj.__class__!==undefined){
             // arg is the class constructor ; the attribute __class__ is the 
             // class dictionary, ie arg.$dict
-            //return obj.__class__===arg.$dict
             var klass = obj.__class__
             if(klass.__mro__===undefined){console.log('mro undef for '+klass+' '+dir(klass)+'\n arg '+arg)}
             for(var i=0;i<klass.__mro__.length;i++){
@@ -509,22 +556,23 @@ function isinstance(obj,arg){
 }
 
 function issubclass(klass,classinfo){
+    if(classinfo.__class__.__mro__===undefined){console.log('issubclass, no mro for '+classinfo.$dict)}
     if(arguments.length!==2){
         throw TypeError("issubclass expected 2 arguments, got "+arguments.length)
     }
-    if(!klass.__class__===$factory){
+    if(!klass.__class__.is_class){
         throw TypeError("issubclass() arg 1 must be a class")
     }
-    if(isinstance(classinfo,tuple)){
+    if(isinstance(classinfo,__builtins__.tuple)){
         for(var i=0;i<classinfo.length;i++){
             if(issubclass(klass,classinfo[i])){return true}
         }
         return false
-    }else if(classinfo.__class__===$factory){
+    }else if(classinfo.__class__.is_class){
         var res = klass.$dict.__mro__.indexOf(classinfo.$dict)>-1    
         return res
     }else{
-        console.log('error in is_subclass '+klass.$dict.__name+' classinfo '+str(classinfo))
+        //console.log('error in is_subclass '+klass.$dict.__name+' classinfo '+__builtins__.str(classinfo))
         throw TypeError("issubclass() arg 2 must be a class or tuple of classes")
     }
 }
@@ -535,34 +583,6 @@ function iter(obj){
         $pop_exc()
         throw TypeError("'"+obj.__class__.__name__+"' object is not iterable")
     }
-}
-
-function $iterator(items,klass){
-    var res = {
-        __class__:klass,
-        __iter__:function(){return res},
-        __len__:function(){return items.length},
-        __next__:function(){
-            res.counter++
-            if(res.counter<items.length){return items[res.counter]}
-            else{throw StopIteration("StopIteration")}
-        },
-        __repr__:function(){return "<"+klass.__name__+" object>"},
-        counter:-1
-    }
-    res.__str__ = res.toString = res.__repr__
-    return res
-}
-
-function $iterator_class(name){
-    var res = {
-        __class__:$type,
-        __name__:name
-    }
-    res.__str__ = res.toString = res.__repr__
-    res.__mro__ = [res,$ObjectDict]
-    res.$factory = {__class__:$factory,$dict:res}
-    return res
 }
 
 function len(obj){
@@ -582,14 +602,11 @@ function locals(obj_id,module){
     }
     var res = $dict()
     var scope = __BRYTHON__.scope[obj_id].__dict__
-    for(var name in scope){$DictDict.__setitem__(res,name,scope[name])}
+    for(var name in scope){__builtins__.dict.$dict.__setitem__(res,name,scope[name])}
     return res
 }
 
-$MapDict = {
-    __class__:$type,
-    __name__:'map'
-}
+var $MapDict = {__class__:$type,__name__:'map'}
 $MapDict.__mro__ = [$MapDict,$ObjectDict]
 
 function map(){
@@ -682,14 +699,11 @@ function next(obj){
     throw TypeError("'"+obj.__class__.__name__+"' object is not an iterator")
 }
 
-$NotImplementedDict = {
-    __class__:$type,
-    __name__:'NotImplementedType'
-}
+var $NotImplementedDict = {__class__:$type,__name__:'NotImplementedType'}
 $NotImplementedDict.__mro__ = [$NotImplementedDict,$ObjectDict]
 $NotImplementedDict.__repr__ = $NotImplementedDict.__str__ = function(){return 'NotImplemented'}
 
-NotImplemented = {
+var NotImplemented = {
     __class__ : $NotImplementedDict,
 }
     
@@ -698,6 +712,418 @@ function $not(obj){return !bool(obj)}
 // oct() (built in function)
 function oct(x) {
    return $builtin_base_convert_helper(x, 8)
+}
+
+function ord(c) {
+    return c.charCodeAt(0)
+}
+
+// pow() (built in function)
+function pow() {
+    var $ns=$MakeArgs('pow',arguments,[],{},'args','kw')
+    var args = $ns['args']
+    if(args.length<2){throw TypeError(
+        "pow expected at least 2 arguments, got "+args.length)
+    }
+    if(args.length>3){throw TypeError(
+        "pow expected at most 3 arguments, got "+args.length)
+    }
+    if(args.length === 2){
+        var x = args[0]
+        var y = args[1]
+        var a,b
+        if(isinstance(x, float)){
+      a=x.value
+    } else if(isinstance(x, int)){
+      a=x
+    } else {
+      throw TypeError("unsupported operand type(s) for ** or pow()")
+    }
+        if (isinstance(y, float)){
+      b=y.value
+    } else if (isinstance(y, int)){
+      b=y
+    }
+        else {
+      throw TypeError("unsupported operand type(s) for ** or pow()")
+    }
+        return Math.pow(a,b)
+    }
+    if(args.length === 3){
+        var x = args[0]
+        var y = args[1]
+        var z = args[2]
+        var a,b,c
+        if (isinstance(x, int)) {a=x} else {throw TypeError(
+            "pow() 3rd argument not allowed unless all arguments are integers")}
+        if (isinstance(y, int)) {b=y} else {throw TypeError(
+            "pow() 3rd argument not allowed unless all arguments are integers")}
+        if (isinstance(z, int)) {c=z} else {throw TypeError(
+            "pow() 3rd argument not allowed unless all arguments are integers")}
+        return Math.pow(a,b)%c
+    }
+}
+
+function $print(){
+    var $ns=$MakeArgs('print',arguments,[],{'end':'\n','sep':' '},'args', null)
+    var args = $ns['args']
+    var end = $ns.end
+    var sep = $ns.sep
+    var res = ''
+    for(var i=0;i<args.length;i++){
+        res += __builtins__.str(args[i])
+        if(i<args.length-1){res += sep}
+    }
+    res += end
+    getattr(document.$stdout,'write')(res)
+}
+$print.__name__ = 'print'
+
+// compatibility with previous versions
+log = function(arg){console.log(arg)} 
+
+function $prompt(text,fill){return prompt(text,fill || '')}
+
+// property (built in function)
+var $PropertyDict = {
+    __class__ : $type,
+    __name__ : 'property',
+    __repr__ : function(){return "<property object>"},
+    __str__ : function(){return "<property object>"},
+    toString : function(){return "property"}
+}
+$PropertyDict.__mro__ = [$PropertyDict,$ObjectDict]
+
+function property(fget, fset, fdel, doc) {
+    var p = {
+        __class__ : $PropertyDict,
+        __doc__ : doc || "",
+        $type:fget.$type,
+        fget:fget,
+        fset:fset,
+        fdel:fdel,
+        toString:function(){return '<property>'}
+    }
+    p.__get__ = function(self,obj,objtype) {
+        if(obj===undefined){return self}
+        if(self.fget===undefined){throw AttributeError("unreadable attribute")}
+        return getattr(self.fget,'__call__')(obj)
+    }
+    if(fset!==undefined){
+        p.__set__ = function(self,obj,value){
+            if(self.fset===undefined){throw AttributeError("can't set attribute")}
+            getattr(self.fset,'__call__')(obj,value)
+        }
+    }
+    p.__delete__ = fdel;
+
+    p.getter = function(fget){
+        return property(fget, p.fset, p.fdel, p.__doc__)
+    }
+    p.setter = function(fset){
+        return property(p.fget, fset, p.fdel, p.__doc__)
+    }
+    p.deleter = function(fdel){
+        return property(p.fget, p.fset, fdel, p.__doc__)
+    }
+    return p
+}
+
+property.__class__ = $factory
+property.$dict = $PropertyDict
+
+// range
+var $RangeDict = {__class__:$type,__name__:'range',$native:true}
+
+$RangeDict.__contains__ = function(self,other){
+    var x = iter(self)
+    while(true){
+        try{
+            var y = $RangeDict.__next__(x)
+            if(getattr(y,'__eq__')(other)){return true}
+        }catch(err){return false}
+    }
+    return false
+}
+
+$RangeDict.__getitem__ = function(self,rank){
+    var res = self.start + rank*self.step
+    if((self.step>0 && res >= self.stop) ||
+        (self.step<0 && res < self.stop)){
+            throw IndexError('range object index out of range')
+    }
+    return res   
+}
+
+$RangeDict.__iter__ = function(self){
+    self.$counter=self.start-self.step
+    return self
+}
+
+$RangeDict.__len__ = function(self){
+    if(self.step>0){return 1+int((self.stop-1-self.start)/self.step)}
+    else{return 1+int((self.start-1-self.stop)/-self.step)}
+}
+
+$RangeDict.__next__ = function(self){
+    self.$counter += self.step
+    if((self.step>0 && self.$counter >= self.stop)
+        || (self.step<0 && self.$counter <= self.stop)){
+            throw StopIteration('')
+    }
+    return self.$counter
+}
+
+$RangeDict.__mro__ = [$RangeDict,$ObjectDict]
+
+$RangeDict.__reversed__ = function(self){
+    return range(self.stop-1,self.start-1,-self.step)
+}
+
+function range(){
+    var $ns=$MakeArgs('range',arguments,[],{},'args',null)
+    var args = $ns['args']
+    if(args.length>3){throw TypeError(
+        "range expected at most 3 arguments, got "+args.length)
+    }
+    var start=0
+    var stop=0
+    var step=1
+    if(args.length==1){stop = args[0]}
+    else if(args.length>=2){
+        start = args[0]
+        stop = args[1]
+    }
+    if(args.length>=3){step=args[2]}
+    if(step==0){throw ValueError("range() arg 3 must not be zero")}
+    var res = {
+        __class__ : $RangeDict,
+        start:start,
+        stop:stop,
+        step:step
+    }
+    res.__repr__ = res.__str__ = function(){
+            return 'range('+start+','+stop+(args.length>=3 ? ','+step : '')+')'
+        }
+    return res
+}
+range.__class__ = $factory
+range.$dict = $RangeDict
+$RangeDict.$factory = range
+
+function repr(obj){
+    var func = getattr(obj,'__repr__')
+    if(func!==undefined){return func()}
+    else{throw AttributeError("object has no attribute __repr__")}
+}
+
+var $ReversedDict = {__class__:$type,__name__:'reversed'}
+$ReversedDict.__mro__ = [$ReversedDict,$ObjectDict]
+$ReversedDict.__iter__ = function(self){return self}
+$ReversedDict.__next__ = function(self){
+    self.$counter--
+    if(self.$counter<0){throw StopIteration('')}
+    return self.getter(self.$counter)
+}
+
+function reversed(seq){
+    // Return a reverse iterator. seq must be an object which has a 
+    // __reversed__() method or supports the sequence protocol (the __len__() 
+    // method and the __getitem__() method with integer arguments starting at 
+    // 0).
+
+    try{return getattr(seq,'__reversed__')()}
+    catch(err){
+        if(err.__name__=='AttributeError'){$pop_exc()}
+        else{throw err}
+    }
+
+    try{
+        var res = {
+            __class__:$ReversedDict,
+            $counter : getattr(seq,'__len__')(),
+            getter:getattr(seq,'__getitem__')
+        }
+        return res
+    }catch(err){
+        throw TypeError("argument to reversed() must be a sequence")
+    }
+}
+reversed.__class__=$factory
+reversed.$dict = $ReversedDict
+$ReversedDict.$factory = reversed
+
+function round(arg,n){
+    if(!isinstance(arg,[int,float])){
+        throw TypeError("type "+arg.__class__+" doesn't define __round__ method")
+    }
+    if(n===undefined){n=0}
+    if(!isinstance(n,int)){throw TypeError(
+        "'"+n.__class__+"' object cannot be interpreted as an integer")}
+    var mult = Math.pow(10,n)
+    var res = __builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
+    if(n==0){return int(res)}else{return float(res)}
+}
+
+
+function setattr(obj,attr,value){
+    if(!isinstance(attr,__builtins__.str)){throw TypeError("setattr(): attribute name must be string")}
+    // descriptor protocol : if obj has attribute attr and this attribute has 
+    // a method __set__(), use it
+    if(__BRYTHON__.forbidden.indexOf(attr)>-1){attr='$$'+attr}
+    var res = obj[attr]
+    if(res===undefined){
+        var mro = obj.__class__.__mro__
+        for(var i=0;i<mro.length;i++){
+            var res = mro[i][attr]
+            if(res!==undefined){break}
+        }
+    }
+    if(res!==undefined && res.__set__!==undefined){
+        return res.__set__(res,obj,value)
+    }
+    
+    try{var f = getattr(obj,'__setattr__')}
+    catch(err){
+        $pop_exc()
+        obj[attr]=value
+        return
+    }
+    f(attr,value)
+}
+
+// slice
+var $SliceDict = {__class__:$type,
+    __name__:'slice'
+}
+$SliceDict.__mro__ = [$SliceDict,$ObjectDict]
+
+function slice(){
+    var $ns=$MakeArgs('slice',arguments,[],{},'args',null)
+    var args = $ns['args']
+    if(args.length>3){throw TypeError(
+        "slice expected at most 3 arguments, got "+args.length)
+    }
+    var start=0
+    var stop=0
+    var step=1
+    if(args.length==1){stop = args[0]}
+    else if(args.length>=2){
+        start = args[0]
+        stop = args[1]
+    }
+    if(args.length>=3){step=args[2]}
+    if(step==0){throw ValueError("slice step must not be zero")}
+    var res = {
+        __class__ : $SliceDict,
+        start:start,
+        stop:stop,
+        step:step
+    }
+    res.__repr__ = res.__str__ = function(){
+            return 'slice('+start+','+stop+(args.length>=3 ? ','+step : '')+')'
+        }
+    return res
+}
+slice.__class__ = $factory
+slice.$dict = $SliceDict
+
+// sorted() built in function
+function sorted () {
+    var $ns=$MakeArgs('sorted',arguments,['iterable'],{},null,'kw')
+    if($ns['iterable']===undefined){throw TypeError("sorted expected 1 positional argument, got 0")}
+    else{iterable=$ns['iterable']}
+    var key = __builtins__.dict.$dict.get($ns['kw'],'key',None)
+    var reverse = __builtins__.dict.$dict.get($ns['kw'],'reverse',false)
+    var obj = []
+    iterable = iter(iterable)
+    while(true){
+        try{obj.push(next(iterable))}
+        catch(err){
+            if(err.__name__==='StopIteration'){$pop_exc();break}
+            else{throw err}
+        }
+    }
+    // pass arguments to list.sort()
+    var args = [obj]
+    if (key !== None) {args.push($Kw('key',key))}
+    if(reverse){args.push($Kw('reverse',true))}
+    __builtins__.$dict.sort.apply(null,args)
+    return obj
+}
+
+// staticmethod() built in function
+$StaticmethodDict = {__class__:$type,__name__:'staticmethod'}
+$StaticmethodDict.__mro__ = [$StaticmethodDict,$ObjectDict]
+
+function staticmethod(func) {
+    func.$type = 'staticmethod'
+    return func
+}
+staticmethod.__class__=$factory
+staticmethod.$dict = $StaticmethodDict
+$StaticmethodDict.$factory = staticmethod
+
+// str() defined in py_string.js
+
+function sum(iterable,start){
+    if(start===undefined){start=0}
+    var res = start
+    var iterable = iter(iterable)
+    while(true){
+        try{
+            var _item = next(iterable)
+            res = getattr(res,'__add__')(_item)
+        }catch(err){
+           if(err.__name__==='StopIteration'){$pop_exc();break}
+           else{throw err}
+        }
+    }
+    return res
+}
+
+// super() built in function
+var $SuperDict = {__class__:$type,__name__:'super'}
+
+$SuperDict.__getattribute__ = function(self,attr){
+    var mro = self.__thisclass__.$dict.__mro__,res
+    for(var i=1;i<mro.length;i++){ // start with 1 = ignores the class where super() is defined
+        res = mro[i][attr]
+        if(res!==undefined){
+            // if super() is called with a second argument, the result is bound
+            if(self.__self_class__!==None){
+                var method = (function(initial_args){
+                    return function(){
+                        // make a local copy of initial args
+                        var local_args = initial_args.slice()
+                        for(var i=0;i<arguments.length;i++){
+                            local_args.push(arguments[i])
+                        }
+                        var x = res.apply(obj,local_args)
+                        if(x===undefined){return None}else{return x}
+                    }})([self.__self_class__])
+                method.__class__ = {
+                    __class__:$type,
+                    __name__:'method',
+                    __mro__:[$ObjectDict]
+                }
+                method.__func__ = res
+                method.__self__ = self
+                return method
+            }
+            return res
+        }
+    }
+    throw AttributeError("object 'super' has no attribute '"+attr+"'")
+}
+
+$SuperDict.__mro__ = [$SuperDict,$ObjectDict]
+
+function $$super(_type1,_type2){
+    return {__class__:$SuperDict,
+        __thisclass__:_type1,
+        __self_class__:_type2 || None
+    }
 }
 
 function $url_open(){
@@ -709,8 +1135,8 @@ function $url_open(){
     for(var attr in $ns){eval('var '+attr+'=$ns["'+attr+'"]')}
     if(args.length>0){var mode=args[0]}
     if(args.length>1){var encoding=args[1]}
-    if(isinstance(file,JSObject)){return new $OpenFile(file.js,mode,encoding)}
-    else if(isinstance(file,str)){
+    if(isinstance(file,__BRYTHON__.JSObject)){return new $OpenFile(file.js,mode,encoding)}
+    else if(isinstance(file,__builtins__.str)){
         // read the file content and return an object with file object methods
         if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
             var req=new XMLHttpRequest();
@@ -796,549 +1222,25 @@ function $url_open(){
     }
 }
 
-function $local_storage_open( ) {
-    // first argument is file : can be a string, or an instance of a DOM File object
-    // other arguments : 
-    // - mode can be 'r' (text, default) or 'rb' (binary)
-    // - encoding if mode is 'rb'
-    var $ns=$MakeArgs('open',arguments,['file'],{'mode':'r','encoding':'utf-8'},'args','kw')
-    for(var attr in $ns){eval('var '+attr+'=$ns["'+attr+'"]')}
-    if(args.length>0){var mode=args[0]}
-    if(args.length>1){var encoding=args[1]}
 
-    if (mode == 'rb' || mode == 'r') {
-       if (localStorage[file] === undefined) {
-          throw IOError('File not found: ' + file)
-       }
-       var $res=localStorage[file]
-       var lines=$res.split('\n')
-       var res=new Object(), counter=0;
-       res.__enter__ = function(){return res}
-       res.__exit__ = function(){return false}
-       res.__getattr__ = function(attr){return res[attr]}
-       res.__iter__ = function(){return iter(lines)}
-       res.__len__ = function(){return lines.length}
-       res.closed=false;
-       res.readable = function() {return true}
-       res.close = function() {res.closed=true}
-       res.read=function(nb) {
-           if (nb === undefined) {
-              return $res
-           } else {
-             counter+=nb;
-             return $res.substring(counter-nb, nb);
-           }
-       }
-       res.readline = function(limit){
-           if(res.closed){throw ValueError('I/O operation on closed file')}
-           var line = ''
-           if(limit===undefined||limit===-1){limit=null}
-           while(true){
-                if(counter>=$res.length-1){break}
-                else{
-                    var car = $res.charAt(counter)
-                    if(car=='\n'){counter++;return line}
-                    else{
-                        line += car
-                        if(limit!==null && line.length>=limit){return line}
-                        counter++
-                    }
-                }
-           }
-           return line
-       }
-       res.readlines = function(hint){
-            if(res.closed){throw ValueError('I/O operation on closed file')}
-            var x = $res.substr(counter).split('\n')
-            if(hint && hint!==-1){
-                var y=[],size=0
-                while(true){
-                    var z = x.shift()
-                    y.push(z)
-                    size += z.length
-                    if(size>hint || x.length==0){return y}
-                }
-            }else{return x}
-       }
-       res.seek = function(offset,whence){
-            if(res.closed){throw ValueError('I/O operation on closed file')}
-            if(whence===undefined){whence=0}
-            if(whence===0){counter = offset}
-            else if(whence===1){counter += offset}
-            else if(whence===2){counter = $res.length+offset}
-       }
-       res.seekable = function(){return true}
-       res.tell = function(){return counter}
-       res.writeable = function(){return false}
+var $ZipDict = {__class__:$type,__name__:'zip'}
 
-       return res;
-    } 
-
-    if (mode == 'w' || mode == 'wb') {
-       localStorage[file]='';
-       var res=new Object();
-       res.closed=false;
-       res.writable = function() {return true}
-       res.close = function() {res.closed=true}
-       res.write=function(data) {
-          localStorage[file]+=data;
-       }
-       return res;
-    }
-
-    throw IOError("Invalid mode: " + mode);
+$zip_iterator = $iterator_class('zip_iterator')
+$ZipDict.__iter__ = function(self){
+    return $iterator(self.items,$zip_iterator)
 }
 
-function ord(c) {
-    return c.charCodeAt(0)
-}
-
-// pow() (built in function)
-function pow() {
-    var $ns=$MakeArgs('pow',arguments,[],{},'args','kw')
-    var args = $ns['args']
-    if(args.length<2){throw TypeError(
-        "pow expected at least 2 arguments, got "+args.length)
-    }
-    if(args.length>3){throw TypeError(
-        "pow expected at most 3 arguments, got "+args.length)
-    }
-    if(args.length === 2){
-        var x = args[0]
-        var y = args[1]
-        var a,b
-        if(isinstance(x, float)){
-      a=x.value
-    } else if(isinstance(x, int)){
-      a=x
-    } else {
-      throw TypeError("unsupported operand type(s) for ** or pow()")
-    }
-        if (isinstance(y, float)){
-      b=y.value
-    } else if (isinstance(y, int)){
-      b=y
-    }
-        else {
-      throw TypeError("unsupported operand type(s) for ** or pow()")
-    }
-        return Math.pow(a,b)
-    }
-    if(args.length === 3){
-        var x = args[0]
-        var y = args[1]
-        var z = args[2]
-        var a,b,c
-        if (isinstance(x, int)) {a=x} else {throw TypeError(
-            "pow() 3rd argument not allowed unless all arguments are integers")}
-        if (isinstance(y, int)) {b=y} else {throw TypeError(
-            "pow() 3rd argument not allowed unless all arguments are integers")}
-        if (isinstance(z, int)) {c=z} else {throw TypeError(
-            "pow() 3rd argument not allowed unless all arguments are integers")}
-        return Math.pow(a,b)%c
-    }
-}
-
-function $print(){
-    var $ns=$MakeArgs('print',arguments,[],{'end':'\n','sep':' '},'args', null)
-    var args = $ns['args']
-    var end = $ns.end
-    var sep = $ns.sep
-    var res = ''
-    for(var i=0;i<args.length;i++){
-        res += str(args[i])
-        if(i<args.length-1){res += sep}
-    }
-    res += end
-    getattr(document.$stdout,'write')(res)
-}
-$print.__name__ = 'print'
-
-// compatibility with previous versions
-log = function(arg){console.log(arg)} 
-
-function $prompt(text,fill){return prompt(text,fill || '')}
-
-// property (built in function)
-$PropertyDict = {
-    __class__ : $type,
-    __name__ : 'property',
-    __repr__ : function(){return "<property object>"},
-    __str__ : function(){return "<property object>"},
-    toString : function(){return "property"}
-}
-$PropertyDict.__mro__ = [$PropertyDict,$ObjectDict]
-
-function property(fget, fset, fdel, doc) {
-    var p = {
-        __class__ : $PropertyDict,
-        __doc__ : doc || "",
-        $type:fget.$type,
-        fget:fget,
-        fset:fset,
-        fdel:fdel,
-        toString:function(){return '<property>'}
-    }
-    p.__get__ = function(self,obj,objtype) {
-        if(obj===undefined){return self}
-        if(self.fget===undefined){throw AttributeError("unreadable attribute")}
-        return getattr(self.fget,'__call__')(obj)
-    }
-    if(fset!==undefined){
-        p.__set__ = function(self,obj,value){
-            if(self.fset===undefined){throw AttributeError("can't set attribute")}
-            getattr(self.fset,'__call__')(obj,value)
-        }
-    }
-    p.__delete__ = fdel;
-
-    p.getter = function(fget){
-        return property(fget, p.fset, p.fdel, p.__doc__)
-    }
-    p.setter = function(fset){
-        return property(p.fget, fset, p.fdel, p.__doc__)
-    }
-    p.deleter = function(fdel){
-        return property(p.fget, p.fset, fdel, p.__doc__)
-    }
-    return p
-}
-
-property.__class__ = $factory
-property.$dict = $PropertyDict
-
-// range
-$RangeDict = {__class__:$type,__name__:'range',$native:true}
-
-$RangeDict.__contains__ = function(self,other){
-    var x = iter(self)
-    while(true){
-        try{
-            var y = $RangeDict.__next__(x)
-            if(getattr(y,'__eq__')(other)){return true}
-        }catch(err){return false}
-    }
-    return false
-}
-
-$RangeDict.__getitem__ = function(self,rank){
-    var res = self.start + rank*self.step
-    if((self.step>0 && res >= self.stop) ||
-        (self.step<0 && res < self.stop)){
-            throw IndexError('range object index out of range')
-    }
-    return res   
-}
-
-$RangeDict.__iter__ = function(self){
-    self.$counter=self.start-self.step
-    return self
-}
-
-$RangeDict.__len__ = function(self){
-    if(self.step>0){return 1+int((self.stop-1-self.start)/self.step)}
-    else{return 1+int((self.start-1-self.stop)/-self.step)}
-}
-
-$RangeDict.__next__ = function(self){
-    self.$counter += self.step
-    if((self.step>0 && self.$counter >= self.stop)
-        || (self.step<0 && self.$counter <= self.stop)){
-            throw StopIteration('')
-    }
-    return self.$counter
-}
-
-$RangeDict.__mro__ = [$RangeDict,$ObjectDict]
-
-$RangeDict.__reversed__ = function(self){
-    return range(self.stop-1,self.start-1,-self.step)
-}
-
-function range(){
-    var $ns=$MakeArgs('range',arguments,[],{},'args',null)
-    var args = $ns['args']
-    if(args.length>3){throw TypeError(
-        "range expected at most 3 arguments, got "+args.length)
-    }
-    var start=0
-    var stop=0
-    var step=1
-    if(args.length==1){stop = args[0]}
-    else if(args.length>=2){
-        start = args[0]
-        stop = args[1]
-    }
-    if(args.length>=3){step=args[2]}
-    if(step==0){throw ValueError("range() arg 3 must not be zero")}
-    var res = {
-        __class__ : $RangeDict,
-        start:start,
-        stop:stop,
-        step:step
-    }
-    res.__repr__ = res.__str__ = function(){
-            return 'range('+start+','+stop+(args.length>=3 ? ','+step : '')+')'
-        }
-    return res
-}
-range.__class__ = $factory
-range.$dict = $RangeDict
-
-function repr(obj){
-    var func = getattr(obj,'__repr__')
-    if(func!==undefined){return func()}
-    else{throw AttributeError("object has no attribute __repr__")}
-}
-
-function reversed(seq){
-    // Return a reverse iterator. seq must be an object which has a 
-    // __reversed__() method or supports the sequence protocol (the __len__() 
-    // method and the __getitem__() method with integer arguments starting at 
-    // 0).
-
-    var $ReversedDict = {
-        __class__:$type,
-        __name__:'reversed'
-    }
-    $ReversedDict.__mro__ = [$ReversedDict,$ObjectDict]
-    $ReversedDict.__iter__ = function(self){return self}
-    $ReversedDict.__next__ = function(self){
-        self.$counter--
-        //console.log('next '+self+' len '+self.len+' counter '+self.$counter)
-        if(self.$counter<0){throw StopIteration('')}
-        return self.getter(self.$counter)
-    }
-
-    try{return getattr(seq,'__reversed__')()}
-    catch(err){if(err.__name__=='AttributeError'){$pop_exc()}
-               else{throw err}
-    }
-    try{
-        var res = {
-            __class__:$ReversedDict,
-            $counter : getattr(seq,'__len__')(),
-            getter:getattr(seq,'__getitem__')
-        }
-        return res
-    }catch(err){
-        throw TypeError("argument to reversed() must be a sequence")
-    }
-}
-
-function round(arg,n){
-    if(!isinstance(arg,[int,float])){
-        throw TypeError("type "+str(arg.__class__)+" doesn't define __round__ method")
-    }
-    if(n===undefined){n=0}
-    if(!isinstance(n,int)){throw TypeError(
-        "'"+n.__class__+"' object cannot be interpreted as an integer")}
-    var mult = Math.pow(10,n)
-    var res = $IntDict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
-    if(n==0){return int(res)}else{return float(res)}
-}
-
-
-function setattr(obj,attr,value){
-    if(!isinstance(attr,str)){throw TypeError("setattr(): attribute name must be string")}
-    // descriptor protocol : if obj has attribute attr and this attribute has 
-    // a method __set__(), use it
-    if(__BRYTHON__.forbidden.indexOf(attr)>-1){attr='$$'+attr}
-    var res = obj[attr]
-    if(res===undefined){
-        var mro = obj.__class__.__mro__
-        for(var i=0;i<mro.length;i++){
-            var res = mro[i][attr]
-            if(res!==undefined){break}
-        }
-    }
-    if(res!==undefined && res.__set__!==undefined){
-        return res.__set__(res,obj,value)
-    }
-    
-    try{var f = getattr(obj,'__setattr__')}
-    catch(err){
-        $pop_exc()
-        obj[attr]=value
-        return
-    }
-    f(attr,value)
-}
-
-// slice
-$SliceDict = {__class__:$type,
-    __name__:'slice'
-}
-$SliceDict.__mro__ = [$SliceDict,$ObjectDict]
-
-function slice(){
-    var $ns=$MakeArgs('slice',arguments,[],{},'args',null)
-    var args = $ns['args']
-    if(args.length>3){throw TypeError(
-        "slice expected at most 3 arguments, got "+args.length)
-    }
-    var start=0
-    var stop=0
-    var step=1
-    if(args.length==1){stop = args[0]}
-    else if(args.length>=2){
-        start = args[0]
-        stop = args[1]
-    }
-    if(args.length>=3){step=args[2]}
-    if(step==0){throw ValueError("slice step must not be zero")}
-    var res = {
-        __class__ : $SliceDict,
-        start:start,
-        stop:stop,
-        step:step
-    }
-    res.__repr__ = res.__str__ = function(){
-            return 'slice('+start+','+stop+(args.length>=3 ? ','+step : '')+')'
-        }
-    return res
-}
-slice.__class__ = $factory
-slice.$dict = $SliceDict
-
-// sorted() built in function
-function sorted () {
-    var $ns=$MakeArgs('sorted',arguments,['iterable'],{},null,'kw')
-    if($ns['iterable']===undefined){throw TypeError("sorted expected 1 positional argument, got 0")}
-    else{iterable=$ns['iterable']}
-    var key = $DictDict.get($ns['kw'],'key',None)
-    var reverse = $DictDict.get($ns['kw'],'reverse',false)
-    var obj = []
-    iterable = iter(iterable)
-    while(true){
-        try{obj.push(next(iterable))}
-        catch(err){
-            if(err.__name__==='StopIteration'){$pop_exc();break}
-            else{throw err}
-        }
-    }
-    // pass arguments to list.sort()
-    var args = [obj]
-    if (key !== None) {args.push($Kw('key',key))}
-    if(reverse){args.push($Kw('reverse',true))}
-    $ListDict.sort.apply(null,args)
-    return obj
-}
-
-// staticmethod() built in function
-function staticmethod(func) {
-    func.$type = 'staticmethod'
-    return func
-}
-
-// str() defined somewhere else
-
-function sum(iterable,start){
-    if(start===undefined){start=0}
-    var res = start
-    var iterable = iter(iterable)
-    while(true){
-        try{
-            var _item = next(iterable)
-            res = getattr(res,'__add__')(_item)
-        }catch(err){
-           if(err.__name__==='StopIteration'){$pop_exc();break}
-           else{throw err}
-        }
-    }
-    return res
-}
-
-// super() built in function
-$SuperDict = {
-    __class__:$type,
-    __name__:'super'
-}
-
-$SuperDict.__getattribute__ = function(self,attr){
-    var mro = self.__thisclass__.$dict.__mro__,res
-    for(var i=1;i<mro.length;i++){ // start with 1 = ignores the class where super() is defined
-        res = mro[i][attr]
-        if(res!==undefined){
-            // if super() is called with a second argument, the result is bound
-            if(self.__self_class__!==None){
-                var method = (function(initial_args){
-                    return function(){
-                        // make a local copy of initial args
-                        var local_args = initial_args.slice()
-                        for(var i=0;i<arguments.length;i++){
-                            local_args.push(arguments[i])
-                        }
-                        var x = res.apply(obj,local_args)
-                        if(x===undefined){return None}else{return x}
-                    }})([self.__self_class__])
-                method.__class__ = {
-                    __class__:$type,
-                    __name__:'method',
-                    __mro__:[$ObjectDict]
-                }
-                method.__func__ = res
-                method.__self__ = self
-                return method
-            }
-            return res
-        }
-    }
-    throw AttributeError("object 'super' has no attribute '"+attr+"'")
-}
-
-$SuperDict.__mro__ = [$SuperDict,$ObjectDict]
-
-function $$super(_type1,_type2){
-    return {__class__:$SuperDict,
-        __thisclass__:_type1,
-        __self_class__:_type2 || None
-    }
-}
-
-function $tuple(arg){return arg} // used for parenthesed expressions
-
-$TupleDict = {__class__:$type,__name__:'tuple'}
-
-$TupleDict.__iter__ = function(self){
-    return $iterator(self,$tuple_iterator)
-}
-
-$TupleDict.toString = function(){return '$TupleDict'}
-
-// other attributes are defined in py_list.js, once list is defined
-
-$tuple_iterator = $iterator_class('tuple_iterator')
-
-// type() is implemented in py_utils
-
-function tuple(){
-    var obj = list.apply(null,arguments)
-    obj.__class__ = $TupleDict
-
-    obj.__hash__ = function () {
-      // http://nullege.com/codes/show/src%40p%40y%40pypy-HEAD%40pypy%40rlib%40test%40test_objectmodel.py/145/pypy.rlib.objectmodel._hash_float/python
-      var x= 0x345678
-      for(var i=0; i < args.length; i++) {
-         var y=_list[i].__hash__();
-         x=(1000003 * x) ^ y & 0xFFFFFFFF;
-      }
-      return x
-    }
-    return obj
-}
-tuple.__class__ = $factory
-tuple.$dict = $TupleDict
-$TupleDict.$factory = tuple
-$TupleDict.__new__ = $__new__(tuple) //function(arg){return tuple(arg)}
+$ZipDict.__mro__ = [$ZipDict,$ObjectDict]
 
 function zip(){
+    var res = {__class__:$ZipDict,items:[]}
+    if(arguments.length==0){return res}
     var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')
     var _args = $ns['args']
     var args = []
     for(var i=0;i<_args.length;i++){args.push(iter(_args[i]))}
     var kw = $ns['kw']
-    var rank=0,res=[]
+    var rank=0,items=[]
     while(true){
         var line=[],flag=true
         for(var i=0;i<args.length;i++){
@@ -1350,18 +1252,23 @@ function zip(){
                 else{throw err}
             }
         }
-        if(!flag){return res}
-        res.push(tuple(line))
+        if(!flag){break}
+        items.push(__builtins__.tuple(line))
         rank++
     }
+    res.items = items
+    return res
 }
+zip.__class__=$factory
+zip.$dict = $ZipDict
+$ZipDict.$factory = zip
 
 // built-in constants : True, False, None
 
-True = true
-False = false
+var True = true
+var False = false
 
-$BoolDict = {__class__:$type,
+var $BoolDict = {__class__:$type,
     __name__:'bool',
     __repr__ : function(){return "<class 'bool'>"},
     __str__ : function(){return "<class 'bool'>"},
@@ -1384,11 +1291,11 @@ $BoolDict.__eq__ = function(self,other){
 }
 
 $BoolDict.__ge__ = function(self,other){
-    return $IntDict.__ge__($BoolDict.__hash__(self),other)
+    return __builtins__.int.$dict.__ge__($BoolDict.__hash__(self),other)
 }
 
 $BoolDict.__gt__ = function(self,other){
-    return $IntDict.__gt__($BoolDict.__hash__(self),other)
+    return __builtins__.int.$dict.__gt__($BoolDict.__hash__(self),other)
 }
 
 $BoolDict.__hash__ = function(self) {
@@ -1420,7 +1327,7 @@ $BoolDict.__sub__ = function(self,other){
 }
 
 
-$EllipsisDict = {__class__:$type,
+var $EllipsisDict = {__class__:$type,
     __name__:'Ellipsis',
 }
 $EllipsisDict.__mro__ = [$ObjectDict]
@@ -1436,7 +1343,6 @@ Ellipsis = {
 }
 
 var $comp_ops = ['ge','gt','le','lt']
-var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
 for(var $key in $comps){ // Ellipsis is not orderable with any type
     if($comp_ops.indexOf($comps[$key])>-1){
         Ellipsis['__'+$comps[$key]+'__']=(function(k){
@@ -1455,13 +1361,11 @@ for(var $func in Ellipsis){
     }
 }
 
-$NoneDict = {__class__:$type,
-    __name__:'NoneType',
-}
+var $NoneDict = {__class__:$type,__name__:'NoneType',}
 $NoneDict.__mro__ = [$NoneDict,$ObjectDict]
 $NoneDict.$factory = $NoneDict
 
-None = {
+var None = {
     __bool__ : function(){return False},
     __class__ : $NoneDict,
     __hash__ : function(){return 0},
@@ -1490,7 +1394,7 @@ for(var $func in None){
 }
 
 // add attributes to native Function
-$FunctionDict = {__class__:$type}
+var $FunctionDict = {__class__:$type}
 $FunctionDict.__repr__=$FunctionDict.__str__ = function(self){return '<function '+self.__name__+'>'}
 
 $FunctionDict.__mro__ = [$FunctionDict,$ObjectDict]
@@ -1508,13 +1412,9 @@ Function.prototype.__get__ = function(self,obj,objtype){
 }
 $FunctionDict.$factory = Function
 
-// class dict of functions attribute __code__
-$CodeDict = {__class__:$type,__name__:'code'}
-$CodeDict.__mro__ = [$CodeDict,$ObjectDict]
-
 // built-in exceptions
 
-$BaseExceptionDict = {
+var $BaseExceptionDict = {
     __class__:$type,
     __name__:'BaseException'
 }
@@ -1537,7 +1437,7 @@ $BaseExceptionDict.__new__ = function(cls){
     return err
 }
 
-BaseException = function (msg,js_exc){
+var BaseException = function (msg,js_exc){
     var err = Error()
     err.info = 'Traceback (most recent call last):'
     if(msg===undefined){msg='BaseException'}
@@ -1654,7 +1554,7 @@ __BRYTHON__.exception = function(js_exc){
     return exc
 }
 
-function $is_exc(exc,exc_list){
+__BRYTHON__.is_exc=function(exc,exc_list){
     // used in try/except to check if an exception is an instance of
     // one of the classes in exc_list
     if(exc.__class__===undefined){
@@ -1681,6 +1581,8 @@ function $make_exc(names,parent){
         eval('$'+name+'Dict.__mro__=[$'+name+'Dict].concat(parent.$dict.__mro__)')
         eval('$'+name+'Dict.$factory='+name)
         eval(name+'.$dict=$'+name+'Dict')
+        // insert in returned value
+        eval('py_env.'+name+'='+name)
     }
 }
 
@@ -1709,4 +1611,31 @@ $make_exc(['DeprecationWarning','PendingDeprecationWarning','RuntimeWarning',
     'SyntaxWarning','UserWarning','FutureWarning','ImportWarning',
     'UnicodeWarning','BytesWarning','ResourceWarning'],Warning)
 
-EnvironmentError = IOError = VMSError = WindowsError = OSError
+var EnvironmentError = OSError
+var IOError = OSError
+var VMSError = OSError
+var WindowsError = OSError
+
+var builtin_names=[ 'Ellipsis', 'False',  'None', 
+'True', '_', '__build_class__', '__debug__', '__doc__', '__import__', '__name__', 
+'__package__', 'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'bytearray', 'bytes',
+'callable', 'chr', 'classmethod', 'compile', 'complex', 'copyright', 'credits',
+'delattr', 'dict', 'dir', 'divmod', 'enumerate', 'eval', 'exec', 'exit', 
+'filter', 'float', 'format', 'frozenset', 'getattr', 'globals', 'hasattr', 'hash', 
+'help', 'hex', 'id', 'input', 'int', 'isinstance', 'issubclass', 'iter', 'len', 
+'license', 'list', 'locals', 'map', 'max', 'memoryview', 'min', 'next', 'object', 
+'oct', 'open', 'ord', 'pow', 'print', 'property', 'quit', 'range', 'repr', 
+'reversed', 'round', 'set', 'setattr', 'slice', 'sorted', 'staticmethod', 'str', 
+'sum','super', 'tuple', 'type', 'vars', 'zip']
+
+for(var i=0;i<builtin_names.length;i++){
+    try{eval('py_env.'+builtin_names[i]+'='+builtin_names[i])}
+    catch(err){}
+}
+
+__BRYTHON__._alert = _alert
+py_env['$open']=$url_open
+py_env['$print']=$print
+py_env['$$super']=$$super
+
+})(__builtins__)

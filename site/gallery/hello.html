@@ -10,11 +10,11 @@
 <body onLoad="brython()">
 <img src="../brython.png">
 <script type="text/python">
-from browser import doc
+from browser import alert,doc
 def echo():
     alert("Hello %s !" %doc["zone"].value)
 </script>
-<p>Your name is : <input id="zone"><button onclick="echo()">clic !</button>
+<p>Your name is : <input id="zone"><button onclick="foo:echo()">clic !</button>
 </body>
 </html>
 

@@ -1,4 +1,10 @@
-$module = {
+$module = (function(){
+
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+var $JSObject = __BRYTHON__.$JSObject
+var JSObject = __BRYTHON__.JSObject
+
+return {
     var obj = {
     choice:function(seq){
         return getattr(seq,'__getitem__')(getattr(seq,'__len__')()*Math.random())
@@ -48,5 +54,6 @@ $module = {
       for(var j, o, i = x.length; i; j = parseInt(rnd() * i), o = x[--i], x[i] = x[j], x[j] = o);
     }
 }
-$module.__class__ = $module // defined in $py_utils
-$module.__str__ = function(){return "<module 'random'>"}
+
+})()
+

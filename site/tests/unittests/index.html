@@ -21,8 +21,6 @@
 <script type="text/javascript" src="../../../src/py_string.js"></script>
 <script type="text/javascript" src="../../../src/py_dom.js"></script>
 
-<script type="text/javascript" src="../../../src/py_VFS.json"></script>
-
 <script type="text/python">
 from browser import doc
 import sys
@@ -36,9 +34,9 @@ doc['container'].style.height='%dpx' % (_height-_top-10)
 </script>
 
 <script type="text/python">
-#import traceback
-#import unittest
-sys.path.append("/site/tests/unittests/test")
+import traceback
+import unittest
+sys.path.append("test")
 
 def write(data):
     doc["console"].text += str(data)
@@ -91,7 +89,6 @@ UnitTests:
   <option value="">--choose test--</option>
   <option value="test_format">test_format</option>
   <option value="test_grammar">test_grammar</option>
-  <option value="test_json.__main__">test_json</option>
   <option value="test_html">test_html</option>
   <option value="test_int">test_int</option>
   <option value="test_math">test_math</option>

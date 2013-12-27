@@ -18,7 +18,7 @@ $WebSocketDict.close = function(self){
     self.$ws.close()
 }
 
-$WebSocketDict.__mro__ = [$WebSocketDict,$ObjectDict]
+$WebSocketDict.__mro__ = [$WebSocketDict,__builtins__.object.$dict]
 
 function websocket(host){
     var $socket = new WebSocket(host);

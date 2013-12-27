@@ -1,4 +1,9 @@
 $module = (function(){
+
+    for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+    var $JSObject = __BRYTHON__.$JSObject
+    var JSObject = __BRYTHON__.JSObject
+
     obj = {__class__:$module,
         __str__: function(){return "<module 're'>"}
     }
@@ -80,8 +85,8 @@ $module = (function(){
         var $ns=$MakeArgs('re.search',arguments,['pattern','repl','string'],{},'args','kw')
         for($var in $ns){eval("var "+$var+"=$ns[$var]")}
         var args = $ns['args']
-        var count = $DictDict.get($ns['kw'],'count',0)
-        var flags = $DictDict.get($ns['kw'],'flags','')
+        var count = __builtins__.dict.$dict.get($ns['kw'],'count',0)
+        var flags = __builtins__.dict.$dict.get($ns['kw'],'flags','')
         if(args.length>0){var count=args[0]}
         if(args.length>1){var flags=args[1]}
         if(typeof repl==="string"){
