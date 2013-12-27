@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="description" content="Hello world demo written in Brython www.brython.info">
+<meta name="keywords" content="Python,Brython">
+<meta name="author" content="Pierre Quentel">
+<meta charset="iso-8859-1">
+<link rel="stylesheet" href="../doc/doc_brython.css">
+<style>
+#cours {
+margin-left:auto;
+margin-right:auto;
+width:800px;
+padding:50px;
+background: -webkit-linear-gradient(#3F92D2, #66A3D2); /* For Safari */
+background: -o-linear-gradient(#3F92D2, #66A3D2); /* For Opera 11.1 to 12.0 */
+background: -moz-linear-gradient(#3F92D2, #66A3D2); /* For Firefox 3.6 to 15 */
+background: linear-gradient(#A68900, #FFE773); /* Standard syntax */
+}
+</style>
+<script src="/src/brython.js"></script>
+<script src="/src/py_dom.js"></script>
+</head>
+<body onLoad="brython()">
+<h1>Introduction à Python</h1>
+<script type="text/python">
+from browser import doc,slideshow
+slideshow.show('cours_python.pss',doc['cours'])
+
+</script>
+<div id="cours"></div>
+</body>
+</html>
+
