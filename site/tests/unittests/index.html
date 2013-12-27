@@ -21,6 +21,8 @@
 <script type="text/javascript" src="../../../src/py_string.js"></script>
 <script type="text/javascript" src="../../../src/py_dom.js"></script>
 
+<script type="text/javascript" src="../../../src/py_VFS.json"></script>
+
 <script type="text/python">
 from browser import doc
 import sys
@@ -34,8 +36,8 @@ doc['container'].style.height='%dpx' % (_height-_top-10)
 </script>
 
 <script type="text/python">
-import traceback
-import unittest
+#import traceback
+#import unittest
 sys.path.append("test")
 
 def write(data):
