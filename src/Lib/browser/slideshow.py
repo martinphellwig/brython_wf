@@ -1,5 +1,13 @@
 from browser import doc,markdown,html
 
+def keydown(ev,path,zone,page):
+    if ev.keyCode in [39,40]: # key right or down : next page
+        show(path,zone,page+1)
+        ev.preventDefault()    
+    elif ev.keyCode in [37,38]: #key left or up: previous page
+        show(path,zone,page-1)
+        ev.preventDefault()    
+
 def show(path,zone,page=0):
     src = open(path).read()
     title = ''
@@ -9,23 +17,21 @@ def show(path,zone,page=0):
         if key=='@title':
             title = value
         src = src[line_end+1:]
-    print('title',title)
+
     zone.html = ''
     pages = src.split('../..\n')
+    if page<0:
+        page = 0
+    elif page >= len(pages):
+        page = len(pages)-1
+    doc.unbind('keydown')
+    doc.bind('keydown',lambda ev:keydown(ev,path,zone,page))
     body = html.DIV()
     body.html = markdown.mark(pages[page])[0]
-
-    header = html.DIV()
-    previous = html.BUTTON('<',disabled=page==0)
-    previous.bind('click',lambda ev:show(path,zone,page-1))
-    header <= previous
-    _next = html.BUTTON('>',disabled=page==len(pages)-1)
-    _next.bind('click',lambda ev:show(path,zone,page+1))
-    header <= _next
 
     footer = html.DIV(Id="footer")
     if title:
         footer <= html.DIV(title,Class='title')
         
-    zone <= header+body+footer
-    
+    zone <= body+footer
+
