@@ -20,7 +20,7 @@ Caractéristiques
 ../..
 Popularité
 ==========
-<img src='tiobe.png'>
+<img src='tiobe.png' height=400>
 ../..
 Popularité
 ==========
@@ -186,7 +186,9 @@ Accès par index ou par tranche
     100
     >>> a[1:-1]
     ['eggs', 100]
-
+../..
+Listes
+======
 Concaténation par +, duplication par *
 
     >>> 3*a[:3] + ['Boo!']
@@ -382,3 +384,4 @@ Définition d'une fonction
     ...
     >>> fib(2000)
     0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597
+
