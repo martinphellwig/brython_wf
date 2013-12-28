@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20131227-225602
+// version 1.4.20131228-181328
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={}
@@ -50,7 +50,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 4, '20131227-225602', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20131228-181328', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -387,7 +387,7 @@ node.parent.insert(rank,new_nodes[i])
 $loop_num++
 }else{
 var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,'$right=iter('+right.to_js()+');$counter=-1')
+new $NodeJSCtx(new_node,'var $right=iter('+right.to_js()+');var $counter=-1')
 var new_nodes=[new_node]
 var try_node=new $Node('expression')
 try_node.line_num=node.parent.children[rank].line_num
@@ -402,7 +402,7 @@ var new_node=new $Node('expression')
 var C=new $NodeCtx(new_node)
 left_items[i].parent=C
 var assign=new $AssignCtx(left_items[i])
-assign.tree[1]=new $JSCode('next($right)')
+assign.tree[1]=new $JSCode('__builtins__.next($right)')
 try_node.add(new_node)
 }
 var catch_node=new $Node('expression')
@@ -411,11 +411,11 @@ new_nodes.push(catch_node)
 var catch_node1=new $Node('expression')
 var js='if($err'+$loop_num+'.__name__=="StopIteration")'
 js +='{$pop_exc();throw ValueError("need more than "+$counter+" value"+'
-js +='($counter>1 ? "s" : "")+" to unpack")}'
+js +='($counter>1 ? "s" : "")+" to unpack")}else{throw $err'+$loop_num+'};'
 new $NodeJSCtx(catch_node1,js)
 catch_node.add(catch_node1)
 var exhausted=new $Node('expression')
-js='var $exhausted=true;try{next($right);$exhausted=false}'
+js='var $exhausted=true;try{__builtins__.next($right);$exhausted=false}'
 js +='catch(err){if(err.__name__=="StopIteration"){$pop_exc()}}'
 js +='if(!$exhausted){throw ValueError('
 js +='"too many values to unpack (expected "+($counter+1)+")")}'
@@ -5911,10 +5911,7 @@ UnicodeError)
 $make_exc(['DeprecationWarning','PendingDeprecationWarning','RuntimeWarning',
 'SyntaxWarning','UserWarning','FutureWarning','ImportWarning',
 'UnicodeWarning','BytesWarning','ResourceWarning'],Warning)
-var EnvironmentError=OSError
-var IOError=OSError
-var VMSError=OSError
-var WindowsError=OSError
+$make_exc(['EnvironmentError','IOError','VMSError','WindowsError'],OSError)
 var builtin_names=['Ellipsis', 'False', 'None', 
 'True', '_', '__build_class__', '__debug__', '__doc__', '__import__', '__name__', 
 '__package__', 'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'bytearray', 'bytes',
