@@ -339,7 +339,7 @@ function $AssignCtx(context){
         }else{ // form x,y=a
             // evaluate right argument (it might be a function call)
             var new_node = new $Node('expression')
-            new $NodeJSCtx(new_node,'$right=iter('+right.to_js()+');$counter=-1')
+            new $NodeJSCtx(new_node,'var $right=iter('+right.to_js()+');var $counter=-1')
             var new_nodes = [new_node]
             
             var try_node = new $Node('expression')
@@ -358,7 +358,7 @@ function $AssignCtx(context){
                 var context = new $NodeCtx(new_node) // create ordinary node
                 left_items[i].parent = context
                 var assign = new $AssignCtx(left_items[i]) // assignment to left operand
-                assign.tree[1] = new $JSCode('next($right)')
+                assign.tree[1] = new $JSCode('__builtins__.next($right)')
                 try_node.add(new_node)
             }
 
@@ -369,13 +369,13 @@ function $AssignCtx(context){
             var catch_node1 = new $Node('expression')
             var js = 'if($err'+$loop_num+'.__name__=="StopIteration")'
             js += '{$pop_exc();throw ValueError("need more than "+$counter+" value"+'
-            js += '($counter>1 ? "s" : "")+" to unpack")}'
+            js += '($counter>1 ? "s" : "")+" to unpack")}else{throw $err'+$loop_num+'};'
             new $NodeJSCtx(catch_node1,js)
             catch_node.add(catch_node1)
             
             // add a test to see if iterator is exhausted
             var exhausted = new $Node('expression')
-            js = 'var $exhausted=true;try{next($right);$exhausted=false}'
+            js = 'var $exhausted=true;try{__builtins__.next($right);$exhausted=false}'
             js += 'catch(err){if(err.__name__=="StopIteration"){$pop_exc()}}'
             js += 'if(!$exhausted){throw ValueError('
             js += '"too many values to unpack (expected "+($counter+1)+")")}'
