@@ -3363,7 +3363,7 @@ function $transition(context,token){
             }else if(context.expect==='id'){
                 if(context.real==='tuple' && token===')'){
                     context.closed = true
-                    return context
+                    return context.parent
                 }else if(context.real==='gen_expr' && token===')'){
                     context.closed = true
                     return $transition(context.parent,token)
