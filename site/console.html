@@ -104,7 +104,7 @@ def myKeyPress(event):
             try:
                 _ = exec(currentLine,globals())
                 if _ is not None:
-                    print(_)
+                    print(repr(_))
                 doc['code'].value += '>>> '
                 status = "main"
             except IndentationError:
@@ -129,7 +129,7 @@ def myKeyPress(event):
             try:
                 _ = exec(block_src,globals())
                 if _ is not None:
-                    print(_)
+                    print(repr(_))
             except:
                 traceback.print_exc()
             doc['code'].value += '>>> '

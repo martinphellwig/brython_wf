@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20131228-205718
+// version 1.4.20131228-225728
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={}
@@ -50,7 +50,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 4, '20131228-205718', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20131228-225728', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -9407,10 +9407,10 @@ var _id
 if(self.elt.nodeType==9){_id=0}else{_id=self.elt.$brython_id}
 var ix_elt=__BRYTHON__.events.$keys.indexOf(_id)
 if(ix_elt==-1){
-throw KeyError('missing callback for event '+event)
+return 
 }
 var ix_event=__BRYTHON__.events.$values[ix_elt].$keys.indexOf(event)
-if(ix_event==-1){throw KeyError('missing callback for event '+event)}
+if(ix_event==-1){return}
 var events=__BRYTHON__.events.$values[ix_elt].$values[ix_event]
 if(arguments.length===2){
 for(var i=0;i<events.length;i++){
