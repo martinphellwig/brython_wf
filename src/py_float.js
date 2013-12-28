@@ -94,7 +94,7 @@ $FloatDict.__repr__ = $FloatDict.__str__ = function(self){
     if(self===float){return "<class 'float'>"}
     var res = self.value+'' // coerce to string
     if(res.indexOf('.')==-1){res+='.0'}
-    return str(res)
+    return __builtins__.str(res)
 }
 
 $FloatDict.__truediv__ = function(self,other){
@@ -183,7 +183,7 @@ float = function (value){
     if (value == '-inf') return new $FloatClass(-Infinity);
     if (typeof value == 'string' && value.toLowerCase() == 'nan') return new $FloatClass(Number.NaN)
     
-    throw ValueError("Could not convert to float(): '"+str(value)+"'")
+    throw ValueError("Could not convert to float(): '"+__builtins__.str(value)+"'")
 }
 float.__class__ = $factory
 float.$dict = $FloatDict

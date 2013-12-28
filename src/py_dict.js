@@ -20,7 +20,7 @@ var $DictDict = {__class__:$type,
 
 $DictDict.__add__ = function(self,other){
     var msg = "unsupported operand types for +:'dict' and "
-    throw TypeError(msg+"'"+(str(other.__class__) || typeof other)+"'")
+    throw TypeError(msg+"'"+(__builtins__.str(other.__class__) || typeof other)+"'")
 }
 
 $DictDict.__bool__ = function (self) {return self.$keys.length>0}
@@ -40,7 +40,7 @@ $DictDict.__delitem__ = function(self,arg){
             return
         }
     }
-    throw KeyError(str(arg))
+    throw KeyError(__builtins__.str(arg))
 }
 
 $DictDict.__eq__ = function(self,other){
@@ -69,7 +69,7 @@ $DictDict.__getitem__ = function(self,arg){
     for(var i=0;i<self.$keys.length;i++){
         if(getattr(arg,'__eq__')(self.$keys[i])){return self.$values[i]}
     }
-    throw KeyError(str(arg))
+    throw KeyError(__builtins__.str(arg))
 }
 
 $DictDict.__hash__ = function(self) {throw TypeError("unhashable type: 'dict'");}

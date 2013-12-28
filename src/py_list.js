@@ -66,7 +66,7 @@ $ListDict.__delitem__ = function(self,arg){
         }
         return
     } else {
-        throw TypeError('list indices must be integer, not '+str(arg.__class__))
+        throw TypeError('list indices must be integer, not '+__builtins__.str(arg.__class__))
     }
 }
 
@@ -128,7 +128,7 @@ $ListDict.__getitem__ = function(self,arg){
     } else if(isinstance(arg,bool)){
         return $ListDict.__getitem__(self,int(arg))
     } else {
-        throw TypeError('list indices must be integer, not '+str(arg.__class__))
+        throw TypeError('list indices must be integer, not '+arg.__class__.__name__)
     }
 }
 
@@ -250,7 +250,7 @@ $ListDict.__setitem__ = function(self,arg,value){
             throw TypeError("can only assign an iterable")
         }
     }else {
-        throw TypeError('list indices must be integer, not '+str(arg.__class__))
+        throw TypeError('list indices must be integer, not '+arg.__class__.__name__)
     }
 }
 
@@ -293,7 +293,7 @@ $ListDict.index = function(self,elt){
     for(var i=0;i<self.length;i++){
         if(getattr(self[i],'__eq__')(elt)){return i}
     }
-    throw ValueError(str(elt)+" is not in list")
+    throw ValueError(__builtins__.str(elt)+" is not in list")
 }
 
 $ListDict.insert = function(self,i,item){self.splice(i,0,item)}
@@ -305,7 +305,7 @@ $ListDict.remove = function(self,elt){
             return
         }
     }
-    throw ValueError(str(elt)+" is not in list")
+    throw ValueError(__builtins__.str(elt)+" is not in list")
 }
 
 $ListDict.pop = function(self,pos){
