@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20131228-204353
+// version 1.4.20131228-205718
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={}
@@ -50,7 +50,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 4, '20131228-204353', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20131228-205718', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -4876,12 +4876,17 @@ if(attr==='__call__' &&(typeof obj=='function')){
 if(__BRYTHON__.debug>0){
 return function(){
 __BRYTHON__.call_stack.push(document.$line_info)
-try{return obj.apply(null,arguments)}
-catch(err){throw err}
+try{
+var res=obj.apply(null,arguments)
+if(res===undefined){return __builtins__.None}else{return res}
+}catch(err){throw err}
 finally{__BRYTHON__.call_stack.pop()}
 }
 }
-return obj
+return function(){
+var res=obj.apply(null,arguments)
+if(res===undefined){return __builtins__.None}else{return res}
+}
 }
 if(klass.$native){
 if(klass[attr]===undefined){
@@ -8400,9 +8405,7 @@ var f=getattr(arg,'__repr__')
 return f()
 }catch(err){
 $pop_exc()
-console.log(err+'\ndefault to toString '+arg)
-for(var attr in err){console.log(attr+' '+err[attr])}
-$pop_exc();return arg.toString()
+console.log(err+'\ndefault to toString '+arg);$pop_exc();return arg.toString()
 }
 }
 }

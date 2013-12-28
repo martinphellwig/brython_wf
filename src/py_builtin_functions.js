@@ -398,12 +398,17 @@ function getattr(obj,attr,_default){
         if(__BRYTHON__.debug>0){
             return function(){
                 __BRYTHON__.call_stack.push(document.$line_info)
-                try{return obj.apply(null,arguments)}
-                catch(err){throw err}
+                try{
+                    var res = obj.apply(null,arguments)
+                    if(res===undefined){return __builtins__.None}else{return res}
+                }catch(err){throw err}
                 finally{__BRYTHON__.call_stack.pop()}
             }
         }
-        return obj
+        return function(){
+            var res = obj.apply(null,arguments)
+            if(res===undefined){return __builtins__.None}else{return res}
+        }
     }
     //if(attr=='__eq__'){console.log('attr '+attr+' klass '+klass)}
     
