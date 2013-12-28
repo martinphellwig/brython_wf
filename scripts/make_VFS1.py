@@ -1,6 +1,8 @@
 import os
 import json
 import sys
+import re
+import cStringIO as StringIO
 
 #check to see if slimit or some other minification library is installed
 #set minify equal to slimit's minify function
@@ -12,10 +14,35 @@ try:
   minify=slimit.minify
 except ImportError:
   minify=None  
-  
+
 if sys.version_info[0] >= 3:
    print("For the time being, because of byte issues in Bryton, please use python 2.x")
    sys.exit()
+
+def filter_module(code):
+    """ remove empty lines from modules so that py_VFS will be a little
+        smaller
+    """
+
+    _re_whitespace=re.compile('^\s*$')   #line only contains white space
+    _re_comment=re.compile('^\s*\#.*$')  #line only contains a comment
+
+    _filtered=[]
+    _total=0
+    _count=0
+    _fp=StringIO.StringIO(code)
+    for _line in _fp:
+        _total+=1
+        if _re_whitespace.match(_line) or _re_comment.match(_line):
+           continue
+
+        _count+=1
+        _filtered.append(_line)
+
+    if _total > 0:
+       print "removed: %s empty lines (%d%%)" % (_total - _count, 100.0*_count/_total)
+    return ''.join(_filtered)
+  
 
 def process(filename):
   print "generating %s" % filename
@@ -28,35 +55,32 @@ def process(filename):
         if _root.endswith('lib_migration'): continue  #skip these modules 
         if '__pycache__' in _root: continue
         for _file in _files:
-            if _file.endswith('.py'):
-               # we only want to include a .py file if a compiled javascript
-               # version is not available
-               if os.path.exists(os.path.join(_root, _file.replace('.py', '.pyj'))):
+            _ext=os.path.splitext(_file)[1]
+            if _ext not in ('.js', '.py'): continue
+ 
+            _fp=open(os.path.join(_root, _file), "r")
+            _data=_fp.read()
+            _fp.close()
+
+            if _ext in ('.js') and minify is not None:
+               try: 
+                 _data=minify(_data)
+               except:
+                 pass
+            elif _ext == '.py':
+               _data=filter_module(_data)
+
+            _vfs_filename=os.path.join(_root, _file).replace(_main_root, '')
+            _vfs_filename=_vfs_filename.replace("\\", "/")
+
+            if _vfs_filename.startswith('/libs/crypto_js/rollups/'):
+               if _file not in ('md5.js', 'sha1.js', 'sha3.js',
+                                'sha224.js', 'sha384.js', 'sha512.js'):
                   continue
 
-            _ext=os.path.splitext(_file)[1]
-            if _ext in ('.js', '.py'): 
-               _fp=open(os.path.join(_root, _file), "r")
-               _data=_fp.read()
-               _fp.close()
+            print("adding %s" % _vfs_filename)
 
-               if _ext in ('.js') and minify is not None:
-                  try: 
-                     _data=minify(_data)
-                  except:
-                     pass
-
-               _vfs_filename=os.path.join(_root, _file).replace(_main_root, '')
-               _vfs_filename=_vfs_filename.replace("\\", "/")
-
-               if _vfs_filename.startswith('/libs/crypto_js/rollups/'):
-                  if _file not in ('md5.js', 'sha1.js', 'sha3.js',
-                      'sha224.js', 'sha384.js', 'sha512.js'):
-                       continue
-
-               print("adding %s" % _vfs_filename)
-
-               _VFS[_vfs_filename]=_data
+            _VFS[_vfs_filename]=_data
 
   _vfs=open(filename, "w")
   _vfs.write('__BRYTHON__.VFS=%s;\n\n' % json.dumps(_VFS))
