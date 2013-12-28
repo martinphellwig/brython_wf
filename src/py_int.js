@@ -68,6 +68,7 @@ $IntDict.__lshift__ = function(self,other){return self << other} // bitwise left
 
 $IntDict.__mod__ = function(self,other) {
     // can't use Javascript % because it works differently for negative numbers
+    if(isinstance(other,__builtins__.tuple) && other.length==1){other=other[0]}
     if(isinstance(other,int)){
         return (self%other+other)%other
     }
@@ -78,7 +79,7 @@ $IntDict.__mod__ = function(self,other) {
          if (other.valueOf()) bool_value=1;
          return (self%bool_value+bool_value)%bool_value
     }else{throw TypeError(
-        "unsupported operand type(s) for -: "+self+" (int) and '"+other.__class__+"'")
+        "unsupported operand type(s) for %: "+self+" (int) and '"+other.__class__+"'")
     }
 }
 
@@ -177,7 +178,7 @@ var $op_func = function(self,other){
          if(other.valueOf()) bool_value=1;
          return self.valueOf()-bool_value}
     else{throw TypeError(
-        "unsupported operand type(s) for -: "+self.valueOf()+" and '"+str(other.__class__)+"'")
+        "unsupported GG operand type(s) for -: "+self.valueOf()+" and '"+__builtins__.str(other.__class__)+"'")
     }
 }
 $op_func += '' // source code
@@ -214,7 +215,7 @@ int = function(value){
     }else if(isinstance(value,float)){
         res = Number(parseInt(value.value))
     }else{ throw ValueError(
-        "Invalid literal for int() with base 10: '"+str(value)+"'")
+        "Invalid literal for int() with base 10: '"+__builtins__.str(value)+"'")
     }
     return res
 }

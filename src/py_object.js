@@ -32,7 +32,7 @@ var $ObjectDict = {
 // function used to generate the methods that return 'unorderable types'
 var $ObjectNI = function(name,op){
     return function(other){
-        throw TypeError('unorderable types: object() '+op+' '+str(other.__class__.__name__)+'()')
+        throw TypeError('unorderable types: object() '+op+' '+__builtins__.str(other.__class__.__name__)+'()')
     }
 }
 
