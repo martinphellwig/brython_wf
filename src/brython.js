@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20131228-181328
+// version 1.4.20131228-204353
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={}
@@ -50,7 +50,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 4, '20131228-181328', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20131228-204353', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -2910,7 +2910,7 @@ return new $TargetListCtx(new $CompForCtx(comp))
 }else if(C.expect==='id'){
 if(C.real==='tuple' && token===')'){
 C.closed=true
-return C
+return C.parent
 }else if(C.real==='gen_expr' && token===')'){
 C.closed=true
 return $transition(C.parent,token)
@@ -3653,7 +3653,7 @@ $native:true
 }
 var $ObjectNI=function(name,op){
 return function(other){
-throw TypeError('unorderable types: object() '+op+' '+str(other.__class__.__name__)+'()')
+throw TypeError('unorderable types: object() '+op+' '+__builtins__.str(other.__class__.__name__)+'()')
 }
 }
 $ObjectDict.__delattr__=function(self,attr){delete self[attr]}
@@ -6456,7 +6456,7 @@ $FloatDict.__repr__=$FloatDict.__str__=function(self){
 if(self===float){return "<class 'float'>"}
 var res=self.value+'' 
 if(res.indexOf('.')==-1){res+='.0'}
-return str(res)
+return __builtins__.str(res)
 }
 $FloatDict.__truediv__=function(self,other){
 if(isinstance(other,int)){
@@ -6532,7 +6532,7 @@ if(isinstance(value,float))return value
 if(value=='inf')return new $FloatClass(Infinity)
 if(value=='-inf')return new $FloatClass(-Infinity)
 if(typeof value=='string' && value.toLowerCase()=='nan')return new $FloatClass(Number.NaN)
-throw ValueError("Could not convert to float(): '"+str(value)+"'")
+throw ValueError("Could not convert to float(): '"+__builtins__.str(value)+"'")
 }
 float.__class__=$factory
 float.$dict=$FloatDict
@@ -6592,6 +6592,7 @@ $IntDict.__int__=function(self){return self}
 $IntDict.__invert__=function(self){return ~self}
 $IntDict.__lshift__=function(self,other){return self << other}
 $IntDict.__mod__=function(self,other){
+if(isinstance(other,__builtins__.tuple)&& other.length==1){other=other[0]}
 if(isinstance(other,int)){
 return(self%other+other)%other
 }
@@ -6602,7 +6603,7 @@ var bool_value=0;
 if(other.valueOf())bool_value=1
 return(self%bool_value+bool_value)%bool_value
 }else{throw TypeError(
-"unsupported operand type(s) for -: "+self+" (int) and '"+other.__class__+"'")
+"unsupported operand type(s) for %: "+self+" (int) and '"+other.__class__+"'")
 }
 }
 $IntDict.__mro__=[$IntDict,$ObjectDict]
@@ -6680,7 +6681,7 @@ var bool_value=0
 if(other.valueOf())bool_value=1
 return self.valueOf()-bool_value}
 else{throw TypeError(
-"unsupported operand type(s) for -: "+self.valueOf()+" and '"+str(other.__class__)+"'")
+"unsupported GG operand type(s) for -: "+self.valueOf()+" and '"+__builtins__.str(other.__class__)+"'")
 }
 }
 $op_func +='' 
@@ -6713,7 +6714,7 @@ res=Number(parseInt(value))
 }else if(isinstance(value,float)){
 res=Number(parseInt(value.value))
 }else{throw ValueError(
-"Invalid literal for int() with base 10: '"+str(value)+"'")
+"Invalid literal for int() with base 10: '"+__builtins__.str(value)+"'")
 }
 return res
 }
@@ -6737,7 +6738,7 @@ $native:true
 }
 $DictDict.__add__=function(self,other){
 var msg="unsupported operand types for +:'dict' and "
-throw TypeError(msg+"'"+(str(other.__class__)|| typeof other)+"'")
+throw TypeError(msg+"'"+(__builtins__.str(other.__class__)|| typeof other)+"'")
 }
 $DictDict.__bool__=function(self){return self.$keys.length>0}
 $DictDict.__contains__=function(self,item){
@@ -6753,7 +6754,7 @@ if(self.$jsobj){delete self.$jsobj[arg]}
 return
 }
 }
-throw KeyError(str(arg))
+throw KeyError(__builtins__.str(arg))
 }
 $DictDict.__eq__=function(self,other){
 if(other===undefined){
@@ -6779,7 +6780,7 @@ $DictDict.__getitem__=function(self,arg){
 for(var i=0;i<self.$keys.length;i++){
 if(getattr(arg,'__eq__')(self.$keys[i])){return self.$values[i]}
 }
-throw KeyError(str(arg))
+throw KeyError(__builtins__.str(arg))
 }
 $DictDict.__hash__=function(self){throw TypeError("unhashable type: 'dict'");}
 $DictDict.__in__=function(self,item){return getattr(item,'__contains__')(self)}
@@ -7027,7 +7028,7 @@ self.splice(res[i],1)
 }
 return
 }else{
-throw TypeError('list indices must be integer, not '+str(arg.__class__))
+throw TypeError('list indices must be integer, not '+__builtins__.str(arg.__class__))
 }
 }
 $ListDict.__eq__=function(self,other){
@@ -7087,7 +7088,7 @@ return res
 }else if(isinstance(arg,bool)){
 return $ListDict.__getitem__(self,int(arg))
 }else{
-throw TypeError('list indices must be integer, not '+str(arg.__class__))
+throw TypeError('list indices must be integer, not '+arg.__class__.__name__)
 }
 }
 $ListDict.__ge__=function(self,other){
@@ -7188,7 +7189,7 @@ self.splice(start,0,$temp[i])
 throw TypeError("can only assign an iterable")
 }
 }else{
-throw TypeError('list indices must be integer, not '+str(arg.__class__))
+throw TypeError('list indices must be integer, not '+arg.__class__.__name__)
 }
 }
 $ListDict.__str__=$ListDict.__repr__
@@ -7224,7 +7225,7 @@ $ListDict.index=function(self,elt){
 for(var i=0;i<self.length;i++){
 if(getattr(self[i],'__eq__')(elt)){return i}
 }
-throw ValueError(str(elt)+" is not in list")
+throw ValueError(__builtins__.str(elt)+" is not in list")
 }
 $ListDict.insert=function(self,i,item){self.splice(i,0,item)}
 $ListDict.remove=function(self,elt){
@@ -7234,7 +7235,7 @@ self.splice(i,1)
 return
 }
 }
-throw ValueError(str(elt)+" is not in list")
+throw ValueError(__builtins__.str(elt)+" is not in list")
 }
 $ListDict.pop=function(self,pos){
 if(pos===undefined){
@@ -8399,7 +8400,9 @@ var f=getattr(arg,'__repr__')
 return f()
 }catch(err){
 $pop_exc()
-console.log(err+'\ndefault to toString '+arg);$pop_exc();return arg.toString()
+console.log(err+'\ndefault to toString '+arg)
+for(var attr in err){console.log(attr+' '+err[attr])}
+$pop_exc();return arg.toString()
 }
 }
 }
