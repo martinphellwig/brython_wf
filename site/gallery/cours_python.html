@@ -11,18 +11,42 @@
 margin-left:auto;
 margin-right:auto;
 width:800px;
-padding:50px;
+padding-right:50px;
+padding-left:50px;
+padding-top:20px;
+padding-bottom:20px;
 background: -webkit-linear-gradient(#3F92D2, #66A3D2); /* For Safari */
 background: -o-linear-gradient(#3F92D2, #66A3D2); /* For Opera 11.1 to 12.0 */
 background: -moz-linear-gradient(#3F92D2, #66A3D2); /* For Firefox 3.6 to 15 */
 background: linear-gradient(#A68900, #FFE773); /* Standard syntax */
+min-height:500px;
+}
+#footer {
+    text-align: right;
+    vertical-align:bottom;
 }
 </style>
-<script src="/src/brython.js"></script>
-<script src="/src/py_dom.js"></script>
+<script type="text/javascript" src="../../src/brython_builtins.js"></script>
+<script type="text/javascript" src="../../src/version_info.js"></script>
+<script type="text/javascript" src="../../src/py2js.js"></script>
+<script type="text/javascript" src="../../src/py_object.js"></script>
+<script type="text/javascript" src="../../src/py_type.js"></script>
+<script type="text/javascript" src="../../src/py_utils.js"></script>
+<script type="text/javascript" src="../../src/py_builtin_functions.js"></script>
+<script type="text/javascript" src="../../src/py_set.js"></script>
+<script type="text/javascript" src="../../src/js_objects.js"></script>
+<script type="text/javascript" src="../../src/py_import.js"></script>
+
+<script type="text/javascript" src="../../src/py_string.js"></script>
+<script type="text/javascript" src="../../src/py_int.js"></script>
+<script type="text/javascript" src="../../src/py_float.js"></script>
+<script type="text/javascript" src="../../src/py_dict.js"></script>
+<script type="text/javascript" src="../../src/py_list.js"></script>
+<script type="text/javascript" src="../../src/py_dom.js"></script>
+
 </head>
-<body onLoad="brython()">
-<h1>Introduction à Python</h1>
+<body onLoad="brython(2)">
+<h1 style="text-align:center">Introduction à Python</h1>
 <script type="text/python">
 from browser import doc,slideshow
 slideshow.show('cours_python.pss',doc['cours'])
