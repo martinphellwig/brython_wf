@@ -1,10 +1,15 @@
+@title Introduction à Python
+
 Introduction à Python
 =====================
 
->    def hello():
->        print('bonjour tout le monde')
->    hello()
 
+../..
+Historique
+==========
+- créé en 1989 par Guido van Rossum
+- version 2.0 en 2000
+- version 3.0 en 2008 (quelques incompatibilités)
 ../..
 Caractéristiques
 ================
@@ -22,17 +27,17 @@ Popularité
 Projets créés sur Github en 2013
 
 <pre>
-Rank	Language      # Repositories Created
-1	JavaScript    264131
-2	Ruby          218812
-3	Java          157618
-4	PHP           114384
-5	Python         95002
-6	C++            78327
-7	C              67706
-8	Objective-C    36344
-9	C#             32170
-10	Shell          28561
+Rank    Language      # Repositories Created
+1    JavaScript    264131
+2    Ruby          218812
+3    Java          157618
+4    PHP           114384
+5    Python         95002
+6    C++            78327
+7    C              67706
+8    Objective-C    36344
+9    C#             32170
+10    Shell          28561
 </pre>
 ../..
 Installation
@@ -57,14 +62,16 @@ Introduits par #
 Définition de noms
 ==================
 
-    width = 20
-    height = 5*9
-    x = y = z = 0
-    tax = 0.125
-    ht = 100.50
-    ttc = ht * (1+tax)
-    round(ttc, 2)
-    >>> 113,06
+    >>> width = 20
+    >>> height = 5*9
+    
+    >>> x = y = z = 0
+    
+    >>> tax = 0.125
+    >>> ht = 100.50
+    >>> ttc = ht * (1+tax)
+    >>> round(ttc, 2)
+    113,06
 ../..
 Chaines de caractères
 =====================
@@ -109,11 +116,11 @@ Chaines de caractères
 =====================
 Concaténation par +, duplication par *
 
-    word = 'Help' + 'A'
-    word
-    >>> 'HelpA'
-    '<' + word*5 + '>'
-    >>> '<HelpAHelpAHelpAHelpAHelpA>'
+    >>> word = 'Help' + 'A'
+    >>> word
+    'HelpA'
+    >>> '<' + word*5 + '>'
+    '<HelpAHelpAHelpAHelpAHelpA>'
 ../..
 Chaines de caractères
 =====================
@@ -125,10 +132,10 @@ Accès à un caractère par index
        0   1   2   3   4
       -5  -4  -3  -2  -1
             
-    word[4]
-    >>> 'A'
-    word[-2]
-    >>> 'p'
+    >>> word[4]
+    'A'
+    >>> word[-2]
+    'p'
 ../..
 Chaines de caractères
 =====================
@@ -139,29 +146,29 @@ Tranches
      +---+---+---+---+---+
      0   1   2   3   4   5
     -5  -4  -3  -2  -1
-    word[0:2]
-    >>> 'He'
-    word[2:4]
-    >>> 'lp'
-    word[:2]
-    >>> 'He'
-    word[3:]
-    >> 'pA'
+    >>> word[0:2]
+    'He'
+    >>> word[2:4]
+    'lp'
+    >>> word[:2]
+    'He'
+    >>> word[3:]
+    'pA'
 ../..
 Chaines de caractères
 =====================
 Les chaines sont immuables
 --------------------------
 
-    word = 'HelpA'
-    word[1]='a'
-    >>> TypeError: 'str' object does not support item assignment
+    >>> word = 'HelpA'
+    >>> word[1]='a'
+    TypeError: 'str' object does not support item assignment
 Longueur d'une chaine
 ---------------------
 
-    word = 'anticonstitutionnellement'
-    len(word)
-    >>> 25
+    >>> word = 'anticonstitutionnellement'
+    >>> len(word)
+    25
 ../..
 Listes
 ======
@@ -184,3 +191,194 @@ Concaténation par +, duplication par *
 
     >>> 3*a[:3] + ['Boo!']
     ['spam', 'eggs', 100, 'spam', 'eggs', 100, 'spam', 'eggs', 100, 'Boo!']        
+
+Clonage
+
+    >>> a[:]
+../..
+Listes
+======
+Les listes sont mutables
+
+    >>> a
+    ['spam', 'eggs', 100, 1234]
+    >>> a[2] = a[2] + 23
+    >>> a
+    ['spam', 'eggs', 123, 1234]
+../..
+Listes
+======
+Longueur d'une chaine par `len`
+
+    >>> a = ['a', 'b', 'c', 'd']
+    >>> len(a)
+    4
+../..
+Listes
+======
+Une liste peut contenir d'autres listes
+    >>> q = [2, 3]
+    >>> p = [1, q, 4]
+    >>> len(p)
+    3
+    >>> p[1]
+    [2, 3]
+    >>> p[1][0]
+    2
+../..
+Listes
+======
+Ajout d'un élément à la fin d'une liste par `append`
+    >>> p[1].append('xtra')
+    >>> p
+    [1, [2, 3, 'xtra'], 4]
+    >>> q
+    [2, 3, 'xtra']
+Insertion d'un élément à une position donnée par `insert`
+    >>> q.insert(1,'new')
+    >>> q
+    [2, 'new', 3, 'xtra']
+    >>>
+../..
+Premiers pas en programmation
+=============================
+Suite de Fibonacci
+
+    >>> a, b = 0, 1
+    >>> while b < 10:
+    ...     print(b)
+    ...     a, b = b, a+b
+    ...
+    1
+    1
+    2
+    3
+    5
+    8
+A noter :
+- assignement multiple : `a, b = 0, 1`
+- indentation
+- boucle `while`
+../..
+La fonction `print`
+===================
+    >>> i = 256*256
+    >>> print('La valeur de i est', i)
+    La valeur de i est 65536
+
+Le mot-clé *end*
+
+    >>> a, b = 0, 1
+    >>> while b < 1000:
+    ...     print(b, end=',')
+    ...     a, b = b, a+b
+    ...
+    1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,
+../..
+Conditions : `if, elif, else`
+=============================
+    >>> x = int(input("Please enter an integer: "))
+    Please enter an integer: 42
+    >>> if x < 0:
+    ...      x = 0
+    ...      print('Negative changed to zero')
+    ... elif x == 0:
+    ...      print('Zero')
+    ... elif x == 1:
+    ...      print('Single')
+    ... else:
+    ...      print('More')
+    ...
+    More
+
+nb : pas de "switch / case"
+../..
+Boucle `for`
+============
+Un des outils les plus puissants de Python
+    >>> a = ['cat', 'window', 'defenestrate']
+    >>> for x in a:
+    ...     print(x, len(x))
+    ...
+    cat 3
+    window 6
+    defenestrate 12
+
+../..
+La fonction `range`
+===================
+    >>> for i in range(5):
+    ...     print(i)
+    ...
+    0
+    1
+    2
+    3
+    4
+
+syntaxe : `range(start,stop,step)`
+../..
+Itérateurs
+==========
+    >>> print(range(10))
+    range(0, 10)
+
+`range` ne renvoie pas une liste de valeurs, mais un _itérateur_
+
+Dans `for x in A`, *A* est un itérateur
+
+Certaines fonctions prennent un itérateur comme argument, par exemple `list`
+
+    >>> list(range(5))
+    [0, 1, 2, 3, 4]
+
+../..
+`continue`
+==========
+    >>> for num in range(2, 10):
+    ...     if num % 2 == 0:
+    ...         print("Found an even number", num)
+    ...         continue
+    ...     print("Found a number", num)
+    Found an even number 2
+    Found a number 3
+    Found an even number 4
+    Found a number 5
+    Found an even number 6
+    Found a number 7
+    Found an even number 8
+    Found a number 9
+../..
+`break` et `else` dans une boucle
+=================================
+    >>> for n in range(2, 10):
+    ...     for x in range(2, n):
+    ...         if n % x == 0:
+    ...             print(n, 'equals', x, '*', n//x)
+    ...             break
+    ...     else:
+    ...         # loop fell through without finding a factor
+    ...         print(n, 'is a prime number')
+    ...
+    2 is a prime number
+    3 is a prime number
+    4 equals 2 * 2
+    5 is a prime number
+    6 equals 2 * 3
+    7 is a prime number
+    8 equals 2 * 4
+    9 equals 3 * 3
+Le bloc après `else` est exécuté si on ne sort pas de la boucle par un `break`
+../..
+Définition d'une fonction
+=========================
+    >>> def fib(n):    # write Fibonacci series up to n
+    ...     """Print a Fibonacci series up to n."""
+    ...     a, b = 0, 1
+    ...     while a < n:
+    ...         print(a, end=' ')
+    ...         a, b = b, a+b
+    ...     print()
+    ...
+    >>> fib(2000)
+    0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597
