@@ -1611,10 +1611,7 @@ $make_exc(['DeprecationWarning','PendingDeprecationWarning','RuntimeWarning',
     'SyntaxWarning','UserWarning','FutureWarning','ImportWarning',
     'UnicodeWarning','BytesWarning','ResourceWarning'],Warning)
 
-var EnvironmentError = OSError
-var IOError = OSError
-var VMSError = OSError
-var WindowsError = OSError
+$make_exc(['EnvironmentError','IOError','VMSError','WindowsError'],OSError)
 
 var builtin_names=[ 'Ellipsis', 'False',  'None', 
 'True', '_', '__build_class__', '__debug__', '__doc__', '__import__', '__name__', 
