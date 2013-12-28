@@ -859,10 +859,10 @@ DOMNode.unbind = function(self,event){
     if(self.elt.nodeType==9){_id=0}else{_id=self.elt.$brython_id}
     var ix_elt = __BRYTHON__.events.$keys.indexOf(_id)
     if(ix_elt==-1){
-        throw KeyError('missing callback for event '+event)
+        return //throw KeyError('missing callback for event '+event)
     }
     var ix_event = __BRYTHON__.events.$values[ix_elt].$keys.indexOf(event)
-    if(ix_event==-1){throw KeyError('missing callback for event '+event)}
+    if(ix_event==-1){return} //throw KeyError('missing callback for event '+event)}
     var events = __BRYTHON__.events.$values[ix_elt].$values[ix_event]
     if(arguments.length===2){
         for(var i=0;i<events.length;i++){
