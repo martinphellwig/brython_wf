@@ -415,8 +415,7 @@ function $AssignCtx(context){
             }
             var scope = $get_scope(this)
             if(scope.ntype==="module"){
-                var res = left.to_js()
-                if(scope.module!=='__main__'){res = 'var '+res}
+                var res = 'var '+left.to_js()
                 if(left.to_js().charAt(0)!='$'){
                     res += '=$globals["'+left.to_js()+'"]'
                 }
