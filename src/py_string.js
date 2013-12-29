@@ -104,7 +104,6 @@ $StringDict.__len__ = function(self){return self.length}
 
 $legacy_format=$StringDict.__mod__ = function(self,args){
     // string formatting (old style with %)
-    var dict = __builtins__.dict
     var flags = $List2Dict('#','0','-',' ','+')
     var ph = [] // placeholders for replacements
 
@@ -131,7 +130,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
         }
         this.format = function(src){
             if(this.mapping_key!==null){
-                if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
+                if(!isinstance(src,__builtins__.dict)){throw TypeError("format requires a mapping")}
                 src=getattr(src,'__getitem__')(this.mapping_key)
             }
             if(this.type=="s"){
@@ -290,6 +289,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
     return res
 }
 
+
 $StringDict.__mro__ = [$StringDict,$ObjectDict]
 
 $StringDict.__mul__ = function(self,other){
@@ -395,12 +395,13 @@ $StringDict.endswith = function(self){
     // end, stop comparing at that position.
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+    var start=null,end=null
     var $ns=$MakeArgs("$StringDict.endswith",args,['suffix'],
-        {'start':null,'end':null},null,null)
+        ['start','end'],null,null)
     var suffixes = $ns['suffix']
     if(!isinstance(suffixes,__builtins__.tuple)){suffixes=[suffixes]}
-    var start = $ns['start'] || 0
-    var end = $ns['end'] || self.length-1
+    start = $ns['start'] || start
+    end = $ns['end'] || self.length-1
     var s = self.substr(start,end+1)
     for(var i=0;i<suffixes.length;i++){
         suffix = suffixes[i]
@@ -419,9 +420,10 @@ $StringDict.find = function(self){
     // such that sub is contained in the slice s[start:end]. Optional 
     // arguments start and end are interpreted as in slice notation. 
     // Return -1 if sub is not found.
+    var start=0,end=self.length
     var $ns=$MakeArgs("$StringDict.find",arguments,['self','sub'],
-        {'start':0,'end':self.length},null,null)
-    var sub = $ns['sub'],start=$ns['start'],end=$ns['end']
+        ['start','end'],null,null)
+    for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     if(!isinstance(sub,str)){throw TypeError(
         "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
     if(!isinstance(start,int)||!isinstance(end,int)){throw TypeError(
@@ -553,32 +555,28 @@ var $FormattableString=function(format_string) {
 
     this.format=function() {
        // same as str.format() and unicode.format in Python 2.6+
-       var $ns=$MakeArgs('format',arguments,[],{},'args','kwargs')
+       var $ns=$MakeArgs('format',arguments,[],[],'args','kwargs')
        var args=$ns['args']
        var kwargs=$ns['kwargs']
-       
+
        if (args) {
-          for (var i=0; i < args.length; i++) {
+          for (var i=0; i < args[0].length; i++) {
               //kwargs[str(i)]=args.$dict[i]
               //console.log(args[0][i])
-              getattr(kwargs, '__setitem__')(str(i), args[i]) 
+              getattr(kwargs, '__setitem__')(str(i), args[0][i]) 
           }
        }
 
-       console.log('kwargs '+str(kwargs))
-       console.log('kwarray '+this._kwords_array)
+       //console.log(kwargs)
        //encode arguments to ASCII, if format string is bytes
        var _want_bytes = isinstance(this._string, str)
-       var _params=$dict()
+       var _params=__builtins__.dict()
        //var _params = $dict()
        for (var i=0; i < this._kwords_array.length; i++) {
            var _name = this._kwords_array[i]
            var _items = this._kwords[_name]
-           console.log('_name '+_name+' _items '+_items)
-           try{
+
            var _var = getattr(kwargs, '__getitem__')(_name)
-           }catch(err){break}
-           console.log('_var '+str(_var))
            var _value;
            if (hasattr(_var, 'value')) {
               _value = getattr(getattr(kwargs, '__getitem__')(_name), 'value')
@@ -595,7 +593,6 @@ var $FormattableString=function(format_string) {
                                                       _conv, _spec, _want_bytes))
            }
        }
-       console.log('end 1')
 
        for (var i=0; i < this._nested_array.length; i++) {
            var _name = this._nested_array[i]
@@ -620,7 +617,6 @@ var $FormattableString=function(format_string) {
                                                       _conv, _spec, _want_bytes))
            }
        }
-       console.log('call legacy format '+this._string+' params '+str(_params))
 
        return $legacy_format(this._string, _params)
     }  // this.format
@@ -805,8 +801,8 @@ var $FormattableString=function(format_string) {
     }
 
     this.format_str_re = new RegExp(
-      //'(%)' +
-      '((?!{)(?:{{)+' +
+      '(%)' +
+      '|((?!{)(?:{{)+' +
       '|(?:}})+(?!})' +
       '|{(?:[^{](?:[^{}]+|{[^{}]*})*)?})', 'g'
     )
@@ -842,7 +838,7 @@ $StringDict.format = function(self) {
     var args=[]
     // we don't need the first item (ie, self)
     for (var i =1; i < arguments.length; i++) { args.push(arguments[i])}
-    return _fs.format.apply(null,args)
+    return _fs.format(args)
 }
 
 $StringDict.format_map = function(self) {
@@ -1007,9 +1003,10 @@ $StringDict.rfind = function(self){
     // Return the highest index in the string where substring sub is found, 
     // such that sub is contained within s[start:end]. Optional arguments 
     // start and end are interpreted as in slice notation. Return -1 on failure.
+    var start=0,end=self.length
     var $ns=$MakeArgs("$StringDict.find",arguments,['self','sub'],
-        {'start':0,'end':self.length},null,null)
-    var sub = $ns['sub'],start=$ns['start'],end=$ns['end']
+        ['start','end'],null,null)
+    for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     if(!isinstance(sub,str)){throw TypeError(
         "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
     if(!isinstance(start,int)||!isinstance(end,int)){throw TypeError(
@@ -1030,9 +1027,10 @@ $StringDict.rindex = function(){
 }
 
 $StringDict.rjust = function(self) {
+    var fillchar = ' '
     var $ns=$MakeArgs("$StringDict.rjust",arguments,['self','width'],
-                      {'fillchar':' '},null,null)
-    var width = $ns['width'],fillchar=$ns['fillchar']
+                      ['fillchar'],null,null)
+    for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 
     if (width <= self.length) return self
 
@@ -1058,7 +1056,7 @@ $StringDict.rpartition = function(self,sep) {
 $StringDict.rsplit = function(self) {
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    var $ns=$MakeArgs("$StringDict.split",args,[],{},'args','kw')
+    var $ns=$MakeArgs("$StringDict.split",args,[],[],'args','kw')
     var sep=None,maxsplit=-1
     if($ns['args'].length>=1){sep=$ns['args'][0]}
     if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -1093,7 +1091,7 @@ $StringDict.rstrip = function(self,x){
 $StringDict.split = function(self){
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    var $ns=$MakeArgs("$StringDict.split",args,[],{},'args','kw')
+    var $ns=$MakeArgs("$StringDict.split",args,[],[],'args','kw')
     var sep=None,maxsplit=-1
     if($ns['args'].length>=1){sep=$ns['args'][0]}
     if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -1160,7 +1158,7 @@ $StringDict.startswith = function(self){
     // start, test string beginning at that position. With optional end, 
     // stop comparing string at that position.
     $ns=$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
-        {'start':null,'end':null},null,null)
+        ['start','end'],null,null)
     var prefixes = $ns['prefix']
     if(!isinstance(prefixes,__builtins__.tuple)){prefixes=[prefixes]}
     var start = $ns['start'] || 0
@@ -1194,7 +1192,7 @@ $StringDict.title = function(self) {
 
 $StringDict.translate = function(self,table) {
     var res = ''
-    if (isinstance(table, dict)) {
+    if (isinstance(table, __builtins__.dict)) {
        for (var i=0; i<self.length; i++) {
            var repl = __builtins__.dict.$dict.get(table,self.charCodeAt(i),-1)
            if(repl==-1){res += self.charAt(i)}

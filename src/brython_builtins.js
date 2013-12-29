@@ -2,7 +2,7 @@
 var __builtins__ = {}
 
 // global object with brython built-ins
-__BRYTHON__ = {}
+var __BRYTHON__ = {}
 __BRYTHON__.__getattr__ = function(attr){return this[attr]}
 __BRYTHON__.__setattr__ = function(attr,value){
     // limited to some attributes
@@ -61,5 +61,4 @@ __BRYTHON__.has_websocket = (function(){
     catch(err){return false}
 })()
 
-__BRYTHON__.path = [] // path for .py modules
 

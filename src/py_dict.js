@@ -101,7 +101,7 @@ $DictDict.__init__ = function(self){
             return
         }
     }
-    var $ns=$MakeArgs('dict',args,[],{},'args','kw')
+    var $ns=$MakeArgs('dict',args,[],[],'args','kw')
     var args = $ns['args']
     var kw = $ns['kw']
     if(args.length>0){ 
@@ -258,7 +258,7 @@ $DictDict.setdefault = function(self,key,_default){
 $DictDict.update = function(self){
     var params = []
     for(var i=1;i<arguments.length;i++){params.push(arguments[i])}
-    var $ns=$MakeArgs('$DictDict.update',params,[],{},'args','kw')
+    var $ns=$MakeArgs('$DictDict.update',params,[],[],'args','kw')
     var args = $ns['args']
     if(args.length>0 && isinstance(args[0],dict)){
         var other = args[0]

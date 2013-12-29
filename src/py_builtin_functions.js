@@ -93,7 +93,7 @@ function ascii(obj) {
 // not in Python but used for tests until unittest works
 // "assert_raises(exception,function,*args)" becomes "if condition: pass else: raise AssertionError"
 function assert_raises(){
-    var $ns=$MakeArgs('assert_raises',arguments,['exc','func'],{},'args','kw')
+    var $ns=$MakeArgs('assert_raises',arguments,['exc','func'],[],'args','kw')
     var args = $ns['args']
     try{$ns['func'].apply(this,args)}
     catch(err){
@@ -304,10 +304,11 @@ var $EnumerateDict = {__class__:$type,__name__:'enumerate'}
 $EnumerateDict.__mro__ = [$EnumerateDict,$ObjectDict]
 
 function enumerate(){
+    var _start = 0
     var $ns = $MakeArgs("enumerate",arguments,["iterable"],
-                {"start":Number(0)}, null, null)
+                ["start"], null, null)
     var _iter = iter($ns["iterable"])
-    var _start = $ns["start"]
+    var _start = $ns["start"] || _start
     var res = {
         __class__:$EnumerateDict,
         __getattr__:function(attr){return res[attr]},
@@ -725,7 +726,7 @@ function ord(c) {
 
 // pow() (built in function)
 function pow() {
-    var $ns=$MakeArgs('pow',arguments,[],{},'args','kw')
+    var $ns=$MakeArgs('pow',arguments,[],[],'args','kw')
     var args = $ns['args']
     if(args.length<2){throw TypeError(
         "pow expected at least 2 arguments, got "+args.length)
@@ -770,10 +771,9 @@ function pow() {
 }
 
 function $print(){
-    var $ns=$MakeArgs('print',arguments,[],{'end':'\n','sep':' '},'args', null)
-    var args = $ns['args']
-    var end = $ns.end
-    var sep = $ns.sep
+    var end='\n',sep=' '
+    var $ns=$MakeArgs('print',arguments,[],['end','sep'],'args', null)
+    for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     var res = ''
     for(var i=0;i<args.length;i++){
         res += __builtins__.str(args[i])
@@ -886,7 +886,7 @@ $RangeDict.__reversed__ = function(self){
 }
 
 function range(){
-    var $ns=$MakeArgs('range',arguments,[],{},'args',null)
+    var $ns=$MakeArgs('range',arguments,[],[],'args',null)
     var args = $ns['args']
     if(args.length>3){throw TypeError(
         "range expected at most 3 arguments, got "+args.length)
@@ -1004,7 +1004,7 @@ var $SliceDict = {__class__:$type,
 $SliceDict.__mro__ = [$SliceDict,$ObjectDict]
 
 function slice(){
-    var $ns=$MakeArgs('slice',arguments,[],{},'args',null)
+    var $ns=$MakeArgs('slice',arguments,[],[],'args',null)
     var args = $ns['args']
     if(args.length>3){throw TypeError(
         "slice expected at most 3 arguments, got "+args.length)
@@ -1035,7 +1035,7 @@ slice.$dict = $SliceDict
 
 // sorted() built in function
 function sorted () {
-    var $ns=$MakeArgs('sorted',arguments,['iterable'],{},null,'kw')
+    var $ns=$MakeArgs('sorted',arguments,['iterable'],[],null,'kw')
     if($ns['iterable']===undefined){throw TypeError("sorted expected 1 positional argument, got 0")}
     else{iterable=$ns['iterable']}
     var key = __builtins__.dict.$dict.get($ns['kw'],'key',None)
@@ -1053,7 +1053,7 @@ function sorted () {
     var args = [obj]
     if (key !== None) {args.push($Kw('key',key))}
     if(reverse){args.push($Kw('reverse',true))}
-    __builtins__.$dict.sort.apply(null,args)
+    __builtins__.list.$dict.sort.apply(null,args)
     return obj
 }
 
@@ -1136,7 +1136,8 @@ function $url_open(){
     // other arguments : 
     // - mode can be 'r' (text, default) or 'rb' (binary)
     // - encoding if mode is 'rb'
-    var $ns=$MakeArgs('open',arguments,['file'],{'mode':'r','encoding':'utf-8'},'args','kw')
+    var mode = 'r',encoding='utf-8'
+    var $ns=$MakeArgs('open',arguments,['file'],['mode','encoding'],'args','kw')
     for(var attr in $ns){eval('var '+attr+'=$ns["'+attr+'"]')}
     if(args.length>0){var mode=args[0]}
     if(args.length>1){var encoding=args[1]}
@@ -1240,7 +1241,7 @@ $ZipDict.__mro__ = [$ZipDict,$ObjectDict]
 function zip(){
     var res = {__class__:$ZipDict,items:[]}
     if(arguments.length==0){return res}
-    var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')
+    var $ns=$MakeArgs('zip',arguments,[],[],'args','kw')
     var _args = $ns['args']
     var args = []
     for(var i=0;i<_args.length;i++){args.push(iter(_args[i]))}
@@ -1434,11 +1435,9 @@ $BaseExceptionDict.__repr__ = $BaseExceptionDict.__str__ = function(){return 'Ba
 $BaseExceptionDict.__mro__ = [$BaseExceptionDict,$ObjectDict]
 
 $BaseExceptionDict.__new__ = function(cls){
-    console.log('new exception')
     var err = BaseException()
     err.__name__ = cls.$dict.__name__
     err.__class__ = cls.$dict
-    console.log('info '+err.info)
     return err
 }
 
