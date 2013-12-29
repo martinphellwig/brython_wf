@@ -6,8 +6,7 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
     // $defaults : {'z':int(1)}
     // $other_args = 'args'
     // $other_kw = 'kw'
-    var i=null,$set_vars = [],$def_names = [],$ns = {}
-    for(var k in $defaults){$def_names.push(k);$ns[k]=$defaults[k]}
+    var i=null,$set_vars = [],$ns = {}
     if($other_args != null){$ns[$other_args]=[]}
     if($other_kw != null){$dict_keys=[];$dict_values=[]}
     // create new list of arguments in case some are packed
@@ -40,7 +39,7 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
                 eval('var '+$required[ix]+"=$PyVar")
                 $ns[$required[ix]]=$PyVar
                 $set_vars.push($required[ix])
-            } else if($arg.name in $defaults){
+            } else if($defaults.indexOf($arg.name)>-1){
                 $ns[$arg.name]=$PyVar
                 $set_vars.push($arg.name)
             } else if($other_kw!=null){
@@ -49,7 +48,8 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
             } else {
                 throw new TypeError($fname+"() got an unexpected keyword argument '"+$arg.name+"'")
             }
-            if($arg.name in $defaults){delete $defaults[$arg.name]}
+            var pos_def = $defaults.indexOf($arg.name)
+            if(pos_def!=-1){$defaults.splice(pos_def,1)}
         }else{ // positional arguments
             if($i<$required.length){
                 eval('var '+$required[$i]+"=$PyVar")
@@ -57,8 +57,8 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
                 $set_vars.push($required[$i])
             } else if($other_args!==null){
                 eval('$ns["'+$other_args+'"].push($PyVar)')
-            } else if($i<$required.length+$def_names.length) {
-                $var_name = $def_names[$i-$required.length]
+            } else if($i<$required.length+$defaults.length) {
+                $var_name = $defaults[$i-$required.length]
                 $ns[$var_name]=$PyVar
                 $set_vars.push($var_name)
             } else {

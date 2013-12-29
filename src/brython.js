@@ -1,9 +1,9 @@
 // brython.js www.brython.info
-// version 1.4.20131229-073545
+// version 1.4.20131229-163459
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={}
-__BRYTHON__={}
+var __BRYTHON__={}
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
 __BRYTHON__.__setattr__=function(attr,value){
 if(['debug'].indexOf(attr)>-1){__BRYTHON__[attr]=value}
@@ -49,8 +49,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 4, '20131229-073545', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20131229-163459', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -880,7 +879,7 @@ this.doc_string=$get_docstring(node)
 this.rank=rank 
 var scope=$get_scope(this)
 var required=''
-var defaults=''
+var defaults=[],defs=[],defs1=[]
 var other_args=null
 var other_kw=null
 var env=[]
@@ -889,7 +888,9 @@ var arg=this.tree[0].tree[i]
 if(arg.type==='func_arg_id'){
 if(arg.tree.length===0){required+='"'+arg.name+'",'}
 else{
-defaults+='"'+arg.name+'":'+$to_js(arg.tree)+','
+defaults.push('"'+arg.name+'"')
+defs.push(arg.name+' = '+$to_js(arg.tree))
+defs1.push(arg.name+':'+$to_js(arg.tree))
 if(arg.tree[0].type==='expr' 
 && arg.tree[0].tree[0].type==='id'){
 env.push(arg.tree[0].tree[0].value)
@@ -899,10 +900,14 @@ env.push(arg.tree[0].tree[0].value)
 else if(arg.type==='func_star_arg'&&arg.op==='**'){other_kw='"'+arg.name+'"'}
 }
 this.env=env
+this.defs=defs
 if(required.length>0){required=required.substr(0,required.length-1)}
-if(defaults.length>0){defaults=defaults.substr(0,defaults.length-1)}
 var nodes=[]
 var js='var $locals = __BRYTHON__.scope["'+this.id+'"].__dict__={}'
+var new_node=new $Node('expression')
+new $NodeJSCtx(new_node,js)
+nodes.push(new_node)
+var js='for(var $var in $defaults){eval("var "+$var+"=$locals[$var]=$defaults[$var]")}'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
@@ -917,7 +922,7 @@ new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
 }
 var js='var $ns=$MakeArgs("'+this.name+'",arguments,['+required+'],'
-js +='{'+defaults+'},'+other_args+','+other_kw+')'
+js +='['+defaults.join(',')+'],'+other_args+','+other_kw+')'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
@@ -937,7 +942,6 @@ for(var i=0;i<node.children.length;i++){
 try_node.add(node.children[i])
 }
 def_func_node.add(try_node)
-var ret_node=new $Node('expression')
 var catch_node=new $Node('expression')
 var js='catch(err'+$loop_num+')'
 js +='{throw __BRYTHON__.exception(err'+$loop_num+')}'
@@ -945,6 +949,7 @@ new $NodeJSCtx(catch_node,js)
 node.children=[]
 def_func_node.add(catch_node)
 node.add(def_func_node)
+var ret_node=new $Node('expression')
 var txt=')('
 for(var i=0;i<this.env.length;i++){
 if(scope.ntype=='class'){
@@ -997,10 +1002,14 @@ new $NodeJSCtx(new_node,js)
 node.parent.children.splice(rank+offset,0,new_node)
 offset++
 js=prefix+this.name+'.__code__= {__class__:$CodeDict}'
+js +=';None;' 
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 node.parent.children.splice(rank+offset,0,new_node)
 offset++
+var default_node=new $Node('expression')
+new $NodeJSCtx(default_node,'var $defaults = {'+defs1.join(',')+'}')
+node.insert(0,default_node)
 this.transformed=true
 }
 this.add_generator_declaration=function(){
@@ -4087,8 +4096,7 @@ $factory:$MethodFactory
 $MethodFactory.$dict=$MethodDict
 
 function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
-var i=null,$set_vars=[],$def_names=[],$ns={}
-for(var k in $defaults){$def_names.push(k);$ns[k]=$defaults[k]}
+var i=null,$set_vars=[],$ns={}
 if($other_args !=null){$ns[$other_args]=[]}
 if($other_kw !=null){$dict_keys=[];$dict_values=[]}
 var upargs=[]
@@ -4120,7 +4128,7 @@ var ix=$required.indexOf($arg.name)
 eval('var '+$required[ix]+"=$PyVar")
 $ns[$required[ix]]=$PyVar
 $set_vars.push($required[ix])
-}else if($arg.name in $defaults){
+}else if($defaults.indexOf($arg.name)>-1){
 $ns[$arg.name]=$PyVar
 $set_vars.push($arg.name)
 }else if($other_kw!=null){
@@ -4129,7 +4137,8 @@ $dict_values.push($PyVar)
 }else{
 throw new TypeError($fname+"() got an unexpected keyword argument '"+$arg.name+"'")
 }
-if($arg.name in $defaults){delete $defaults[$arg.name]}
+var pos_def=$defaults.indexOf($arg.name)
+if(pos_def!=-1){$defaults.splice(pos_def,1)}
 }else{
 if($i<$required.length){
 eval('var '+$required[$i]+"=$PyVar")
@@ -4137,8 +4146,8 @@ $ns[$required[$i]]=$PyVar
 $set_vars.push($required[$i])
 }else if($other_args!==null){
 eval('$ns["'+$other_args+'"].push($PyVar)')
-}else if($i<$required.length+$def_names.length){
-$var_name=$def_names[$i-$required.length]
+}else if($i<$required.length+$defaults.length){
+$var_name=$defaults[$i-$required.length]
 $ns[$var_name]=$PyVar
 $set_vars.push($var_name)
 }else{
@@ -4631,7 +4640,7 @@ return charCode > 127 ? charEscape(charCode): char
 .join("")
 }
 function assert_raises(){
-var $ns=$MakeArgs('assert_raises',arguments,['exc','func'],{},'args','kw')
+var $ns=$MakeArgs('assert_raises',arguments,['exc','func'],[],'args','kw')
 var args=$ns['args']
 try{$ns['func'].apply(this,args)}
 catch(err){
@@ -4801,10 +4810,11 @@ return[int(Math.floor(x/y)), x.__class__.__mod__(x,y)]
 var $EnumerateDict={__class__:$type,__name__:'enumerate'}
 $EnumerateDict.__mro__=[$EnumerateDict,$ObjectDict]
 function enumerate(){
+var _start=0
 var $ns=$MakeArgs("enumerate",arguments,["iterable"],
-{"start":Number(0)}, null, null)
+["start"], null, null)
 var _iter=iter($ns["iterable"])
-var _start=$ns["start"]
+var _start=$ns["start"]|| _start
 var res={
 __class__:$EnumerateDict,
 __getattr__:function(attr){return res[attr]},
@@ -5155,7 +5165,7 @@ function ord(c){
 return c.charCodeAt(0)
 }
 function pow(){
-var $ns=$MakeArgs('pow',arguments,[],{},'args','kw')
+var $ns=$MakeArgs('pow',arguments,[],[],'args','kw')
 var args=$ns['args']
 if(args.length<2){throw TypeError(
 "pow expected at least 2 arguments, got "+args.length)
@@ -5199,10 +5209,9 @@ return Math.pow(a,b)%c
 }
 }
 function $print(){
-var $ns=$MakeArgs('print',arguments,[],{'end':'\n','sep':' '},'args', null)
-var args=$ns['args']
-var end=$ns.end
-var sep=$ns.sep
+var end='\n',sep=' '
+var $ns=$MakeArgs('print',arguments,[],['end','sep'],'args', null)
+for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 var res=''
 for(var i=0;i<args.length;i++){
 res +=__builtins__.str(args[i])
@@ -5297,7 +5306,7 @@ $RangeDict.__reversed__=function(self){
 return range(self.stop-1,self.start-1,-self.step)
 }
 function range(){
-var $ns=$MakeArgs('range',arguments,[],{},'args',null)
+var $ns=$MakeArgs('range',arguments,[],[],'args',null)
 var args=$ns['args']
 if(args.length>3){throw TypeError(
 "range expected at most 3 arguments, got "+args.length)
@@ -5397,7 +5406,7 @@ __name__:'slice'
 }
 $SliceDict.__mro__=[$SliceDict,$ObjectDict]
 function slice(){
-var $ns=$MakeArgs('slice',arguments,[],{},'args',null)
+var $ns=$MakeArgs('slice',arguments,[],[],'args',null)
 var args=$ns['args']
 if(args.length>3){throw TypeError(
 "slice expected at most 3 arguments, got "+args.length)
@@ -5426,7 +5435,7 @@ return res
 slice.__class__=$factory
 slice.$dict=$SliceDict
 function sorted(){
-var $ns=$MakeArgs('sorted',arguments,['iterable'],{},null,'kw')
+var $ns=$MakeArgs('sorted',arguments,['iterable'],[],null,'kw')
 if($ns['iterable']===undefined){throw TypeError("sorted expected 1 positional argument, got 0")}
 else{iterable=$ns['iterable']}
 var key=__builtins__.dict.$dict.get($ns['kw'],'key',None)
@@ -5443,7 +5452,7 @@ else{throw err}
 var args=[obj]
 if(key !==None){args.push($Kw('key',key))}
 if(reverse){args.push($Kw('reverse',true))}
-__builtins__.$dict.sort.apply(null,args)
+__builtins__.list.$dict.sort.apply(null,args)
 return obj
 }
 $StaticmethodDict={__class__:$type,__name__:'staticmethod'}
@@ -5508,7 +5517,8 @@ __self_class__:_type2 || None
 }
 }
 function $url_open(){
-var $ns=$MakeArgs('open',arguments,['file'],{'mode':'r','encoding':'utf-8'},'args','kw')
+var mode='r',encoding='utf-8'
+var $ns=$MakeArgs('open',arguments,['file'],['mode','encoding'],'args','kw')
 for(var attr in $ns){eval('var '+attr+'=$ns["'+attr+'"]')}
 if(args.length>0){var mode=args[0]}
 if(args.length>1){var encoding=args[1]}
@@ -5603,7 +5613,7 @@ $ZipDict.__mro__=[$ZipDict,$ObjectDict]
 function zip(){
 var res={__class__:$ZipDict,items:[]}
 if(arguments.length==0){return res}
-var $ns=$MakeArgs('zip',arguments,[],{},'args','kw')
+var $ns=$MakeArgs('zip',arguments,[],[],'args','kw')
 var _args=$ns['args']
 var args=[]
 for(var i=0;i<_args.length;i++){args.push(iter(_args[i]))}
@@ -5756,11 +5766,9 @@ self.msg=arguments[1]
 $BaseExceptionDict.__repr__=$BaseExceptionDict.__str__=function(){return 'BaseException'}
 $BaseExceptionDict.__mro__=[$BaseExceptionDict,$ObjectDict]
 $BaseExceptionDict.__new__=function(cls){
-console.log('new exception')
 var err=BaseException()
 err.__name__=cls.$dict.__name__
 err.__class__=cls.$dict
-console.log('info '+err.info)
 return err
 }
 var BaseException=function(msg,js_exc){
@@ -6813,7 +6821,7 @@ self.$jsobj=obj.js
 return
 }
 }
-var $ns=$MakeArgs('dict',args,[],{},'args','kw')
+var $ns=$MakeArgs('dict',args,[],[],'args','kw')
 var args=$ns['args']
 var kw=$ns['kw']
 if(args.length>0){
@@ -6944,7 +6952,7 @@ return _default
 $DictDict.update=function(self){
 var params=[]
 for(var i=1;i<arguments.length;i++){params.push(arguments[i])}
-var $ns=$MakeArgs('$DictDict.update',params,[],{},'args','kw')
+var $ns=$MakeArgs('$DictDict.update',params,[],[],'args','kw')
 var args=$ns['args']
 if(args.length>0 && isinstance(args[0],dict)){
 var other=args[0]
@@ -7476,7 +7484,6 @@ return $iterator(items,$str_iterator)
 }
 $StringDict.__len__=function(self){return self.length}
 $legacy_format=$StringDict.__mod__=function(self,args){
-var dict=__builtins__.dict
 var flags=$List2Dict('#','0','-',' ','+')
 var ph=[]
 function format(s){
@@ -7501,7 +7508,7 @@ return res
 }
 this.format=function(src){
 if(this.mapping_key!==null){
-if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
+if(!isinstance(src,__builtins__.dict)){throw TypeError("format requires a mapping")}
 src=getattr(src,'__getitem__')(this.mapping_key)
 }
 if(this.type=="s"){
@@ -7731,12 +7738,13 @@ return self
 $StringDict.endswith=function(self){
 var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+var start=null,end=null
 var $ns=$MakeArgs("$StringDict.endswith",args,['suffix'],
-{'start':null,'end':null},null,null)
+['start','end'],null,null)
 var suffixes=$ns['suffix']
 if(!isinstance(suffixes,__builtins__.tuple)){suffixes=[suffixes]}
-var start=$ns['start']|| 0
-var end=$ns['end']|| self.length-1
+start=$ns['start']|| start
+end=$ns['end']|| self.length-1
 var s=self.substr(start,end+1)
 for(var i=0;i<suffixes.length;i++){
 suffix=suffixes[i]
@@ -7749,9 +7757,10 @@ $StringDict.expandtabs=function(self){
 throw NotImplementedError("function expandtabs not implemented yet")
 }
 $StringDict.find=function(self){
+var start=0,end=self.length
 var $ns=$MakeArgs("$StringDict.find",arguments,['self','sub'],
-{'start':0,'end':self.length},null,null)
-var sub=$ns['sub'],start=$ns['start'],end=$ns['end']
+['start','end'],null,null)
+for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 if(!isinstance(sub,str)){throw TypeError(
 "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
 if(!isinstance(start,int)||!isinstance(end,int)){throw TypeError(
@@ -7857,26 +7866,20 @@ this._kwords[_name].push(_rv)
 return '%(' + id(_rv)+ ')s'
 }
 this.format=function(){
-var $ns=$MakeArgs('format',arguments,[],{},'args','kwargs')
+var $ns=$MakeArgs('format',arguments,[],[],'args','kwargs')
 var args=$ns['args']
 var kwargs=$ns['kwargs']
 if(args){
-for(var i=0;i < args.length;i++){
-getattr(kwargs, '__setitem__')(str(i), args[i])
+for(var i=0;i < args[0].length;i++){
+getattr(kwargs, '__setitem__')(str(i), args[0][i])
 }
 }
-console.log('kwargs '+str(kwargs))
-console.log('kwarray '+this._kwords_array)
 var _want_bytes=isinstance(this._string, str)
-var _params=$dict()
+var _params=__builtins__.dict()
 for(var i=0;i < this._kwords_array.length;i++){
 var _name=this._kwords_array[i]
 var _items=this._kwords[_name]
-console.log('_name '+_name+' _items '+_items)
-try{
 var _var=getattr(kwargs, '__getitem__')(_name)
-}catch(err){break}
-console.log('_var '+str(_var))
 var _value
 if(hasattr(_var, 'value')){
 _value=getattr(getattr(kwargs, '__getitem__')(_name), 'value')
@@ -7891,7 +7894,6 @@ getattr(_params,'__setitem__')(id(_items[j]).toString(), this.format_field(_valu
 _conv, _spec, _want_bytes))
 }
 }
-console.log('end 1')
 for(var i=0;i < this._nested_array.length;i++){
 var _name=this._nested_array[i]
 var _items=this._nested[i]
@@ -7911,7 +7913,6 @@ getattr(_params,'__setitem__')(id(_items[j]).toString(), this.format_field(_valu
 _conv, _spec, _want_bytes))
 }
 }
-console.log('call legacy format '+this._string+' params '+str(_params))
 return $legacy_format(this._string, _params)
 }
 this.format_field=function(value,parts,conv,spec,want_bytes){
@@ -8056,7 +8057,8 @@ _matches.push([_start, _middle, _end])
 return _matches
 }
 this.format_str_re=new RegExp(
-'((?!{)(?:{{)+' +
+'(%)' +
+'|((?!{)(?:{{)+' +
 '|(?:}})+(?!})' +
 '|{(?:[^{](?:[^{}]+|{[^{}]*})*)?})', 'g'
 )
@@ -8080,7 +8082,7 @@ $StringDict.format=function(self){
 var _fs=$FormattableString(self.valueOf())
 var args=[]
 for(var i=1;i < arguments.length;i++){args.push(arguments[i])}
-return _fs.format.apply(null,args)
+return _fs.format(args)
 }
 $StringDict.format_map=function(self){
 throw NotImplementedError("function format_map not implemented yet")
@@ -8212,9 +8214,10 @@ return self.replace(re,_new)
 }
 }
 $StringDict.rfind=function(self){
+var start=0,end=self.length
 var $ns=$MakeArgs("$StringDict.find",arguments,['self','sub'],
-{'start':0,'end':self.length},null,null)
-var sub=$ns['sub'],start=$ns['start'],end=$ns['end']
+['start','end'],null,null)
+for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 if(!isinstance(sub,str)){throw TypeError(
 "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
 if(!isinstance(start,int)||!isinstance(end,int)){throw TypeError(
@@ -8232,9 +8235,10 @@ if(res==-1){throw ValueError("substring not found")}
 else{return res}
 }
 $StringDict.rjust=function(self){
+var fillchar=' '
 var $ns=$MakeArgs("$StringDict.rjust",arguments,['self','width'],
-{'fillchar':' '},null,null)
-var width=$ns['width'],fillchar=$ns['fillchar']
+['fillchar'],null,null)
+for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 if(width <=self.length)return self
 return Array(width - self.length + 1).join(fillchar)+ self
 }
@@ -8256,7 +8260,7 @@ if(pos<0){return __builtins__.tuple(['','',self])}
 $StringDict.rsplit=function(self){
 var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-var $ns=$MakeArgs("$StringDict.split",args,[],{},'args','kw')
+var $ns=$MakeArgs("$StringDict.split",args,[],[],'args','kw')
 var sep=None,maxsplit=-1
 if($ns['args'].length>=1){sep=$ns['args'][0]}
 if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -8286,7 +8290,7 @@ return str(self.replace(sp,""))
 $StringDict.split=function(self){
 var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-var $ns=$MakeArgs("$StringDict.split",args,[],{},'args','kw')
+var $ns=$MakeArgs("$StringDict.split",args,[],[],'args','kw')
 var sep=None,maxsplit=-1
 if($ns['args'].length>=1){sep=$ns['args'][0]}
 if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -8343,7 +8347,7 @@ return $StringDict.split(self,'\n')
 }
 $StringDict.startswith=function(self){
 $ns=$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
-{'start':null,'end':null},null,null)
+['start','end'],null,null)
 var prefixes=$ns['prefix']
 if(!isinstance(prefixes,__builtins__.tuple)){prefixes=[prefixes]}
 var start=$ns['start']|| 0
@@ -8371,7 +8375,7 @@ return self.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase()+ 
 }
 $StringDict.translate=function(self,table){
 var res=''
-if(isinstance(table, dict)){
+if(isinstance(table, __builtins__.dict)){
 for(var i=0;i<self.length;i++){
 var repl=__builtins__.dict.$dict.get(table,self.charCodeAt(i),-1)
 if(repl==-1){res +=self.charAt(i)}
@@ -9215,7 +9219,7 @@ DOMNode.get=function(self){
 var obj=self.elt
 var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-var $ns=$MakeArgs('get',args,[],{},null,'kw')
+var $ns=$MakeArgs('get',args,[],[],null,'kw')
 var $dict={}
 for(var i=0;i<$ns['kw'].$keys.length;i++){
 $dict[$ns['kw'].$keys[i]]=$ns['kw'].$values[i]

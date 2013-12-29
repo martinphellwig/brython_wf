@@ -1,4 +1,4 @@
-
+// Python to Javascript translation engine
 
 brython = (function(){
 
@@ -977,7 +977,7 @@ function $DefCtx(context){
         // the instance
         var scope = $get_scope(this)
         var required = ''
-        var defaults = ''
+        var defaults = [],defs=[],defs1=[]
         var other_args = null
         var other_kw = null
         var env = []
@@ -986,7 +986,9 @@ function $DefCtx(context){
             if(arg.type==='func_arg_id'){
                 if(arg.tree.length===0){required+='"'+arg.name+'",'}
                 else{
-                    defaults+='"'+arg.name+'":'+$to_js(arg.tree)+','
+                    defaults.push('"'+arg.name+'"')
+                    defs.push(arg.name+' = '+$to_js(arg.tree))
+                    defs1.push(arg.name+':'+$to_js(arg.tree))
                     if(arg.tree[0].type==='expr' 
                         && arg.tree[0].tree[0].type==='id'){
                         env.push(arg.tree[0].tree[0].value)
@@ -996,12 +998,19 @@ function $DefCtx(context){
             else if(arg.type==='func_star_arg'&&arg.op==='**'){other_kw='"'+arg.name+'"'}
         }
         this.env = env
+        this.defs = defs
         if(required.length>0){required=required.substr(0,required.length-1)}
-        if(defaults.length>0){defaults=defaults.substr(0,defaults.length-1)}
-        
+        //if(defaults.length>0){defaults=defaults.substr(0,defaults.length-1)}
+
         var nodes = []
-        // add 2 lines of code to node children
+        // add lines of code to node children
         var js = 'var $locals = __BRYTHON__.scope["'+this.id+'"].__dict__={}'
+        var new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        nodes.push(new_node)
+
+        // initialize default variables
+        var js = 'for(var $var in $defaults){eval("var "+$var+"=$locals[$var]=$defaults[$var]")}'
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
@@ -1019,7 +1028,7 @@ function $DefCtx(context){
         }
 
         var js = 'var $ns=$MakeArgs("'+this.name+'",arguments,['+required+'],'
-        js += '{'+defaults+'},'+other_args+','+other_kw+')'
+        js += '['+defaults.join(',')+'],'+other_args+','+other_kw+')'
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
@@ -1034,10 +1043,10 @@ function $DefCtx(context){
             node.children.splice(0,0,nodes[i])
         }
 
-        // wrap function body in a try/catch
         var def_func_node = new $Node('expression')
         new $NodeJSCtx(def_func_node,'return function()')
 
+        // wrap function body in a try/catch
         var try_node = new $Node('expression')
         new $NodeJSCtx(try_node,'try')
 
@@ -1046,15 +1055,17 @@ function $DefCtx(context){
         }
 
         def_func_node.add(try_node)
-        var ret_node = new $Node('expression')
+
         var catch_node = new $Node('expression')
         var js = 'catch(err'+$loop_num+')'
         js += '{throw __BRYTHON__.exception(err'+$loop_num+')}'
         new $NodeJSCtx(catch_node,js)
         node.children = []
         def_func_node.add(catch_node)
+        
         node.add(def_func_node)
 
+        var ret_node = new $Node('expression')
         var txt = ')('
         for(var i=0;i<this.env.length;i++){
             if(scope.ntype=='class'){
@@ -1120,11 +1131,17 @@ function $DefCtx(context){
 
         // add attribute __code__
         js = prefix+this.name+'.__code__= {__class__:$CodeDict}'
+        js += ';None;' // end with None for interactive interpreter
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         node.parent.children.splice(rank+offset,0,new_node)
         offset++
 
+        // define default values
+        var default_node = new $Node('expression')
+        new $NodeJSCtx(default_node,'var $defaults = {'+defs1.join(',')+'}')
+        node.insert(0,default_node)
+                
         this.transformed = true
     }
     this.add_generator_declaration = function(){
