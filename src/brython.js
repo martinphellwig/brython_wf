@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20131229-163459
+// version 1.4.20131229-174232
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={}
@@ -49,7 +49,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20131229-163459', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20131229-174232', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -453,8 +453,7 @@ return res
 }
 var scope=$get_scope(this)
 if(scope.ntype==="module"){
-var res=left.to_js()
-if(scope.module!=='__main__'){res='var '+res}
+var res='var '+left.to_js()
 if(left.to_js().charAt(0)!='$'){
 res +='=$globals["'+left.to_js()+'"]'
 }
