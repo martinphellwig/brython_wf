@@ -10,7 +10,7 @@ function $class_constructor(class_name,class_obj,parents,parents_names,kwargs){
         for(var i=0;i<parents.length;i++){
             if(parents[i]===undefined){
                 // restore the line of class definition
-                document.$line_info = class_obj.$def_line
+                __BRYTHON__.line_info = class_obj.$def_line
                 throw NameError("name '"+parents_names[i]+"' is not defined")
             }
         }
