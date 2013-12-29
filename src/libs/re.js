@@ -15,6 +15,7 @@ $module = (function(){
         __class__:$type,
         __name__:'SRE_Pattern'
     }
+    $SRE_PatternDict.__mro__ = [$SRE_PatternDict,object.$dict]
     $SRE_PatternDict.match = function(self,string){
         return obj.match(self.pattern,string,self.flags)
     }
