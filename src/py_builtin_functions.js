@@ -397,7 +397,7 @@ function getattr(obj,attr,_default){
     if(attr==='__call__' && (typeof obj=='function')){
         if(__BRYTHON__.debug>0){
             return function(){
-                __BRYTHON__.call_stack.push(document.$line_info)
+                __BRYTHON__.call_stack.push(__BRYTHON__.line_info)
                 try{
                     var res = obj.apply(null,arguments)
                     if(res===undefined){return __builtins__.None}else{return res}
@@ -1475,7 +1475,7 @@ var BaseException = function (msg,js_exc){
             last_info = call_info
         }
         // error line
-        var err_info = document.$line_info
+        var err_info = __BRYTHON__.line_info
         while(true){
             var mod = __BRYTHON__.modules[err_info[1]]
             if(mod===undefined){break}
@@ -1521,19 +1521,19 @@ __BRYTHON__.exception = function(js_exc){
     if(js_exc.py_error && __BRYTHON__.debug>0){console.log('info '+js_exc.info)}
     if(!js_exc.py_error){
         if(__BRYTHON__.debug>0 && js_exc.info===undefined){
-            if(document.$line_info!==undefined){
-                var mod_name = document.$line_info[1]
+            if(__BRYTHON__.line_info!==undefined){
+                var mod_name = __BRYTHON__.line_info[1]
                 var module = __BRYTHON__.modules[mod_name]
                 if(module){
                     if(module.caller!==undefined){
                         // for list comprehension and the likes, replace
                         // by the line in the enclosing module
-                        document.$line_info = module.caller
-                        var mod_name = document.$line_info[1]
+                        __BRYTHON__.line_info = module.caller
+                        var mod_name = __BRYTHON__.line_info[1]
                     }
                     var lib_module = mod_name
                     if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-                    var line_num = document.$line_info[0]
+                    var line_num = __BRYTHON__.line_info[0]
                     var lines = document.$py_src[mod_name].split('\n')
                     js_exc.message += "\n  module '"+lib_module+"' line "+line_num
                     js_exc.message += '\n'+lines[line_num-1]

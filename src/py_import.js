@@ -182,7 +182,7 @@ function $import_py_module(module,path,module_contents) {
             console.log(attr+' '+err[attr])
         }
         //console.log('js code\n'+js)
-        if(__BRYTHON__.debug>0){console.log('line info '+document.$line_info)}
+        if(__BRYTHON__.debug>0){console.log('line info '+__BRYTHON__.line_info)}
         throw err
     }
 }

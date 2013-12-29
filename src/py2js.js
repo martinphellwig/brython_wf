@@ -53,7 +53,7 @@ function $_SyntaxError(context,msg,indent){
     var tree_node = ctx_node.node
     var module = tree_node.module
     var line_num = tree_node.line_num
-    document.$line_info = [line_num,module]
+    __BRYTHON__.line_info = [line_num,module]
     if(indent===undefined){
         if(msg.constructor===Array){$SyntaxError(module,msg[0],$pos)}
         if(msg==="Triple string end not found"){
@@ -343,7 +343,7 @@ function $AssignCtx(context){
             var new_nodes = [new_node]
             
             var try_node = new $Node('expression')
-            // we must set line_num and module to generate document.$line_info
+            // we must set line_num and module to generate __BRYTHON__.line_info
             try_node.line_num = node.parent.children[rank].line_num
             try_node.module = node.parent.children[rank].module
             new $NodeJSCtx(try_node,'try')
@@ -686,7 +686,7 @@ function $ClassCtx(context){
 
         // insert "$class = new Object"
         var instance_decl = new $Node('expression')
-        new $NodeJSCtx(instance_decl,'var $class = {$def_line:document.$line_info}')
+        new $NodeJSCtx(instance_decl,'var $class = {$def_line:__BRYTHON__.line_info}')
         node.insert(0,instance_decl)
 
         // return $class at the end of class definition
@@ -2458,7 +2458,7 @@ function $add_line_num(node,rank){
         else if(elt.type==='except'){flag=false}
         else if(elt.type==='single_kw'){flag=false}
         if(flag){
-            js = 'document.$line_info=['+node.line_num+',"'+node.module+'"];'
+            js = '__BRYTHON__.line_info=['+node.line_num+',"'+node.module+'"];'
             // add a trailing None for interactive mode
             js += 'None;'
             var new_node = new $Node('expression')

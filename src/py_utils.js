@@ -62,7 +62,7 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
                 $ns[$var_name]=$PyVar
                 $set_vars.push($var_name)
             } else {
-                console.log(''+document.$line_info)
+                console.log(''+__BRYTHON__.line_info)
                 msg = $fname+"() takes "+$required.length+' positional argument'
                 msg += $required.length == 1 ? '' : 's'
                 msg += ' but more were given'
@@ -118,8 +118,8 @@ function $list_comp(){
     $py += "    return res\n"
     $py += "res"+$ix+"=func"+$ix+"()"
     var $mod_name = 'lc'+$ix
-    var $root = __BRYTHON__.py2js($py,$mod_name,document.$line_info)
-    $root.caller = document.$line_info
+    var $root = __BRYTHON__.py2js($py,$mod_name,__BRYTHON__.line_info)
+    $root.caller = __BRYTHON__.line_info
     var $js = $root.to_js()
     __BRYTHON__.scope[$mod_name].__dict__ = $env
     try{
@@ -153,8 +153,8 @@ function $gen_expr(){ // generator expresssion
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.append('+arguments[1]+')'
     var $mod_name = 'ge'+$ix
-    var $root = __BRYTHON__.py2js($py,$mod_name,document.$line_info)
-    $root.caller = document.$line_info
+    var $root = __BRYTHON__.py2js($py,$mod_name,__BRYTHON__.line_info)
+    $root.caller = __BRYTHON__.line_info
     var $js = $root.to_js()
     __BRYTHON__.scope[$mod_name].__dict__=$env
     eval($js)
@@ -195,8 +195,8 @@ function $dict_comp(){ // dictionary comprehension
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.update({'+arguments[1]+'})'
     var $mod_name = 'dc'+$ix
-    var $root = __BRYTHON__.py2js($py,$mod_name,document.$line_info)
-    $root.caller = document.$line_info
+    var $root = __BRYTHON__.py2js($py,$mod_name,__BRYTHON__.line_info)
+    $root.caller = __BRYTHON__.line_info
     var $js = $root.to_js()
     __BRYTHON__.scope[$mod_name].__dict__ = $env
     eval($js)

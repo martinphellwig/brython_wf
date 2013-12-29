@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20131228-225728
+// version 1.4.20131229-073545
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={}
@@ -50,7 +50,7 @@ try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
 __BRYTHON__.path=[]
-__BRYTHON__.version_info=[1, 4, '20131228-225728', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20131229-073545', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -131,7 +131,7 @@ while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
 var tree_node=ctx_node.node
 var module=tree_node.module
 var line_num=tree_node.line_num
-document.$line_info=[line_num,module]
+__BRYTHON__.line_info=[line_num,module]
 if(indent===undefined){
 if(msg.constructor===Array){$SyntaxError(module,msg[0],$pos)}
 if(msg==="Triple string end not found"){
@@ -664,7 +664,7 @@ this.transform=function(node,rank){
 if(this.transformed){return}
 this.doc_string=$get_docstring(node)
 var instance_decl=new $Node('expression')
-new $NodeJSCtx(instance_decl,'var $class = {$def_line:document.$line_info}')
+new $NodeJSCtx(instance_decl,'var $class = {$def_line:__BRYTHON__.line_info}')
 node.insert(0,instance_decl)
 var ret_obj=new $Node('expression')
 new $NodeJSCtx(ret_obj,'return $class')
@@ -2154,7 +2154,7 @@ if(elt.type==='condition' && elt.token==='elif'){flag=false}
 else if(elt.type==='except'){flag=false}
 else if(elt.type==='single_kw'){flag=false}
 if(flag){
-js='document.$line_info=['+node.line_num+',"'+node.module+'"];'
+js='__BRYTHON__.line_info=['+node.line_num+',"'+node.module+'"];'
 js +='None;'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
@@ -3814,7 +3814,7 @@ __builtins__.dict.$dict.__setitem__(cl_dict,attr,class_obj[attr])
 if(parents!==undefined){
 for(var i=0;i<parents.length;i++){
 if(parents[i]===undefined){
-document.$line_info=class_obj.$def_line
+__BRYTHON__.line_info=class_obj.$def_line
 throw NameError("name '"+parents_names[i]+"' is not defined")
 }
 }
@@ -4142,7 +4142,7 @@ $var_name=$def_names[$i-$required.length]
 $ns[$var_name]=$PyVar
 $set_vars.push($var_name)
 }else{
-console.log(''+document.$line_info)
+console.log(''+__BRYTHON__.line_info)
 msg=$fname+"() takes "+$required.length+' positional argument'
 msg +=$required.length==1 ? '' : 's'
 msg +=' but more were given'
@@ -4195,8 +4195,8 @@ $py +='res.append('+arguments[1]+')\n'
 $py +="    return res\n"
 $py +="res"+$ix+"=func"+$ix+"()"
 var $mod_name='lc'+$ix
-var $root=__BRYTHON__.py2js($py,$mod_name,document.$line_info)
-$root.caller=document.$line_info
+var $root=__BRYTHON__.py2js($py,$mod_name,__BRYTHON__.line_info)
+$root.caller=__BRYTHON__.line_info
 var $js=$root.to_js()
 __BRYTHON__.scope[$mod_name].__dict__=$env
 try{
@@ -4229,8 +4229,8 @@ indent +=4
 for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.append('+arguments[1]+')'
 var $mod_name='ge'+$ix
-var $root=__BRYTHON__.py2js($py,$mod_name,document.$line_info)
-$root.caller=document.$line_info
+var $root=__BRYTHON__.py2js($py,$mod_name,__BRYTHON__.line_info)
+$root.caller=__BRYTHON__.line_info
 var $js=$root.to_js()
 __BRYTHON__.scope[$mod_name].__dict__=$env
 eval($js)
@@ -4268,8 +4268,8 @@ indent +=4
 for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.update({'+arguments[1]+'})'
 var $mod_name='dc'+$ix
-var $root=__BRYTHON__.py2js($py,$mod_name,document.$line_info)
-$root.caller=document.$line_info
+var $root=__BRYTHON__.py2js($py,$mod_name,__BRYTHON__.line_info)
+$root.caller=__BRYTHON__.line_info
 var $js=$root.to_js()
 __BRYTHON__.scope[$mod_name].__dict__=$env
 eval($js)
@@ -4875,7 +4875,7 @@ return res
 if(attr==='__call__' &&(typeof obj=='function')){
 if(__BRYTHON__.debug>0){
 return function(){
-__BRYTHON__.call_stack.push(document.$line_info)
+__BRYTHON__.call_stack.push(__BRYTHON__.line_info)
 try{
 var res=obj.apply(null,arguments)
 if(res===undefined){return __builtins__.None}else{return res}
@@ -5793,7 +5793,7 @@ while(line && line.charAt(0)==' '){line=line.substr(1)}
 err.info +='\n    '+line
 last_info=call_info
 }
-var err_info=document.$line_info
+var err_info=__BRYTHON__.line_info
 while(true){
 var mod=__BRYTHON__.modules[err_info[1]]
 if(mod===undefined){break}
@@ -5833,17 +5833,17 @@ __BRYTHON__.exception=function(js_exc){
 if(js_exc.py_error && __BRYTHON__.debug>0){console.log('info '+js_exc.info)}
 if(!js_exc.py_error){
 if(__BRYTHON__.debug>0 && js_exc.info===undefined){
-if(document.$line_info!==undefined){
-var mod_name=document.$line_info[1]
+if(__BRYTHON__.line_info!==undefined){
+var mod_name=__BRYTHON__.line_info[1]
 var module=__BRYTHON__.modules[mod_name]
 if(module){
 if(module.caller!==undefined){
-document.$line_info=module.caller
-var mod_name=document.$line_info[1]
+__BRYTHON__.line_info=module.caller
+var mod_name=__BRYTHON__.line_info[1]
 }
 var lib_module=mod_name
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-var line_num=document.$line_info[0]
+var line_num=__BRYTHON__.line_info[0]
 var lines=document.$py_src[mod_name].split('\n')
 js_exc.message +="\n  module '"+lib_module+"' line "+line_num
 js_exc.message +='\n'+lines[line_num-1]
@@ -6283,7 +6283,7 @@ console.log(''+err+' '+' for module '+module.name)
 for(var attr in err){
 console.log(attr+' '+err[attr])
 }
-if(__BRYTHON__.debug>0){console.log('line info '+document.$line_info)}
+if(__BRYTHON__.debug>0){console.log('line info '+__BRYTHON__.line_info)}
 throw err
 }
 }
