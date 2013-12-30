@@ -40,8 +40,8 @@ $ListDict.__delitem__ = function(self,arg){
         }
         else{throw IndexError('list index out of range')}
     } else if(isinstance(arg,slice)) {
-        var start = arg.start || 0
-        var stop = arg.stop || self.length
+        var start = arg.start;if(start===None){start=0}
+        var stop = arg.stop;if(stop===None){stop=self.length}
         var step = arg.step || 1
         if(start<0){start=self.length+start}
         if(stop<0){stop=self.length+stop}
