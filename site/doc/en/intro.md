@@ -13,6 +13,9 @@ A simple example :
     <body onload="brython()">
     <script type="text/python">
     from browser import doc
+    from javascript import expose
+    
+    @expose
     def echo():
         alert(doc["zone"].value)
     </script>
@@ -27,6 +30,9 @@ Try it!
 
 <script type="text/python">
 from browser import doc, alert
+from javascript import expose
+
+@expose
 def echo():
     alert(doc["zone"].value)
 </script>
