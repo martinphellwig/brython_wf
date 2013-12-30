@@ -208,4 +208,3 @@ function readFromVFS(lib){
    //retrieve module from virutal file system and return contents
    return window.atob(__BRYTHON__.py_VFS[lib])
 }
-
