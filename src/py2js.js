@@ -416,6 +416,7 @@ function $AssignCtx(context){
             var scope = $get_scope(this)
             if(scope.ntype==="module"){
                 var res = 'var '+left.to_js()
+                //if(scope.module!=='__main__'){res = 'var '+res}
                 if(left.to_js().charAt(0)!='$'){
                     res += '=$globals["'+left.to_js()+'"]'
                 }
@@ -1094,14 +1095,6 @@ function $DefCtx(context){
         node.parent.children.splice(rank+offset,0,name_decl)
         offset++
 
-        // add declaration of function at window level
-        if(scope.ntype==="module" && node.module==='__main__'){
-            js = 'window.'+this.name+'='+this.name
-            new_node1 = new $Node('expression')
-            new $NodeJSCtx(new_node1,js)
-            node.parent.children.splice(rank+offset,0,new_node1)
-            offset++
-        }
         // if function is defined at module level, add to module scope
         if(scope.ntype==='module'){
             js = '$globals["'+this.name+'"]='+this.name
@@ -3621,53 +3614,6 @@ function $transition(context,token){
     }
 }
 
-__BRYTHON__.py2js = function(src,module,parent){
-    // src = Python source (string)
-    // module = module name (string)
-    // parent = the name of the "calling" module, eg for a list comprehension (string)
-    src = src.replace(/\r\n/gm,'\n')
-    while (src.length>0 && (src.charAt(0)=="\n" || src.charAt(0)=="\r")){
-        src = src.substr(1)
-    }
-    if(src.charAt(src.length-1)!="\n"){src+='\n'}
-    if(module===undefined){module='__main__'}
-    // Python built-in variable __name__
-    __name__ = module
-    if(__BRYTHON__.scope[module]===undefined){
-        __BRYTHON__.scope[module] = {}
-        __BRYTHON__.scope[module].__dict__ = {}
-    }
-    document.$py_src[module]=src
-    var root = $tokenize(src,module,parent)
-    root.transform()
-    // add variable $globals
-    js = 'var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $globals\n'
-    js += 'for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
-    js += 'var JSObject = __BRYTHON__.JSObject\n'
-    js += 'var JSConstructor = __BRYTHON__.JSConstructor\n'
-    var new_node = new $Node('expression')
-    new $NodeJSCtx(new_node,js)
-    root.insert(0,new_node)
-    // module doc string
-    var ds_node = new $Node('expression')
-    new $NodeJSCtx(ds_node,'var __doc__=$globals["__doc__"]='+root.doc_string)
-    root.insert(1,ds_node)
-    // name
-    var name_node = new $Node('expression')
-    var lib_module = module
-    if(module.substr(0,9)=='__main__,'){lib_module='__main__'}
-    new $NodeJSCtx(name_node,'var __name__=$globals["__name__"]="'+lib_module+'"')
-    root.insert(2,name_node)
-    // file
-    var file_node = new $Node('expression')
-    new $NodeJSCtx(file_node,'var __file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
-    root.insert(3,file_node)
-        
-    if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
-    __BRYTHON__.modules[module] = root
-    return root
-}
-
 __BRYTHON__.forbidden = ['alert','case','catch','constructor','Date','delete',
     'default','document','Error','history','function','location','Math','new','Number','RegExp',
     'this','throw','var','super','window']
@@ -4080,6 +4026,53 @@ function $tokenize(src,module,parent){
     
     return root
 
+}
+
+__BRYTHON__.py2js = function(src,module,parent){
+    // src = Python source (string)
+    // module = module name (string)
+    // parent = the name of the "calling" module, eg for a list comprehension (string)
+    src = src.replace(/\r\n/gm,'\n')
+    while (src.length>0 && (src.charAt(0)=="\n" || src.charAt(0)=="\r")){
+        src = src.substr(1)
+    }
+    if(src.charAt(src.length-1)!="\n"){src+='\n'}
+    if(module===undefined){module='__main__'}
+    // Python built-in variable __name__
+    __name__ = module
+    if(__BRYTHON__.scope[module]===undefined){
+        __BRYTHON__.scope[module] = {}
+        __BRYTHON__.scope[module].__dict__ = {}
+    }
+    document.$py_src[module]=src
+    var root = $tokenize(src,module,parent)
+    root.transform()
+    // add variable $globals
+    var js = 'var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $globals\n'
+    js += 'for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
+    js += 'var JSObject = __BRYTHON__.JSObject\n'
+    js += 'var JSConstructor = __BRYTHON__.JSConstructor\n'
+    var new_node = new $Node('expression')
+    new $NodeJSCtx(new_node,js)
+    root.insert(0,new_node)
+    // module doc string
+    var ds_node = new $Node('expression')
+    new $NodeJSCtx(ds_node,'var __doc__=$globals["__doc__"]='+root.doc_string)
+    root.insert(1,ds_node)
+    // name
+    var name_node = new $Node('expression')
+    var lib_module = module
+    if(module.substr(0,9)=='__main__,'){lib_module='__main__'}
+    new $NodeJSCtx(name_node,'var __name__=$globals["__name__"]="'+lib_module+'"')
+    root.insert(2,name_node)
+    // file
+    var file_node = new $Node('expression')
+    new $NodeJSCtx(file_node,'var __file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
+    root.insert(3,file_node)
+        
+    if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
+    __BRYTHON__.modules[module] = root
+    return root
 }
 
 function brython(options){
