@@ -43,7 +43,10 @@ def process(filename):
                _fp.close()
 
                if _ext in ('.js', '.pyj') and minify is not None:
-                  _data=minify(_data)
+                  try:
+                    _data=minify(_data)
+                  except:
+                    pass
 
                _vfs_filename=os.path.join(_root, _file).replace(_main_root, '')
                _vfs_filename=_vfs_filename.replace("\\", "/")
