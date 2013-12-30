@@ -64,6 +64,7 @@ doc['version'].text = '%s.%s.%s' %(info.major,info.minor,info.micro)
 
 output = ''
 
+@expose
 def show_console():
     doc["console"].value = output
     doc["console"].cols = 60
@@ -100,6 +101,7 @@ def load(evt):
     _name=evt.target.value+'?foo=%s' %time.time()
     editor.setValue(open(_name).read())
 
+@expose
 def show_js():
     src = editor.getValue()
     doc["console"].value = dis.dis(src)
