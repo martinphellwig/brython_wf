@@ -473,6 +473,10 @@ for(var attr in $ListDict){
     }
 }
 
+$TupleDict.__setitem__ = function(self,attr,value){
+    throw TypeError("'tuple' object does not support item assignment")
+}
+
 $TupleDict.__eq__ = function(self,other){
     if(other===undefined){ // compare object "self" to class "list"
         return self===tuple
