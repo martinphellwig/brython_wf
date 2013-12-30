@@ -72,19 +72,19 @@ def pie_chart():
         x,y = x_end,y_end
         color = colors[i % len(colors)]
         style["fill"]='#'+color
-        path = svg.path(d=path,style=style,
-            onMouseOver="show_legend('%s')" %key,
-            onMouseOut="hide_legend()")
+        path = svg.path(d=path,style=style)
+        path.bind('mouseover',lambda ev:show_legend(key))
+        path.bind('mouseout',lambda ev:hide_legend)
         panel <= path
         paths[key]=path
 
-def set_title():
+def set_title(*args):
     title.text = title_input.value
     
 def show_legend(key):
     legend.text = key
 
-def hide_legend():
+def hide_legend(ev):
     legend.text = ''
 
 def change(rank,offset):
@@ -100,16 +100,21 @@ t = html.TABLE()
 tb = html.TBODY()
 cells = []
 
-title_input = html.INPUT(value='Pie Chart',onchange="set_title()")
+title_input = html.INPUT(value='Pie Chart')
+title_input.bind('change',set_title)
 tb <= html.TD('Title')+html.TD(title_input,colspan=3)
 
 for i in range(nb_lines):
     row = html.TR()
     row <= html.TD('Item %s' %(i+1))
-    row <= html.TD(html.BUTTON('<',onclick="change(%s,-1)" %i))
+    b_down = html.BUTTON('<')
+    b_down.bind('click',lambda ev:change(i,-1))
+    row <= html.TD(b_down)
     cell = html.SPAN(values[i])
     row <= html.TD(cell)
-    row <= html.TD(html.BUTTON('>',onclick="change(%s,1)" %i))
+    b_up = html.BUTTON('>')
+    b_up.bind('click',lambda ev:change(i,1))
+    row <= html.TD(b_up)
     cells.append(cell)
     tb <= row
 t <= tb

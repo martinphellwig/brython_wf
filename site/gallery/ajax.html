@@ -21,6 +21,7 @@ a.sort_link{margin-left:10px;text-decoration:none}
 
 <script id="ascript" type="text/python">
 from browser import ajax,doc
+from javascript import expose
 
 def on_complete(req):
     print(req.readyState)
@@ -35,6 +36,7 @@ def err_msg():
 
 timeout = 4
 
+@expose
 def go(url):
     req = ajax.ajax()
     req.bind('complete',on_complete)
@@ -42,6 +44,7 @@ def go(url):
     req.open('GET',url,True)
     req.send()
 
+@expose
 def post(url):
     req = ajax.ajax()
     req.bind('complete',on_complete)
