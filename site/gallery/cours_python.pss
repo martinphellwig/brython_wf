@@ -243,6 +243,19 @@ Insertion d'un élément à une position donnée par `insert`
     [2, 'new', 3, 'xtra']
     >>>
 ../..
+Tuples
+======
+Comme une liste, mais immuable
+
+    >>> t = (1,2,'a')
+    >>> t[1]
+    2
+    >>> t[2] = 'b'
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: 'tuple' object does not support item assignment
+
+../..
 Premiers pas en programmation
 =============================
 Suite de Fibonacci
@@ -420,26 +433,17 @@ Fonctions
 =========
 Arguments par défaut
 
-    def ask_ok(prompt, retries=4, complaint='Yes or no, please!'):
-        while True:
-            ok = input(prompt)
-            if ok in ('y', 'ye', 'yes'):
-                return True
-            if ok in ('n', 'no', 'nop', 'nope'):
-                return False
-            retries = retries - 1
-            if retries < 0:
-                raise IOError('refusenik user')
-            print(complaint)
-
-
-    ask_ok('Do you really want to quit?')
-    ask_ok('OK to overwrite the file?', 2)
-    ask_ok('OK to overwrite the file?', 2, 'Come on, only yes or no!')
+    >>> def f(x, y=4):
+    ...    return x+y
+    ...
+    >>> f(2)
+    6
+    >>> f(2,3)
+    5
     
 ../..
-Fonction
-========
+Fonctions
+=========
 L'argument par défaut est calculé au moment de la définition de la fonction
 
     >>> i = 5
@@ -452,11 +456,104 @@ L'argument par défaut est calculé au moment de la définition de la fonction
 
 Il n'est évalué qu'une seule fois
 
-    def f(a, L=[]):
-        L.append(a)
-        return L
-    
-    print(f(1))
-    print(f(2))
-    print(f(3))
+    >>> def f(a, L=[]):
+    ...    L.append(a)
+    ...    return L
+    ...
+    >>> f(1)
+    [1]
+    >>> f(2)
+    [1,2]
+../..
+Fonctions
+=========
+On peut appeler une fonction avec des mots-clés
 
+    >>> def f(x,y):
+    ...     return x-y
+    ...
+    >>> f(1,2)
+    -1
+    >>> f(y=6,x=2)
+    -4
+
+On ne peut pas donner deux fois le même argument
+
+    >>> f(3,x=8)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: f() got multiple values for argument 'x'
+../..
+Fonctions
+=========
+Une fonction peut être appelée avec un nombre indéterminé d'arguments
+
+    >>> def f(*args):
+    ...    print(args) # tuple
+    ...
+    >>> f(1,2,'a')
+    (1,2,'a')
+
+et un nombre indéterminé de mots-clés
+
+    >>> def f(**kw):
+    ...    print(kw) # dictionnaire
+    ...
+    >>> f(x=0,y='a')
+    {'x':0,'y':'a'}
+../..
+Fonctions
+=========
+Appel de fonction par "dépliage de tuple"
+
+    >>> def f(x,y):
+    ...     return x+y
+    ...
+    >>> t = (3,5)
+    >>> f(*t)
+    8
+    
+ou par "dépliage de dictionnaire"
+
+    >>> d = {'x':3,'y':5}
+    >>> f(**d)
+    8
+../..
+Listes
+======
+Création par _list comprehensions_ (listes en extansion)
+
+    >>> [ x for x in range(5) ]
+    [0, 1, 2, 3, 4]
+    >>> [ x*2 for x in range(5) ]
+    [0, 2, 4, 6, 8]
+    >>> [ x*2 for x in range(5) if x != 3 ]
+    [0, 2, 4, 8]
+    
+../..
+Listes
+======
+Imbrication de _list comprehensions_
+
+    >>> matrix = [
+    ...     [1, 2, 3, 4],
+    ...     [5, 6, 7, 8],
+    ...     [9, 10, 11, 12],
+    ... ]
+    ...
+    >>> [[row[i] for row in matrix] for i in range(4)]
+    [[1, 5, 9], [2, 6, 10], [3, 7, 11], [4, 8, 12]]
+../..
+`del`
+=====
+    >>> a = [-1, 1, 66.25, 333, 333, 1234.5]
+    >>> del a[0]
+    >>> a
+    [1, 66.25, 333, 333, 1234.5]
+    >>> del a[2:4]
+    >>> a
+    [1, 66.25, 1234.5]
+    >>> del a[:]
+    >>> a
+    []
+    
