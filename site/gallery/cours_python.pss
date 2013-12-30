@@ -1,4 +1,5 @@
 @title Introduction à Python
+@pagenum True
 
 Introduction à Python
 =====================
@@ -372,8 +373,8 @@ Certaines fonctions prennent un itérateur comme argument, par exemple `list`
     9 equals 3 * 3
 Le bloc après `else` est exécuté si on ne sort pas de la boucle par un `break`
 ../..
-Définition d'une fonction
-=========================
+Fonctions
+=========
     >>> def fib(n):    # write Fibonacci series up to n
     ...     """Print a Fibonacci series up to n."""
     ...     a, b = 0, 1
@@ -384,4 +385,78 @@ Définition d'une fonction
     ...
     >>> fib(2000)
     0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597
+
+Une fonction est un objet
+
+    >>> fib
+    <function fib at 10042ed0>
+    >>> f = fib
+    >>> f(100)
+    0 1 1 2 3 5 8 13 21 34 55 89
+../..
+Fonctions
+=========
+Par défaut, une fonction renvoie `None`
+
+    >>> fib(0)
+    >>> print(fib(0))
+    None
+
+`return` pour définir une valeur de retour
+
+    >>> def fib2(n): # return Fibonacci series up to n
+    ...     result = []
+    ...     a, b = 0, 1
+    ...     while a < n:
+    ...         result.append(a)
+    ...         a, b = b, a+b
+    ...     return result
+    ...
+    >>> f100 = fib2(100)
+    >>> f100
+    [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+../..
+Fonctions
+=========
+Arguments par défaut
+
+    def ask_ok(prompt, retries=4, complaint='Yes or no, please!'):
+        while True:
+            ok = input(prompt)
+            if ok in ('y', 'ye', 'yes'):
+                return True
+            if ok in ('n', 'no', 'nop', 'nope'):
+                return False
+            retries = retries - 1
+            if retries < 0:
+                raise IOError('refusenik user')
+            print(complaint)
+
+
+    ask_ok('Do you really want to quit?')
+    ask_ok('OK to overwrite the file?', 2)
+    ask_ok('OK to overwrite the file?', 2, 'Come on, only yes or no!')
+    
+../..
+Fonction
+========
+L'argument par défaut est calculé au moment de la définition de la fonction
+
+    >>> i = 5
+    >>> def f(arg=i):
+    ...     print(arg)
+    ...
+    >>> i = 6
+    >>> f()
+    5
+
+Il n'est évalué qu'une seule fois
+
+    def f(a, L=[]):
+        L.append(a)
+        return L
+    
+    print(f(1))
+    print(f(2))
+    print(f(3))
 

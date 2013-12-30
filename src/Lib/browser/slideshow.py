@@ -11,11 +11,14 @@ def keydown(ev,path,zone,page):
 def show(path,zone,page=0):
     src = open(path).read()
     title = ''
+    page_num = False
     while src.startswith('@'):
         line_end = src.find('\n')
         key,value = src[:line_end].split(' ',1)
         if key=='@title':
             title = value
+        elif key=='@pagenum':
+            page_num = True
         src = src[line_end+1:]
 
     zone.html = ''
@@ -32,6 +35,7 @@ def show(path,zone,page=0):
     footer = html.DIV(Id="footer")
     if title:
         footer <= html.DIV(title,Class='title')
-        
+    if page_num:
+        footer <= html.SPAN('%s/%s' %(page+1,len(pages)))
     zone <= body+footer
 
