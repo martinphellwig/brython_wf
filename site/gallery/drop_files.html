@@ -7,6 +7,7 @@
 <meta charset="iso-8859-1">
 <meta http-equiv="Content-Script-Type" content="text/javascript">
 
+<!--
 <script type="text/javascript" src="../../src/brython_builtins.js"></script>
 <script type="text/javascript" src="../../src/version_info.js"></script>
 <script type="text/javascript" src="../../src/py2js.js"></script>
@@ -24,12 +25,12 @@
 <script type="text/javascript" src="../../src/py_list.js"></script>
 <script type="text/javascript" src="../../src/py_string.js"></script>
 <script type="text/javascript" src="../../src/py_dom.js"></script>
-
-<!--
 <script type="text/javascript" src="../../src/brython.js"></script>
 -->
 
-<script type="text/javascript" src="../../src/py_VFS.json"></script>
+<script type="text/javascript" src="../../src/brython.js"></script>
+
+
 
 <style>
 #drop_zone {
@@ -52,14 +53,14 @@
 <script type="text/python">
 from browser import alert, win, doc
 import browser.html as html
-from javascript import JSObject, console
+from javascript import JSObject
 
 def handleFileSelect(evt):
   evt.stopPropagation()
   evt.preventDefault()
 
   files = JSObject(evt.dataTransfer.files) # FileList object.
-  console.log(files)
+  #console.log(files)
 
   # files is a FileList of File objects. List some properties.
   output = []

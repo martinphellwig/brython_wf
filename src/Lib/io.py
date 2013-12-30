@@ -2,6 +2,11 @@ import builtins
 
 open = builtins.open
 
+# for seek()
+SEEK_SET = 0
+SEEK_CUR = 1
+SEEK_END = 2
+
 class StringIO:
 
     def __init__(self,initial_value='',newline=None):
