@@ -3,6 +3,20 @@ Utiliser des objets Javascript
 
 Il faut gérer la période transitoire où Brython va cohabiter avec Javascript ;-)
 
+### Appel de fonctions Brython depuis Javascript
+
+Un cas courant est celui où on appelle une fonction pour réagir à un événement :
+
+    <button onclick="echo()">
+
+Pour qu'une fonction soit utilisable de cette façon il faut l'exposer explicitement en utilisant la fonction <code>expose(_func_)</code> du module intégré **javascript**. Le plus simple est de l'utiliser comme décorateur :
+
+    from javascript import expose
+    
+    @expose
+    def echo():
+        ...
+
 ### Arguments des fonctions de rappel
 
 Le code HTML peut attacher des fonctions de rappel à des événement DOM et leur passer un certain nombre de paramètres. La fonction de rappel les recevra transformés en types gérés par Brython :

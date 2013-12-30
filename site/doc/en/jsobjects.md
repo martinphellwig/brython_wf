@@ -3,6 +3,20 @@ Using Javascript objects
 
 We have to handle the transition period when Brython is going to coexist with Javascript ;-)
 
+### Calling Brython functions from Javascript
+
+A frequent use case is inline code in an HTML tag :
+
+    <button onclick="echo()">
+
+To make a Brython function usable in this context, it must be explicitely exposed with the function <code>expose(_func_)</code> in the built-in module **javascript**. The most simple is to use it as a decorator :
+
+    from javascript import expose
+    
+    @expose
+    def echo():
+        ...
+
 ### Arguments of callback functions
 
 The HTML code can attach callback functions to DOM events and pass them a number of parameters. The callback function will receive them transformed into types managed by Brython :
