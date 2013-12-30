@@ -473,7 +473,10 @@ for(var attr in $ListDict){
     }
 }
 
-$TupleDict.__setitem__ = function(self,attr,value){
+$TupleDict.__delitem__ = function(){
+    throw TypeError("'tuple' object doesn't support item deletion")
+}
+$TupleDict.__setitem__ = function(){
     throw TypeError("'tuple' object does not support item assignment")
 }
 

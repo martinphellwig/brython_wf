@@ -28,6 +28,10 @@ $StringDict.__contains__ = function(self,item){
     return False
 }
 
+$StringDict.__delitem__ = function(){
+    throw TypeError("'str' object doesn't support item deletion")
+}
+
 $StringDict.__eq__ = function(self,other){
     if(other===undefined){ // compare object "self" to class "str"
         return self===str
