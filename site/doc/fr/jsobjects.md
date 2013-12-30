@@ -125,31 +125,3 @@ Voici un exemple plus complet qui montre comment utiliser la populaire librairie
     </body>
     </html>
     
-### Utilisation d'objets Python dans un script Javascript
-
-Les objets Brython sont des objets Javascript, mais ils ne sont utlisables dans des scripts Javascript qu'avec certaines limitations :
-
-- il faut en récupérer une version utilisable en appelant la méthode `valueOf()`
-- le résultat n'est utilisable qu'en lecture (on ne peut pas modifier l'objet Python)
-
-Prenons l'exemple d'une instance de classe :
-
->    class foo:
->        A = 1
->
->    x = foo()
-
-Si on veut utiliser cette instance dans un script Javascript par le code suivant
-
->    <script type="text/javascript">
->    console.log(x.A)
->    </script>
-
-on aura le résultat `undefined` parce que l'objet Javascript `x` ne possède pas l'attribut `A`
-
-Pour accéder à l'attribut de l'objet Python, il faut utiliser sa méthode `valueOf()` 
-
->    <script type="text/javascript">
->    console.log(x.valueOf().A)
->    </script>
-
