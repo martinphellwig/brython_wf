@@ -885,6 +885,12 @@ $RangeDict.__reversed__ = function(self){
     return range(self.stop-1,self.start-1,-self.step)
 }
 
+$RangeDict.__repr__ = $RangeDict.__str__ = function(self){
+    var res = 'range('+self.start+', '+self.stop
+    if(self.step!=1){res += ', '+self.step}
+    return res+')'
+}
+
 function range(){
     var $ns=$MakeArgs('range',arguments,[],[],'args',null)
     var args = $ns['args']
