@@ -31,6 +31,8 @@
 
 <script type="text/python3">
 from browser import timer
+from javascript import expose
+
 script_num = -1
 failed = []
 
@@ -51,7 +53,8 @@ def test_next():
         doc['console'].value = ''
         print('completed all tests !')
         print('failed : %s' %failed)
-        
+
+@expose        
 def test_all():
     global script_num,failed
     script_num = -1
