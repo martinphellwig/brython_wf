@@ -1,8 +1,11 @@
 // brython.js www.brython.info
-// version 1.4.20131230-085542
+// version 1.4.20131231-115514
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
-var __builtins__={}
+var __builtins__={
+__repr__:function(){return "<module 'builtins>'"},
+__str__:function(){return "<module 'builtins'>"}, 
+}
 var __BRYTHON__={}
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
 __BRYTHON__.__setattr__=function(attr,value){
@@ -49,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20131230-085542', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20131231-115514', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -5297,6 +5300,11 @@ $RangeDict.__mro__=[$RangeDict,$ObjectDict]
 $RangeDict.__reversed__=function(self){
 return range(self.stop-1,self.start-1,-self.step)
 }
+$RangeDict.__repr__=$RangeDict.__str__=function(self){
+var res='range('+self.start+', '+self.stop
+if(self.step!=1){res +=', '+self.step}
+return res+')'
+}
 function range(){
 var $ns=$MakeArgs('range',arguments,[],[],'args',null)
 var args=$ns['args']
@@ -5929,7 +5937,15 @@ var builtin_names=['Ellipsis', 'False', 'None',
 'reversed', 'round', 'set', 'setattr', 'slice', 'sorted', 'staticmethod', 'str', 
 'sum','super', 'tuple', 'type', 'vars', 'zip']
 for(var i=0;i<builtin_names.length;i++){
-try{eval('py_env.'+builtin_names[i]+'='+builtin_names[i])}
+var name=builtin_names[i]
+try{
+eval('py_env.'+name+'='+name)
+if(typeof py_env[name]=='function'){
+py_env[name].__repr__=py_env[name].__str__=(function(x){
+return function(){return '<built-in function '+x+'>'}
+})(name)
+}
+}
 catch(err){}
 }
 __BRYTHON__._alert=_alert
@@ -7008,8 +7024,8 @@ return
 }
 else{throw IndexError('list index out of range')}
 }else if(isinstance(arg,slice)){
-var start=arg.start || 0
-var stop=arg.stop || self.length
+var start=arg.start;if(start===None){start=0}
+var stop=arg.stop;if(stop===None){stop=self.length}
 var step=arg.step || 1
 if(start<0){start=self.length+start}
 if(stop<0){stop=self.length+stop}
@@ -7376,6 +7392,12 @@ if($TupleDict[attr]===undefined){
 $TupleDict[attr]=$ListDict[attr]
 }
 }
+$TupleDict.__delitem__=function(){
+throw TypeError("'tuple' object doesn't support item deletion")
+}
+$TupleDict.__setitem__=function(){
+throw TypeError("'tuple' object does not support item assignment")
+}
 $TupleDict.__eq__=function(self,other){
 if(other===undefined){
 return self===tuple
@@ -7411,6 +7433,9 @@ for(var i=0;i<self.length;i++){
 if(self.substr(i,nbcar)==item){return True}
 }
 return False
+}
+$StringDict.__delitem__=function(){
+throw TypeError("'str' object doesn't support item deletion")
 }
 $StringDict.__eq__=function(self,other){
 if(other===undefined){

@@ -1,5 +1,8 @@
 // Python __builtins__
-var __builtins__ = {}
+var __builtins__ = {
+    __repr__:function(){return "<module 'builtins>'"},
+    __str__:function(){return "<module 'builtins'>"},    
+}
 
 // global object with brython built-ins
 var __BRYTHON__ = {}

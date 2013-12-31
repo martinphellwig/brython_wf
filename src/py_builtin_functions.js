@@ -1636,7 +1636,15 @@ var builtin_names=[ 'Ellipsis', 'False',  'None',
 'sum','super', 'tuple', 'type', 'vars', 'zip']
 
 for(var i=0;i<builtin_names.length;i++){
-    try{eval('py_env.'+builtin_names[i]+'='+builtin_names[i])}
+    var name = builtin_names[i]
+    try{
+        eval('py_env.'+name+'='+name)
+        if(typeof py_env[name]=='function'){
+            py_env[name].__repr__ = py_env[name].__str__ = (function(x){
+                return function(){return '<built-in function '+x+'>'}
+            })(name)
+        }
+    }
     catch(err){}
 }
 
