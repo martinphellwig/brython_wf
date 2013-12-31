@@ -2397,7 +2397,7 @@ function $WithCtx(context){
     }
     this.to_js = function(){
         var res = 'var $ctx_manager='+this.tree[0].to_js()
-        res += '\n$ctx_manager_exit = getattr($ctx_manager,"__exit__")\n'
+        res += '\nvar $ctx_manager_exit = getattr($ctx_manager,"__exit__")\n'
         if(this.tree[0].alias){
             res += 'var '+this.tree[0].alias+'='
         }
