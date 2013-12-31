@@ -7,13 +7,14 @@ Acceder a un elemento se puede realizar de varias formas. La más habitual serí
 
 podemos acceder a este elemento mediante
 
+>    from browser import doc
 >    data = doc["data"]
 
-`doc` es una palabra clave integrada en Brython y se hace referencia al documento HTML. Se comporta como un diccionario cuyas claves son los identificadores de los elementos que se encuentran en la página. Si no hay ningún elemento que contenga el id especificado, el programa lanzará una excepción `KeyError`.
+`doc` se encuentra definido en el módulo **browser** y hace referencia al documento HTML. Se comporta como un diccionario cuyas claves son los identificadores de los elementos que se encuentran en la página. Si no hay ningún elemento que contenga el id especificado, el programa lanzará una excepción `KeyError`.
 
 También podríamos obtener todos los elementos de un tipo determinado, por ejemplo todos los enlaces de hipertexto (HTML tag `A`), usando la siguiente sintaxis
 
->    import html
+>    from browser import html
 >    links = doc[html.A]
 
 Por último, todos los elementos de la página tienen un método `get()` que puede usarse para buscar elementos :
