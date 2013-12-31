@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20131231-115514
+// version 1.4.20131231-154523
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20131231-115514', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20131231-154523', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -2096,7 +2096,7 @@ this.transformed=true
 }
 this.to_js=function(){
 var res='var $ctx_manager='+this.tree[0].to_js()
-res +='\n$ctx_manager_exit = getattr($ctx_manager,"__exit__")\n'
+res +='\nvar $ctx_manager_exit = getattr($ctx_manager,"__exit__")\n'
 if(this.tree[0].alias){
 res +='var '+this.tree[0].alias+'='
 }
@@ -6279,7 +6279,7 @@ new $NodeJSCtx(ex_node,')()')
 root.add(ex_node)
 try{
 var js=root.to_js()
-if(__BRYTHON__.$options.debug==10){
+if(__BRYTHON__.$options.debug==10 || module.name=='runner'){
 console.log('code for module '+module.name)
 console.log(js)
 }
