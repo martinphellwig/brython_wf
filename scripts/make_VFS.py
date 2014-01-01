@@ -294,4 +294,4 @@ function $import_module_search_path_list(module,path_list,origin){
 
 if __name__ == '__main__':
    _main_root=os.path.join(os.getcwd(), '../src')
-   process(os.path.join(_main_root, "py_VFS.json"))
+   process(os.path.join(_main_root, "py_VFS.js"))
