@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140101-154551
+// version 1.4.20140101-223104
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140101-154551', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140101-223104', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -633,6 +633,11 @@ var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
 return 'globals("'+module+'")'
+}else if(this.func!==undefined && this.func.value==='dir'){
+if(this.tree.length==0){
+var mod=$get_module(this)
+return 'dir(null,"'+mod.module+'")' 
+}
 }else if(this.func!==undefined && this.func.value=='$$super'){
 if(this.tree.length==0){
 var scope=$get_scope(this)
@@ -4782,7 +4787,12 @@ return res.__delete__(res,obj,attr)
 getattr(obj,'__delattr__')(attr)
 }
 function dir(obj){
-if(obj===null){return[]}
+if(obj===null){
+var mod_name=arguments[1]
+var res=[],$globals=__BRYTHON__.scope[mod_name].__dict__
+for(var attr in $globals){res.push(attr)}
+return res
+}
 if(isinstance(obj,__BRYTHON__.JSObject)){obj=obj.js}
 if(obj.__class__.is_class){obj=obj.$dict}
 var res=[]
