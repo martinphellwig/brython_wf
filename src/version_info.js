@@ -1,4 +1,4 @@
-__BRYTHON__.version_info = [1, 4, '20131231-175024', 'alpha', 0]
+__BRYTHON__.version_info = [1, 4, '20131231-182720', 'alpha', 0]
 __BRYTHON__.builtin_module_names = ["posix","_html",
     "re",
     "marshal",
