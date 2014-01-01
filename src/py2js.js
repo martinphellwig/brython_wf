@@ -638,6 +638,12 @@ function $CallCtx(context){
             while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
             var module = ctx_node.node.module
             return 'globals("'+module+'")'
+        }else if(this.func!==undefined && this.func.value ==='dir'){
+            if(this.tree.length==0){
+                // dir() : pass arguments (null,module name)
+                var mod=$get_module(this)
+                return 'dir(null,"'+mod.module+'")'                
+            }
         }else if(this.func!==undefined && this.func.value=='$$super'){
             if(this.tree.length==0){
                 // super() called with no argument : if inside a class, add the
