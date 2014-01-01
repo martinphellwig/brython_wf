@@ -10,10 +10,23 @@ $ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
 
 function $importer(){
     // returns the XMLHTTP object to handle imports
-    if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-        var $xmlhttp=new XMLHttpRequest();
+    var $xmlhttp = new XMLHttpRequest();
+    if (__builtins__.$CORS && "withCredentials" in $xmlhttp) {
+       // Check if the XMLHttpRequest object has a "withCredentials" property.
+       // "withCredentials" only exists on XMLHTTPRequest2 objects.
+       //xhr.open(method, url, true);
+
+    } else if (__builtins__.$CORS && typeof window.XDomainRequest != "undefined") {
+      // Otherwise, check if XDomainRequest.
+      // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+      $xmlhttp = new window.XDomainRequest();
+    } else if (window.XMLHttpRequest){
+      // Otherwise, CORS is not supported by the browser. or CORS is not activated by developer/programmer
+      // code for IE7+, Firefox, Chrome, Opera, Safari
+      $xmlhttp=new XMLHttpRequest();
     }else{// code for IE6, IE5
-        var $xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+      // Otherwise, CORS is not supported by the browser. or CORS is not activated by developer/programmer
+      $xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
 
     var fake_qs;
@@ -49,7 +62,8 @@ function $download_module(module,url){
             }
         }
     }
-    $xmlhttp.open('GET',url+fake_qs,false)
+    $xmlhttp.open('GET',url+fake_qs, __builtins__.$CORS && "withCredentials" in $xmlhttp)
+    //$xmlhttp.open('GET',url+fake_qs,false)
     if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
     $xmlhttp.send()
     if(res.constructor===Error){throw res} // module not found
