@@ -4091,6 +4091,8 @@ function brython(options){
     __BRYTHON__.debug = options.debug
 
     if (options.open !== undefined) {__builtins__.$open = options.open}
+    __builtins__.$CORS=false        // Cross-origin resource sharing
+    if (options.CORS !== undefined) {__builtins__.$CORS = options.CORS}
     __BRYTHON__.$options=options
     __BRYTHON__.exception_stack = []
     __BRYTHON__.call_stack = []
