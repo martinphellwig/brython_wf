@@ -1,5 +1,5 @@
-Atribuos y métodos de los elementos
------------------------------------
+Atributos y métodos de los elementos
+------------------------------------
 
 Los elementos contenidos en una página tienen atributos y métodos que dependen del tipo de elemento ; se pueden encontrar en muchos sitios de internet
 
@@ -38,16 +38,18 @@ Para añadir un hijo a un elemento se usa el operador `<=` (piensa en ello como 
 >    doc['zone'] <= INPUT(Id="data")
 
 La iteración sobre los hijos de un elemento se puede hacer usando la sintaxis Python habitual : 
+
 >    for child in element:
 >        (...)
 
 Para destruir un elemento se usa la palabra clave `del`
+
 >    zone = doc['zone']
 >    del zone
 
 La colección `options` asociada con un objeto SELECT tiene una interfaz que funciona como una lista Python :
 
  - accede a una opción mediante su índice : `option = elt.options[index]`
- - inserta una opción en la posición _index_ : `elt.options.insert(index,option)`
+ - inserta una opción en la posición *index* : `elt.options.insert(index,option)`
  - inserta una opción al final de la lista : `elt.options.append(option)`
  - elimina una opción : `del elt.options[index]`
