@@ -556,4 +556,154 @@ Imbrication de _list comprehensions_
     >>> del a[:]
     >>> a
     []
+../..
+Tuples
+======
+C'est la virgule qui crée un tuple, pas la parenthèse
+
+    >>> t = 1,2
+    >>> t
+    (1,2)
+    >>> x = (1)
+    >>> x
+    1
+    >>> x=(1,)
+    >>> x
+    (1,)
+../..
+../..
+`set` (ensemble)
+================
+Comme une liste, mais sans duplication ni ordre
+
+    >>> panier = {'pomme', 'orange', 'pomme', 'poire', 'orange', 'banane'}
+    >>> panier     # les doublons sont éliminés
+    {'pomme', 'orange', 'poire', 'banane'}
+    >>> 'orange' in panier
+    True
+    >>> 'abricot' in panier
+    False
+
+Création par _set comprehensions_
+
+    >>> a = {x for x in 'abracadabra' if x not in 'abc'}
+    >>> a
+    {'r', 'd'}
+../..
+Dictionnaires
+=============
+Associe une clé (immuable : chaine, entier, tuple...) à une valeur
+
+    >>> tel = {'jack': 4098, 'sape': 4139} # création
+    >>> tel['guido'] = 4127                # nouvel élément
+    >>> tel
+    {'sape': 4139, 'guido': 4127, 'jack': 4098}
+    >>> tel['jack']                        # accès par clé
+    4098
+    >>> del tel['sape']                    # suppression
+    >>> tel['irv'] = 4127
+    >>> tel
+    {'guido': 4127, 'irv': 4127, 'jack': 4098}
+    >>> 'guido' in tel                     # test d'appartenance
+    True
+    >>> 'jack' not in tel
+    False
+
+../..
+Dictionnaires
+=============
+Itérateur sur les clés
+
+    >>> list(tel.keys())
+    ['irv', 'guido', 'jack']
+
+Itérateur sur les valeurs
+
+    >>> list(tel.values())
+    [4127, 4127, 4098]
+
+Itérateur sur les tuples (clé,valeur)
+
+    >>> list(tel.items())
+    [('irv', 4127), ('guido', 4127), ('jack', 4098)]
+../..
+Dictionnaires
+=============
+Itérer sur un dictionnaire c'est itérer sur ses clés
+
+    >>> for key in tel:
+    ...     print(key)
+    ...
+    irv
+    guido
+    jack
+
+contrairement aux listes qui itèrent sur les valeurs
+
+    >>> for value in [1,'a']:
+    ...     print(value)
+    ...
+    1
+    'a'
+
+../..
+Dictionnaires
+=============
+Construction par `dict`
+    >>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])
+    {'sape': 4139, 'jack': 4098, 'guido': 4127}
+
+ou par _dict comprehensions_
+
+    >>> {x: x**2 for x in (2, 4, 6)}
+    {2: 4, 4: 16, 6: 36}
+../..
+Itérations
+==========
+`enumerate` pour itérer sur le tuple (rang,valeur)
+
+    >>> for i,x in enumerate(['bordeaux','rennes']):
+    ...     print(i,x)
+    ...
+    1 bordeaux
+    2 rennes
+
+plus "pythonique" que :
+
+    >>> _list = ['bordeaux','rennes']
+    >>> for i in range(len(_list)):
+    ...     print(i,_list[i])
+    ...
+    1 bordeaux
+    2 rennes
+../..
+Itérations
+==========
+`zip` pour itérer sur plusieurs séquences à la fois
+
+    >>> questions = ['name', 'quest', 'favorite color']
+    >>> answers = ['lancelot', 'the holy grail', 'blue']
+    >>> for q, a in zip(questions, answers):
+    ...     print('What is your '+q+'?  It is '+a)
+    ...
+    What is your name?  It is lancelot.
+    What is your quest?  It is the holy grail.
+    What is your favorite color?  It is blue.
+../..
+Itérations
+==========
+Pour affecter plusieurs variables à la fois
+
+    >>> a,b,c = x
+
+itère sur x et affecte les valeurs
+
+    >>> a,b,c = range(3)
+    >>> c
+    2
+    >>> a,b = {3:9,10:20}
+    >>> b
+    10
     
+Il faut le même nombre de valeurs des deux côtés !
+
