@@ -59,7 +59,7 @@ _float_ es una función Javascript definida en __py\_builtin\_functions.js__</td
 <tr>
 <td>`x+y`</td>
 <td>`getattr(x,"__add__")(y)`
-<td>slo mismo para todos los operadores
+<td>lo mismo para todos los operadores
 <br>necesario para implementas operaciones como 2 * "a"</td>
 </td>
 </tr>
@@ -93,13 +93,14 @@ _float_ es una función Javascript definida en __py\_builtin\_functions.js__</td
         (...)
 </td>
 <td>
-    var $iter1=iter(iterable)
-    var $no_break1=true
+    var $iter48=iter(y)
+    var $no_break48=true
     while(true){
         try{
-            obj=getattr($iter1,"__next__")()
-        }catch($err){
-            if($err.__name__=="StopIteration"){
+            x=$globals["x"]=getattr($iter48,"__next__")()
+        }
+        catch($err){
+            if($is_exc($err,[StopIteration])){
                 $pop_exc();break
             }else{
                 throw($err)
@@ -107,10 +108,14 @@ _float_ es una función Javascript definida en __py\_builtin\_functions.js__</td
         }
         (...)
     }
+
 </td>
 <td>_$no\_break1_ es un booleano usado en el caso de que el bucle `for` tenga un `else`
 
 _$pop\_exc()_ es una función interna que elimina la última excepción de la pila de excepciones
+
+_$is\_exc(exc,classes)_ es una función interna que comprueba si la excepción _exc_ es una instanncia de una de las _clases_
+
 </td></tr>
 
 <tr>
@@ -232,7 +237,7 @@ El atributo _$type_ de la función se usa internamente para ordenar funciones re
     $globals["foo"]=foo
     foo.$type='function'
 </td>
-<td>la función _$MakeArgs_ creará un objeto Javascript con los nombre definidos en la definición de la función y con los valores correspondientes que se le pasan a la función. La siguiente línea crea el espacio de nombres de la función (variables locales)</td>
+<td>la función _$MakeArgs_ creará un objeto Javascript con los nombres definidos en la definición de la función y con los valores correspondientes que se le pasan a la función. La siguiente línea crea el espacio de nombres de la función (variables locales)</td>
 </tr>
 
 <tr>
@@ -242,8 +247,6 @@ El atributo _$type_ de la función se usa internamente para ordenar funciones re
 </td>
 <td>Las llamadas usan el método \_\_call\_\_ del objeto
 </tr>
-
-
 
 <tr>
 <td>`foo(x,y=1)`
@@ -259,22 +262,27 @@ El atributo _$type_ de la función se usa internamente para ordenar funciones re
     try:
         x[2]='a'
     except TypeError:
-        log('error')
+        print('error')
     except:
-        log('another error')
+        print('another error')
 </td>
 <td>
-    x='brython'
+    x=$globals["x"]='brython'
+    $failed49=false
     try{
         getattr(x,"__setitem__")(Number(2),'a')
-    }catch($err51){
+    }
+    catch($err49){
+        var $failed49=true
         if(false){void(0)}
-        else if(["TypeError"].indexOf($err51.__name__)>-1){
-            getattr(log,"__call__")('error')
-        }else{
-            getattr(log,"__call__")('another error')
+        else if($is_exc($err49,[TypeError])){
+            getattr($print,"__call__")('error')
+        }
+        else{
+            getattr($print,"__call__")('another error')
         }
     }
+
 </td>
 <td>Las líneas
     catch($err51){
