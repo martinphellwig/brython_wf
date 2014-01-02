@@ -19,7 +19,7 @@ Soluci&oacute;n
     <body onload="brython()">
     
     <script type="text/python">
-    import html
+    from browser import doc,html
     doc['zone'] <= html.H1("Presentando a Brython")
     doc['zone'] <= html.H4(html.I("Python en el navegador"))
     doc['zone'] <= html.B("Hola mundo !")
@@ -37,13 +37,13 @@ Soluci&oacute;n
 
 <script type="text/python3">
 def fill_zone():
-    import html
+    frmo browser import doc,html
     doc['zone'] <= html.H1("Presentando a Brython")
     doc['zone'] <= html.H4(html.I("Python en el navegador"))
     doc['zone'] <= html.B("Hola mundo !")
 </script>
 
-`B` es una función definida en el módulo `html`, que coincide con la etiqueta HTML `<B>` (bold)
+`B` es una función definida en el módulo `browser.html`, que coincide con la etiqueta HTML `<B>` (bold)
 
 `B("text")` devuelve un objeto que conincide con el HTML `<b>text</b>`
 
