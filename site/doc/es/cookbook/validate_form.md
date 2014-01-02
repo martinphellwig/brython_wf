@@ -47,6 +47,7 @@ Para ello, usaremos la función _validate()_  que será invocada cuando pulsemos
 <td style="width:40%;padding-right:10px;" id="py_source">
 
     import re
+    from browser import doc, alert
     
     def validate():
         if not doc['name'].value:
