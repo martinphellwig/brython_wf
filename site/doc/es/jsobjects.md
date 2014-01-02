@@ -3,12 +3,26 @@ Usando objetos Javascript
 
 Tenemos que manejar el periodo de transici&oacute;n en el que Brython va a coexistir con Javascript ;-)
 
+### Llamando funciones Brython desde Javascript
+
+Un uso  frecuente es el uso de código en línea dentro de una etiqueta HTML :
+
+    <button onclick="echo()">
+
+Para hacer que una función Brython sea usable en este contexto, debe sear expuesto de forma explícita mediante el uso de la función <code>expose(_func_)</code> presente en el módulo **javascript**. La forma más simple de uso es mediante un decorador :
+
+    from javascript import expose
+    
+    @expose
+    def echo():
+        ...
+
 ### Argumentos de funciones de respuesta (callback functions)
 
-El c&oacute;digo HTML puede contener funciones de respuesta a eventos del DOM y pasarle un n&uacute;mero de par&aacute;metros. La funci&oacute;n de respuesta los recibir&aacute; convertidos a tipos que Brython es capaz de gestionar :
+El código HTML puede contener funciones de respuesta a eventos del DOM y pasarle un número de parámetros. La función de respuesta los recibirá convertidos a tipos que Brython es capaz de gestionar :
 
 <table border='1'>
-<tr><th>Tipo de argumento en la funci&oacute;n de llamada</th><th>Argumento recibido por la funci&oacute;n de respuesta</th></tr>
+<tr><th>Tipo de argumento en la función de llamada</th><th>Argumento recibido por la función de respuesta</th></tr>
 <tr><td>Elemento del DOM</td><td>Instancia `DOMNode`</td></tr>
 <tr><td>Evento del DOM</td><td>Instancia `DOMEvent`</td></tr>
 <tr><td>Lista de nodos del DOM</td><td>lista de instancias `DOMNode`</td></tr>
@@ -20,17 +34,15 @@ El c&oacute;digo HTML puede contener funciones de respuesta a eventos del DOM y 
 <tr><td>Objeto Javascript</td><td>Instancia `JSObject`</td></tr>
 </table>
 
-
-
-Por ejemplo, si el evento 'pulsar un bot&oacute;n' desencadena la ejecuci&oacute;n de la funci&oacute;n foo :
+Por ejemplo, si el evento 'pulsar un botón' desencadena la ejecución de la función foo :
 
     <button onclick="foo(this,33,{'x':99})">Click</button>
 
-esta funci&oacute;n tendr&aacute; la firma
+esta función tendrá la firma
 
     def foo(elt,value,obj):
 
-donde _elt_ ser&aacute; instancia `DOMNode` para el elemento bot&oacute;n, _value_ ser&aacute; el entero 33 y _obj_ ser&aacute; una instancia de la clase integrada `JSObject`
+donde _elt_ será instancia `DOMNode` para el elemento botón, _value_ será el entero 33 y _obj_ será una instancia de la clase integrada `JSObject`
 
 Instancias de `JSObject` se usan como objetos Python ordinarios ; aqu&iacute;, el valor del atributo "x" es `obj.x`. Para convertirlos a un diccionario Python, se puede usar la funci&oacute;n integrada `dict()` : `dict(obj)['x']`
 
