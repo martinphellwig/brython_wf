@@ -10,6 +10,7 @@ Solución
 <tr>
 <td style="width:50%;">
 
+    from browser import alert,doc
     # doc['zone'] is the colored cell
     alert(doc['zone'].text)
 
