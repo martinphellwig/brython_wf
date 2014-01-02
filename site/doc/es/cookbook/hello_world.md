@@ -14,10 +14,11 @@ Solución
     <body onload="brython()">
     
     <script type="text/python">
+    from browser import doc
     doc <= "Hola mundo !"
     </script>
     
     </body>
     </html>
 
-`doc` es una palabra integrada en Brython que representa el documento (el documento de una página web). Hace uso de la operación `<=` que significa "añadir contenido". En este caso, el contenido es una simple cadena Python
+`doc` es una palabra clave definida en el módulo **browser** que representa el documento (el documento de una página web). Hace uso de la operación `<=` que significa "añadir contenido". En este caso, el contenido es una simple cadena Python
