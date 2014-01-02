@@ -1,21 +1,21 @@
 Compilando y ejecutando
 -----------------------
 
-### Visi&oacute;n general
+### Visión general
 
 <table border=1 cellpadding =5>
 <tr><td>Paso </td><td>llevado a cabo por</td></tr>
 <tr>
-<td>Leyendo c&oacute;digo Python</td>
-<td>funci&oacute;n <code>brython(_debug\_mode_)</code> en __py2js.js__
+<td>Leyendo código Python</td>
+<td>función <code>brython(_debug\_mode_)</code> en __py2js.js__
 
-Si el c&oacute;digo es un fichero externo, se obtendr&aacute; mediante una llamada Ajax
+Si el código es un fichero externo, se obtendrá mediante una llamada Ajax
 
-Esta funci&oacute;n crea las siguientes variables de entorno :
+Esta función crea las siguientes variables de entorno :
 
-- `document.$py_src` : objeto indexado mediante los nombres de los m&oacute;dulos, el valor es el c&oacute;digo fuente del m&oacute;dulo
-- `document.$debug` : nivel de depuraci&oacute;n
-- `document.$exc_stack` : una lista de errores generados durante el 'parseo' o durante el tiempo de ejecuci&oacute;n
+- `document.$py_src` : objeto indexado mediante los nombres de los módulos, el valor es el código fuente del módulo
+- `document.$debug` : nivel de depuración
+- `document.$exc_stack` : una lista de errores generados durante el 'parseo' o durante el tiempo de ejecución
     
 </td>
 
@@ -23,33 +23,33 @@ Esta funci&oacute;n crea las siguientes variables de entorno :
 
 <tr>
     
-<td>Creaci&oacute;n del &aacute;rbol representando al c&oacute;digo Python</td>
-<td>funci&oacute;n <code>\_\_BRYTHON\_\_.$py2js(_source,module_)</code> in __py2js.js__
+<td>Creación del árbol representando al código Python</td>
+<td>función <code>\_\_BRYTHON\_\_.$py2js(_source,module_)</code> in __py2js.js__
 
-Esta funci&oacute;n llama a :
-- <code>$tokenize(_source_)</code> : an&aacute;lisis sint&aacute;ctico de los tokens en el c&oacute;digo fuente Python y en la construcci&oacute;n del &aacute;rbol. ;
+Esta función llama a :
+- <code>$tokenize(_source_)</code> : análisis sintáctico de los tokens en el código fuente Python y en la construcción del árbol. ;
 
-   Devuelve la ra&iacute;z del &aacute;rbol
-- <code>transform(_root_)</code> : transforma el &aacute;rbol para prepararlo para la conversi&oacute;n a Javascript (ver debajo)
-- `$add_line_num()` para a&ntilde;adir n&uacute;meros de l&iacute;nea en el caso de que el 'debug mode' sea superior a 0
+   Devuelve la raíz del árbol
+- <code>transform(_root_)</code> : transforma el árbol para prepararlo para la conversión a Javascript (ver debajo)
+- `$add_line_num()` para añadir números de línea en el caso de que el 'debug mode' sea superior a 0
 
-La funci&oacute;n `$py2js` devuelve la ra&iacute;z del &aacute;rbol.
+La función `$py2js` devuelve la raíz del árbol.
 </td>
 </tr>
 
 <tr>
     
-<td>generando c&oacute;digo Javascript</td>
-<td>m&eacute;todo `to_js()` del &aacute;rbol devuelto por `$py2js`
+<td>generando código Javascript</td>
+<td>método `to_js()` del árbol devuelto por `$py2js`
 
-Esta funci&oacute;n llama de forma recursiva al m&eacute;todo del mismo nombre y a todos los elementos sint&aacute;cticos encontrados en el &aacute;rbol. Devuelve la cadena que contiene el c&oacute;digo Javascript resultante. Si el 'debug mode' es 2, esta cadena se mostrar&aacute; en la consola del navegador.
+Esta función llama de forma recursiva al método del mismo nombre y a todos los elementos sintácticos encontrados en el árbol. Devuelve la cadena que contiene el código Javascript resultante. Si el 'debug mode' es 2, esta cadena se mostrará en la consola del navegador.
 </td>
 </tr>
 
 <tr>
     
-<td>ejecutando c&oacute;digo Javascript</td>
-<td>evaluaci&oacute;n mediante la funci&oacute;n `eval()`
+<td>ejecutando código Javascript</td>
+<td>evaluación mediante la función `eval()`
     
 </td>
 </tr>
@@ -58,11 +58,11 @@ Esta funci&oacute;n llama de forma recursiva al m&eacute;todo del mismo nombre y
 
 ### Fiicheros usados
 
-El script __brython.js__ se genera mediante la compilaci&oacute;n de varios scripts :
+El script __brython.js__ se genera mediante la compilación de varios scripts :
 
-- __brython\_builtins.js__ : define el objeto `__BRYTHON__` que act&uacute;a como pasarela entre objetos Javascript nativos (`Date, RegExp, Storage...`) y Brython
-- __py2js.js__ : realiza la conversi&oacute;n de c&oacute;digo Python a c&oacute;digo Javascript
-- __py\_utils.js__ : funciones &uacute;tiles (eg conversiones de tipos entre Javascript y Python)
+- __brython\_builtins.js__ : define el objeto `__BRYTHON__` que actúa como pasarela entre objetos Javascript nativos (`Date, RegExp, Storage...`) y Brython
+- __py2js.js__ : realiza la conversión de código Python a código Javascript
+- __py\_utils.js__ : funciones útiles (eg conversiones de tipos entre Javascript y Python)
 - __py\_object.js__ : implementa el clase `object` de Python
 - __py\_builtin\_functions.js__ : Python built-in functions
 - __js\_objects.js__ : interfaz a los objetos y constructores Javascript
@@ -73,15 +73,15 @@ El script __brython.js__ se genera mediante la compilaci&oacute;n de varios scri
 - __py\_set.js__ : implementación de la clase `set` Python
 - __py\_dom.js__ : interacción con el documento HTML (DOM)
 
-### M&aacute;s sobre traducci&oacute;n y ejecuci&oacute;n
+### Más sobre traducción y ejecución
 
-Traducci&oacute;n y ejecuci&oacute;n de un script Brython mediante __py2js.js__ sigue los siguientes pasos :
+Traducción y ejecución de un script Brython mediante __py2js.js__ sigue los siguientes pasos :
 <ol>
-<li>An&aacute;lisis sint&aacute;ctico y creaci&oacute;n del &aacute;rbol
+<li>Análisis sintáctico y creación del árbol
 
-Este paso se basa en un aut&oacute;mata cuyo estado evoluciona con los tokens encontrados en el c&oacute;digo fuente
+Este paso se basa en un autómata cuyo estado evoluciona con los tokens encontrados en el código fuente
 
-El c&oacute;digo Python se separa en tokens que pueden poseer los siguientes tipos : 
+El código Python se separa en tokens que pueden poseer los siguientes tipos : 
 
 - keyword
 - identificador
@@ -91,40 +91,40 @@ El c&oacute;digo Python se separa en tokens que pueden poseer los siguientes tip
 - colon (:)
 - semi colon (;)
 - par&eacute;ntesis / corchete ('bracket') / llave ('curly brace')
-- asignaci&oacute;n (signo igual =)
+- asignación (signo igual =)
 - decorador (@)
-- fin de l&iacute;nea
+- fin de línea
 
-Para cada token, Se produce una llamada a la funci&oacute;n _$transition()_, devolver&aacute; un nuevo estado dependiendo del estado actual y del token
+Para cada token, Se produce una llamada a la función _$transition()_, devolverá un nuevo estado dependiendo del estado actual y del token
 
-Cada instrucci&oacute;n en el c&oacute;digo fuente encuentra un nodo en el &aacute;rbol (una instancia de la clase _$Node_). Si una l&iacute;nea contiene m&aacute;s de una instrucci&oacute;n separadas por ":" (`def foo(x):return x`) o por ";" (`x=1;print(x)`), se crear&aacute;n tantos nodos para esa l&iacute;nea
+Cada instrucción en el código fuente encuentra un nodo en el árbol (una instancia de la clase _$Node_). Si una línea contiene más de una instrucción separadas por ":" (`def foo(x):return x`) o por ";" (`x=1;print(x)`), se crearán tantos nodos para esa línea
 
-Cada elemento sint&aacute;ctico (identificador, llamada a funci&oacute;n, expresi&oacute;n, operador,...) es manejado mediante una clase : ver en el c&oacute;digo fuente de __py2js.js__ entre `function $AbstractExprCtx` y `function $UnaryCtx`
+Cada elemento sintáctico (identificador, llamada a función, expresión, operador,...) es manejado mediante una clase : ver en el código fuente de __py2js.js__ entre `function $AbstractExprCtx` y `function $UnaryCtx`
 
 En este paso, se puede informar de los errores : 
-- errores sint&aacute;cticos
-- errores de indentaci&oacute;n
+- errores sintácticos
+- errores de indentación
 - cadenas literales inacabadas
-- falta de par&eacute;ntesis / corchetes ('brackets') / llaves ('curly braces')
+- falta de paréntesis / corchetes ('brackets') / llaves ('curly braces')
 - caracteres ilegales
 - Palabras clave Python no gestionadas por Brython
 
-<li>Transformando el &aacute;rbol
+<li>Transformando el árbol
 
-Para algunos elementos de la sintaxis Python, el &aacute;rbol que representa el c&oacute;digo fuente debe ser modificado (a&ntilde;adiendo ramas) antes de comenzar la traducci&oacute;n a Javascript. Esto se realiza mediante llamadas recursivas al m&eacute;todo `transform()` desde el principio del &aacute;rbol 
+Para algunos elementos de la sintaxis Python, el árbol que representa el código fuente debe ser modificado (añadiendo ramas) antes de comenzar la traducción a Javascript. Esto se realiza mediante llamadas recursivas al método `transform()` desde el principio del árbol 
 
-Por ejemplo, en el primer paso, el c&oacute;digo Python <code>assert _condition_</code> produce una &uacute;nica rama del &aacute;rbol. El segundo paso lo transforma a una rama <code>if not _condition_</code> y a&ntilde;ade una rama hija con `raise AssertionError`
+Por ejemplo, en el primer paso, el código Python <code>assert _condition_</code> produce una única rama del árbol. El segundo paso lo transforma a una rama <code>if not _condition_</code> y añade una rama hija con `raise AssertionError`
 
-Los elementos que deben ser transformados de esta forma son : `assert`, cadenas (`x=y=0`) y asignaciones m&uacute;ltiples (`x,y=1,2`), `class, def, except, for, try`
+Los elementos que deben ser transformados de esta forma son : `assert`, cadenas (`x=y=0`) y asignaciones múltiples (`x,y=1,2`), `class, def, except, for, try`
 
-Este paso se usa, adem&aacute;s, para almacenar las variables declaradas mediante `global`
+Este paso se usa, además, para almacenar las variables declaradas mediante `global`
 
-<li>Ejecutando c&oacute;digo Javascript
+<li>Ejecutando código Javascript
 
-En el momento de ejecuci&oacute;n, el script generado puede hacer uso de :
+En el momento de ejecución, el script generado puede hacer uso de :
 
 - las clases definidas en _py\_objects.js, py\_dict.js, py\_string.js, py\_list.js, py\_set.js, py\_dom.js_
-- funciones internas no accesibles desde Python (sus nombres siempre comienzan con $) ; la mayor&iacute;a de ellas se definen en _$py\_utils.js_. Las m&aacute;s importantes son :
+- funciones internas no accesibles desde Python (sus nombres siempre comienzan con $) ; la mayoría de ellas se definen en _$py\_utils.js_. Las más importantes son :
 
  - _$JS2Py_ : toma un solo argumento y devuelve :
 
@@ -132,12 +132,11 @@ En el momento de ejecuci&oacute;n, el script generado puede hacer uso de :
   - una instancia de DOMObject (respectivamente DOMEvent) si el argumento es un objeto DOM (resp. evento)
   - una instancia de JSObject "envolviendo" al argumento en el resto de casos
 
- - _$MakeArgs_ llamado al inicio de cada funci&oacute;n si su firma posee al menos un argumento. Crea un espacio de nombres basado en los argumentos de la funci&oacute;n, llamando a la funci&oacute;n `$JS2Py` en todos los argumentos
- - _$class\_constructor_ Se le llama para la definici&oacute;n de la clase
- - _$resolve\_attr_ se le llama para resolver atributos de instancias de clases y maneja herencia m&uacute;ltiple 
+ - _$MakeArgs_ llamado al inicio de cada función si su firma posee al menos un argumento. Crea un espacio de nombres basado en los argumentos de la función, llamando a la función `$JS2Py` en todos los argumentos
+ - _$class\_constructor_ Se le llama para la definición de la clase
  - _$list\_comp_ se le llama para las comprensiones de listas
- - _$lambda_ se le llama para funciones an&oacute;nimas definidas por `lambda`
- - _$test\_expr_ y _$test\_item_ se usan en la evaluaci&oacute;n de condiciones combinadas mediante `and` o `or`
+ - _$lambda_ se le llama para funciones anónimas definidas por `lambda`
+ - _$test\_expr_ y _$test\_item_ se usan en la evaluación de condiciones combinadas mediante `and` o `or`
 
-- las funciones definidas en el script __py\_import.js__ se usan para la gesti&oacute;n de los imports
+- las funciones definidas en el script __py\_import.js__ se usan para la gestión de los imports
 
