@@ -7,15 +7,16 @@ Almacenar objetos localmente usando 'local storage' disponible en HTML5
 Solución
 --------
 
-Brython proporciona un módulo llamado `local_storage` que permite almacenar cadenas de valores a sociados a cadenas de claves
+Brython proporciona un módulo llamado `browser.local_storage` que permite almacenar cadenas de valores a sociados a cadenas de claves
 
 
-    from local_storage import storage
+    from browser.local_storage import storage
     storage['brython_test'] = doc['zone'].value
     
 <input id="zone" value="Local Storage">
 <button onclick="show_locstor(0)">Almacenar valor</button>
 
+    from browser import alert
     alert(storage['brython_test'])
 
 <button onclick="show_locstor(1)">Mostrar valor almacenado</button>
@@ -29,7 +30,8 @@ def show_locstor(num):
 
 Si un objeto Python puede ser serializado mediante el módulo `json`, podríamos almacenar la versión serializada para, más tarde, volver a obtener el objeto original :
 
-    from local_storage import storage
+    from browser import alert
+    from browser.local_storage import storage
     import json
     
     a = {'foo':1,1515:'Marignan'}
