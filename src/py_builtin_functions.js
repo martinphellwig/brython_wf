@@ -275,7 +275,14 @@ function delattr(obj, attr) {
 }
 
 function dir(obj){
-    if(obj===null){return []}
+    if(obj===null){
+        // if dir is called without arguments, the parser transforms dir() into
+        // dir(null,module_name)
+        var mod_name=arguments[1]
+        var res = [],$globals = __BRYTHON__.scope[mod_name].__dict__
+        for(var attr in $globals){res.push(attr)}
+        return res
+    }
     if(isinstance(obj,__BRYTHON__.JSObject)){obj=obj.js}
     if(obj.__class__.is_class){obj=obj.$dict}
     var res = []

@@ -638,6 +638,12 @@ function $CallCtx(context){
             while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
             var module = ctx_node.node.module
             return 'globals("'+module+'")'
+        }else if(this.func!==undefined && this.func.value ==='dir'){
+            if(this.tree.length==0){
+                // dir() : pass arguments (null,module name)
+                var mod=$get_module(this)
+                return 'dir(null,"'+mod.module+'")'                
+            }
         }else if(this.func!==undefined && this.func.value=='$$super'){
             if(this.tree.length==0){
                 // super() called with no argument : if inside a class, add the
@@ -4017,7 +4023,7 @@ function $tokenize(src,module,parent){
     if(br_stack.length!=0){
         var br_err = br_pos[0]
         $pos = br_err[1]
-        $_SyntaxError(br_err[0],"Unbalanced bracket "+br_stack.charAt(br_stack.length-1))
+        $_SyntaxError(br_err[0],["Unbalanced bracket "+br_stack.charAt(br_stack.length-1)])
     }
     if(context!==null && $indented.indexOf(context.tree[0].type)>-1){
         $pos = pos-1
@@ -4091,6 +4097,8 @@ function brython(options){
     __BRYTHON__.debug = options.debug
 
     if (options.open !== undefined) {__builtins__.$open = options.open}
+    __builtins__.$CORS=false        // Cross-origin resource sharing
+    if (options.CORS !== undefined) {__builtins__.$CORS = options.CORS}
     __BRYTHON__.$options=options
     __BRYTHON__.exception_stack = []
     __BRYTHON__.call_stack = []
