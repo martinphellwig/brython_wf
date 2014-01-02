@@ -352,8 +352,8 @@ DOMNode.__add__ = function(self,other){
     res.children = [self]
     if(isinstance(other,$TagSum)){
         for(var $i=0;$i<other.children.length;$i++){res.children.push(other.children[$i])}
-    } else if(isinstance(other,[str,int,float,list,dict,set,tuple])){
-        res.children.push($DOMNode(document.createTextNode(str(other))))
+    } else if(isinstance(other,[__builtins__.str,__builtins__.int,__builtins__.float,__builtins__.list,__builtins__.dict,__builtins__.set,__builtins__.tuple])){
+        res.children.push($DOMNode(document.createTextNode(__builtins__.str(other))))
     }else{res.children.push(other)}
     return res
 }
