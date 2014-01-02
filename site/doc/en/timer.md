@@ -10,10 +10,16 @@ Implements methods to allow differed or repetitive execution of functions :
 > cancels the execution of the function defined by `set_timeout()`
 
 `set_interval(`_fonction,ms_`)`
-> lauches repeated execution of the *function* every *ms* milliseconds. This function returns an object usable in the following function
+> launches repeated execution of the *function* every *ms* milliseconds. This function returns an object usable in the following function
 
 `clear_interval(`_timer_`)`
 > stops the repeated execution of the function defined by `set_interval()`
+
+<code>request\_animation\_frame(*function*)</code>
+> runs the *function* repeatedly letting the browser be in charge to update the browser. *function* uses a fake argument
+
+<code>cancel\_animation\_frame(*id*)</code>
+> cancels the  repeated execution of the function defined by *request_animation_frame()* and uses the value returned by *request_animation_frame()* as *id*
 
 <div id="py_source">
     import time
