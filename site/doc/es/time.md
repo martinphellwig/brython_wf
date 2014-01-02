@@ -1,45 +1,62 @@
-módulo time
------------
+módulo **browser.timer**
+------------------------
 
-Implementa una parte de los métodos disponibles en el módulo `time` de la librería estándar de Python
+Implementa métodos que permiten la ejecución de funciones de forma repetida o diferida.
 
-Se incluyen tres métodos que permiten ejecución en diferido o ejecución repetitiva de funciones :
+<code>set\_timeout(*funcion,ms*)</code>
 
-- <code>set\_timeout(*funcion,ms*)</code> : ejecuta la *funcion* después de *ms* milisegundos. *function* no toma ningún argumento
+> ejecuta la *funcion* después de *ms* milisegundos. *function* no toma ningún argumento
 
-- <code>set\_interval(*funcion,ms*)</code> ejecuta la *funcion* de forma repetida cada *ms* milisegundos. Esta función devuelve un objeto usable en la siguiente función
+<code>clear\_timeout(*id*)</code>
 
-- <code>clear_interval(*timer*)</code> : para la ejecución repetitiva de la función definida por <code>set\_interval()</code>
+> cancela la ejecución de la función definida en *set_timeout()* y como parámetro se usa el valor devuelto por *set_timeout()*
+
+<code>set\_interval(*funcion,ms*)</code>
+
+> ejecuta la *funcion* de forma repetida cada *ms* milisegundos. Esta función devuelve un objeto usable en la siguiente función
+
+<code>clear_interval(*id*)</code>
+
+> detiene la ejecución repetitiva de la función definida por <code>set\_interval()</code> y como parámetro se usa el valor devuelto por *set_interval()*
+
+<code>request\_animation\_frame(*funcion*)</code>
+
+> ejecuta la *funcion* de forma repetitiva dejando que el navegador se encargue de actualizar la ejecución. *function* no toma ningún argumento
+
+<code>cancel\_animation\_frame(*id*)</code>
+
+> cancela la ejecución de la función definida en *request_animation_frame()* y como parámetro se usa el valor devuelto por *request_animation_frame()*
 
 <div id="py_source">
     import time
+    from browser import timer
     
-    timer = None
+    _timer = None
     counter = 0
     
     def show():
         doc['timer'].text = '%.2f' %(time.time()-counter)
     
     def start_timer():
-        global timer,counter
-        if timer is None:
+        global _timer,counter
+        if _timer is None:
             counter = time.time()
-            timer = time.set_interval(show,10)
+            _timer = timer.set_interval(show,10)
             doc['start'].text = 'Hold'
-        elif timer == 'hold': # restart
+        elif _timer == 'hold': # restart
             # restart timer
             counter = time.time()-float(doc['timer'].text)
-            timer = time.set_interval(show,10)
+            _timer = timer.set_interval(show,10)
             doc['start'].text = 'Hold'
         else: # hold
-            time.clear_interval(timer)
-            timer = 'hold'
+            timer.clear_interval(_timer)
+            _timer = 'hold'
             doc['start'].text = 'Restart'
     
     def stop_timer():
-        global timer
-        time.clear_interval(timer)
-        timer = None
+        global _timer
+        timer.clear_interval(_timer)
+        _timer = None
         t = 0
         doc['timer'].text = '%.2f' %0
         doc['start'].text = 'Start'
