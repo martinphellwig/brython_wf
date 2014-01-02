@@ -111,7 +111,8 @@ def myKeyPress(event):
                 doc['code'].value += '... '
                 status = "block"
             except SyntaxError as msg:
-                if str(msg) == 'invalid syntax : triple string end not found':
+                if str(msg) == 'invalid syntax : triple string end not found' or\
+                    str(msg).startswith('Unbalanced bracket'):
                     doc['code'].value += '... '
                     status = "3string"
                 else:

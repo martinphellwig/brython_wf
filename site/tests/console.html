@@ -2,12 +2,15 @@
 <html>
 <head>
 <meta charset="iso-8859-1">
+<link rel="stylesheet" href="../doc/doc_brython.css">
+
 <title>brython interactive mode</title>
 <script type="text/javascript" src="../../src/brython_builtins.js"></script>
 <script type="text/javascript" src="../../src/version_info.js"></script>
 <script type="text/javascript" src="../../src/py2js.js"></script>
-<script type="text/javascript" src="../../src/py_utils.js"></script>
 <script type="text/javascript" src="../../src/py_object.js"></script>
+<script type="text/javascript" src="../../src/py_type.js"></script>
+<script type="text/javascript" src="../../src/py_utils.js"></script>
 <script type="text/javascript" src="../../src/py_builtin_functions.js"></script>
 <script type="text/javascript" src="../../src/py_set.js"></script>
 <script type="text/javascript" src="../../src/js_objects.js"></script>
@@ -35,8 +38,21 @@ textarea {
   font-size: 14px;
 }
 </style>
+<script type="text/python3">
+from browser import doc,win
+from .. import header
+
+qs_lang,language = header.show('../')
+
+</script>
+
 </head>
 <body onload="brython(1)"><!-- remove the 1 to leave debug mode -->
+
+<table id="banner" cellpadding=0 cellspacing=0>
+<tr id="banner_row">
+</tr>
+</table>
 
 <textarea id="code" class="codeArea" rows=20></textarea>
 
@@ -46,7 +62,7 @@ textarea {
 import sys
 import traceback
 
-from browser import doc
+from browser import doc,win
 
 history = []
 current = 0
@@ -103,14 +119,15 @@ def myKeyPress(event):
             try:
                 _ = exec(currentLine,globals())
                 if _ is not None:
-                    print(_)
+                    print(repr(_))
                 doc['code'].value += '>>> '
                 status = "main"
             except IndentationError:
                 doc['code'].value += '... '
                 status = "block"
             except SyntaxError as msg:
-                if str(msg) == 'invalid syntax : triple string end not found':
+                if str(msg) == 'invalid syntax : triple string end not found' or\
+                    str(msg).startswith('Unbalanced bracket'):
                     doc['code'].value += '... '
                     status = "3string"
                 else:
@@ -128,7 +145,7 @@ def myKeyPress(event):
             try:
                 _ = exec(block_src,globals())
                 if _ is not None:
-                    print(_)
+                    print(repr(_))
             except:
                 traceback.print_exc()
             doc['code'].value += '>>> '
@@ -180,5 +197,10 @@ doc['code'].focus()
 cursorToEnd()
 
 </script>
+<p>The console can be embedded in a web page by adding
+<blockquote>
+<pre>
+&lt;iframe src="http://brython.info/console.html" width=800 height=400&gt;&lt;/iframe&gt;
+</pre></blockquote>
 </body>
 </html>

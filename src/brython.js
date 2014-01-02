@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20131231-154523
+// version 1.4.20140101-223104
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20131231-154523', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140101-223104', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -633,6 +633,11 @@ var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
 return 'globals("'+module+'")'
+}else if(this.func!==undefined && this.func.value==='dir'){
+if(this.tree.length==0){
+var mod=$get_module(this)
+return 'dir(null,"'+mod.module+'")' 
+}
 }else if(this.func!==undefined && this.func.value=='$$super'){
 if(this.tree.length==0){
 var scope=$get_scope(this)
@@ -3478,7 +3483,7 @@ pos +=1
 if(br_stack.length!=0){
 var br_err=br_pos[0]
 $pos=br_err[1]
-$_SyntaxError(br_err[0],"Unbalanced bracket "+br_stack.charAt(br_stack.length-1))
+$_SyntaxError(br_err[0],["Unbalanced bracket "+br_stack.charAt(br_stack.length-1)])
 }
 if(C!==null && $indented.indexOf(C.tree[0].type)>-1){
 $pos=pos-1
@@ -3535,6 +3540,8 @@ if(options===undefined){options={'debug':0}}
 if(typeof options==='number'){options={'debug':options}}
 __BRYTHON__.debug=options.debug
 if(options.open !==undefined){__builtins__.$open=options.open}
+__builtins__.$CORS=false 
+if(options.CORS !==undefined){__builtins__.$CORS=options.CORS}
 __BRYTHON__.$options=options
 __BRYTHON__.exception_stack=[]
 __BRYTHON__.call_stack=[]
@@ -4780,7 +4787,12 @@ return res.__delete__(res,obj,attr)
 getattr(obj,'__delattr__')(attr)
 }
 function dir(obj){
-if(obj===null){return[]}
+if(obj===null){
+var mod_name=arguments[1]
+var res=[],$globals=__BRYTHON__.scope[mod_name].__dict__
+for(var attr in $globals){res.push(attr)}
+return res
+}
 if(isinstance(obj,__BRYTHON__.JSObject)){obj=obj.js}
 if(obj.__class__.is_class){obj=obj.$dict}
 var res=[]
@@ -6157,10 +6169,14 @@ $ModuleDict.__repr__=function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__str__=function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__mro__=[$ModuleDict,$ObjectDict]
 function $importer(){
-if(window.XMLHttpRequest){
 var $xmlhttp=new XMLHttpRequest()
+if(__builtins__.$CORS && "withCredentials" in $xmlhttp){
+}else if(__builtins__.$CORS && typeof window.XDomainRequest !="undefined"){
+$xmlhttp=new window.XDomainRequest()
+}else if(window.XMLHttpRequest){
+$xmlhttp=new XMLHttpRequest()
 }else{
-var $xmlhttp=new ActiveXObject("Microsoft.XMLHTTP")
+$xmlhttp=new ActiveXObject("Microsoft.XMLHTTP")
 }
 var fake_qs
 if(__BRYTHON__.$options.cache===undefined ||
@@ -6190,7 +6206,7 @@ res=FileNotFoundError("No module named '"+module+"'")
 }
 }
 }
-$xmlhttp.open('GET',url+fake_qs,false)
+$xmlhttp.open('GET',url+fake_qs, __builtins__.$CORS && "withCredentials" in $xmlhttp)
 if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
 $xmlhttp.send()
 if(res.constructor===Error){throw res}
@@ -6279,7 +6295,7 @@ new $NodeJSCtx(ex_node,')()')
 root.add(ex_node)
 try{
 var js=root.to_js()
-if(__BRYTHON__.$options.debug==10 || module.name=='runner'){
+if(__BRYTHON__.$options.debug==10){
 console.log('code for module '+module.name)
 console.log(js)
 }

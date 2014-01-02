@@ -11,7 +11,7 @@ trans_menu = {
     'menu_groups':{'en':'Groups','es':'Grupos','fr':'Groupes', 'pt':'Grupos'}
 }
 links = {'home':'index.html',
-    'console':'tests/console1.html',
+    'console':'tests/console.html',
     'editor':'tests/editor.html',
     'gallery':'gallery/gallery_%s.html',
     'doc':'doc/%s/index.html',
