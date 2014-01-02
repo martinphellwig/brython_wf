@@ -12,7 +12,8 @@ Usaremos el atributo `onmouseover` de la etiqueta HTML `area` y le pasaremos una
 <table width="100%">
 <tr>
 <td style="width:40%;padding-right:10px;">
-
+    from browser import doc
+    
     def writetext(txt):
         doc["description"].text = ""
         doc["description"] <= txt
@@ -39,6 +40,7 @@ Usaremos el atributo `onmouseover` de la etiqueta HTML `area` y le pasaremos una
 </table>
 
 <script type="text/python3">
+from browser import doc
 def writetext(txt):
     doc["description"].text = ""
     doc["description"] <= txt
