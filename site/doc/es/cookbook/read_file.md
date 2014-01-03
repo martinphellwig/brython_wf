@@ -14,6 +14,8 @@ Usaremos la función integrada `open()` para leer el contenido de un fichero
 <td style="width:40%;padding-right:10px;">
 
     import time
+    from browser import doc
+
     fake_qs = '?foo=%s' %time.time()
     doc['zone'].value = open('cookbook/file.txt'+fake_qs).read()
 
@@ -38,6 +40,7 @@ Fíjate en el valor aleatorio de la cadena de consulta (query) al final del nomb
 El siguiente ejemplo añade un timeout para mostrar un mensaje en caso de que el fichero no haya sido encontrado después de 4 segundos :
 
     import time
+    from browser import doc
 
     def on_complete(req):
         if req.status==200 or req.status==0:

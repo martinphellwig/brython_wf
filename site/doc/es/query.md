@@ -1,6 +1,6 @@
 ## Query string
 
-`doc` soporta el atributo `query`, que devuelve la cadena pedida como un objeto con los siguientes atributos y m&eacute;todos :
+**browser**.`doc` soporta el atributo `query`, que devuelve la cadena pedida como un objeto con los siguientes atributos y métodos :
 
 - <code>doc.query[<i>key</i>]</code> : devuelve el valor asociado con _`key`_. Si una clave tiene m&aacute;s de un valor (caso, por ejemplo, de etiquetas SELECT con el atributo MULTIPLE o para etiquetas `<INPUT type="checkbox">`), devuelve una lista de los valores. Se obtendr&aacute; un `KeyError` si no hay valor asociado con la clave
 

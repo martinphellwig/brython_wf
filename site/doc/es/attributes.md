@@ -1,9 +1,9 @@
-Atribuos y métodos de los elementos
------------------------------------
+Atributos y métodos de los elementos
+------------------------------------
 
 Los elementos contenidos en una página tienen atributos y métodos que dependen del tipo de elemento ; se pueden encontrar en muchos sitios de internet
 
-Debido a que sus nombre pueden variar dependiendo del navegador, Brython define atributos adicionales que funcionan en todos los casos :
+Debido a que sus nombres pueden variar dependiendo del navegador, Brython define atributos adicionales que funcionan en todos los casos :
 
 <table border=1 cellpadding=3>
 <tr>
@@ -22,7 +22,7 @@ Debido a que sus nombre pueden variar dependiendo del navegador, Brython define 
 <td>*children*</td><td>list</td><td>el hijo del elemento en el árbol del documento</td><td>R</td>
 </tr>
 <tr>
-<td>*parent*</td><td>instancia `DOMNode`</td><td>el padre el elemento (`None` para `doc`)</td><td>R</td>
+<td>*parent*</td><td>instancia `DOMNode`</td><td>el padre del elemento (`None` para `doc`)</td><td>R</td>
 </tr>
 <tr>
 <td>*class*</td><td>string</td><td>el nombre de la clase del elemento (atributo *class* de la etiqueta)</td><td>R/W</td>
@@ -34,19 +34,22 @@ Debido a que sus nombre pueden variar dependiendo del navegador, Brython define 
 
 Para añadir un hijo a un elemento se usa el operador `<=` (piensa en ello como una flecha que indica asignación)
 
+>    from browser import doc
 >    doc['zone'] <= INPUT(Id="data")
 
 La iteración sobre los hijos de un elemento se puede hacer usando la sintaxis Python habitual : 
+
 >    for child in element:
 >        (...)
 
 Para destruir un elemento se usa la palabra clave `del`
+
 >    zone = doc['zone']
 >    del zone
 
 La colección `options` asociada con un objeto SELECT tiene una interfaz que funciona como una lista Python :
 
  - accede a una opción mediante su índice : `option = elt.options[index]`
- - inserta una opción en la posición _index_ : `elt.options.insert(index,option)`
+ - inserta una opción en la posición *index* : `elt.options.insert(index,option)`
  - inserta una opción al final de la lista : `elt.options.append(option)`
  - elimina una opción : `del elt.options[index]`

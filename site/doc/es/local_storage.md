@@ -1,12 +1,14 @@
-Almacenamiento local (Local storage)
-------------------------------------
+Módulo browser.local_storage
+----------------------------
 
-El almacenamiento local definido por HTML5 puede ser usado con el m&oacute;dulo `local_storage`. El objeto `storage` definido en este m&oacute;dulo se usa como un diccionario Python
+Éste módulo hace uso del almacenamiento local definido en HTML5 : una forma de almacenar pares clave/valor en un fichero adjunto al mnavegador. Las claves y valores son cadenas
+
+El módulo define un objeto, `storage`, que es un diccionario Python típico
 
 ### Ejemplo
 
->    from local_storage import storage
+>    from browser.local_storage import storage
 >    storage['foo']='bar'
->    log(storage['foo'])
+>    print(storage['foo'])
 >    del storage['foo']
->    log(storage['foo']) # raises KeyError
+>    print(storage['foo']) # raises KeyError

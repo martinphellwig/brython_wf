@@ -1,15 +1,21 @@
-módulo websocket
-----------------
+módulo **browser.websocket**
+----------------------------
 
-Los Web sockets son una manera de manejar comunicación bidireccional entre el cliente y el servidor. Han sido especificados en HTML5
+Los Web sockets, definidos en HTML5, son una manera de manejar comunicación bidireccional entre el cliente y el servidor.
 
-La comunicación con el servidor se establece usando el módulo `websocket` que proporciona la función `websocket(host)` :
+El módulo define una función :
 
-Si tu navegador no soporta WebSocket, se obtendrá un `NotImplementedError`
+`websocket(`_host_`)`
 
-La llamada devuelve una instancia de la clase `WebSocket`. dispone de los siguientes métodos :
+> _host_ define la localización de un servidor que soporta el protocolo WebSocket. devuelve un objeto `WebSocket`
 
-- <code>bind(_evt,funcion_)</code> adjunta la _funcion_ al evento _evt_. Los eventos y los correspondientes argumentos de la función son :
+> Si tu navegador no soporta WebSocket, se obtendrá un `NotImplementedError`
+
+Un objeto `WebSocket` dispone de los siguientes métodos :
+
+<code>bind(_evt,funcion_)</code> 
+
+> adjunta la _funcion_ al evento _evt_. Los eventos y los correspondientes argumentos de la función son :
 
 <blockquote>
 <table border=1 cellpadding=5>
@@ -27,7 +33,7 @@ La llamada devuelve una instancia de la clase `WebSocket`. dispone de los siguie
 </tr>
 <tr>
 <td>`message`</td>
-<td>función con un argumento, una instancia del `DOMEvent`. Esta instancia posee el atributo `data` que recibe el mensaje enviado por el servidor</td>
+<td>función con un argumento, una instancia del `DOMEvent`. Esta instancia posee el atributo `data` que recibe el mensaje enviado por el servidor como una cadena</td>
 </tr>
 <tr>
 <td>`close`</td>
@@ -36,15 +42,18 @@ La llamada devuelve una instancia de la clase `WebSocket`. dispone de los siguie
 </table>
 </blockquote>
 
-- <code>send(_data_)</code> : envía el string _data_ al servidor
-- `close()` : cierra la conexión
+<code>send(_data_)</code>
 
+> envía el string _data_ al servidor
+`close()`
+
+> cierra la conexión
 
 Ejemplo :
 <table>
 <tr>
 <td id="py_source">
-    import websocket
+    from browser import doc,alert,websocket
     
     def on_open(evt):
         doc['send_button'].disabled = False
@@ -53,7 +62,7 @@ Ejemplo :
     
     def on_message(evt):
         # message reeived from server
-        alert("Mensaje recibido : %s" %evt.data)
+        alert("Message reÃ§u : %s" %evt.data)
     
     def on_close(evt):
         # websocket is closed

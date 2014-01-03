@@ -12,5 +12,5 @@ The package **browser** groups the built-in Brython-specific names and modules
 **browser**.`confirm(`_message_`)`
 > a function that print the _message_ in a window, and two buttons (ok/cancel). Returns `True` if ok, `False` if cancel
 
-**browser**.`prompt(`_message[,defaut]_`)`
+**browser**.`prompt(`_message[,default]_`)`
 > a function that prints the _message_ in a window, and an entry field. Returns the entered value ; if no value was entered, return _defaut_ if defined, else the empty string

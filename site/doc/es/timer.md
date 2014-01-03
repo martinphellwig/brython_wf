@@ -1,25 +1,31 @@
-module **browser.timer**
+módulo **browser.timer**
 ------------------------
 
-Implements methods to allow differed or repetitive execution of functions :
+Implementa métodos que permiten la ejecución de funciones de forma repetida o diferida.
 
-`set_timeout(`_function,ms_)`
-> runs the *function* after *ms* milliseconds. *function* takes no argument. Returns an object usable in the following function
+<code>set\_timeout(*funcion,ms*)</code>
 
-`clear_interval(`_timer_`)`
-> cancels the execution of the function defined by `set_timeout()`
+> ejecuta la *funcion* después de *ms* milisegundos. *function* no toma ningún argumento
 
-`set_interval(`_fonction,ms_`)`
-> launches repeated execution of the *function* every *ms* milliseconds. This function returns an object usable in the following function
+<code>clear\_timeout(*id*)</code>
 
-`clear_interval(`_timer_`)`
-> stops the repeated execution of the function defined by `set_interval()`
+> cancela la ejecución de la función definida en *set_timeout()* y como parámetro se usa el valor devuelto por *set_timeout()*
 
-<code>request\_animation\_frame(*function*)</code>
-> runs the *function* repeatedly letting the browser be in charge to update the browser. *function* uses a fake argument
+<code>set\_interval(*funcion,ms*)</code>
+
+> ejecuta la *funcion* de forma repetida cada *ms* milisegundos. Esta función devuelve un objeto usable en la siguiente función
+
+<code>clear_interval(*id*)</code>
+
+> detiene la ejecución repetitiva de la función definida por <code>set\_interval()</code> y como parámetro se usa el valor devuelto por *set_interval()*
+
+<code>request\_animation\_frame(*funcion*)</code>
+
+> ejecuta la *funcion* de forma repetitiva dejando que el navegador se encargue de actualizar la ejecución. *function* no toma ningún argumento
 
 <code>cancel\_animation\_frame(*id*)</code>
-> cancels the  repeated execution of the function defined by *request_animation_frame()* and uses the value returned by *request_animation_frame()* as *id*
+
+> cancela la ejecución de la función definida en *request_animation_frame()* y como parámetro se usa el valor devuelto por *request_animation_frame()*
 
 <div id="py_source">
     import time
