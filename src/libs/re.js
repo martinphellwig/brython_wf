@@ -1,4 +1,9 @@
 $module = (function(){
+
+    for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+    var $JSObject = __BRYTHON__.$JSObject
+    var JSObject = __BRYTHON__.JSObject
+
     obj = {__class__:$module,
         __str__: function(){return "<module 're'>"}
     }
@@ -10,6 +15,7 @@ $module = (function(){
         __class__:$type,
         __name__:'SRE_Pattern'
     }
+    $SRE_PatternDict.__mro__ = [$SRE_PatternDict,object.$dict]
     $SRE_PatternDict.match = function(self,string){
         return obj.match(self.pattern,string,self.flags)
     }
@@ -35,7 +41,7 @@ $module = (function(){
         return res
     }
     obj.findall = function(pattern,string,flags){
-        var $ns=$MakeArgs('re.search',arguments,['pattern','string'],{},'args','kw')
+        var $ns=$MakeArgs('re.search',arguments,['pattern','string'],[],'args','kw')
         var args = $ns['args']
         if(args.length>0){var flags=args[0]}
         else{var flags = getattr($ns['kw'], 'get')('flags','')}
@@ -46,7 +52,7 @@ $module = (function(){
         return jsmatch
     }
     obj.search = function(pattern,string){
-        var $ns=$MakeArgs('re.search',arguments,['pattern','string'],{},'args','kw')
+        var $ns=$MakeArgs('re.search',arguments,['pattern','string'],[],'args','kw')
         var args = $ns['args']
         if(args.length>0){var flags=args[0]}
         else{var flags = getattr($ns['kw'],'get')('flags','')}
@@ -77,11 +83,11 @@ $module = (function(){
         return JSObject(mo)
     }
     obj.sub = function(pattern,repl,string){
-        var $ns=$MakeArgs('re.search',arguments,['pattern','repl','string'],{},'args','kw')
+        var $ns=$MakeArgs('re.search',arguments,['pattern','repl','string'],[],'args','kw')
         for($var in $ns){eval("var "+$var+"=$ns[$var]")}
         var args = $ns['args']
-        var count = $DictDict.get($ns['kw'],'count',0)
-        var flags = $DictDict.get($ns['kw'],'flags','')
+        var count = __builtins__.dict.$dict.get($ns['kw'],'count',0)
+        var flags = __builtins__.dict.$dict.get($ns['kw'],'flags','')
         if(args.length>0){var count=args[0]}
         if(args.length>1){var flags=args[1]}
         if(typeof repl==="string"){

@@ -538,7 +538,9 @@ def unlink(*args,**kw):
 def urandom(n):
     """urandom(n) -> str    
     Return n random bytes suitable for cryptographic use."""
-    return 'a'*n
+    import __random
+    randbytes= [chr(__random.randint(0,256)) for i in range(n)]
+    return ''.join(randbytes)
 
 def utime(*args,**kw):
     """utime(path, times=None, *, ns=None, dir_fd=None, follow_symlinks=True)    Set the access and modified time of path.

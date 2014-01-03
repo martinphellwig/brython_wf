@@ -1,0 +1,760 @@
+@title Introduction à Python
+@pagenum True
+
+Introduction à Python
+=====================
+
+
+../..
+Historique
+==========
+- créé en 1989 par Guido van Rossum
+- version 2.0 en 2000
+- version 3.0 en 2008 (quelques incompatibilités)
+../..
+Caractéristiques
+================
+- pratique plus que puriste
+- accent sur la lisibilité
+- typage fort, mais non déclaré
+- coeur minimaliste, mais bibliothèque très étendue
+../..
+Popularité
+==========
+<img src='tiobe.png' height=400>
+../..
+Popularité
+==========
+Projets créés sur Github en 2013
+
+<pre>
+Rank    Language      # Repositories Created
+1    JavaScript    264131
+2    Ruby          218812
+3    Java          157618
+4    PHP           114384
+5    Python         95002
+6    C++            78327
+7    C              67706
+8    Objective-C    36344
+9    C#             32170
+10    Shell          28561
+</pre>
+../..
+Installation
+============
+Aller sur le [site](http://python.org) et suivre les instructions
+../..
+Ressources
+==========
+- la documentation Python : site, doc Windows
+- forums : [comp.lang.python](https://groups.google.com/forum/?fromgroups#!forum/comp.lang.python), [comp.lang.python.fr](https://groups.google.com/forum/?fromgroups#!forum/fr.comp.lang.python)
+- [stackoverflow](http://stackoverflow.com/)
+../..
+Commentaires
+============
+Introduits par #
+
+    # this is the first comment
+    SPAM = 1                 # and this is the second comment
+                             # ... and now a third!
+    STRING = "# This is not a comment."
+../..
+Définition de noms
+==================
+
+    >>> width = 20
+    >>> height = 5*9
+    
+    >>> x = y = z = 0
+    
+    >>> tax = 0.125
+    >>> ht = 100.50
+    >>> ttc = ht * (1+tax)
+    >>> round(ttc, 2)
+    113,06
+../..
+Chaines de caractères
+=====================
+Utilise ' ou "
+    'spam eggs'
+    'doesn\'t'
+    "doesn't"
+    '"Yes," he said.'
+    "\"Yes,\" he said."
+    '"Isn\'t," she said.'
+../..
+Chaines de caractères
+=====================
+\ pour continuer une ligne
+    hello = "This is a rather long string containing\n\
+    several lines of text just as you would do in C.\n\
+        Note that whitespace at the beginning of the line is\
+     significant."
+
+""" sur plusieurs lignes
+    print """
+    Usage: thingy [OPTIONS]
+         -h                        Display this usage message
+         -H hostname               Hostname to connect to
+    """
+../..
+Chaines de caractères
+=====================
+Mode par défaut :
+    >>> word = 'a\nb'
+    >>> print(word)
+    a
+    b
+    
+Mode brut :
+    >>> word = r'a\nb'
+    >>> print(word)
+    a\nb
+    
+../..
+Chaines de caractères
+=====================
+Concaténation par +, duplication par *
+
+    >>> word = 'Help' + 'A'
+    >>> word
+    'HelpA'
+    >>> '<' + word*5 + '>'
+    '<HelpAHelpAHelpAHelpAHelpA>'
+../..
+Chaines de caractères
+=====================
+Accès à un caractère par index
+------------------------------
+     +---+---+---+---+---+
+     | H | e | l | p | A |
+     +---+---+---+---+---+
+       0   1   2   3   4
+      -5  -4  -3  -2  -1
+            
+    >>> word[4]
+    'A'
+    >>> word[-2]
+    'p'
+../..
+Chaines de caractères
+=====================
+Tranches
+--------
+     +---+---+---+---+---+
+     | H | e | l | p | A |
+     +---+---+---+---+---+
+     0   1   2   3   4   5
+    -5  -4  -3  -2  -1
+    >>> word[0:2]
+    'He'
+    >>> word[2:4]
+    'lp'
+    >>> word[:2]
+    'He'
+    >>> word[3:]
+    'pA'
+../..
+Chaines de caractères
+=====================
+Les chaines sont immuables
+--------------------------
+
+    >>> word = 'HelpA'
+    >>> word[1]='a'
+    TypeError: 'str' object does not support item assignment
+Longueur d'une chaine
+---------------------
+
+    >>> word = 'anticonstitutionnellement'
+    >>> len(word)
+    25
+../..
+Listes
+======
+    >>> a = ['spam', 'eggs', 100, 1234]
+    >>> a
+    ['spam', 'eggs', 100, 1234]
+
+Accès par index ou par tranche
+
+    >>> a[0]
+    'spam'
+    >>> a[3]
+    1234
+    >>> a[-2]
+    100
+    >>> a[1:-1]
+    ['eggs', 100]
+../..
+Listes
+======
+Concaténation par +, duplication par *
+
+    >>> 3*a[:3] + ['Boo!']
+    ['spam', 'eggs', 100, 'spam', 'eggs', 100, 'spam', 'eggs', 100, 'Boo!']        
+
+Clonage
+
+    >>> a[:]
+../..
+Listes
+======
+Les listes sont mutables
+
+    >>> a
+    ['spam', 'eggs', 100, 1234]
+    >>> a[2] = a[2] + 23
+    >>> a
+    ['spam', 'eggs', 123, 1234]
+../..
+Listes
+======
+Longueur d'une chaine par `len`
+
+    >>> a = ['a', 'b', 'c', 'd']
+    >>> len(a)
+    4
+../..
+Listes
+======
+Une liste peut contenir d'autres listes
+    >>> q = [2, 3]
+    >>> p = [1, q, 4]
+    >>> len(p)
+    3
+    >>> p[1]
+    [2, 3]
+    >>> p[1][0]
+    2
+../..
+Listes
+======
+Ajout d'un élément à la fin d'une liste par `append`
+    >>> p[1].append('xtra')
+    >>> p
+    [1, [2, 3, 'xtra'], 4]
+    >>> q
+    [2, 3, 'xtra']
+Insertion d'un élément à une position donnée par `insert`
+    >>> q.insert(1,'new')
+    >>> q
+    [2, 'new', 3, 'xtra']
+    >>>
+../..
+Tuples
+======
+Comme une liste, mais immuable
+
+    >>> t = (1,2,'a')
+    >>> t[1]
+    2
+    >>> t[2] = 'b'
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: 'tuple' object does not support item assignment
+
+../..
+Premiers pas en programmation
+=============================
+Suite de Fibonacci
+
+    >>> a, b = 0, 1
+    >>> while b < 10:
+    ...     print(b)
+    ...     a, b = b, a+b
+    ...
+    1
+    1
+    2
+    3
+    5
+    8
+A noter :
+- assignement multiple : `a, b = 0, 1`
+- indentation
+- boucle `while`
+../..
+La fonction `print`
+===================
+    >>> i = 256*256
+    >>> print('La valeur de i est', i)
+    La valeur de i est 65536
+
+Le mot-clé *end*
+
+    >>> a, b = 0, 1
+    >>> while b < 1000:
+    ...     print(b, end=',')
+    ...     a, b = b, a+b
+    ...
+    1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,
+../..
+Conditions : `if, elif, else`
+=============================
+    >>> x = int(input("Please enter an integer: "))
+    Please enter an integer: 42
+    >>> if x < 0:
+    ...      x = 0
+    ...      print('Negative changed to zero')
+    ... elif x == 0:
+    ...      print('Zero')
+    ... elif x == 1:
+    ...      print('Single')
+    ... else:
+    ...      print('More')
+    ...
+    More
+
+nb : pas de "switch / case"
+../..
+Boucle `for`
+============
+Un des outils les plus puissants de Python
+    >>> a = ['cat', 'window', 'defenestrate']
+    >>> for x in a:
+    ...     print(x, len(x))
+    ...
+    cat 3
+    window 6
+    defenestrate 12
+
+../..
+La fonction `range`
+===================
+    >>> for i in range(5):
+    ...     print(i)
+    ...
+    0
+    1
+    2
+    3
+    4
+
+syntaxe : `range(start,stop,step)`
+../..
+Itérateurs
+==========
+    >>> print(range(10))
+    range(0, 10)
+
+`range` ne renvoie pas une liste de valeurs, mais un _itérateur_
+
+Dans `for x in A`, *A* est un itérateur
+
+Certaines fonctions prennent un itérateur comme argument, par exemple `list`
+
+    >>> list(range(5))
+    [0, 1, 2, 3, 4]
+
+../..
+`continue`
+==========
+    >>> for num in range(2, 10):
+    ...     if num % 2 == 0:
+    ...         print("Found an even number", num)
+    ...         continue
+    ...     print("Found a number", num)
+    Found an even number 2
+    Found a number 3
+    Found an even number 4
+    Found a number 5
+    Found an even number 6
+    Found a number 7
+    Found an even number 8
+    Found a number 9
+../..
+`break` et `else` dans une boucle
+=================================
+    >>> for n in range(2, 10):
+    ...     for x in range(2, n):
+    ...         if n % x == 0:
+    ...             print(n, 'equals', x, '*', n//x)
+    ...             break
+    ...     else:
+    ...         # loop fell through without finding a factor
+    ...         print(n, 'is a prime number')
+    ...
+    2 is a prime number
+    3 is a prime number
+    4 equals 2 * 2
+    5 is a prime number
+    6 equals 2 * 3
+    7 is a prime number
+    8 equals 2 * 4
+    9 equals 3 * 3
+Le bloc après `else` est exécuté si on ne sort pas de la boucle par un `break`
+../..
+Fonctions
+=========
+    >>> def fib(n):    # write Fibonacci series up to n
+    ...     """Print a Fibonacci series up to n."""
+    ...     a, b = 0, 1
+    ...     while a < n:
+    ...         print(a, end=' ')
+    ...         a, b = b, a+b
+    ...     print()
+    ...
+    >>> fib(2000)
+    0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597
+
+Une fonction est un objet
+
+    >>> fib
+    <function fib at 10042ed0>
+    >>> f = fib
+    >>> f(100)
+    0 1 1 2 3 5 8 13 21 34 55 89
+../..
+Fonctions
+=========
+Par défaut, une fonction renvoie `None`
+
+    >>> fib(0)
+    >>> print(fib(0))
+    None
+
+`return` pour définir une valeur de retour
+
+    >>> def fib2(n): # return Fibonacci series up to n
+    ...     result = []
+    ...     a, b = 0, 1
+    ...     while a < n:
+    ...         result.append(a)
+    ...         a, b = b, a+b
+    ...     return result
+    ...
+    >>> f100 = fib2(100)
+    >>> f100
+    [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+../..
+Fonctions
+=========
+Arguments par défaut
+
+    >>> def f(x, y=4):
+    ...    return x+y
+    ...
+    >>> f(2)
+    6
+    >>> f(2,3)
+    5
+    
+../..
+Fonctions
+=========
+L'argument par défaut est calculé au moment de la définition de la fonction
+
+    >>> i = 5
+    >>> def f(arg=i):
+    ...     print(arg)
+    ...
+    >>> i = 6
+    >>> f()
+    5
+
+Il n'est évalué qu'une seule fois
+
+    >>> def f(a, L=[]):
+    ...    L.append(a)
+    ...    return L
+    ...
+    >>> f(1)
+    [1]
+    >>> f(2)
+    [1,2]
+../..
+Fonctions
+=========
+On peut appeler une fonction avec des mots-clés
+
+    >>> def f(x,y):
+    ...     return x-y
+    ...
+    >>> f(1,2)
+    -1
+    >>> f(y=6,x=2)
+    -4
+
+On ne peut pas donner deux fois le même argument
+
+    >>> f(3,x=8)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: f() got multiple values for argument 'x'
+../..
+Fonctions
+=========
+Une fonction peut être appelée avec un nombre indéterminé d'arguments
+
+    >>> def f(*args):
+    ...    print(args) # tuple
+    ...
+    >>> f(1,2,'a')
+    (1,2,'a')
+
+et un nombre indéterminé de mots-clés
+
+    >>> def f(**kw):
+    ...    print(kw) # dictionnaire
+    ...
+    >>> f(x=0,y='a')
+    {'x':0,'y':'a'}
+../..
+Fonctions
+=========
+Appel de fonction par "dépliage de tuple"
+
+    >>> def f(x,y):
+    ...     return x+y
+    ...
+    >>> t = (3,5)
+    >>> f(*t)
+    8
+    
+ou par "dépliage de dictionnaire"
+
+    >>> d = {'x':3,'y':5}
+    >>> f(**d)
+    8
+../..
+Listes
+======
+Création par _list comprehensions_ (listes en extansion)
+
+    >>> [ x for x in range(5) ]
+    [0, 1, 2, 3, 4]
+    >>> [ x*2 for x in range(5) ]
+    [0, 2, 4, 6, 8]
+    >>> [ x*2 for x in range(5) if x != 3 ]
+    [0, 2, 4, 8]
+    
+../..
+Listes
+======
+Imbrication de _list comprehensions_
+
+    >>> matrix = [
+    ...     [1, 2, 3, 4],
+    ...     [5, 6, 7, 8],
+    ...     [9, 10, 11, 12],
+    ... ]
+    ...
+    >>> [[row[i] for row in matrix] for i in range(4)]
+    [[1, 5, 9], [2, 6, 10], [3, 7, 11], [4, 8, 12]]
+../..
+`del`
+=====
+    >>> a = [-1, 1, 66.25, 333, 333, 1234.5]
+    >>> del a[0]
+    >>> a
+    [1, 66.25, 333, 333, 1234.5]
+    >>> del a[2:4]
+    >>> a
+    [1, 66.25, 1234.5]
+    >>> del a[:]
+    >>> a
+    []
+../..
+Tuples
+======
+C'est la virgule qui crée un tuple, pas la parenthèse
+
+    >>> t = 1,2
+    >>> t
+    (1,2)
+    >>> x = (1)
+    >>> x
+    1
+    >>> x=(1,)
+    >>> x
+    (1,)
+../..
+`set` (ensemble)
+================
+Comme une liste, mais sans duplication ni ordre
+
+    >>> panier = {'pomme', 'orange', 'pomme', 'poire', 'orange', 'banane'}
+    >>> panier     # les doublons sont éliminés
+    {'pomme', 'orange', 'poire', 'banane'}
+    >>> 'orange' in panier
+    True
+    >>> 'abricot' in panier
+    False
+
+Création par _set comprehensions_
+
+    >>> a = {x for x in 'abracadabra' if x not in 'abc'}
+    >>> a
+    {'r', 'd'}
+../..
+Dictionnaires
+=============
+Associe une clé (immuable : chaine, entier, tuple...) à une valeur
+
+    >>> tel = {'jack': 4098, 'sape': 4139} # création
+    >>> tel['guido'] = 4127                # nouvel élément
+    >>> tel
+    {'sape': 4139, 'guido': 4127, 'jack': 4098}
+    >>> tel['jack']                        # accès par clé
+    4098
+    >>> del tel['sape']                    # suppression
+    >>> tel['irv'] = 4127
+    >>> tel
+    {'guido': 4127, 'irv': 4127, 'jack': 4098}
+    >>> 'guido' in tel                     # test d'appartenance
+    True
+    >>> 'jack' not in tel
+    False
+
+../..
+Dictionnaires
+=============
+Itérateur sur les clés
+
+    >>> list(tel.keys())
+    ['irv', 'guido', 'jack']
+
+Itérateur sur les valeurs
+
+    >>> list(tel.values())
+    [4127, 4127, 4098]
+
+Itérateur sur les tuples (clé,valeur)
+
+    >>> list(tel.items())
+    [('irv', 4127), ('guido', 4127), ('jack', 4098)]
+../..
+Dictionnaires
+=============
+Itérer sur un dictionnaire c'est itérer sur ses clés
+
+    >>> for key in tel:
+    ...     print(key)
+    ...
+    irv
+    guido
+    jack
+
+contrairement aux listes qui itèrent sur les valeurs
+
+    >>> for value in [1,'a']:
+    ...     print(value)
+    ...
+    1
+    'a'
+
+../..
+Dictionnaires
+=============
+Construction par `dict`
+    >>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])
+    {'sape': 4139, 'jack': 4098, 'guido': 4127}
+
+ou par _dict comprehensions_
+
+    >>> {x: x**2 for x in (2, 4, 6)}
+    {2: 4, 4: 16, 6: 36}
+../..
+Itérations
+==========
+`enumerate` pour itérer sur le tuple (rang,valeur)
+
+    >>> for i,x in enumerate(['bordeaux','rennes']):
+    ...     print(i,x)
+    ...
+    1 bordeaux
+    2 rennes
+
+plus "pythonique" que :
+
+    >>> _list = ['bordeaux','rennes']
+    >>> for i in range(len(_list)):
+    ...     print(i,_list[i])
+    ...
+    1 bordeaux
+    2 rennes
+../..
+Itérations
+==========
+`zip` pour itérer sur plusieurs séquences à la fois
+
+    >>> questions = ['name', 'quest', 'favorite color']
+    >>> answers = ['lancelot', 'the holy grail', 'blue']
+    >>> for q, a in zip(questions, answers):
+    ...     print('What is your '+q+'?  It is '+a)
+    ...
+    What is your name?  It is lancelot.
+    What is your quest?  It is the holy grail.
+    What is your favorite color?  It is blue.
+../..
+Itérations
+==========
+Pour affecter plusieurs variables à la fois
+
+    >>> a,b,c = x
+
+itère sur x et affecte les valeurs
+
+    >>> a,b,c = range(3)
+    >>> c
+    2
+    >>> a,b = {3:9,10:20}
+    >>> b
+    10
+    
+Il faut le même nombre de valeurs des deux côtés !
+../..
+Modules
+=======
+Sauvegarde dans un fichier fibo.py
+
+    def fib(n):    # write Fibonacci series up to n
+        a, b = 0, 1
+        while b < n:
+            print(b, end=' ')
+            a, b = b, a+b
+        print()
+    
+    def fib2(n): # return Fibonacci series up to n
+        result = []
+        a, b = 0, 1
+        while b < n:
+            result.append(b)
+            a, b = b, a+b
+        return result
+../..
+Modules
+=======
+
+`import` pour importer un module
+
+    >>> import fibo
+    >>> fibo.fib(1000)
+    1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987
+    >>> fibo.fib2(100)
+    [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+    >>> fibo.__name__
+    'fibo'
+../..
+Modules
+=======
+`from ... import ...` pour importer des noms d'un module
+
+    >>> from fibo import fib, fib2
+    >>> fib(500)
+    1 1 2 3 5 8 13 21 34 55 89 144 233 377
+
+`from ... import *` pour importer tous les noms d'un module
+
+    >>> from fibo import *
+    >>> fib2(100)
+    [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+../..
+Modules
+=======
+Recherche d'un module par son nom :
+- dans la librairie standard
+- puis dans le répertoire courant
+

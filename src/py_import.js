@@ -10,10 +10,23 @@ $ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
 
 function $importer(){
     // returns the XMLHTTP object to handle imports
-    if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-        var $xmlhttp=new XMLHttpRequest();
+    var $xmlhttp = new XMLHttpRequest();
+    if (__builtins__.$CORS && "withCredentials" in $xmlhttp) {
+       // Check if the XMLHttpRequest object has a "withCredentials" property.
+       // "withCredentials" only exists on XMLHTTPRequest2 objects.
+       //xhr.open(method, url, true);
+
+    } else if (__builtins__.$CORS && typeof window.XDomainRequest != "undefined") {
+      // Otherwise, check if XDomainRequest.
+      // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+      $xmlhttp = new window.XDomainRequest();
+    } else if (window.XMLHttpRequest){
+      // Otherwise, CORS is not supported by the browser. or CORS is not activated by developer/programmer
+      // code for IE7+, Firefox, Chrome, Opera, Safari
+      $xmlhttp=new XMLHttpRequest();
     }else{// code for IE6, IE5
-        var $xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+      // Otherwise, CORS is not supported by the browser. or CORS is not activated by developer/programmer
+      $xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
 
     var fake_qs;
@@ -49,7 +62,8 @@ function $download_module(module,url){
             }
         }
     }
-    $xmlhttp.open('GET',url+fake_qs,false)
+    $xmlhttp.open('GET',url+fake_qs, __builtins__.$CORS && "withCredentials" in $xmlhttp)
+    //$xmlhttp.open('GET',url+fake_qs,false)
     if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
     $xmlhttp.send()
     if(res.constructor===Error){throw res} // module not found
@@ -83,8 +97,8 @@ function $import_js_module(module,filepath,module_contents){
 }
 
 function $import_module_search_path(module,origin){
-  console.log("$import_module_search_path:" + module.name)
   // this module is needed by $import_from, so don't remove
+  var path_list = __BRYTHON__.path.slice()
   return $import_module_search_path_list(module,__BRYTHON__.path,origin);
 }
 
@@ -135,6 +149,7 @@ function $import_py(module,path){
 }
 
 function $import_py_module(module,path,module_contents) {
+    var $Node = __BRYTHON__.$Node,$NodeJSCtx=__BRYTHON__.$NodeJSCtx
     __BRYTHON__.$py_module_path[module.name]=path //.substr(__BRYTHON__.brython_path.length)
 
     var root = __BRYTHON__.py2js(module_contents,module.name)
@@ -159,7 +174,7 @@ function $import_py_module(module,path,module_contents) {
     try{
         var js = root.to_js()
         if (__BRYTHON__.$options.debug == 10) {
-           console.log('code for module '+module.name)
+            console.log('code for module '+module.name)
            console.log(js);
         }
         eval(js)
@@ -181,7 +196,7 @@ function $import_py_module(module,path,module_contents) {
             console.log(attr+' '+err[attr])
         }
         //console.log('js code\n'+js)
-        if(__BRYTHON__.debug>0){console.log('line info '+document.$line_info)}
+        if(__BRYTHON__.debug>0){console.log('line info '+__BRYTHON__.line_info)}
         throw err
     }
 }

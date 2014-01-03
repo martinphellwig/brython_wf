@@ -9,12 +9,14 @@
 
 <script type="text/python">
 from browser import doc
+from javascript import expose
 from ... import header
 header.show('../../')
 
 import browser.markdown as markdown
 import time
 
+@expose
 def load(url,target):
     # fake query string to bypass browser cache
     qs = '?foo=%s' %time.time()
@@ -32,7 +34,7 @@ language = "fr"
 </script>
 
 </head>
-<body onLoad="brython(2);load('intro.md','content')">
+<body onLoad="brython(1);load('intro.md','content')">
 
 <table id="banner" cellpadding=0 cellspacing=0>
 <tr id="banner_row">

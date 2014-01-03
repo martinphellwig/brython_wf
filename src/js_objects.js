@@ -1,3 +1,7 @@
+;(function(br_obj){
+
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+var $ObjectDict = __builtins__.object.$dict
 // transforms a Javascript constructor into a Python function
 // that returns instances of the constructor, converted to Python objects
 function $applyToConstructor(constructor, argArray) {
@@ -5,6 +9,36 @@ function $applyToConstructor(constructor, argArray) {
     var factoryFunction = constructor.bind.apply(constructor, args);
     return new factoryFunction();
 }
+
+$LocationDict = {__class__:$type,
+    __name__:'Location'
+}
+$LocationDict.__mro__ = [$LocationDict,$ObjectDict]
+
+function $Location(){ // used because of Firefox bug #814622
+    var obj = {}
+    for(var x in window.location){
+        if(typeof window.location[x]==='function'){
+            obj[x] = (function(f){
+                return function(){
+                    return f.apply(window.location,arguments)
+                }
+              })(window.location[x])
+        }else{
+            obj[x]=window.location[x]
+        }
+    }
+    if(obj['replace']===undefined){ // IE
+        obj['replace'] = function(url){window.location = url}
+    }
+    obj.__class__ = $LocationDict
+    obj.toString = function(){return window.location.toString()}
+    obj.__repr__ = obj.__str__ = obj.toString
+    return obj
+}
+
+$LocationDict.$factory = $Location
+$Location.$dict = $LocationDict
 
 $JSConstructorDict = {
     __class__:$type,
@@ -21,7 +55,7 @@ $JSConstructorDict.__call__ = function(self){
         if(arg && (arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
             args.push(arg.js)
         }
-        else if(isinstance(arg,dict)){
+        else if(isinstance(arg,__builtins__.dict)){
             var obj = new Object()
             for(var j=0;j<arg.$keys.length;j++){
                 obj[arg.$keys[j]]=arg.$values[j]
@@ -83,7 +117,7 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
                     arg = arguments[i]
                     if(arg && (arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
                         args.push(arg.js)
-                    }else if(arg && arg.__class__===DOMNode){
+                    }else if(arg && arg.__class__===__BRYTHON__.DOMNode){
                         args.push(arg.elt)
                     }else{
                         args.push(arg)
@@ -164,6 +198,8 @@ $JSObjectDict.__len__ = function(self){
 
 $JSObjectDict.__mro__ = [$JSObjectDict,$ObjectDict]
 
+$JSObjectDict.__repr__ = function(self){return self.js.toString()}
+
 $JSObjectDict.__setattr__ = function(self,attr,value){
     if(isinstance(value,JSObject)){
         self.js[attr]=value.js
@@ -174,9 +210,11 @@ $JSObjectDict.__setattr__ = function(self,attr,value){
 
 $JSObjectDict.__setitem__ = $JSObjectDict.__setattr__
 
+$JSObjectDict.__str__ = $JSObjectDict.__repr__
+
 function JSObject(obj){
     if(obj===null){return new $JSObject(obj)}
-    if(obj.__class__===$ListDict){
+    if(obj.__class__===__builtins__.list.$dict){
         // JS arrays not created by list() must be wrapped
         if(obj.__brython__){return obj}
         else{var res = new $JSObject(obj)
@@ -188,3 +226,8 @@ function JSObject(obj){
 }
 JSObject.__class__ = $factory
 JSObject.$dict = $JSObjectDict
+
+br_obj.JSObject = JSObject
+br_obj.$JSObject = $JSObject
+br_obj.JSConstructor = JSConstructor
+})(__BRYTHON__)

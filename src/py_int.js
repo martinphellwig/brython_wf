@@ -1,4 +1,9 @@
-$IntDict = {__class__:$type,
+__builtins__.int = (function(){
+
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+var $ObjectDict = object.$dict
+
+var $IntDict = {__class__:$type,
     __name__:'int',
     toString:function(){return '$IntDict'},
     $native:true
@@ -63,6 +68,7 @@ $IntDict.__lshift__ = function(self,other){return self << other} // bitwise left
 
 $IntDict.__mod__ = function(self,other) {
     // can't use Javascript % because it works differently for negative numbers
+    if(isinstance(other,__builtins__.tuple) && other.length==1){other=other[0]}
     if(isinstance(other,int)){
         return (self%other+other)%other
     }
@@ -73,14 +79,14 @@ $IntDict.__mod__ = function(self,other) {
          if (other.valueOf()) bool_value=1;
          return (self%bool_value+bool_value)%bool_value
     }else{throw TypeError(
-        "unsupported operand type(s) for -: "+self+" (int) and '"+other.__class__+"'")
+        "unsupported operand type(s) for %: "+self+" (int) and '"+other.__class__+"'")
     }
 }
 
 $IntDict.__mro__ = [$IntDict,$ObjectDict]
 
 $IntDict.__mul__ = function(self,other){
-    var val = self.valueOf()
+    var val = self.valueOf(),list=__builtins__.list,tuple=__builtins__.tuple
     if(isinstance(other,int)){return self*other}
     else if(isinstance(other,float)){return float(self*other.value)}
     else if(isinstance(other,bool)){
@@ -172,7 +178,7 @@ var $op_func = function(self,other){
          if(other.valueOf()) bool_value=1;
          return self.valueOf()-bool_value}
     else{throw TypeError(
-        "unsupported operand type(s) for -: "+self.valueOf()+" and '"+str(other.__class__)+"'")
+        "unsupported GG operand type(s) for -: "+self.valueOf()+" and '"+__builtins__.str(other.__class__)+"'")
     }
 }
 $op_func += '' // source code
@@ -185,7 +191,7 @@ for($op in $ops){
 var $comp_func = function(self,other){
     if(isinstance(other,int)){return self.valueOf() > other.valueOf()}
     else if(isinstance(other,float)){return self.valueOf() > other.value}
-    else if(isinstance(other,bool)){return self.valueOf() > $BoolDict.__hash__(other)}
+    else if(isinstance(other,bool)){return self.valueOf() > __builtins__.bool.$dict.__hash__(other)}
     else{throw TypeError(
         "unorderable types: "+self.__class__.__name__+'() > '+other.__class__.__name__+"()")}
 }
@@ -209,7 +215,7 @@ int = function(value){
     }else if(isinstance(value,float)){
         res = Number(parseInt(value.value))
     }else{ throw ValueError(
-        "Invalid literal for int() with base 10: '"+str(value)+"'")
+        "Invalid literal for int() with base 10: '"+__builtins__.str(value)+"'")
     }
     return res
 }
@@ -217,3 +223,6 @@ int.$dict = $IntDict
 int.__class__ = $factory
 $IntDict.$factory = int
 
+return int
+
+})()

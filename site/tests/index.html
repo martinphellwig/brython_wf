@@ -20,17 +20,19 @@
 <script type="text/javascript" src="../../src/js_objects.js"></script>
 <script type="text/javascript" src="../../src/py_import.js"></script>
 
+<script type="text/javascript" src="../../src/py_string.js"></script>
 <script type="text/javascript" src="../../src/py_int.js"></script>
 <script type="text/javascript" src="../../src/py_float.js"></script>
 <script type="text/javascript" src="../../src/py_dict.js"></script>
 <script type="text/javascript" src="../../src/py_list.js"></script>
-<script type="text/javascript" src="../../src/py_string.js"></script>
 <script type="text/javascript" src="../../src/py_dom.js"></script>
 
 <script type="text/python" src="editor.py"></script>
 
 <script type="text/python3">
 from browser import timer
+from javascript import expose
+
 script_num = -1
 failed = []
 
@@ -51,7 +53,8 @@ def test_next():
         doc['console'].value = ''
         print('completed all tests !')
         print('failed : %s' %failed)
-        
+
+@expose        
 def test_all():
     global script_num,failed
     script_num = -1

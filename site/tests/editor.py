@@ -6,6 +6,8 @@ import traceback
 #doctype html 5 causes issues with setting height of the container
 #so python to the rescue! :)
 from browser import doc, pydom
+from javascript import expose
+
 _height=doc.documentElement.clientHeight
 _s=pydom.Selector('#container')
 #set height of container to 66% of screen
@@ -62,6 +64,7 @@ doc['version'].text = '%s.%s.%s' %(info.major,info.minor,info.micro)
 
 output = ''
 
+@expose
 def show_console():
     doc["console"].value = output
     doc["console"].cols = 60
@@ -73,6 +76,7 @@ def clear_text():
 
     doc["console"].value=''
 
+@expose
 def run():
     global output
     doc["console"].value=''
@@ -97,6 +101,7 @@ def load(evt):
     _name=evt.target.value+'?foo=%s' %time.time()
     editor.setValue(open(_name).read())
 
+@expose
 def show_js():
     src = editor.getValue()
     doc["console"].value = dis.dis(src)

@@ -133,6 +133,7 @@ assert isinstance(y, bool)
 
 # issue 27
 # just check that win.location doesn't throw "too much recursion"
+from browser import win
 x = win.location
 
 # issue 31
@@ -265,7 +266,7 @@ matrix = [
 [9, 10, 11, 12],
 ]
 
-transposed = zip(*matrix)
+transposed = list(zip(*matrix))
 assert transposed[0]==(1,5,9)
 
 # issue 54

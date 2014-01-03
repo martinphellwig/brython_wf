@@ -1,5 +1,6 @@
 # hack to return special attributes
 from _sys import *
+from javascript import JSObject
 
 from browser import doc
 __stdout__=getattr(doc,"$stdout")

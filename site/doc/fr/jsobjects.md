@@ -3,6 +3,20 @@ Utiliser des objets Javascript
 
 Il faut gérer la période transitoire où Brython va cohabiter avec Javascript ;-)
 
+### Appel de fonctions Brython depuis Javascript
+
+Un cas courant est celui où on appelle une fonction pour réagir à un événement :
+
+    <button onclick="echo()">
+
+Pour qu'une fonction soit utilisable de cette façon il faut l'exposer explicitement en utilisant la fonction <code>expose(_func_)</code> du module intégré **javascript**. Le plus simple est de l'utiliser comme décorateur :
+
+    from javascript import expose
+    
+    @expose
+    def echo():
+        ...
+
 ### Arguments des fonctions de rappel
 
 Le code HTML peut attacher des fonctions de rappel à des événement DOM et leur passer un certain nombre de paramètres. La fonction de rappel les recevra transformés en types gérés par Brython :
@@ -111,31 +125,3 @@ Voici un exemple plus complet qui montre comment utiliser la populaire librairie
     </body>
     </html>
     
-### Utilisation d'objets Python dans un script Javascript
-
-Les objets Brython sont des objets Javascript, mais ils ne sont utlisables dans des scripts Javascript qu'avec certaines limitations :
-
-- il faut en récupérer une version utilisable en appelant la méthode `valueOf()`
-- le résultat n'est utilisable qu'en lecture (on ne peut pas modifier l'objet Python)
-
-Prenons l'exemple d'une instance de classe :
-
->    class foo:
->        A = 1
->
->    x = foo()
-
-Si on veut utiliser cette instance dans un script Javascript par le code suivant
-
->    <script type="text/javascript">
->    console.log(x.A)
->    </script>
-
-on aura le résultat `undefined` parce que l'objet Javascript `x` ne possède pas l'attribut `A`
-
-Pour accéder à l'attribut de l'objet Python, il faut utiliser sa méthode `valueOf()` 
-
->    <script type="text/javascript">
->    console.log(x.valueOf().A)
->    </script>
-

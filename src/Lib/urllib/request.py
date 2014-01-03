@@ -1,4 +1,4 @@
-from browser import ajax
+import ajax
 
 class FileIO:
   def __init__(self, data):

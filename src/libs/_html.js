@@ -1,7 +1,10 @@
 // creation of an HTML element
 $module = (function(){
+
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+
 function $Tag(tagName,args){
-    var obj = $DOMNode(document.createElement(tagName))
+    var obj = __BRYTHON__.$DOMNode(document.createElement(tagName))
     // obj.elt is the DOM element
     obj.parent = this
     if(args!=undefined && args.length>0){
@@ -28,9 +31,9 @@ function $Tag(tagName,args){
             $arg = args[$i]
             if($arg && $arg.__class__===$KwDict){
                 if($arg.name.toLowerCase().substr(0,2)==="on"){ // events
-                    eval('DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
+                    eval('__BRYTHON__.DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
                 }else if($arg.name.toLowerCase()=="style"){
-                    DOMNode.set_style(obj,$arg.value)
+                    __BRYTHON__.DOMNode.set_style(obj,$arg.value)
                 } else {
                     if($arg.value!==false){
                         // option.selected=false sets it to true :-)
