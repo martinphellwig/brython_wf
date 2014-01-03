@@ -7,7 +7,7 @@ from test import support
 import sys
 
 
-
+
 class TestIsInstanceExceptions(unittest.TestCase):
     # Test to make sure that an AttributeError when accessing the instance's
     # class's bases is masked.  This was actually a bug in Python 2.2 and
