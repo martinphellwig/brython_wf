@@ -211,7 +211,6 @@ class attrgetter:
     (r.name.first, r.name.last).
     """
     def __init__(self, attr, *attrs):
-        print(attr, *attrs)
         self._attrs = (attr,)
         self._attrs += attrs
         if any(not isinstance(attr, str) for attr in self._attrs):
