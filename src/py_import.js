@@ -175,9 +175,21 @@ function $import_py_module(module,path,module_contents) {
         var js = root.to_js()
         if (__BRYTHON__.$options.debug == 10) {
             console.log('code for module '+module.name)
-           console.log(js);
+           console.log(js)
         }
         eval(js)
+
+    }catch(err){
+        console.log(''+err+' '+' for module '+module.name)
+        for(var attr in err){
+            console.log(attr+' '+err[attr])
+        }
+        //console.log('js code\n'+js)
+        if(__BRYTHON__.debug>0){console.log('line info '+__BRYTHON__.line_info)}
+        throw err
+    }
+
+    try{
         // add names defined in the module as attributes of $module
         for(var attr in __BRYTHON__.scope[module.name].__dict__){
             $module[attr] = __BRYTHON__.scope[module.name].__dict__[attr]
