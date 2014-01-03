@@ -3,12 +3,26 @@ Usando objetos Javascript
 
 Tenemos que manejar el periodo de transici&oacute;n en el que Brython va a coexistir con Javascript ;-)
 
+### Llamando funciones Brython desde Javascript
+
+Un uso  frecuente es el uso de código en línea dentro de una etiqueta HTML :
+
+    <button onclick="echo()">
+
+Para hacer que una función Brython sea usable en este contexto, debe sear expuesto de forma explícita mediante el uso de la función <code>expose(_func_)</code> presente en el módulo **javascript**. La forma más simple de uso es mediante un decorador :
+
+    from javascript import expose
+    
+    @expose
+    def echo():
+        ...
+
 ### Argumentos de funciones de respuesta (callback functions)
 
-El c&oacute;digo HTML puede contener funciones de respuesta a eventos del DOM y pasarle un n&uacute;mero de par&aacute;metros. La funci&oacute;n de respuesta los recibir&aacute; convertidos a tipos que Brython es capaz de gestionar :
+El código HTML puede contener funciones de respuesta a eventos del DOM y pasarle un número de parámetros. La función de respuesta los recibirá convertidos a tipos que Brython es capaz de gestionar :
 
 <table border='1'>
-<tr><th>Tipo de argumento en la funci&oacute;n de llamada</th><th>Argumento recibido por la funci&oacute;n de respuesta</th></tr>
+<tr><th>Tipo de argumento en la función de llamada</th><th>Argumento recibido por la función de respuesta</th></tr>
 <tr><td>Elemento del DOM</td><td>Instancia `DOMNode`</td></tr>
 <tr><td>Evento del DOM</td><td>Instancia `DOMEvent`</td></tr>
 <tr><td>Lista de nodos del DOM</td><td>lista de instancias `DOMNode`</td></tr>
@@ -20,41 +34,43 @@ El c&oacute;digo HTML puede contener funciones de respuesta a eventos del DOM y 
 <tr><td>Objeto Javascript</td><td>Instancia `JSObject`</td></tr>
 </table>
 
-
-
-Por ejemplo, si el evento 'pulsar un bot&oacute;n' desencadena la ejecuci&oacute;n de la funci&oacute;n foo :
+Por ejemplo, si el evento 'pulsar un botón' desencadena la ejecución de la función foo :
 
     <button onclick="foo(this,33,{'x':99})">Click</button>
 
-esta funci&oacute;n tendr&aacute; la firma
+esta función tendrá la firma
 
     def foo(elt,value,obj):
 
-donde _elt_ ser&aacute; instancia `DOMNode` para el elemento bot&oacute;n, _value_ ser&aacute; el entero 33 y _obj_ ser&aacute; una instancia de la clase integrada `JSObject`
+donde _elt_ será instancia `DOMNode` para el elemento botón, _value_ será el entero 33 y _obj_ será una instancia de la clase integrada `JSObject`
 
-Instancias de `JSObject` se usan como objetos Python ordinarios ; aqu&iacute;, el valor del atributo "x" es `obj.x`. Para convertirlos a un diccionario Python, se puede usar la funci&oacute;n integrada `dict()` : `dict(obj)['x']`
+Instancias de `JSObject` se usan como objetos Python ordinarios ; aquí, el valor del atributo "x" es `obj.x`. Para convertirlos a un diccionario Python, se puede usar la función integrada `dict()` : `dict(obj)['x']`
 
 ### Objetos en programas Javascript
 
-Un documento HTML puede usar librer&iacute;as o scripts Javascript, adem&aacute;s de librer&iacute;as y scripts Python. Brython no puede hacer uso de forma directa de los objetos Javascript : por ejemplo, la b&uacute;squeda de atributos usa el atributo  _\_\_class\_\__, que no existe para objetos Javascript
+Un documento HTML puede usar librerías o scripts Javascript, además de librerías y scripts Python. Brython no puede hacer uso de forma directa de los objetos Javascript : por ejemplo, la búsqueda de atributos usa el atributo  _\_\_class\_\__, que no existe para objetos Javascript
 
-Para poder ser usados en un script Python, deben ser transformados expl&iacute;citamente por la funci&oacute;n integrada _JSObject()_
+Para poder ser usados en un script Python, deben ser transformados explícitamente por la función _JSObject()_ definida en el módulo **javascript**
 
 Por ejemplo :
 
     <script type="text/javascript">
     circle = {surface:function(r){return 3.14*r*r}}
     </script>
-
+    
     <script type="text/python">
+    from browser import doc
+    from javascript import JSObject
     doc['result'].value = JSObject(circle).surface(10)
     </script>
 
 ### Usando constructores Javascript
 
-Si una función Javascript es un objecto constructor, puede ser llamado en código Javascript mediante la palabra clave `new`, se podría usar en Brython transformando esa palabra clave en la función integrada `JSConstructor()`
+Si una función Javascript es un objecto constructor, puede ser llamado en código Javascript mediante la palabra clave `new`, se podría usar en Brython transformando esa palabra clave en la función integrada `JSConstructor()` definida en el módulo **javascript**
 
-<code>JSConstructor(_constr_)</code> devuelve una función que cuando se la invoca con argumentos devuelve un objeto Python que corresponde al objeto Javascript creado mediante el constructor _constr_
+<code>JSConstructor(_constr_)</code> 
+
+>devuelve una función que cuando se la invoca con argumentos devuelve un objeto Python que corresponde al objeto Javascript creado mediante el constructor _constr_
 
 Por ejemplo :
 
@@ -69,13 +85,15 @@ Por ejemplo :
     </script>
     
     <script type="text/python">
+    from browser import alert
+    from javascript import JSConstructor
     rectangle = JSConstructor(Rectangle)
     alert(rectangle(10,10,30,30).surface())
     </script>
 
 ### jQuery example
     
-En la siguiente porci&oacute;n de c&oacute;digo tenemos un ejemplo m&aacute;s completo de c&oacute;mo podr&iacute;as usar la popular librer&iacute;a jQuery :
+En la siguiente porción de código tenemos un ejemplo más completo de cómo podrías usar la popular librería jQuery :
 
     <html>
     <head>

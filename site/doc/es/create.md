@@ -1,7 +1,7 @@
 Creando un documento
 --------------------
 
-Brython existe para poder programar aplicaciones web,es decir, páginas HTML enlas que el usuario puede interactuar
+Brython existe para poder programar aplicaciones web,es decir, páginas HTML en las que el usuario puede interactuar
 
 Una página web está hecha de elementos (textos, imágenes, sonidos,...) que pueden ser incluidos en la página de dos formas :
 
@@ -14,12 +14,12 @@ Una página web está hecha de elementos (textos, imágenes, sonidos,...) que pu
 >    </body>
 >    </html>
 
-- o escribiendo código Python, usando el módulo integrado `html` (descrito en la sección de Librerías)
+- o escribiendo código Python, usando el módulo integrado `browser.html` (descrito en la sección de Librerías)
 
 >    <html>
 >    <body>
 >    <script type="text/python">
->    from html import A,B
+>    from browser.html import A,B
 >    doc <= B("Brython")+"es una implementación de "
 >    doc <= A("Python",href="http://www.python.org")+" para los navegadores"
 >    </script>

@@ -23,6 +23,8 @@ En el ejemplo, cuando el objeto arrastrable ha sido soltado, ya no se puede volv
 </div>
 
 <div id="py_source">
+    from browser import doc
+
     panel = doc["panel"] # yellow zone
     
     source = doc["source"] # red zone
