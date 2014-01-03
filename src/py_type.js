@@ -256,7 +256,7 @@ $type.__getattribute__=function(klass,attr){
                 res.__name__ = attr
                 // method
                 var __self__,__func__,__repr__,__str__
-                if(res.$type===undefined){
+                if(res.$type===undefined || res.$type==='function' || res.$type==='instancemethod'){
                     // function called from a class
                     args = []
                     __repr__ = __str__ = function(){
