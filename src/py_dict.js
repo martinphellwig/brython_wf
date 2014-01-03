@@ -1,3 +1,7 @@
+__builtins__.dict = (function(){
+
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+var $ObjectDict = object.$dict
 
 // dictionary
 function $DictClass($keys,$values){
@@ -9,21 +13,21 @@ function $DictClass($keys,$values){
     this.$values = $values // idem
 }
 
-$DictDict = {__class__:$type,
+var $DictDict = {__class__:$type,
     __name__ : 'dict',
     $native:true
 }
 
 $DictDict.__add__ = function(self,other){
     var msg = "unsupported operand types for +:'dict' and "
-    throw TypeError(msg+"'"+(str(other.__class__) || typeof other)+"'")
+    throw TypeError(msg+"'"+(__builtins__.str(other.__class__) || typeof other)+"'")
 }
 
 $DictDict.__bool__ = function (self) {return self.$keys.length>0}
 
 $DictDict.__contains__ = function(self,item){
     if(self.$jsobj){return self.$jsobj[item]!==undefined}
-    return $ListDict.__contains__(self.$keys,item)
+    return __builtins__.list.$dict.__contains__(self.$keys,item)
 }
 
 $DictDict.__delitem__ = function(self,arg){
@@ -36,7 +40,7 @@ $DictDict.__delitem__ = function(self,arg){
             return
         }
     }
-    throw KeyError(str(arg))
+    throw KeyError(__builtins__.str(arg))
 }
 
 $DictDict.__eq__ = function(self,other){
@@ -47,7 +51,7 @@ $DictDict.__eq__ = function(self,other){
     if(other.$keys.length!==self.$keys.length){return False}
     for(var i=0;i<self.$keys.length;i++){
         var key = self.$keys[i]
-        for(var j=0;j<other.$keys.length;j++){
+        for(j=0;j<other.$keys.length;j++){
             try{
                 if(getattr(other.$keys[j],'__eq__')(key)){
                     if(!getattr(other.$values[j],'__eq__')(self.$values[i])){
@@ -65,7 +69,7 @@ $DictDict.__getitem__ = function(self,arg){
     for(var i=0;i<self.$keys.length;i++){
         if(getattr(arg,'__eq__')(self.$keys[i])){return self.$values[i]}
     }
-    throw KeyError(str(arg))
+    throw KeyError(__builtins__.str(arg))
 }
 
 $DictDict.__hash__ = function(self) {throw TypeError("unhashable type: 'dict'");}
@@ -85,7 +89,7 @@ $DictDict.__init__ = function(self){
             self.$values = obj.$values
             return
         }
-        else if(obj.__class__===JSObject.$dict){
+        else if(obj.__class__===__BRYTHON__.JSObject.$dict){
             // convert a JSObject into a Python dictionary
             var res = new $DictClass([],[])
             for(var attr in obj.js){
@@ -97,7 +101,7 @@ $DictDict.__init__ = function(self){
             return
         }
     }
-    var $ns=$MakeArgs('dict',args,[],{},'args','kw')
+    var $ns=$MakeArgs('dict',args,[],[],'args','kw')
     var args = $ns['args']
     var kw = $ns['kw']
     if(args.length>0){ 
@@ -125,7 +129,7 @@ $DictDict.__init__ = function(self){
     }
 }
 
-$dict_iterator = $iterator_class('dict iterator')
+var $dict_iterator = $iterator_class('dict iterator')
 $DictDict.__iter__ = function(self){
     return $iterator(self.$keys,$dict_iterator)
 }
@@ -210,7 +214,11 @@ $DictDict.get = function(self,key,_default){
 $dict_itemsDict = $iterator_class('dict_itemiterator')
 
 $DictDict.items = function(self){
-    return $iterator(zip(self.$keys,self.$values),$dict_itemsDict)
+    var items = []
+    for(var i=0;i<self.$keys.length;i++){
+        items.push(__builtins__.tuple([self.$keys[i],self.$values[i]]))
+    }
+    return $iterator(items,$dict_itemsDict)
 }
 
 $dict_keysDict = $iterator_class('dict_keys')
@@ -235,7 +243,7 @@ $DictDict.pop = function(self,key,_default){
 
 $DictDict.popitem = function(self){
     if(self.$keys.length===0){throw KeyError("'popitem(): dictionary is empty'")}
-    return tuple([self.$keys.pop(),self.$values.pop()])
+    return __builtins__.tuple([self.$keys.pop(),self.$values.pop()])
 }
 
 $DictDict.setdefault = function(self,key,_default){
@@ -250,7 +258,7 @@ $DictDict.setdefault = function(self,key,_default){
 $DictDict.update = function(self){
     var params = []
     for(var i=1;i<arguments.length;i++){params.push(arguments[i])}
-    var $ns=$MakeArgs('$DictDict.update',params,[],{},'args','kw')
+    var $ns=$MakeArgs('$DictDict.update',params,[],[],'args','kw')
     var args = $ns['args']
     if(args.length>0 && isinstance(args[0],dict)){
         var other = args[0]
@@ -290,3 +298,6 @@ dict.__class__ = $factory
 dict.$dict = $DictDict
 $DictDict.$factory = dict
 $DictDict.__new__ = $__new__(dict)
+
+return dict
+})()

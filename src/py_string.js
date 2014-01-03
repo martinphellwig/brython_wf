@@ -1,6 +1,9 @@
-str = function(){
+__builtins__.str = function(){
 
-$StringDict = {__class__:$type,
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+var $ObjectDict = object.$dict
+
+var $StringDict = {__class__:$type,
     __name__:'str',
     $native:true
 }
@@ -25,6 +28,10 @@ $StringDict.__contains__ = function(self,item){
     return False
 }
 
+$StringDict.__delitem__ = function(){
+    throw TypeError("'str' object doesn't support item deletion")
+}
+
 $StringDict.__eq__ = function(self,other){
     if(other===undefined){ // compare object "self" to class "str"
         return self===str
@@ -33,6 +40,7 @@ $StringDict.__eq__ = function(self,other){
 }
 
 $StringDict.__getitem__ = function(self,arg){
+    var i
     if(isinstance(arg,int)){
         var pos = arg
         if(arg<0){pos=self.length+pos}
@@ -126,7 +134,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
         }
         this.format = function(src){
             if(this.mapping_key!==null){
-                if(!isinstance(src,dict)){throw TypeError("format requires a mapping")}
+                if(!isinstance(src,__builtins__.dict)){throw TypeError("format requires a mapping")}
                 src=getattr(src,'__getitem__')(this.mapping_key)
             }
             if(this.type=="s"){
@@ -259,8 +267,8 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
         }else{pos++}
     }
     elts.push(val.substr(start))
-    if(!isinstance(args,tuple)){
-        if(args.__class__==$DictDict && is_mapping){
+    if(!isinstance(args,__builtins__.tuple)){
+        if(args.__class__==__builtins__.dict.$dict && is_mapping){
             // convert all formats with the dictionary
             for(var i=1;i<elts.length;i+=2){
                 elts[i]=elts[i].format(args)
@@ -284,6 +292,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
     res = res.replace(/%%/g,'%')
     return res
 }
+
 
 $StringDict.__mro__ = [$StringDict,$ObjectDict]
 
@@ -338,8 +347,8 @@ var $notimplemented = function(self,other){
     throw NotImplementedError("OPERATOR not implemented for class str")
 }
 $notimplemented += '' // coerce to string
-for($op in $operators){
-    var $opfunc = '__'+$operators[$op]+'__'
+for($op in __BRYTHON__.$operators){
+    var $opfunc = '__'+__BRYTHON__.$operators[$op]+'__'
     if(!($opfunc in str)){
         //eval('$StringDict.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
     }
@@ -390,12 +399,13 @@ $StringDict.endswith = function(self){
     // end, stop comparing at that position.
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+    var start=null,end=null
     var $ns=$MakeArgs("$StringDict.endswith",args,['suffix'],
-        {'start':null,'end':null},null,null)
+        ['start','end'],null,null)
     var suffixes = $ns['suffix']
-    if(!isinstance(suffixes,tuple)){suffixes=[suffixes]}
-    var start = $ns['start'] || 0
-    var end = $ns['end'] || self.length-1
+    if(!isinstance(suffixes,__builtins__.tuple)){suffixes=[suffixes]}
+    start = $ns['start'] || start
+    end = $ns['end'] || self.length-1
     var s = self.substr(start,end+1)
     for(var i=0;i<suffixes.length;i++){
         suffix = suffixes[i]
@@ -414,15 +424,16 @@ $StringDict.find = function(self){
     // such that sub is contained in the slice s[start:end]. Optional 
     // arguments start and end are interpreted as in slice notation. 
     // Return -1 if sub is not found.
+    var start=0,end=self.length
     var $ns=$MakeArgs("$StringDict.find",arguments,['self','sub'],
-        {'start':0,'end':self.length},null,null)
-    var sub = $ns['sub'],start=$ns['start'],end=$ns['end']
+        ['start','end'],null,null)
+    for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     if(!isinstance(sub,str)){throw TypeError(
         "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
     if(!isinstance(start,int)||!isinstance(end,int)){throw TypeError(
         "slice indices must be integers or None or have an __index__ method")}
     var s = self.substring(start,end)
-    var escaped = list("[.*+?|()$^")
+    var escaped = ['[','.','*','+','?','|','(',')','$','^']
     var esc_sub = ''
     for(var i=0;i<sub.length;i++){
         if(escaped.indexOf(sub.charAt(i))>-1){esc_sub += '\\'}
@@ -529,14 +540,14 @@ var $FormattableString=function(format_string) {
        var _rv=''
        if (_format_spec.indexOf('{') != -1) {
           _format_spec = this.format_sub_re.replace(_format_spec, this._prepare)
-          _rv = list([_name_parts, _conversion, _format_spec])
+          _rv = [_name_parts, _conversion, _format_spec]
           if (this._nested[_name] === undefined) {
              this._nested[_name]=[]
              this._nested_array.push(_name)
           }
           this._nested[_name].push(_rv) 
        } else {
-          _rv = list([_name_parts, _conversion, _format_spec])
+          _rv = [_name_parts, _conversion, _format_spec]
           if (this._kwords[_name] === undefined) {
              this._kwords[_name]=[]
              this._kwords_array.push(_name)
@@ -548,7 +559,7 @@ var $FormattableString=function(format_string) {
 
     this.format=function() {
        // same as str.format() and unicode.format in Python 2.6+
-       var $ns=$MakeArgs('format',arguments,[],{},'args','kwargs')
+       var $ns=$MakeArgs('format',arguments,[],[],'args','kwargs')
        var args=$ns['args']
        var kwargs=$ns['kwargs']
 
@@ -563,7 +574,7 @@ var $FormattableString=function(format_string) {
        //console.log(kwargs)
        //encode arguments to ASCII, if format string is bytes
        var _want_bytes = isinstance(this._string, str)
-       var _params=$dict()
+       var _params=__builtins__.dict()
        //var _params = $dict()
        for (var i=0; i < this._kwords_array.length; i++) {
            var _name = this._kwords_array[i]
@@ -959,8 +970,8 @@ $StringDict.partition = function(self,sep) {
      return
   }
   var i=self.indexOf(sep)
-  if (i== -1) { return $tuple([self, '', ''])}
-  return $tuple([self.substring(0,i), sep, self.substring(i+sep.length)])
+  if (i== -1) { return __builtins__.tuple([self, '', ''])}
+  return __builtins__.tuple([self.substring(0,i), sep, self.substring(i+sep.length)])
 }
 
 function $re_escape(str)
@@ -996,9 +1007,10 @@ $StringDict.rfind = function(self){
     // Return the highest index in the string where substring sub is found, 
     // such that sub is contained within s[start:end]. Optional arguments 
     // start and end are interpreted as in slice notation. Return -1 on failure.
+    var start=0,end=self.length
     var $ns=$MakeArgs("$StringDict.find",arguments,['self','sub'],
-        {'start':0,'end':self.length},null,null)
-    var sub = $ns['sub'],start=$ns['start'],end=$ns['end']
+        ['start','end'],null,null)
+    for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     if(!isinstance(sub,str)){throw TypeError(
         "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
     if(!isinstance(start,int)||!isinstance(end,int)){throw TypeError(
@@ -1019,9 +1031,10 @@ $StringDict.rindex = function(){
 }
 
 $StringDict.rjust = function(self) {
+    var fillchar = ' '
     var $ns=$MakeArgs("$StringDict.rjust",arguments,['self','width'],
-                      {'fillchar':' '},null,null)
-    var width = $ns['width'],fillchar=$ns['fillchar']
+                      ['fillchar'],null,null)
+    for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 
     if (width <= self.length) return self
 
@@ -1036,10 +1049,10 @@ $StringDict.rpartition = function(self,sep) {
   var pos=self.length-sep.length
   while(true){
       if(self.substr(pos,sep.length)==sep){
-          return $tuple([self.substr(0,pos),sep,self.substr(pos+sep.length)])
+          return __builtins__.tuple([self.substr(0,pos),sep,self.substr(pos+sep.length)])
       }else{
           pos--
-          if(pos<0){return $tuple(['','',self])}
+          if(pos<0){return __builtins__.tuple(['','',self])}
       }
   }
 }
@@ -1047,7 +1060,7 @@ $StringDict.rpartition = function(self,sep) {
 $StringDict.rsplit = function(self) {
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    var $ns=$MakeArgs("$StringDict.split",args,[],{},'args','kw')
+    var $ns=$MakeArgs("$StringDict.split",args,[],[],'args','kw')
     var sep=None,maxsplit=-1
     if($ns['args'].length>=1){sep=$ns['args'][0]}
     if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -1069,7 +1082,7 @@ $StringDict.rsplit = function(self) {
            j+=1
         }
     }
-    return $tuple(s)
+    return __builtins__.tuple(s)
 }
 
 $StringDict.rstrip = function(self,x){
@@ -1082,11 +1095,11 @@ $StringDict.rstrip = function(self,x){
 $StringDict.split = function(self){
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    var $ns=$MakeArgs("$StringDict.split",args,[],{},'args','kw')
+    var $ns=$MakeArgs("$StringDict.split",args,[],[],'args','kw')
     var sep=None,maxsplit=-1
     if($ns['args'].length>=1){sep=$ns['args'][0]}
     if($ns['args'].length==2){maxsplit=$ns['args'][1]}
-    maxsplit = $DictDict.get($ns['kw'],'maxsplit',maxsplit)
+    maxsplit = __builtins__.dict.$dict.get($ns['kw'],'maxsplit',maxsplit)
     if(sep===None){
         var res = []
         var pos = 0
@@ -1116,7 +1129,7 @@ $StringDict.split = function(self){
         }
         return res
     }else{
-        var escaped = list('*.[]()|$^')
+        var escaped = ['*','.','[',']','(',')','|','$','^']
         var esc_sep = ''
         for(var i=0;i<sep.length;i++){
             if(escaped.indexOf(sep.charAt(i))>-1){esc_sep += '\\'}
@@ -1149,9 +1162,9 @@ $StringDict.startswith = function(self){
     // start, test string beginning at that position. With optional end, 
     // stop comparing string at that position.
     $ns=$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
-        {'start':null,'end':null},null,null)
+        ['start','end'],null,null)
     var prefixes = $ns['prefix']
-    if(!isinstance(prefixes,tuple)){prefixes=[prefixes]}
+    if(!isinstance(prefixes,__builtins__.tuple)){prefixes=[prefixes]}
     var start = $ns['start'] || 0
     var end = $ns['end'] || self.length-1
     var s = self.substr(start,end+1)
@@ -1183,9 +1196,9 @@ $StringDict.title = function(self) {
 
 $StringDict.translate = function(self,table) {
     var res = ''
-    if (isinstance(table, dict)) {
+    if (isinstance(table, __builtins__.dict)) {
        for (var i=0; i<self.length; i++) {
-           var repl = $DictDict.get(table,self.charCodeAt(i),-1)
+           var repl = __builtins__.dict.$dict.get(table,self.charCodeAt(i),-1)
            if(repl==-1){res += self.charAt(i)}
            else if(repl!==None){res += repl}
        }

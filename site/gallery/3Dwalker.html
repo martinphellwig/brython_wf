@@ -24,6 +24,7 @@
 import math
 
 from browser import doc,timer
+from javascript import expose
 
 map = None
 canvas = None
@@ -311,6 +312,7 @@ def stop():
     global key
     key = [0,0,0,0,0]
     
+@expose
 def move(x):
     changeKey(x,1)
     timer.set_timeout(stop,50)

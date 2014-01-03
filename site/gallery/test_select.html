@@ -52,6 +52,7 @@ a.sort_link{margin-left:10px;text-decoration:none}
         tb = TBODY()
         
         left = SELECT(size=10,style={'width':100})
+        right = SELECT(size=10,style={'width':100})
 
         up_left = BUTTON('\u2191')
         up_left.bind('click',up)
@@ -64,11 +65,12 @@ a.sort_link{margin-left:10px;text-decoration:none}
             option = OPTION(_item,value=i,width=40,Id='opt%s' %i,selected=i==1)
             left <= option
         
-        buttons = BUTTON('>',onClick="swap(left,right)")
-        buttons += BR()+BUTTON('<',onClick="swap(right,left)")
-        
-        right = SELECT(size=10,style={'width':100})
-        
+        button_lr = BUTTON('>')
+        button_lr.bind('click',lambda ev:swap(left,right))
+        button_rl = BUTTON('<')
+        button_rl.bind('click',lambda ev:swap(right,left))
+        buttons = button_lr+BR()+button_rl
+                
         up_right = BUTTON('\u2191')
         up_right.bind('click',up)
         down_right = BUTTON('\u2193')

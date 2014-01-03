@@ -47,7 +47,7 @@ textarea {
 import sys
 import traceback
 
-from browser import doc
+from browser import doc,win
 
 history = []
 current = 0
@@ -104,14 +104,15 @@ def myKeyPress(event):
             try:
                 _ = exec(currentLine,globals())
                 if _ is not None:
-                    print(_)
+                    print(repr(_))
                 doc['code'].value += '>>> '
                 status = "main"
             except IndentationError:
                 doc['code'].value += '... '
                 status = "block"
             except SyntaxError as msg:
-                if str(msg) == 'invalid syntax : triple string end not found':
+                if str(msg) == 'invalid syntax : triple string end not found' or\
+                    str(msg).startswith('Unbalanced bracket'):
                     doc['code'].value += '... '
                     status = "3string"
                 else:
@@ -129,7 +130,7 @@ def myKeyPress(event):
             try:
                 _ = exec(block_src,globals())
                 if _ is not None:
-                    print(_)
+                    print(repr(_))
             except:
                 traceback.print_exc()
             doc['code'].value += '>>> '

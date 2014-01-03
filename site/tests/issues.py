@@ -491,4 +491,13 @@ def pr(x):
 zero_one = gofun(pr)
 assert zero_one == [0, 1], 'Expected [0, 1] but got: %s'% zero_one
 
+# issue 174
+assert '%d' % (1,) == '1'
+
+# issue 175
+def foo():
+    pass
+r = foo()
+assert r is None
+
 print('passed all tests')

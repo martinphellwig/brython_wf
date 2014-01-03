@@ -7,13 +7,13 @@ $module =  {
     clear_timeout : function(timeout_id){window.clearTimeout(timeout_id)},
 
     set_interval : function(func,interval){
-        return int(window.setInterval(func,interval))
+        return __builtins__.int(window.setInterval(func,interval))
     },
 
     set_timeout : function(func,interval){window.setTimeout(func,interval)},
     
     request_animation_frame: function(func){
-        return int(window.requestAnimationFrame(func))},
+        return __builtins__.int(window.requestAnimationFrame(func))},
     
     cancel_animation_frame: function(int_id){window.cancelAnimationFrame(int_id)},
 

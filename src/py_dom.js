@@ -1,3 +1,10 @@
+;(function(br_obj){
+
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+var $ObjectDict = object.$dict
+var $JSObject = __BRYTHON__.$JSObject
+var JSObject = __BRYTHON__.JSObject
+
 // cross-browser utility functions
 function $getMouseOffset(target, ev){
     ev = ev || window.event;
@@ -49,14 +56,14 @@ var $DOMNodeAttrs = ['nodeName','nodeValue','nodeType','parentNode',
     'childNodes','firstChild','lastChild','previousSibling','nextSibling',
     'attributes','ownerDocument']
 
-function $isNode(obj){
+br_obj.$isNode = function(obj){
     for(var i=0;i<$DOMNodeAttrs.length;i++){
         if(obj[$DOMNodeAttrs[i]]===undefined){return false}
     }
     return true
 }
 
-function $isNodeList(nodes) {
+br_obj.$isNodeList = function(nodes) {
     // copied from http://stackoverflow.com/questions/7238177/
     // detect-htmlcollection-nodelist-in-javascript
     try{
@@ -83,7 +90,7 @@ var $DOMEventAttrs_IE = ['altKey','altLeft','button','cancelBubble',
     'source','srcElement','srcFilter','srcUrn','toElement','type',
     'url','wheelDelta','x','y']
 
-function $isEvent(obj){
+br_obj.$isEvent = function(obj){
     flag = true
     for(var i=0;i<$DOMEventAttrs_W3C.length;i++){
         if(obj[$DOMEventAttrs_W3C[i]]===undefined){flag=false;break}
@@ -136,7 +143,7 @@ $DOMEventDict.__getattribute__ = function(self,attr){
     }
 }
 
-function $DOMEvent(ev){
+__BRYTHON__.$DOMEvent = $DOMEvent = function(ev){
     ev.__class__ = $DOMEventDict
     if(ev.preventDefault===undefined){ev.preventDefault = function(){ev.returnValue=false}}
     if(ev.stopPropagation===undefined){ev.stopPropagation = function(){ev.cancelBubble=true}}
@@ -222,7 +229,7 @@ function $OpenFile(file,mode,encoding){
 }
 
 
-dom = { File : function(){},
+var dom = { File : function(){},
     FileReader : function(){}
     }
 dom.File.__class__ = $type
@@ -286,30 +293,6 @@ $OptionsDict.remove = function(self,arg){self.parent.options.remove(arg.elt)}
     
 //$OptionsDict.toString = $OptionsDict.__str__
     
-function $Location(){ // used because of Firefox bug #814622
-    var obj = new object()
-    for(var x in window.location){
-        if(typeof window.location[x]==='function'){
-            obj[x] = (function(f){
-                return function(){
-                    return f.apply(window.location,arguments)
-                }
-              })(window.location[x])
-        }else{
-            obj[x]=window.location[x]
-        }
-    }
-    if(obj['replace']===undefined){ // IE
-        obj['replace'] = function(url){window.location = url}
-    }
-    obj.__class__ = new $class(this,'Location')
-    obj.toString = function(){return window.location.toString()}
-    obj.__repr__ = obj.__str__ = obj.toString
-    return obj
-}
-
-win =  new $JSObject(window)
-
 $StyleDict = {__class__:$type,__name__:'CSSProperty'}
 
 $StyleDict.__mro__ = [$StyleDict,$ObjectDict]
@@ -339,7 +322,7 @@ $StyleDict.$factory = $Style
 
 function DOMNode(){} // define a Node object
 DOMNode.__class__ = $type
-DOMNode.__mro__ = [DOMNode,object]
+DOMNode.__mro__ = [DOMNode,__builtins__.object.$dict]
 DOMNode.__name__ = 'DOMNode'
 DOMNode.$dict = DOMNode // for isinstance
 DOMNode.$factory = DOMNode
@@ -369,8 +352,8 @@ DOMNode.__add__ = function(self,other){
     res.children = [self]
     if(isinstance(other,$TagSum)){
         for(var $i=0;$i<other.children.length;$i++){res.children.push(other.children[$i])}
-    } else if(isinstance(other,[str,int,float,list,dict,set,tuple])){
-        res.children.push($DOMNode(document.createTextNode(str(other))))
+    } else if(isinstance(other,[__builtins__.str,__builtins__.int,__builtins__.float,__builtins__.list,__builtins__.dict,__builtins__.set,__builtins__.tuple])){
+        res.children.push($DOMNode(document.createTextNode(__builtins__.str(other))))
     }else{res.children.push(other)}
     return res
 }
@@ -653,7 +636,7 @@ DOMNode.get = function(self){
     var obj = self.elt
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    var $ns=$MakeArgs('get',args,[],{},null,'kw')
+    var $ns=$MakeArgs('get',args,[],[],null,'kw')
     var $dict = {}
     for(var i=0;i<$ns['kw'].$keys.length;i++){
         $dict[$ns['kw'].$keys[i]]=$ns['kw'].$values[i]
@@ -876,10 +859,10 @@ DOMNode.unbind = function(self,event){
     if(self.elt.nodeType==9){_id=0}else{_id=self.elt.$brython_id}
     var ix_elt = __BRYTHON__.events.$keys.indexOf(_id)
     if(ix_elt==-1){
-        throw KeyError('missing callback for event '+event)
+        return //throw KeyError('missing callback for event '+event)
     }
     var ix_event = __BRYTHON__.events.$values[ix_elt].$keys.indexOf(event)
-    if(ix_event==-1){throw KeyError('missing callback for event '+event)}
+    if(ix_event==-1){return} //throw KeyError('missing callback for event '+event)}
     var events = __BRYTHON__.events.$values[ix_elt].$values[ix_event]
     if(arguments.length===2){
         for(var i=0;i<events.length;i++){
@@ -1202,6 +1185,8 @@ DOMNode.prototype.removeClass = function(name){
    this.__setattr('class', _class_string)
 }
 
+var win =  new $JSObject(window)
+
 win.get_postMessage = function(msg,targetOrigin){
     if(isinstance(msg,dict)){
         var temp = new Object()
@@ -1211,3 +1196,8 @@ win.get_postMessage = function(msg,targetOrigin){
     }
     return window.postMessage(msg,targetOrigin)
 }
+
+br_obj.DOMNode = DOMNode
+br_obj.$DOMNode = $DOMNode
+br_obj.win = win
+})(__BRYTHON__)
