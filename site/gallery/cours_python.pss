@@ -48,12 +48,17 @@ Rank    Language      # Repositories Created
 Installation
 ============
 Aller sur le [site](http://python.org) et suivre les instructions
+
+L'installation crée une commande _python_ dans l'invite de commande, qui lance l'interpréteur interactif
 ../..
 Ressources
 ==========
-- la documentation Python : site, doc Windows
+- la documentation Python : [site Python](http://docs.python.org/2/), doc Windows
 - forums : [comp.lang.python](https://groups.google.com/forum/?fromgroups#!forum/comp.lang.python), [comp.lang.python.fr](https://groups.google.com/forum/?fromgroups#!forum/fr.comp.lang.python)
 - [stackoverflow](http://stackoverflow.com/)
+
+- [Python Package Index](http://pypi.python.org)
+- [The Python Cookbook](http://aspn.activestate.com/ASPN/Python/Cookbook/)
 ../..
 Commentaires
 ============
@@ -82,9 +87,14 @@ Chaines de caractères
 =====================
 Utilise ' ou "
     'spam eggs'
-    'doesn\'t'
+    "spam eggs"
+
     "doesn't"
     '"Yes," he said.'
+
+<code>\</code> pour "échappement"
+
+    'doesn\'t'
     "\"Yes,\" he said."
     '"Isn\'t," she said.'
 ../..
@@ -710,6 +720,23 @@ itère sur x et affecte les valeurs
     10
     
 Il faut le même nombre de valeurs des deux côtés !
+../.. 
+Scripts
+=======
+Enregistrement du programme dans un fichier _script.py_
+
+    for i in range(1):
+        print(i)
+
+Dans l'invite de commandes, aller dans le répertoire de _script.py_ et exécuter
+
+    C:\test python>python script.py
+    0
+    1
+    2
+    3
+    4
+    
 ../..
 Modules
 =======
@@ -1428,5 +1455,110 @@ Simplifie le passage d'argument à une fonction qui attend un itérateur
     260
     
     >>> unique_words = set(word  for line in page  for word in line.split())
+../..
+Livrairie standard : `os`
+==========================
+
+    >>> import os
+    >>> os.getcwd()      # renvoie le répertoire courant
+    'C:\\Python26'
+    >>> os.chdir('/server/accesslogs')   # Change le répertoire courant
+    >>> os.mkdir('nouveau') # crée un nouveau répertoire
+    >>> os.rmdir('nouveau') # supprime un répertoire
+
+    >>> os.path.join('rep1','rep2','fichier.txt')
+    'rep1\\rep2\\fichier.txt'
+../..
+Librairie standard : `shutil`
+=============================
+Utilitaires de manipulation de fichiers et de répertoires
+
+    >>> import shutil
+    >>> shutil.copyfile('data.db', 'archive.db') # recopie
+    >>> shutil.move('/build/executables', 'installdir') # déplacement
+../..
+Librairie standard : `sys`
+==========================
+Arguments passés en ligne de commande (_python demo.py one two three_)
+
+Dans _demo.py_
+
+    import sys
+    print(sys.argv) # liste des arguments passés après _python_
+    ['demo.py', 'one', 'two', 'three']
+
+Entrée et sortie standard : `sys.stdin, sys.stdout`
+
+    sys.stdout.write('data')
+
+Peut être modifié pour rediriger la sortie de `print`
+
+    sys.stdout = file_obj # un objet avec une méthode write
+    print('data')         # équivaut à file_obj.write('data\n')
+../..
+Librairie standard : `re` (expressions régulières)
+==================================================
+Fonctions avancées de recherche et remplacement de chaines de caractères
+
+    >>> import re
+    >>> re.findall(r'\bf[a-z]*', 'which foot or hand fell fastest')
+    ['foot', 'fell', 'fastest']
+    >>> re.sub(r'(\b[a-z]+) \1', r'\1', 'cat in the the hat')
+    'cat in the hat'
+../..
+Librairie standard : `math`
+===========================
+Fonctions mathématiques
+
+    >>> import math
+    >>> math.cos(math.pi / 4.0)
+    0.70710678118654757
+    >>> math.log(1024, 2)
+    10.0
+../..
+Librairie standard : `random`
+=============================
+Fonctions aléatoires
+
+    >>> import random
+    >>> random.choice(['apple', 'pear', 'banana'])
+    'apple'
+    >>> random.sample(xrange(100), 10)   # sampling without replacement
+    [30, 83, 16, 4, 8, 81, 41, 50, 18, 33]
+    >>> random.random()    # random float
+    0.17970987693706186
+    >>> random.randrange(6)    # random integer chosen from range(6)
+    4
+../..
+Librairie standard : `datetime`
+===============================
+Heures et dates
     
+    >>> from datetime import date
+    >>> now = date.today()
+    >>> now
+    datetime.date(2003, 12, 2)
+    >>> now.strftime("%m-%d-%y. %d %b %Y is a %A on the %d day of %B.")
+    '12-02-03. 02 Dec 2003 is a Tuesday on the 02 day of December.'
     
+    >>> # dates support calendar arithmetic
+    >>> birthday = date(1964, 7, 31)
+    >>> age = now - birthday
+    >>> age.days
+    14368
+../..
+Librairie standard : compression
+================================
+Modules standard `zlib, gzip, bz2, zipfile, tarfile`
+
+    >>> import zlib
+    >>> s = 'witch which has which witches wrist watch'
+    >>> len(s)
+    41
+    >>> t = zlib.compress(s)
+    >>> len(t)
+    37
+    >>> zlib.decompress(t)
+    'witch which has which witches wrist watch'
+    >>> zlib.crc32(s)
+    226805979
