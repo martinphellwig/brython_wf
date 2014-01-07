@@ -25,6 +25,10 @@ Popularité
 ../..
 Popularité
 ==========
+<img src='Languages_2013-12.png' height=400>
+../..
+Popularité
+==========
 Projets créés sur Github en 2013
 
 <pre>
@@ -274,6 +278,7 @@ Suite de Fibonacci
 A noter :
 - assignement multiple : `a, b = 0, 1`
 - indentation
+ - utiliser de préférence 4 espaces
 - boucle `while`
 ../..
 La fonction `print`
@@ -757,4 +762,671 @@ Modules
 Recherche d'un module par son nom :
 - dans la librairie standard
 - puis dans le répertoire courant
+../..
+Packages
+========
+Pour structurer des librairies qui contiennent plusieurs modules
 
+Organisation en répertoires qui contiennent un fichier *\_\_init\_\_.py*
+
+    sound/                        
+        __init__.py               
+        formats/                  
+            __init__.py
+            wavread.py
+            ...
+        effects/                  
+            __init__.py
+            echo.py
+
+    import sound
+    import sound.formats
+    from sound.formats import wavread
+../..
+La fonction `dir()`
+===================
+pour inspecter les noms définis par un module
+
+    >>> import fibo, sys
+    >>> dir(fibo)
+    ['__name__', 'fib', 'fib2']
+
+Sans arguments : liste les noms définis dans le module courant
+
+    >>> a = [1, 2, 3, 4, 5]
+    >>> import fibo
+    >>> fib = fibo.fib
+    >>> dir()
+    ['__builtins__', '__doc__', '__file__', '__name__', 'a', 'fib', 'fibo']
+../..
+`str.format()`
+==============
+Permet de mettre en forme une chaine de caractères selon certains paramètres
+
+Exemple :
+
+    >>> print 'We are the {} who say "{}!"'.format('knights', 'Ni')
+    We are the knights who say "Ni!"
+
+Les séquences `{}` sont remplacées par les arguments de `format`
+
+On peut spécifier le rang de l'argument à insérer :
+
+    >>> print '{0} and {1}'.format('spam', 'eggs')
+    spam and eggs
+    >>> print '{1} and {0}'.format('spam', 'eggs')
+    eggs and spam
+../..
+`str.format()`
+==============
+On peut spécifier des mots-clés
+
+    >>> print 'This {food} is {adjective}.'.format(
+    ...       food='spam', adjective='absolutely horrible')
+    This spam is absolutely horrible.
+
+et mélanger rang et mots-clés
+
+    >>> print 'The story of {0}, {1}, and {other}.'.format('Bill', 'Manfred',
+    ...                                                    other='Georg')
+    The story of Bill, Manfred, and Georg.
+../..
+`str.format()`
+==============
+On peut spécifier le nombre de décimales à utiliser
+
+    >>> import math
+    >>> print 'The value of PI is approximately {0:.3f}.'.format(math.pi)
+    The value of PI is approximately 3.142
+
+et le nombre minimal de caractères
+
+    >>> table = {'Sjoerd': 4127, 'Jack': 4098, 'Dcab': 7678}
+    >>> for name, phone in table.items():
+    ...     print '{0:10} ==> {1:10d}'.format(name, phone)
+    ...
+    Jack       ==>       4098
+    Dcab       ==>       7678
+    Sjoerd     ==>       4127
+../..
+Fichiers
+========
+
+<code>open(_filename,mode_)</code>
+
+Le *mode* peut être
+- 'r' : lecture seule (valeur par défaut)
+- 'a' : écriture en fin de fichier
+- 'w' : effacement si le fichier existe déjà, puis écriture
+
+Sur Windows, ajouter 'r' pour ouvrir les fichiers en mode binaire
+../..
+Fichiers
+========
+<code>f.read(_nb_)</code> pour lire au moins _nb_ octets. Renvoie la chaine vide `''` en fin de fichier
+
+`f.read()` pour lire tout le fichier
+
+`f.readline()`: lit une ligne ; se termine par `\n`, ou `''` en fin de fichier
+
+`f.readlines()` lit toutes les lignes et les met dans un tableau
+
+Itération sur les lignes :
+
+    for line in f:
+        ...
+../..
+Fichiers
+========
+<code>f.write(_data_)</code> pour écrire la chaine _data_ dans le fichier
+
+    >>> f.write('This is a test\n')
+
+Pour écrire autre chose qu'une chaine, il faut d'abord convertir en chaine par `str()`
+
+    >>> value = ('la réponse', 42)
+    >>> s = str(value)
+    >>> f.write(s)
+../..
+Fichiers
+========
+<code>f.seek(_x_)</code> positionne le pointeur à la position _x_
+
+`f.tell()` renvoie la position courante du pointeur
+
+`f.close()` ferme le fichier et libère les ressources associées
+
+Utiliser de préférence `with` pour ne pas avoir à ouvrir et fermer explicitement
+
+    >>> with open('/tmp/workfile', 'r') as f:
+    ...     read_data = f.read()
+    >>> f.closed
+    True
+../..
+Sérialisation : le module `pickle`
+==================================
+Permet de transformer en chaine des objets complexes (listes, dictionnaires...) pour les stocker ou les envoyer sur le réseau
+
+    import pickle
+    pickle.dump(x, f) # écrit l'objet x dans le fichier f
+    
+    obj = pickle.load(f) # récupère l'objet x depuis le fichier f
+../..
+Erreurs et exceptions
+=====================
+Python distingue :
+- les erreurs : détectées dans la phase d'analyse du programme
+ - erreurs de syntaxe
+ - erreur d'indentation
+- les exceptions : surviennent pendant l'exécution d'un programme
+../..
+Erreurs
+=======
+`SyntaxError`
+    >>> while True print 'Hello world'
+      File "<stdin>", line 1, in ?
+        while True print 'Hello world'
+                       ^
+    SyntaxError: invalid syntax
+
+`IndentationError`
+    >>> for i in range(5):
+    ... print i
+      File "<stdin>", line 2
+        print i
+            ^
+    IndentationError: expected an indented block
+
+../..
+Exceptions
+==========
+Exemples :
+
+    >>> 10 * (1/0)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    ZeroDivisionError: integer division or modulo by zero
+    
+    >>> 4 + spam*3
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    NameError: name 'spam' is not defined
+    
+    >>> '2' + 2
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    TypeError: cannot concatenate 'str' and 'int' objects
+../..
+Exceptions
+==========
+`try ... except` pour gérer des exceptions
+
+    >>> while True:
+    ...     try:
+    ...         x = int(raw_input("Veuillez entrer un nombre: "))
+    ...         break
+    ...     except ValueError:
+    ...         print "Ce n'est pas un nombre valide.  Recommencer..."
+    ...
+
+Si une instruction du bloc `try` déclenche une exception, on arrête l'exécution du bloc
+
+Si l'exception est du type spécifié dans `except` on exécute le bloc de cet `except`
+../..
+Exceptions
+==========
+Variantes de `except` :
+
+    try:
+        ...
+    except IOError:
+        ...
+    except (TypeError, ValueError): # plusieurs types d'exceptions
+        ...
+    except:        # toutes les exceptions non encore gérées
+        ...
+../..
+Exceptions
+==========
+`else` si aucune exception n'a été déclenchée
+
+    try:
+        x = 1
+    except:
+        print('erreur')
+    else:
+        print('ok')
+../..
+Exceptions
+==========
+`as` pour récupérer l'objet exception
+
+    >>> x = [6]
+    ... try:
+    ...     x[2]
+    ... except IndexError as exc:
+    ...    print('erreur index',exc)
+    ...
+    ('erreur index', IndexError('list index out of range',))
+
+L'objet `exc` est une _instance_ de la _classe_ `IndexError`
+../..
+Exceptions
+==========
+`raise` pour déclencher des exceptions
+
+    >>> raise NameError('HiThere')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    NameError: HiThere
+    
+Sans argument : re-déclenche la dernière exception gérée
+
+    >>> try:
+    ...     raise NameError('HiThere')
+    ... except NameError:
+    ...     print 'An exception flew by!'
+    ...     raise
+    ...
+    An exception flew by!
+    Traceback (most recent call last):
+      File "<stdin>", line 2, in ?
+    NameError: HiThere
+    
+../..
+Exceptions
+==========
+Les modules peuvent définir des _classes_ d'exception spécifiques, dérivées de la classe `Exception`
+
+    >>> class MyError(Exception):
+    ...     def __init__(self, value):
+    ...         self.value = value
+    ...
+    >>> try:
+    ...     raise MyError(4)
+    ... except MyError as e:
+    ...     print 'My exception occurred, value:', e.value
+    ...
+    My exception occurred, value: 4
+
+`MyError(4)` crée une _instance_ de la classe `MyError` en passant l'argument `4`
+
+La méthode `__init__(self, value)` initialise l'instance avec l'argument _value_
+../..
+
+Exceptions
+==========
+`finally` pour exécuter un code qu'il y ait eu exception ou pas
+
+Si une exception n'a pas été gérée, elle est déclenchée après `finally`
+
+    >>> x = [5]
+    >>> try:
+    ...     print(x[2])
+    ... finally:
+    ...     print('Goodbye, world!')
+    ...
+    Goodbye, world!
+    Traceback (most recent call last):
+      File "<stdin>", line 2, in <module>
+    IndexError: list index out of range
+
+../..
+Exceptions
+==========
+    >>> def divide(x, y):
+    ...     try:
+    ...         result = x / y
+    ...     except ZeroDivisionError:
+    ...         print "division by zero!"
+    ...     else:
+    ...         print "result is", result
+    ...     finally:
+    ...         print "executing finally clause"
+    ...
+    >>> divide(2, 1)
+    result is 2
+    executing finally clause
+
+    >>> divide(2, 0)
+    division by zero!
+    executing finally clause
+
+    >>> divide("2", "1")
+    executing finally clause
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+      File "<stdin>", line 3, in divide
+    TypeError: unsupported operand type(s) for /: 'str' and 'str'
+
+../..
+Espaces de noms
+===============
+Permet de définir et d'utiliser le même nom dans des contextes différents
+
+Variables globales / locales
+
+    >>> a, b = 1, 2 # définit deux variables dans l'espace de noms global
+    >>> def f():
+    ...    global b # la variable b est globale
+    ...    a = 3    # définit une variable a dans l'espace de noms 
+    ...             # local de la fonction f
+    ...    b = 99
+    ...    print(a)
+    ...
+    >>> f()
+    3
+    >>> a
+    1
+    >>> b
+    99
+../..
+Espaces de noms
+===============
+
+    x = 0
+
+    def f(x):
+        import Z
+
+    import X
+    
+    from Y import A
+    
+    for i in range(5):
+        j = 2 * i
+
+définit les noms `x, f, X, A, i, j` dans l'espace de noms global ; `x, Z` dans l'espace de noms de f
+
+NB : le nom `Y` n'est __pas__ dans l'espace de noms
+../..
+Espaces de noms
+===============
+A l'exécution, quand l'interpréteur rencontre un nom, il cherche dans l'espace de nom le plus proche, puis "remonte" jusqu'aux noms intégrés
+
+    a = 6
+    def f():
+        b = 8
+        def g(n):
+            print(n)
+            print(b)
+            print(a)
+        g(8)
+ 
+Dans l'exécution de g : 
+- pas de nom `print` dans les espaces globaux ni locaux, mais `print` est un mot clé de Python
+- le nom `n` est dans l'espace de noms de g
+- pas de nom `b` dans l'espace de noms de g, on remonte jusqu'à l'espace de noms de f
+- pas de nom `a` dans l'espace de noms de g ni de f, on remonte jusqu'à l'espace de noms global
+../..
+Classes
+=======
+Définis par le mot clé `class`
+
+    class ClassName:
+        <statement-1>
+        .
+        .
+        .
+        <statement-N>
+
+Le nom `ClassName` est ajouté dans l'espace de noms où la classe est définie
+
+Une classe possède son propre espace de noms
+../..
+Classes
+=======
+
+    >>> class MyClass:
+    ...    i = 12345
+    ...
+    >>> print(MyClass.i)
+
+Les noms définis dans `MyClass` (_attributs_) sont accessibles depuis l'espace de noms "supérieur" par des _noms qualifiés_
+
+On peut modifier les attributs de la classe
+
+    >>> MyClass.i = 23456
+    
+../..
+Classes
+=======
+Pour créer des instances d'une classe, on l'utilise comme une fonction :
+
+    >>> class MyClass:
+    ...    i = 12345
+    ...
+    >>> x = MyClass()
+
+L'instance possède les mêmes attributs que la classe
+
+    >>> x.i
+    12345
+../..
+Classes
+=======
+Les _fonctions_ définies dans la classe deviennent les _méthodes_ des instances de cette classe
+
+Par convention, on les écrit avec l'instance comme premier argument, appelé `self`
+
+    >>> class MyClass:
+    ...     def f(self):
+    ...         print('function f')
+    ...     def greet(self,name):
+    ...         print('hello, ',name)
+    ...
+    >>> x = MyClass()
+    >>> x.f()
+    hello
+    >>> x.greet('world')
+    hello, world
+
+`x.greet('world')` est équivalent à `MyClass.greet(x,'world')`
+
+../..
+Classes
+=======
+Pour initialiser une instance avec des attributs spécifiques : fonction spéciale `__init__()`
+
+    >>> class MyClass:
+    ...     def __init__(self):
+    ...         self.data = []
+    ...
+    >>> x = MyClass()
+    >>> x.data
+    []
+
+../..
+Classes
+=======
+On peut passer des arguments à la fonction `__init__`
+
+    >>> class Complex:
+    ...     def __init__(self, realpart, imagpart):
+    ...         self.r = realpart
+    ...         self.i = imagpart
+    ...
+    >>> x = Complex(3.0, -4.5)
+    >>> x.r, x.i
+    (3.0, -4.5)
+../..
+Classes
+=======
+Les méthodes peuvent appeler d'autres méthodes
+
+    class Bag:
+
+        def __init__(self):
+            self.data = []
+
+        def add(self, x):
+            self.data.append(x)
+
+        def addtwice(self, x):
+            self.add(x)
+            self.add(x)
+../..
+Héritage
+========
+
+    class DerivedClass(BaseClass):
+        <statement-1>
+        .
+        .
+        .
+        <statement-N>
+
+`DerivedClass` _hérite_, ou est _dérivée_, ou est une _sous-classe_ de `BaseClass`
+../..
+Héritage
+========
+
+    >>> class A:
+    ...     x = 0
+    ...
+    >>> class B(A):
+    ...     y = 1
+    ...
+    >>> obj = B()
+    >>> obj.y
+    1
+    >>> obj.x
+    0
+
+La recherche (_résolution_) d'attribut est exécutée dans la classe B, puis dans la classe A dont B hérite
+../..
+Héritage
+========
+Une sous-classe peut réécrire (_surcharger_) les fonctions de la classe dont elle hérite
+
+    class A:
+        x = 0
+        def show(self):
+            print('je suis A')
+
+    classe B(A):
+        def show(self):
+            print(je suis B')
+../..
+Héritage
+========
+On peut utiliser les fonctions de A dans les fonctions de B
+
+    class A:
+        def __init__(self, x):
+            self.x = x**2
+
+    class B(A):
+        def __init__(self,x,y):
+            A.__init__(self,x)
+            self.y = y    
+../..
+Héritage
+========
+Héritage multiple
+
+    class DerivedClassName(Base1, Base2, Base3):
+        <statement-1>
+        .
+        .
+        .
+        <statement-N>
+../..
+Héritage
+========
+<code>issubclass(_A,B_)</code> teste si la classe _A_ hérite de la classe _B_
+
+<code>isinstance(_obj,A_)</code> teste si l'objet _obj_ est une instance de _A_ ou d'une classe dont _A_ hérite
+
+../..
+Itérateurs
+==========
+Utilisés très fréquemment en Python
+
+    for element in [1, 2, 3]:
+        print element
+    for element in (1, 2, 3):
+        print element
+    for key in {'one':1, 'two':2}:
+        print key
+    for char in "123":
+        print char
+    for line in open("myfile.txt"):
+        print line
+../..
+Itérateurs
+==========
+Utilisent les fonctions intégrées 
+- <code>iter(_instance_)</code> : retourne un itérateur sur l'_instance_
+- <code>next(_iterateur_)</code> : retourne le prochain élément de l'itérateur, ou déclenche l'exception `StopIteration`
+
+    >>> s = 'abc'
+    >>> it = iter(s)
+    >>> it
+    <iterator object at 0x00A1DB50>
+    >>> it.next()
+    'a'
+    >>> it.next()
+    'b'
+    >>> it.next()
+    'c'
+    >>> it.next()
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+        it.next()
+    StopIteration
+../..
+Itérateurs
+==========
+`iterator = iter(instance)` équivaut à `iterator = instance.__iter__()`
+
+`item = next(iterator)` équivaut à `item = iterator.next()`
+
+Pour pouvoir itérer sur les instances d'une classe il faut lui définir une fonction `__iter__`, qui renvoie un objet qui possède une méthode `next`
+
+    class Reverse:
+        """Iterator for looping over a sequence backwards."""
+        def __init__(self, data):
+            self.data = data
+            self.index = len(data)
+        def __iter__(self):
+            return self
+        def next(self):
+            if self.index == 0:
+                raise StopIteration
+            self.index = self.index - 1
+            return self.data[self.index]
+../..
+Generateurs
+===========
+Création automatique d'itérateurs : fonctions qui utilisent `yield` au lieu de `return`
+
+    >>> def squares(n):
+    ...     """Itérateur sur les carrés des nombres de 0 à n"""
+    ...     for i in range(n):
+    ...         yield i*i
+    ...
+    >>> for x in squares(5):
+    ...     print(x)
+    ...
+    0
+    1
+    4
+    9
+    16
+../..
+Generator expressions
+=====================
+Simplifie le passage d'argument à une fonction qui attend un itérateur
+
+    >>> sum(i*i for i in range(10))                 # sum of squares
+    285
+    
+    >>> xvec = [10, 20, 30]
+    >>> yvec = [7, 5, 3]
+    >>> sum(x*y for x,y in zip(xvec, yvec))         # dot product
+    260
+    
+    >>> unique_words = set(word  for line in page  for word in line.split())
+    
+    
