@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140106-153048
+// version 1.4.20140107-203946
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140106-153048', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140107-203946', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -4009,7 +4009,7 @@ var args
 if(typeof res1=='function'){
 res.__name__=attr
 var __self__,__func__,__repr__,__str__
-if(res.$type===undefined){
+if(res.$type===undefined || res.$type==='function' || res.$type==='instancemethod'){
 args=[]
 __repr__=__str__=function(){
 return '<unbound method '+klass.__name__+'.'+attr+'>'
@@ -6300,6 +6300,15 @@ console.log('code for module '+module.name)
 console.log(js)
 }
 eval(js)
+}catch(err){
+console.log(''+err+' '+' for module '+module.name)
+for(var attr in err){
+console.log(attr+' '+err[attr])
+}
+if(__BRYTHON__.debug>0){console.log('line info '+__BRYTHON__.line_info)}
+throw err
+}
+try{
 for(var attr in __BRYTHON__.scope[module.name].__dict__){
 $module[attr]=__BRYTHON__.scope[module.name].__dict__[attr]
 }
