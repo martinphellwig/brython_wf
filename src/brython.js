@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140107-203946
+// version 1.4.20140107-211437
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140107-203946', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140107-211437', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -1694,7 +1694,7 @@ var qesc=new RegExp('"',"g")
 var args=src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
 var body=src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
 body=body.replace(/\n/g,' ')
-return '$lambda($globals,$locals,"'+args+'","'+body+'")'
+return '$lambda("'+module+'",$globals,$locals,"'+args+'","'+body+'")'
 }
 }
 function $ListOrTupleCtx(C,real){
@@ -2593,7 +2593,9 @@ if($expr_starters.indexOf(token)>-1){
 return $transition(new $AbstractExprCtx(C,false),token,arguments[2])
 }else if(token===','){return C.parent}
 else if(token===')'){return $transition(C.parent,token)}
-else{$_SyntaxError(C,'token '+token+' after '+C)}
+else if(token===':' && C.parent.parent.type==='lambda'){
+return $transition(C.parent.parent,token)
+}else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='except'){
 if($expr_starters.indexOf(token)>-1 && C.expect==='id'){
 C.expect='as'
@@ -2868,6 +2870,7 @@ $_SyntaxError(C,'token '+token+' after '+C)
 if(token===','){return new $CallArgCtx(C.parent)}
 else{return $transition(C.parent,token)}
 }else if(C.type==="lambda"){
+console.log('lambda, token '+token+' '+arguments[2])
 if(token===':' && C.args===undefined){
 C.args=C.tree
 C.tree=[]
@@ -3016,7 +3019,9 @@ if($expr_starters.indexOf(token)>-1){
 return $transition(new $AbstractExprCtx(C,false),token,arguments[2])
 }else if(token===','){return $transition(C.parent,token)}
 else if(token===')'){return $transition(C.parent,token)}
-else{$_SyntaxError(C,'token '+token+' after '+C)}
+else if(token===':' && C.parent.parent.type==='lambda'){
+return $transition(C.parent.parent,token)
+}else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='str'){
 if(token==='['){return new $AbstractExprCtx(new $SubCtx(C.parent),false)}
 else if(token==='('){return new $CallCtx(C)}
@@ -4343,7 +4348,7 @@ res +='    var $res = '+unescape(expr2)+'\n}'
 eval(res)
 return $res
 }
-function $lambda($globals,$locals,$args,$body){
+function $lambda($mod,$globals,$locals,$args,$body){
 for(var $attr in $globals){eval('var '+$attr+'=$globals["'+$attr+'"]')}
 for(var $attr in $locals){eval('var '+$attr+'=$locals["'+$attr+'"]')}
 var $res='res'+Math.random().toString(36).substr(2,8)
@@ -4351,7 +4356,10 @@ var $py='def '+$res+'('+$args+'):\n'
 $py +='    return '+$body
 var $js=__BRYTHON__.py2js($py,'lambda').to_js()
 eval($js)
-return eval($res)
+var $res=eval($res)
+$res.__module__=$mod
+$res.__name__='<lambda>'
+return $res
 }
 function $JS2Py(src){
 if(src===null||src===undefined){return __builtins__.None}

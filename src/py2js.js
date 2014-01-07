@@ -1947,7 +1947,7 @@ function $LambdaCtx(context){
         var args = src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
         var body = src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
         body = body.replace(/\n/g,' ')
-        return '$lambda($globals,$locals,"'+args+'","'+body+'")'
+        return '$lambda("'+module+'",$globals,$locals,"'+args+'","'+body+'")'
     }
 }
 
@@ -3000,7 +3000,9 @@ function $transition(context,token){
             return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
         }else if(token===','){return context.parent}
         else if(token===')'){return $transition(context.parent,token)}
-        else{$_SyntaxError(context,'token '+token+' after '+context)}
+        else if(token===':' && context.parent.parent.type==='lambda'){
+            return $transition(context.parent.parent,token)
+        }else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='except'){ 
 
@@ -3322,6 +3324,7 @@ function $transition(context,token){
 
     }else if(context.type==="lambda"){
     
+        console.log('lambda, token '+token+' '+arguments[2])
         if(token===':' && context.args===undefined){
             context.args = context.tree
             context.tree = []
@@ -3493,7 +3496,9 @@ function $transition(context,token){
             return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
         }else if(token===','){return $transition(context.parent,token)}
         else if(token===')'){return $transition(context.parent,token)}
-        else{$_SyntaxError(context,'token '+token+' after '+context)}
+        else if(token===':' && context.parent.parent.type==='lambda'){
+            return $transition(context.parent.parent,token)
+        }else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='str'){
 
