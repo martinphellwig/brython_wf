@@ -3,7 +3,7 @@ $module = {
     JSConstructor:__BRYTHON__.JSConstructor,
     console: __BRYTHON__.JSObject(window.console),
     expose:function(func){
-        console.log('expose '+(typeof func)+' from module '+func.__module__+' current mod '+__module__)
+        console.log('expose '+(typeof func)+' from module '+func.__module__)
         if(typeof func!=='function'){
             throw TypeError("only functions can be exposed")
         }

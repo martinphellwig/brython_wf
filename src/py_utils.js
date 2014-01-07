@@ -276,7 +276,7 @@ __BRYTHON__.$ternary = function(env,cond,expr1,expr2){
     return $res
 }
 
-function $lambda($globals,$locals,$args,$body){
+function $lambda($mod,$globals,$locals,$args,$body){
     for(var $attr in $globals){eval('var '+$attr+'=$globals["'+$attr+'"]')}
     for(var $attr in $locals){eval('var '+$attr+'=$locals["'+$attr+'"]')}
     var $res = 'res'+Math.random().toString(36).substr(2,8)
@@ -284,7 +284,10 @@ function $lambda($globals,$locals,$args,$body){
     $py += '    return '+$body
     var $js = __BRYTHON__.py2js($py,'lambda').to_js()
     eval($js)
-    return eval($res)    
+    var $res = eval($res)
+    $res.__module__ = $mod
+    $res.__name__ = '<lambda>'
+    return $res
 }
 
 // transform native JS types into Brython types
