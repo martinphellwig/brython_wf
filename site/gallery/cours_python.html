@@ -5,8 +5,12 @@
 <meta name="keywords" content="Python,Brython">
 <meta name="author" content="Pierre Quentel">
 <meta charset="iso-8859-1">
-<link rel="stylesheet" href="../doc/doc_brython.css">
+
 <style>
+body,td {font-family: Arial;
+    font-size:12px;
+}
+    
 #cours {
     position: relative;
     margin-left:auto;
@@ -14,13 +18,12 @@
     width:800px;
     margin-top:20px;
     padding-top:5px;
-    padding-left:20px;
-    padding-right:20px;
+    padding-left:40px;
+    padding-right:40px;
     min-height:600px;
     font-size:18px;
     background-color:#FFCA73;
 }
-
 
 #cours h1 {
     background-color:#FF9F00;
@@ -29,6 +32,27 @@
     padding-right:20px;
     padding-bottom:10px;
     color:#A66800;
+}
+
+#cours pre.marked{
+    background-color:#FFF;
+    font-size: 15px;
+    font-weight:bold;
+    margin-left:40px;
+    margin-right:40px;
+    padding: 7px;
+    color:#339;
+}
+code {color: #339;
+    font-weight:bold;
+}
+em{
+    color: #339;
+    font-family:courier;
+}
+strong{
+    color: #339;
+    font-family:courier;
 }
 
 #footer {
@@ -90,11 +114,7 @@ from browser import doc,slideshow
 slideshow.show('cours_python.pss',doc['cours'])
 
 </script>
-<table>
-<tr>
-<td><div id="cours"></div></td>
-<td><iframe src="console.html" width=500 height=500></td>
-</tr></table>
+<div id="cours">
 </body>
 </html>
 

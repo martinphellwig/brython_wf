@@ -4,24 +4,45 @@
 Introduction à Python
 =====================
 
+<h2 style="padding-top:100px;padding-left:100px;">Adapté du [Tutoriel Python](http://docs.python.org/2/tutorial/index.html)</h2>
 
 ../..
 Historique
 ==========
 - créé en 1989 par Guido van Rossum
+
 - version 2.0 en 2000
+ - version courante 2.7.6
+
 - version 3.0 en 2008 (quelques incompatibilités)
+ - version courante 3.3.3
+ - plus cohérent, "propre", meilleur support d'Unicode
+
+- reco : __choisir Python3 pour les nouveaux projets__
+ - sauf dépendence incontournable à une librairie pas encore migrée en Python 3
+ 
 ../..
 Caractéristiques
 ================
+- facile à apprendre
+- structures de données de haut niveau
+- orienté objet
+- interprété
+- extensible
+- Open Source
+- disponible et portable "tel quel" sur toutes les plateformes
 - pratique plus que puriste
 - accent sur la lisibilité
 - typage fort, mais non déclaré
-- coeur minimaliste, mais bibliothèque très étendue
+- puissant : coeur minimaliste, mais bibliothèque très étendue (UI, web, fichiers, bases de données, manipulation de texte...)
 ../..
 Popularité
 ==========
 <img src='tiobe.png' height=400>
+../..
+Popularité
+==========
+<img src='Languages_2013-12.png' height=400>
 ../..
 Popularité
 ==========
@@ -41,15 +62,33 @@ Rank    Language      # Repositories Created
 10    Shell          28561
 </pre>
 ../..
+Popularité
+==========
+Largement utilisé par Google (dont GvR était salarié jusqu'en 2012, maintenant chez DropBox), sur Youtube
+
+Mercurial est écrit en Python
+
+Web frameworks : Zope, Django
+
+[Success stories](http://www.python.org/about/success/)
+
+../..
 Installation
 ============
 Aller sur le [site](http://python.org) et suivre les instructions
+
+L'installation crée une commande _python_ dans l'invite de commande, qui lance l'interpréteur interactif
+
+<img src="python.png" height=300>
 ../..
 Ressources
 ==========
-- la documentation Python : site, doc Windows
+- la documentation Python : [site Python](http://docs.python.org/2/), doc Windows
 - forums : [comp.lang.python](https://groups.google.com/forum/?fromgroups#!forum/comp.lang.python), [comp.lang.python.fr](https://groups.google.com/forum/?fromgroups#!forum/fr.comp.lang.python)
 - [stackoverflow](http://stackoverflow.com/)
+
+- [Python Package Index](http://pypi.python.org)
+- [The Python Cookbook](http://aspn.activestate.com/ASPN/Python/Cookbook/)
 ../..
 Commentaires
 ============
@@ -78,9 +117,14 @@ Chaines de caractères
 =====================
 Utilise ' ou "
     'spam eggs'
-    'doesn\'t'
+    "spam eggs"
+
     "doesn't"
     '"Yes," he said.'
+
+<code>\</code> pour "échappement"
+
+    'doesn\'t'
     "\"Yes,\" he said."
     '"Isn\'t," she said.'
 ../..
@@ -158,14 +202,25 @@ Tranches
 ../..
 Chaines de caractères
 =====================
+Test d'appartenance
+
+    >>> s = 'abcde'
+    >>> 'a' in s
+    True
+    >>> 'b' not in s
+    False
+    >>> 'x' in s
+    False
+    
+../..
+Chaines de caractères
+=====================
 Les chaines sont immuables
---------------------------
 
     >>> word = 'HelpA'
     >>> word[1]='a'
     TypeError: 'str' object does not support item assignment
 Longueur d'une chaine
----------------------
 
     >>> word = 'anticonstitutionnellement'
     >>> len(word)
@@ -195,9 +250,17 @@ Concaténation par +, duplication par *
     >>> 3*a[:3] + ['Boo!']
     ['spam', 'eggs', 100, 'spam', 'eggs', 100, 'spam', 'eggs', 100, 'Boo!']        
 
-Clonage
+Affectation et clonage
 
-    >>> a[:]
+    >>> a = [0,1]
+    >>> b = a       # les noms 'a' et 'b' sont liés au même objet
+    >>> b[0] = 9    # toute modification sur b modifie aussi a
+    >>> a
+    [9, 1]
+    >>> b = a[:]    # clonage : création d'un objet différent de a
+    >>> b[0] = 1
+    >>> a
+    [9, 1]
 ../..
 Listes
 ======
@@ -219,6 +282,24 @@ Longueur d'une chaine par `len`
 ../..
 Listes
 ======
+Transformer une listes de chaines en une seule chaine : méthode `join` appliquée au _séparateur_
+
+    >>> a = ["O rage","ô désespoir","ô vieillesse ennemie"]
+    >>> ' ! '.join(a)
+    'O rage ! ô désespoir ! ô vieillesse ennemie'
+
+Découper une chaine de caractères en éléments d'une liste
+
+    >>> s = "La cigale et la fourmi"
+    >>> s.split()
+    ['La', 'cigale', 'et', 'la', 'fourmi']
+    >>> s = "et un ! et deux ! et trois zéros !"
+    >>> s.split('!')
+    ['et un ', ' et deux ', ' et trois zéros ', '']
+    
+../..
+Listes
+======
 Une liste peut contenir d'autres listes
     >>> q = [2, 3]
     >>> p = [1, q, 4]
@@ -232,11 +313,11 @@ Une liste peut contenir d'autres listes
 Listes
 ======
 Ajout d'un élément à la fin d'une liste par `append`
-    >>> p[1].append('xtra')
-    >>> p
-    [1, [2, 3, 'xtra'], 4]
+    >>> q = [2, 3]
+    >>> q.append('xtra')
     >>> q
     [2, 3, 'xtra']
+
 Insertion d'un élément à une position donnée par `insert`
     >>> q.insert(1,'new')
     >>> q
@@ -274,6 +355,7 @@ Suite de Fibonacci
 A noter :
 - assignement multiple : `a, b = 0, 1`
 - indentation
+ - utiliser de préférence 4 espaces
 - boucle `while`
 ../..
 La fonction `print`
@@ -282,7 +364,7 @@ La fonction `print`
     >>> print('La valeur de i est', i)
     La valeur de i est 65536
 
-Le mot-clé *end*
+__[Python 3]__ Le mot-clé *end*
 
     >>> a, b = 0, 1
     >>> while b < 1000:
@@ -293,7 +375,7 @@ Le mot-clé *end*
 ../..
 Conditions : `if, elif, else`
 =============================
-    >>> x = int(input("Please enter an integer: "))
+    >>> x = int(input("Please enter an integer: ")) # "raw_input" en Python 2
     Please enter an integer: 42
     >>> if x < 0:
     ...      x = 0
@@ -320,6 +402,8 @@ Un des outils les plus puissants de Python
     window 6
     defenestrate 12
 
+L'itération par `for ... in` permet de manipuler des *valeurs* plutôt que des *index*
+
 ../..
 La fonction `range`
 ===================
@@ -336,60 +420,59 @@ syntaxe : `range(start,stop,step)`
 ../..
 Itérateurs
 ==========
-    >>> print(range(10))
-    range(0, 10)
+__[Python 2]__
 
-`range` ne renvoie pas une liste de valeurs, mais un _itérateur_
+    >>> range(5)
+    [0, 1, 2, 3, 4]
+> `range` renvoie une liste
 
-Dans `for x in A`, *A* est un itérateur
+----
+__[Python 3]__
+    >>> range(5)
+    range(0, 5)
 
-Certaines fonctions prennent un itérateur comme argument, par exemple `list`
+> `range` renvoie un _itérateur_
+
+> Dans `for x in A`, *A* est un itérateur
+
+> Certaines fonctions prennent un itérateur comme argument, par exemple `list`
 
     >>> list(range(5))
     [0, 1, 2, 3, 4]
-
 ../..
 `continue`
 ==========
-    >>> for num in range(2, 10):
+    >>> for num in range(2, 6):
     ...     if num % 2 == 0:
-    ...         print("Found an even number", num)
+    ...         print("Nombre pair", num)
     ...         continue
-    ...     print("Found a number", num)
-    Found an even number 2
-    Found a number 3
-    Found an even number 4
-    Found a number 5
-    Found an even number 6
-    Found a number 7
-    Found an even number 8
-    Found a number 9
+    Nombre pair 2
+    Nombre pair 4
 ../..
 `break` et `else` dans une boucle
 =================================
     >>> for n in range(2, 10):
     ...     for x in range(2, n):
-    ...         if n % x == 0:
-    ...             print(n, 'equals', x, '*', n//x)
+    ...         if n % x == 0: # x divise n
+    ...             print(n, '=', x, '*', n//x)
     ...             break
-    ...     else:
-    ...         # loop fell through without finding a factor
-    ...         print(n, 'is a prime number')
+    ...     else: # nombre premier
+    ...         print(n, 'est un nombre premier')
     ...
-    2 is a prime number
-    3 is a prime number
-    4 equals 2 * 2
-    5 is a prime number
-    6 equals 2 * 3
-    7 is a prime number
-    8 equals 2 * 4
-    9 equals 3 * 3
+    2 est un nombre premier
+    3 est un nombre premier
+    4 = 2 * 2
+    5 est un nombre premier
+    6 = 2 * 3
+    7 est un nombre premier
+    8 = 2 * 4
+    9 = 3 * 3
 Le bloc après `else` est exécuté si on ne sort pas de la boucle par un `break`
 ../..
 Fonctions
 =========
-    >>> def fib(n):    # write Fibonacci series up to n
-    ...     """Print a Fibonacci series up to n."""
+    >>> def fib(n):
+    ...     """Ecrit la suite de Fibonacci jusqu'à n."""
     ...     a, b = 0, 1
     ...     while a < n:
     ...         print(a, end=' ')
@@ -399,13 +482,6 @@ Fonctions
     >>> fib(2000)
     0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597
 
-Une fonction est un objet
-
-    >>> fib
-    <function fib at 10042ed0>
-    >>> f = fib
-    >>> f(100)
-    0 1 1 2 3 5 8 13 21 34 55 89
 ../..
 Fonctions
 =========
@@ -415,9 +491,9 @@ Par défaut, une fonction renvoie `None`
     >>> print(fib(0))
     None
 
-`return` pour définir une valeur de retour
+`return` pour définir une ou plusieurs valeur(s) de retour
 
-    >>> def fib2(n): # return Fibonacci series up to n
+    >>> def fib2(n): # renvoie la suite de Fibonacci jusqu'à n
     ...     result = []
     ...     a, b = 0, 1
     ...     while a < n:
@@ -431,7 +507,7 @@ Par défaut, une fonction renvoie `None`
 ../..
 Fonctions
 =========
-Arguments par défaut
+Définition d'arguments par défaut
 
     >>> def f(x, y=4):
     ...    return x+y
@@ -467,13 +543,18 @@ Il n'est évalué qu'une seule fois
 ../..
 Fonctions
 =========
-On peut appeler une fonction avec des mots-clés
 
     >>> def f(x,y):
     ...     return x-y
     ...
+
+On peut appeler une fonction avec des _arguments_
+
     >>> f(1,2)
     -1
+
+ou des _mots-clés_
+
     >>> f(y=6,x=2)
     -4
 
@@ -571,23 +652,38 @@ C'est la virgule qui crée un tuple, pas la parenthèse
     >>> x
     (1,)
 ../..
-`set` (ensemble)
-================
+Ensemble
+========
 Comme une liste, mais sans duplication ni ordre
 
     >>> panier = {'pomme', 'orange', 'pomme', 'poire', 'orange', 'banane'}
     >>> panier     # les doublons sont éliminés
-    {'pomme', 'orange', 'poire', 'banane'}
+    {'banane', 'poire', 'pomme', 'orange'} # Python 3
     >>> 'orange' in panier
     True
     >>> 'abricot' in panier
     False
 
-Création par _set comprehensions_
+ou création par _set comprehensions_
 
     >>> a = {x for x in 'abracadabra' if x not in 'abc'}
     >>> a
     {'r', 'd'}
+../..
+Ensemble
+========
+
+    >>> panier.add('abricot')
+    >>> panier
+    {'banane', 'poire', 'abricot', 'pomme', 'orange'}
+
+Intersection d'ensembles
+    >>> couleurs = {'bleu','jaune','orange'}
+    >>> panier & couleurs
+    {'orange'}   
+Union
+    >>> panier | couleurs
+    {'jaune', 'poire', 'banane', 'abricot', 'bleu', 'pomme', 'orange'}
 ../..
 Dictionnaires
 =============
@@ -599,11 +695,12 @@ Associe une clé (immuable : chaine, entier, tuple...) à une valeur
     {'sape': 4139, 'guido': 4127, 'jack': 4098}
     >>> tel['jack']                        # accès par clé
     4098
+    >>> tel['jack'] = 4099                 # changement de valeur
     >>> del tel['sape']                    # suppression
     >>> tel['irv'] = 4127
     >>> tel
-    {'guido': 4127, 'irv': 4127, 'jack': 4098}
-    >>> 'guido' in tel                     # test d'appartenance
+    {'guido': 4127, 'irv': 4127, 'jack': 4099}
+    >>> 'guido' in tel                     # test d'appartenance (clé)
     True
     >>> 'jack' not in tel
     False
@@ -611,20 +708,20 @@ Associe une clé (immuable : chaine, entier, tuple...) à une valeur
 ../..
 Dictionnaires
 =============
-Itérateur sur les clés
 
-    >>> list(tel.keys())
-    ['irv', 'guido', 'jack']
+`tel.keys()` renvoie :
+- la liste des clés en Python 2
+- un itérateur sur la liste des clés en Python 3
 
-Itérateur sur les valeurs
+Même chose pour `tel.values()` (valeurs) et `tel.items()` (tuples clé,valeur)
 
-    >>> list(tel.values())
-    [4127, 4127, 4098]
+    >>> for key,value in tel.items():
+    ...     print key,"'s number is ",value  # Python 2
+    ...
+    jack 's number is 4099
+    irv 's number is 4127
+    guido 's number is 4127
 
-Itérateur sur les tuples (clé,valeur)
-
-    >>> list(tel.items())
-    [('irv', 4127), ('guido', 4127), ('jack', 4098)]
 ../..
 Dictionnaires
 =============
@@ -664,17 +761,17 @@ Itérations
     >>> for i,x in enumerate(['bordeaux','rennes']):
     ...     print(i,x)
     ...
-    1 bordeaux
-    2 rennes
+    0 bordeaux
+    1 rennes
 
 plus "pythonique" que :
 
     >>> _list = ['bordeaux','rennes']
-    >>> for i in range(len(_list)):
+    >>> for i in range(len(_list)):   # ouh le débutant !
     ...     print(i,_list[i])
     ...
-    1 bordeaux
-    2 rennes
+    0 bordeaux
+    1 rennes
 ../..
 Itérations
 ==========
@@ -705,6 +802,23 @@ itère sur x et affecte les valeurs
     10
     
 Il faut le même nombre de valeurs des deux côtés !
+../..
+Scripts
+=======
+Enregistrement du programme dans un fichier _script.py_
+
+    for i in range(1):
+        print(i)
+
+Dans l'invite de commandes, aller dans le répertoire de _script.py_ et exécuter
+
+    C:\test python>python script.py
+    0
+    1
+    2
+    3
+    4
+    
 ../..
 Modules
 =======
@@ -740,13 +854,13 @@ Modules
 ../..
 Modules
 =======
-`from ... import ...` pour importer des noms d'un module
+`from X import n1, n2...` pour importer des noms d'un module
 
     >>> from fibo import fib, fib2
     >>> fib(500)
     1 1 2 3 5 8 13 21 34 55 89 144 233 377
 
-`from ... import *` pour importer tous les noms d'un module
+`from X import *` pour importer tous les noms du module _(attention aux conflits de noms !)_
 
     >>> from fibo import *
     >>> fib2(100)
@@ -757,4 +871,808 @@ Modules
 Recherche d'un module par son nom :
 - dans la librairie standard
 - puis dans le répertoire courant
+../..
+Packages
+========
+Pour structurer des librairies qui contiennent plusieurs modules
 
+Organisation en répertoires qui contiennent un fichier *\_\_init\_\_.py*
+
+    sound/                        
+        __init__.py               
+        formats/                  
+            __init__.py
+            wavread.py
+            ...
+        effects/                  
+            __init__.py
+            echo.py
+
+    import sound
+    import sound.formats
+    from sound.formats import wavread
+../..
+La fonction `dir()`
+===================
+pour inspecter les noms définis par un module
+
+    >>> import fibo, sys
+    >>> dir(fibo)
+    ['__name__', 'fib', 'fib2']
+
+Sans arguments : liste les noms définis dans le module courant
+
+    >>> a = [1, 2, 3, 4, 5]
+    >>> import fibo
+    >>> fib = fibo.fib
+    >>> dir()
+    ['__builtins__', '__doc__', '__file__', '__name__', 'a', 'fib', 'fibo']
+../..
+`str.format()`
+==============
+Permet de mettre en forme une chaine de caractères selon certains paramètres
+
+Exemple :
+
+    >>> print 'We are the {} who say "{}!"'.format('knights', 'Ni')
+    We are the knights who say "Ni!"
+
+Les séquences `{}` sont remplacées par les arguments de `format`
+
+On peut spécifier le rang de l'argument à insérer :
+
+    >>> print '{0} and {1}'.format('spam', 'eggs')
+    spam and eggs
+    >>> print '{1} and {0}'.format('spam', 'eggs')
+    eggs and spam
+../..
+`str.format()`
+==============
+On peut spécifier des mots-clés
+
+    >>> print 'This {food} is {adjective}.'.format(
+    ...       food='spam', adjective='absolutely horrible')
+    This spam is absolutely horrible.
+
+et mélanger rang et mots-clés
+
+    >>> print 'The story of {0}, {1}, and {other}.'.format('Bill', 'Manfred',
+    ...                                                    other='Georg')
+    The story of Bill, Manfred, and Georg.
+../..
+`str.format()`
+==============
+On peut spécifier le nombre de décimales à utiliser
+
+    >>> import math
+    >>> print 'The value of PI is approximately {0:.3f}.'.format(math.pi)
+    The value of PI is approximately 3.142
+
+et le nombre minimal de caractères
+
+    >>> table = {'Sjoerd': 4127, 'Jack': 4098, 'Dcab': 7678}
+    >>> for name, phone in table.items():
+    ...     print '{0:10} ==> {1:10d}'.format(name, phone)
+    ...
+    Jack       ==>       4098
+    Dcab       ==>       7678
+    Sjoerd     ==>       4127
+../..
+Fichiers
+========
+
+<code>open(_filename,mode_)</code>
+
+Le *mode* peut être
+- 'r' : lecture seule (valeur par défaut)
+- 'a' : écriture en fin de fichier
+- 'w' : effacement si le fichier existe déjà, puis écriture
+
+Sur Windows, ajouter 'b' pour ouvrir les fichiers en mode binaire ('rb', 'wb'...)
+../..
+Fichiers
+========
+<code>f.read(_nb_)</code> pour lire au plus _nb_ octets. Renvoie la chaine vide `''` en fin de fichier
+
+`f.read()` pour lire tout le fichier
+
+`f.readline()`: lit une ligne ; se termine par `\n`, ou `''` en fin de fichier
+
+`f.readlines()` lit toutes les lignes et les met dans un tableau
+
+Itération sur les lignes :
+
+    for line in f:
+        ...
+../..
+Fichiers
+========
+<code>f.write(_data_)</code> pour écrire la chaine _data_ dans le fichier
+
+    >>> f.write('This is a test\n')
+
+Pour écrire autre chose qu'une chaine, il faut d'abord convertir en chaine par `str()`
+
+    >>> f.write(42)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: expected a character buffer object
+    >>> out.write(str(42))
+
+../..
+Fichiers
+========
+<code>f.seek(_x_)</code> positionne le pointeur à la position _x_
+
+`f.tell()` renvoie la position courante du pointeur
+
+`f.close()` ferme le fichier et libère les ressources associées
+
+Utiliser de préférence `with` pour ne pas avoir à fermer explicitement
+
+    >>> with open('/tmp/workfile', 'r') as f:
+    ...     read_data = f.read()
+    >>> f.closed
+    True
+../..
+Sérialisation : le module `pickle`
+==================================
+Permet de transformer en chaine des objets complexes (listes, dictionnaires...) pour les stocker ou les envoyer sur le réseau
+
+    import pickle
+    pickle.dump(x, f) # écrit l'objet x dans le fichier f
+    
+    obj = pickle.load(f) # récupère l'objet x depuis le fichier f
+../..
+Erreurs et exceptions
+=====================
+Python distingue :
+
+- les erreurs : détectées dans la phase d'analyse du programme
+ - erreurs de syntaxe
+ - erreur d'indentation
+
+- les exceptions : surviennent pendant l'exécution d'un programme
+../..
+Erreurs
+=======
+`SyntaxError`
+    >>> while True print 'Hello world'
+      File "<stdin>", line 1, in ?
+        while True print 'Hello world'
+                       ^
+    SyntaxError: invalid syntax
+
+`IndentationError`
+    >>> for i in range(5):
+    ... print i
+      File "<stdin>", line 2
+        print i
+            ^
+    IndentationError: expected an indented block
+
+../..
+Exceptions
+==========
+Exemples :
+
+    >>> 10 * (1/0)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    ZeroDivisionError: integer division or modulo by zero
+    
+    >>> 4 + spam*3
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    NameError: name 'spam' is not defined
+    
+    >>> '2' + 2
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    TypeError: cannot concatenate 'str' and 'int' objects
+../..
+Exceptions
+==========
+`try ... except` pour gérer des exceptions
+
+    >>> while True:
+    ...     try:
+    ...         x = int(raw_input("Veuillez entrer un nombre: "))
+    ...         break
+    ...     except ValueError:
+    ...         print "Ce n'est pas un nombre valide.  Recommencer..."
+    ...
+
+Si une instruction du bloc `try` déclenche une exception, on arrête l'exécution du bloc
+
+Si l'exception est du type spécifié dans `except` on exécute le bloc de cet `except`
+../..
+Exceptions
+==========
+Variantes de `except` :
+
+    try:
+        ...
+    except IOError:
+        ...
+    except (TypeError, ValueError): # plusieurs types d'exceptions
+        ...
+    except:        # toutes les exceptions non encore gérées
+        ...
+../..
+Exceptions
+==========
+`else` si aucune exception n'a été déclenchée
+
+    try:
+        x = 1
+    except:
+        print('erreur')
+    else:
+        print('ok')
+../..
+Exceptions
+==========
+`as` pour récupérer l'objet exception
+
+    >>> x = [6]
+    ... try:
+    ...     x[2]
+    ... except IndexError as exc:
+    ...    print('erreur index',exc)
+    ...
+    ('erreur index', IndexError('list index out of range',))
+
+L'objet `exc` est une _instance_ de la _classe_ `IndexError`
+../..
+Exceptions
+==========
+`raise` pour déclencher des exceptions
+
+    >>> raise NameError('HiThere')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    NameError: HiThere
+    
+Sans argument : re-déclenche la dernière exception gérée
+
+    >>> try:
+    ...     raise NameError('HiThere')
+    ... except NameError:
+    ...     print 'An exception flew by!'
+    ...     raise
+    ...
+    An exception flew by!
+    Traceback (most recent call last):
+      File "<stdin>", line 2, in ?
+    NameError: HiThere
+    
+../..
+Exceptions
+==========
+`finally` pour exécuter un code qu'il y ait eu exception ou pas
+
+Si une exception n'a pas été gérée, elle est déclenchée après `finally`
+
+    >>> x = [5]
+    >>> try:
+    ...     print(x[2])
+    ... finally:
+    ...     print('Goodbye, world!')
+    ...
+    Goodbye, world!
+    Traceback (most recent call last):
+      File "<stdin>", line 2, in <module>
+    IndexError: list index out of range
+
+../..
+Exceptions
+==========
+    >>> def divide(x, y):
+    ...     try:
+    ...         result = x / y
+    ...     except ZeroDivisionError:
+    ...         print "division by zero!"
+    ...     else:
+    ...         print "result is", result
+    ...     finally:
+    ...         print "executing finally clause"
+    ...
+    >>> divide(2, 1)
+    result is 2
+    executing finally clause
+
+    >>> divide(2, 0)
+    division by zero!
+    executing finally clause
+
+    >>> divide("2", "1")
+    executing finally clause
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+      File "<stdin>", line 3, in divide
+    TypeError: unsupported operand type(s) for /: 'str' and 'str'
+../..
+Espaces de noms
+===============
+Permet de définir et d'utiliser le même nom dans des contextes différents
+
+Variables globales / locales
+
+    >>> a, b = 1, 2 # définit deux variables dans l'espace de noms global
+    >>> def f():
+    ...    global b # la variable b est globale
+    ...    a = 3    # définit une variable a dans l'espace de noms 
+    ...             # local de la fonction f
+    ...    b = 99
+    ...    print(a)
+    ...
+    >>> f()
+    3
+    >>> a
+    1
+    >>> b
+    99
+../..
+Espaces de noms
+===============
+
+    x = 0
+
+    def f(x):
+        import Z
+
+    import X
+    
+    from Y import A
+    
+    for i in range(5):
+        j = 2 * i
+
+définit les noms `x, f, X, A, i, j` dans l'espace de noms global ; `x, Z` dans l'espace de noms de f
+
+NB : le nom `Y` n'est __pas__ dans l'espace de noms
+../..
+Espaces de noms
+===============
+A l'exécution, quand l'interpréteur rencontre un nom, il cherche dans l'espace de nom le plus proche, puis "remonte" jusqu'au niveau module puis aux noms intégrés de Python
+
+    a = 6
+    def f():
+        b = 8
+        def g(n):
+            print(n)
+            print(b)
+            print(a)
+        g(8)
+ 
+Dans l'exécution de g : 
+- pas de nom `print` dans les espaces locaux ni globaux, mais `print` est un mot clé de Python
+- le nom `n` est dans l'espace de noms de g
+- pas de nom `b` dans l'espace de noms de g, on remonte jusqu'à l'espace de noms de f
+- pas de nom `a` dans l'espace de noms de g ni de f, on remonte jusqu'à l'espace de noms global
+../..
+Classes
+=======
+Définis par le mot clé `class`
+
+    class ClassName:
+        <statement-1>
+        .
+        .
+        .
+        <statement-N>
+
+Le nom `ClassName` est ajouté dans l'espace de noms où la classe est définie
+
+Une classe possède son propre espace de noms
+../..
+Classes
+=======
+
+    >>> class MyClass:
+    ...    i = 12345
+    ...
+    >>> print(MyClass.i)
+
+Les noms définis dans `MyClass` (_attributs_) sont accessibles depuis l'espace de noms "supérieur" par des _noms qualifiés_
+
+On peut modifier les attributs de la classe
+
+    >>> MyClass.i = 23456    
+../..
+Classes
+=======
+Pour créer des instances d'une classe, on l'utilise comme une fonction :
+
+    >>> class MyClass:
+    ...    i = 12345
+    ...
+    >>> x = MyClass()
+
+L'instance possède les mêmes attributs que la classe
+
+    >>> x.i
+    12345
+../..
+Classes
+=======
+Les _fonctions_ définies dans la classe deviennent les _méthodes_ des instances de cette classe
+
+Par convention, on les écrit avec l'instance comme premier argument, appelé `self`
+
+    >>> class MyClass:
+    ...     def f(self):
+    ...         print('function f')
+    ...     def greet(self,name):
+    ...         print('hello, ',name)
+    ...
+    >>> x = MyClass()
+    >>> x.f()
+    hello
+    >>> x.greet('world')
+    hello, world
+
+`x.greet('world')` est équivalent à `MyClass.greet(x,'world')`
+
+../..
+Classes
+=======
+Pour initialiser une instance avec des attributs spécifiques : fonction spéciale `__init__()`
+
+    >>> class MyClass:
+    ...     def __init__(self):
+    ...         self.data = []
+    ...
+    >>> x = MyClass()
+    >>> x.data
+    []
+../..
+Classes
+=======
+On peut passer des arguments à la fonction `__init__`
+
+    >>> class Complex:
+    ...     def __init__(self, realpart, imagpart):
+    ...         self.r = realpart
+    ...         self.i = imagpart
+    ...
+    >>> x = Complex(3.0, -4.5)
+    >>> x.r, x.i
+    (3.0, -4.5)
+../..
+Classes
+=======
+Les méthodes peuvent appeler d'autres méthodes
+
+    class Bag:
+
+        def __init__(self):
+            self.data = []
+
+        def add(self, x):
+            self.data.append(x)
+
+        def addtwice(self, x):
+            self.add(x)
+            self.add(x)
+../..
+Héritage
+========
+
+    class DerivedClass(BaseClass):
+        <statement-1>
+        .
+        .
+        .
+        <statement-N>
+
+`DerivedClass` _hérite_, ou est _dérivée_, ou est une _sous-classe_ de `BaseClass`
+../..
+Héritage
+========
+
+    >>> class A:
+    ...     x = 0
+    ...
+    >>> class B(A):
+    ...     y = 1
+    ...
+    >>> obj = B()
+    >>> obj.y
+    1
+    >>> obj.x
+    0
+
+La recherche (_résolution_) d'attribut est exécutée dans la classe B, puis dans la classe A dont B hérite
+../..
+Héritage
+========
+Une sous-classe peut réécrire (_surcharger_) les fonctions de la classe dont elle hérite
+
+    class A:
+        x = 0
+        def show(self):
+            print('je suis A')
+
+    classe B(A):
+        def show(self):
+            print(je suis B')
+../..
+Héritage
+========
+On peut utiliser les fonctions de A dans les fonctions de B
+
+    class A:
+        def __init__(self, x):
+            self.x = x**2
+
+    class B(A):
+        def __init__(self,x,y):
+            A.__init__(self,x)
+            self.y = y    
+../..
+Héritage
+========
+Exemple : les modules peuvent définir des _classes_ d'exception spécifiques, dérivées de la classe `Exception`
+
+    >>> class MyError(Exception):
+    ...     def __init__(self, value):
+    ...         self.value = value
+    ...
+    >>> try:
+    ...     raise MyError(4)
+    ... except MyError as e:
+    ...     print 'My exception occurred, value:', e.value
+    ...
+    My exception occurred, value: 4
+
+`MyError(4)` crée une _instance_ de la classe `MyError` en passant l'argument `4`
+
+La méthode `__init__(self, value)` initialise l'instance avec l'argument _value_
+../..
+Héritage
+========
+Héritage multiple
+
+    class Derived(Base1, Base2, Base3):
+        <statement-1>
+        .
+        .
+        .
+        <statement-N>
+Construit pour la classe `Derived` un _ordre de résolution de méthodes_ (MRO) pour la résolution d'attributs ; exception en cas d'impossibilité
+../..
+Héritage
+========
+<code>issubclass(_A,B_)</code> teste si la classe _A_ hérite de la classe _B_
+
+<code>isinstance(_obj,A_)</code> teste si l'objet _obj_ est une instance de _A_ ou d'une classe dont _A_ hérite
+
+../..
+Méthodes spéciales
+==================
+
+    >>> class A:
+    ...     def __init__(self):
+    ...         self.data = 'la cigale et la fourmi'
+    ...     def __getitem__(self,i):
+    ...         return self.data[i]
+    ...
+    >>> x = A()
+    >>> x[3]
+    c
+
+La définition d'une méthode `__getitem__(self, pos)` permet d'utiliser l'accès par index
+
+Itérateurs
+==========
+Utilisés très fréquemment en Python
+
+    for element in [1, 2, 3]:
+        print element
+    for element in (1, 2, 3):
+        print element
+    for key in {'one':1, 'two':2}:
+        print key
+    for char in "123":
+        print char
+    for line in open("myfile.txt"):
+        print line
+../..
+Itérateurs
+==========
+Utilisent les fonctions intégrées 
+- <code>iter(_instance_)</code> : retourne un itérateur sur l'_instance_
+- <code>next(_iterateur_)</code> : retourne le prochain élément de l'itérateur, ou déclenche l'exception `StopIteration`
+
+    >>> s = 'abc'
+    >>> it = iter(s)
+    >>> it
+    <iterator object at 0x00A1DB50>
+    >>> it.next()
+    'a'
+    >>> it.next()
+    'b'
+    >>> it.next()
+    'c'
+    >>> it.next()
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+        it.next()
+    StopIteration
+../..
+Itérateurs
+==========
+`iterator = iter(instance)` équivaut à `iterator = instance.__iter__()`
+
+`item = next(iterator)` équivaut à `item = iterator.next()`
+
+Pour pouvoir itérer sur les instances d'une classe il faut lui définir une fonction `__iter__`, qui renvoie un objet qui possède une méthode `next`
+
+    class Reverse:
+        """Iterator for looping over a sequence backwards."""
+        def __init__(self, data):
+            self.data = data
+            self.index = len(data)
+        def __iter__(self):
+            return self
+        def next(self):
+            if self.index == 0:
+                raise StopIteration
+            self.index = self.index - 1
+            return self.data[self.index]
+../..
+Generateurs
+===========
+Création automatique d'itérateurs : fonctions qui utilisent `yield` au lieu de `return`
+
+    >>> def squares(n):
+    ...     """Itérateur sur les carrés des nombres de 0 à n"""
+    ...     for i in range(n):
+    ...         yield i*i
+    ...
+    >>> for x in squares(5):
+    ...     print(x)
+    ...
+    0
+    1
+    4
+    9
+    16
+../..
+Generator expressions
+=====================
+Simplifie le passage d'argument à une fonction qui attend un itérateur
+
+    >>> sum(i*i for i in range(10))                 # sum of squares
+    285
+    
+    >>> xvec = [10, 20, 30]
+    >>> yvec = [7, 5, 3]
+    >>> sum(x*y for x,y in zip(xvec, yvec))         # dot product
+    260
+    
+    >>> unique_words = set(word  for line in page  for word in line.split())
+../..
+Décorateurs
+===========
+Fonction qui renvoie une autre fonction, utilisée avec `@`
+
+    @staticmethod
+    def f(...):
+        ...
+
+équivaut à
+
+    def f(...):
+        ...
+    f = staticmethod(f)
+    
+../..
+Librairie standard : `os`
+==========================
+
+    >>> import os
+    >>> os.getcwd()      # renvoie le répertoire courant
+    'C:\\Python26'
+    >>> os.chdir('/server/accesslogs')   # Change le répertoire courant
+    >>> os.mkdir('nouveau') # crée un nouveau répertoire
+    >>> os.rmdir('nouveau') # supprime un répertoire
+
+    >>> os.path.join('rep1','rep2','fichier.txt')
+    'rep1\\rep2\\fichier.txt'
+../..
+Librairie standard : `shutil`
+=============================
+Utilitaires de manipulation de fichiers et de répertoires
+
+    >>> import shutil
+    >>> shutil.copyfile('data.db', 'archive.db') # recopie
+    >>> shutil.move('/build/executables', 'installdir') # déplacement
+../..
+Librairie standard : `sys`
+==========================
+Arguments passés en ligne de commande (_python demo.py one two three_)
+
+Dans _demo.py_
+
+    import sys
+    print(sys.argv) # liste des arguments passés après _python_
+    ['demo.py', 'one', 'two', 'three']
+
+Entrée et sortie standard : `sys.stdin, sys.stdout`
+
+    sys.stdout.write('data')
+
+Peut être modifié pour rediriger la sortie de `print`
+
+    sys.stdout = file_obj # un objet avec une méthode write
+    print('data')         # équivaut à file_obj.write('data\n')
+../..
+Librairie standard : `re` (expressions régulières)
+==================================================
+Fonctions avancées de recherche et remplacement de chaines de caractères
+
+    >>> import re
+    >>> re.findall(r'\bf[a-z]*', 'which foot or hand fell fastest')
+    ['foot', 'fell', 'fastest']
+    >>> re.sub(r'(\b[a-z]+) \1', r'\1', 'cat in the the hat')
+    'cat in the hat'
+../..
+Librairie standard : `math`
+===========================
+Fonctions mathématiques
+
+    >>> import math
+    >>> math.cos(math.pi / 4.0)
+    0.70710678118654757
+    >>> math.log(1024, 2)
+    10.0
+../..
+Librairie standard : `random`
+=============================
+Fonctions aléatoires
+
+    >>> import random
+    >>> random.choice(['apple', 'pear', 'banana'])
+    'apple'
+    >>> random.sample(xrange(100), 10)   # sampling without replacement
+    [30, 83, 16, 4, 8, 81, 41, 50, 18, 33]
+    >>> random.random()    # random float
+    0.17970987693706186
+    >>> random.randrange(6)    # random integer chosen from range(6)
+    4
+../..
+Librairie standard : `datetime`
+===============================
+Heures et dates
+    
+    >>> from datetime import date
+    >>> now = date.today()
+    >>> now
+    datetime.date(2003, 12, 2)
+    >>> now.strftime("%m-%d-%y. %d %b %Y is a %A on the %d day of %B.")
+    '12-02-03. 02 Dec 2003 is a Tuesday on the 02 day of December.'
+    
+    >>> # dates support calendar arithmetic
+    >>> birthday = date(1964, 7, 31)
+    >>> age = now - birthday
+    >>> age.days
+    14368
+../..
+Librairie standard : compression
+================================
+Modules standard `zlib, gzip, bz2, zipfile, tarfile`
+
+    >>> import zlib
+    >>> s = 'witch which has which witches wrist watch'
+    >>> len(s)
+    41
+    >>> t = zlib.compress(s)
+    >>> len(t)
+    37
+    >>> zlib.decompress(t)
+    'witch which has which witches wrist watch'
+    >>> zlib.crc32(s)
+    226805979
