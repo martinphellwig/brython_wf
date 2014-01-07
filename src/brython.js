@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140101-223104
+// version 1.4.20140106-153048
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140101-223104', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140106-153048', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -9011,8 +9011,8 @@ var res=$TagSum()
 res.children=[self]
 if(isinstance(other,$TagSum)){
 for(var $i=0;$i<other.children.length;$i++){res.children.push(other.children[$i])}
-}else if(isinstance(other,[str,int,float,list,dict,set,tuple])){
-res.children.push($DOMNode(document.createTextNode(str(other))))
+}else if(isinstance(other,[__builtins__.str,__builtins__.int,__builtins__.float,__builtins__.list,__builtins__.dict,__builtins__.set,__builtins__.tuple])){
+res.children.push($DOMNode(document.createTextNode(__builtins__.str(other))))
 }else{res.children.push(other)}
 return res
 }
