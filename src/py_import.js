@@ -11,6 +11,7 @@ $ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
 function $importer(){
     // returns the XMLHTTP object to handle imports
     var $xmlhttp = new XMLHttpRequest();
+    var __builtins__ = __BRYTHON__.builtins
     if (__builtins__.$CORS && "withCredentials" in $xmlhttp) {
        // Check if the XMLHttpRequest object has a "withCredentials" property.
        // "withCredentials" only exists on XMLHTTPRequest2 objects.
@@ -50,7 +51,7 @@ function $importer(){
 }
 
 function $download_module(module,url){
-    var imp = $importer()
+    var imp = $importer(),__builtins__=__BRYTHON__.builtins
     var $xmlhttp = imp[0],fake_qs=imp[1],timer=imp[2],res=null
     $xmlhttp.onreadystatechange = function(){
         if($xmlhttp.readyState==4){
@@ -168,7 +169,7 @@ function $import_py_module(module,path,module_contents) {
     // add parenthesis for anonymous function execution
     
     var ex_node = new $Node('expression')
-    new $NodeJSCtx(ex_node,')()')
+    new $NodeJSCtx(ex_node,')(__BRYTHON__)')
     root.add(ex_node)
     
     try{

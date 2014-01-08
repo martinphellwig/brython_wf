@@ -726,7 +726,7 @@ function $ClassCtx(context){
         }else{
             js = 'var '+this.name+' = $class.'+this.name
         }
-        js += '=$class_constructor("'+this.name+'",$'+this.name
+        js += '=__BRYTHON__.$class_constructor("'+this.name+'",$'+this.name
         if(this.args!==undefined){ // class def has arguments
             var arg_tree = this.args.tree,args=[],kw=[]
 
@@ -2073,12 +2073,12 @@ function $OpCtx(context,op){ // context is the left operand
     context.parent.tree.push(this)
     this.to_js = function(){
         if(this.op==='and'){
-            var res ='$test_expr($test_item('+this.tree[0].to_js()+')&&'
-            res += '$test_item('+this.tree[1].to_js()+'))'
+            var res ='__BRYTHON__.$test_expr(__BRYTHON__.$test_item('+this.tree[0].to_js()+')&&'
+            res += '__BRYTHON__.$test_item('+this.tree[1].to_js()+'))'
             return res
         }else if(this.op==='or'){
-            var res ='$test_expr($test_item('+this.tree[0].to_js()+')||'
-            res += '$test_item('+this.tree[1].to_js()+'))'
+            var res ='__BRYTHON__.$test_expr(__BRYTHON__.$test_item('+this.tree[0].to_js()+')||'
+            res += '__BRYTHON__.$test_item('+this.tree[1].to_js()+'))'
             return res
         }else{
             var res = this.tree[0].to_js()
@@ -3938,7 +3938,7 @@ function $tokenize(src,module,parent){
         if(car in br_close){
             if(br_stack==""){
                 $_SyntaxError(context,"Unexpected closing bracket")
-            } else if(br_close[car]!=$last(br_stack)){
+            } else if(br_close[car]!=br_stack.charAt(br_stack.length-1)){
                 $_SyntaxError(context,"Unbalanced bracket")
             } else {
                 br_stack = br_stack.substr(0,br_stack.length-1)
@@ -4059,7 +4059,9 @@ __BRYTHON__.py2js = function(src,module,parent){
     root.transform()
     // add variable $globals
     var js = 'var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $globals\n'
-    js += 'for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
+    js += 'var __builtins__ = __BRYTHON__.builtins;\n'
+    js += 'for(var $py_builtin in __builtins__)'
+    js += '{eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
     js += 'var JSObject = __BRYTHON__.JSObject\n'
     js += 'var JSConstructor = __BRYTHON__.JSConstructor\n'
     var new_node = new $Node('expression')
@@ -4100,14 +4102,14 @@ function brython(options){
     if(typeof options==='number'){options={'debug':options}}
     __BRYTHON__.debug = options.debug
 
-    if (options.open !== undefined) {__builtins__.$open = options.open}
-    __builtins__.$CORS=false        // Cross-origin resource sharing
-    if (options.CORS !== undefined) {__builtins__.$CORS = options.CORS}
+    if (options.open !== undefined) {__BRYTHON__.builtins.$open = options.open}
+    __BRYTHON__.builtins.$CORS=false        // Cross-origin resource sharing
+    if (options.CORS !== undefined) {__BRYTHON__.builtins.$CORS = options.CORS}
     __BRYTHON__.$options=options
     __BRYTHON__.exception_stack = []
     __BRYTHON__.call_stack = []
     __BRYTHON__.scope = {}
-    __BRYTHON__.events = __builtins__.dict() // maps $brython_id of DOM elements to events
+    __BRYTHON__.events = __BRYTHON__.builtins.dict() // maps $brython_id of DOM elements to events
     var $elts = document.getElementsByTagName("script")
     var $href = window.location.href
     var $href_elts = $href.split('/')
@@ -4199,7 +4201,8 @@ function brython(options){
                 for(var attr in $err){
                     console.log(attr+' : '+$err[attr])
                 }
-                if($err.py_error===undefined){$err = __builtins__.RuntimeError($err+'')}
+                console.log('line info '+__BRYTHON__.line_info)
+                if($err.py_error===undefined){$err = __BRYTHON__.builtins.RuntimeError($err+'')}
                 var $trace = $err.__name__+': '+$err.message
                 //if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
                     $trace += '\n'+$err.info

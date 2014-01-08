@@ -1,5 +1,6 @@
-__builtins__.dict = (function(){
+;(function($B){
 
+var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict = object.$dict
 
@@ -299,5 +300,5 @@ dict.$dict = $DictDict
 $DictDict.$factory = dict
 $DictDict.__new__ = $__new__(dict)
 
-return dict
-})()
+$B.builtins.dict = dict
+})(__BRYTHON__)

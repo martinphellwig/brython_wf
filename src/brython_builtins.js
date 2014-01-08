@@ -1,11 +1,11 @@
+// global object with brython built-ins
+var __BRYTHON__ = {}
 // Python __builtins__
-var __builtins__ = {
+__BRYTHON__.builtins = {
     __repr__:function(){return "<module 'builtins>'"},
     __str__:function(){return "<module 'builtins'>"},    
 }
 
-// global object with brython built-ins
-var __BRYTHON__ = {}
 __BRYTHON__.__getattr__ = function(attr){return this[attr]}
 __BRYTHON__.__setattr__ = function(attr,value){
     // limited to some attributes

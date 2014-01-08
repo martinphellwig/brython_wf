@@ -1,5 +1,5 @@
-__builtins__.float = (function(){
-
+;(function($B){
+var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict = object.$dict
 
@@ -155,10 +155,10 @@ var $notimplemented = function(self,other){
         "unsupported operand types for OPERATOR: '"+self.__class__+"' and '"+other.__class__+"'")
 }
 $notimplemented += '' // coerce to string
-for($op in __BRYTHON__.$operators){
+for($op in $B.$operators){
     // use __add__ for __iadd__ etc, so don't define __iadd__ below
     if(['+=','-=','*=','/=','%='].indexOf($op)>-1) continue
-    var $opfunc = '__'+__BRYTHON__.$operators[$op]+'__'
+    var $opfunc = '__'+$B.$operators[$op]+'__'
     if(!($opfunc in $FloatDict)){
         eval('$FloatDict.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
     }
@@ -190,5 +190,5 @@ float.$dict = $FloatDict
 $FloatDict.$factory = float
 $FloatDict.__new__ = $__new__(float)
 
-return float
-})()
+$B.builtins.float = float
+})(__BRYTHON__)

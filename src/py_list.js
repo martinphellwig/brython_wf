@@ -1,5 +1,6 @@
-;(function(br_obj){
+;(function($B){
 
+var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict = object.$dict
 
@@ -490,6 +491,6 @@ $TupleDict.__eq__ = function(self,other){
 $TupleDict.__mro__ = [$TupleDict,$ObjectDict]
 $TupleDict.__name__ = 'tuple'
 
-br_obj.list = list
-br_obj.tuple = tuple
-})(__builtins__)
+$B.builtins.list = list
+$B.builtins.tuple = tuple
+})(__BRYTHON__)

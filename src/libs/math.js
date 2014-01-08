@@ -1,5 +1,6 @@
-var $module = (function(){
+$module = (function($B){
 
+var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 
 var float_check=function(x) {
@@ -43,7 +44,7 @@ var _mod = {
     ceil: function(x) {
        var y=float_check(x);
        if (!isNaN(parseFloat(y)) && isFinite(y)) return int(Math.ceil(y));
-       try{return getattr(y,'__ceil__')()}catch(err){__BRYTHON__.$pop_exc()}
+       try{return getattr(y,'__ceil__')()}catch(err){$B.$pop_exc()}
        
        $raise('ValueError', 'object is not a number and does not contain __ceil__')
     },
@@ -188,7 +189,7 @@ var _mod = {
     sqrt : function(x){return float(Math.sqrt(float_check(x)))},
     trunc: function(x) {
         console.log('trunc')
-       try{return getattr(x,'__trunc__')()}catch(err){__BRYTHON__.$pop_exc()}
+       try{return getattr(x,'__trunc__')()}catch(err){$B.$pop_exc()}
        var x1=float_check(x);
        if (!isNaN(parseFloat(x1)) && isFinite(x1)) return int(Math.floor(x1));
        
@@ -207,4 +208,4 @@ for(var $attr in _mod){
 
 return _mod
 
-})()
+})(__BRYTHON__)
