@@ -26,17 +26,19 @@ function $iterator_class(name){
         __name__:name
     }
     res.__str__ = res.toString = res.__repr__
-    res.__mro__ = [res,__builtins__.object.$dict]
+    res.__mro__ = [res,__BRYTHON__.builtins.object.$dict]
     res.$factory = {__class__:$factory,$dict:res}
     return res
 }
 
 // class dict of functions attribute __code__
 var $CodeDict = {__class__:$type,__name__:'code'}
-$CodeDict.__mro__ = [$CodeDict,__builtins__.object.$dict]
+$CodeDict.__mro__ = [$CodeDict,__BRYTHON__.builtins.object.$dict]
 
 // built-in functions
-;(function(py_env){
+;(function($B){
+
+var __builtins__ = $B.builtins
 
 // insert already defined builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
@@ -93,7 +95,7 @@ function ascii(obj) {
 // not in Python but used for tests until unittest works
 // "assert_raises(exception,function,*args)" becomes "if condition: pass else: raise AssertionError"
 function assert_raises(){
-    var $ns=__BRYTHON__.$MakeArgs('assert_raises',arguments,['exc','func'],[],'args','kw')
+    var $ns=$B.$MakeArgs('assert_raises',arguments,['exc','func'],[],'args','kw')
     var args = $ns['args']
     try{$ns['func'].apply(this,args)}
     catch(err){
@@ -148,9 +150,9 @@ function bool(obj){ // return true or false
     }else{
         try{return getattr(obj,'__bool__')()}
         catch(err){
-            __BRYTHON__.$pop_exc()
+            $B.$pop_exc()
             try{return getattr(obj,'__len__')()>0}
-            catch(err){__BRYTHON__.$pop_exc();return true}
+            catch(err){$B.$pop_exc();return true}
         }
     }
 }
@@ -242,7 +244,7 @@ function $class(obj,info){
 //compile() (built in function)
 function compile(source, filename, mode) {
     //for now ignore mode variable, and flags, etc
-    return __BRYTHON__.py2js(source, filename).to_js()
+    return $B.py2js(source, filename).to_js()
 }
 
 var $ComplexDict = {__class__:$type,__name__:'complex'}
@@ -279,11 +281,11 @@ function dir(obj){
         // if dir is called without arguments, the parser transforms dir() into
         // dir(null,module_name)
         var mod_name=arguments[1]
-        var res = [],$globals = __BRYTHON__.scope[mod_name].__dict__
+        var res = [],$globals = $B.scope[mod_name].__dict__
         for(var attr in $globals){res.push(attr)}
         return res
     }
-    if(isinstance(obj,__BRYTHON__.JSObject)){obj=obj.js}
+    if(isinstance(obj,$B.JSObject)){obj=obj.js}
     if(obj.__class__.is_class){obj=obj.$dict}
     var res = []
     for(var attr in obj){
@@ -312,7 +314,7 @@ $EnumerateDict.__mro__ = [$EnumerateDict,$ObjectDict]
 
 function enumerate(){
     var _start = 0
-    var $ns = __BRYTHON__.$MakeArgs("enumerate",arguments,["iterable"],
+    var $ns = $B.$MakeArgs("enumerate",arguments,["iterable"],
                 ["start"], null, null)
     var _iter = iter($ns["iterable"])
     var _start = $ns["start"] || _start
@@ -362,7 +364,7 @@ function filter(){
             var _item = next(iterable)
             if(func(_item)){res.push(_item)}
         }catch(err){
-            if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
+            if(err.__name__==='StopIteration'){$B.$pop_exc();break}
             else{throw err}
         }
     }
@@ -403,14 +405,14 @@ function getattr(obj,attr,_default){
     
     // __call__ on a function returns the function itself
     if(attr==='__call__' && (typeof obj=='function')){
-        if(__BRYTHON__.debug>0){
+        if($B.debug>0){
             return function(){
-                __BRYTHON__.call_stack.push(__BRYTHON__.line_info)
+                $B.call_stack.push($B.line_info)
                 try{
                     var res = obj.apply(null,arguments)
                     if(res===undefined){return __builtins__.None}else{return res}
                 }catch(err){throw err}
-                finally{__BRYTHON__.call_stack.pop()}
+                finally{$B.call_stack.pop()}
             }
         }
         return function(){
@@ -479,14 +481,14 @@ getattr.__name__ = 'getattr'
 function globals(module){
     // the translation engine adds the argument module
     var res = __builtins__.dict()
-    var scope = __BRYTHON__.scope[module].__dict__
+    var scope = $B.scope[module].__dict__
     for(var name in scope){res.$keys.push(name);res.$values.push(scope[name])}
     return res
 }
 
 function hasattr(obj,attr){
     try{getattr(obj,attr);return True}
-    catch(err){__BRYTHON__.$pop_exc();return False}
+    catch(err){$B.$pop_exc();return False}
 }
 
 function hash(obj){
@@ -516,8 +518,8 @@ function id(obj) {
    }
    if (obj.__hash__ === undefined || isinstance(obj, set) ||
       isinstance(obj, __builtins__.list) || isinstance(obj, __builtins__.dict)) {
-      __BRYTHON__.$py_next_hash+=1
-      obj.__hashvalue__=__BRYTHON__.$py_next_hash
+      $B.$py_next_hash+=1
+      obj.__hashvalue__=$B.$py_next_hash
       return obj.__hashvalue__
    }
    if (obj.__hash__ !== undefined) {
@@ -529,7 +531,7 @@ function id(obj) {
 
 function __import__(mod_name){
     $import_list([mod_name])
-    return __BRYTHON__.imported[mod_name]
+    return $B.imported[mod_name]
 }
 //not a direct alias of prompt: input has no default value
 function input(src){
@@ -593,7 +595,7 @@ function issubclass(klass,classinfo){
 function iter(obj){
     try{return getattr(obj,'__iter__')()}
     catch(err){
-        __BRYTHON__.$pop_exc()
+        $B.$pop_exc()
         throw TypeError("'"+obj.__class__.__name__+"' object is not iterable")
     }
 }
@@ -610,11 +612,11 @@ function locals(obj_id,module){
     // used for locals() ; the translation engine adds the argument obj,
     // a dictionary mapping local variable names to their values, and the
     // module name
-    if(__BRYTHON__.scope[obj_id]===undefined){
+    if($B.scope[obj_id]===undefined){
         return globals(module)
     }
     var res = $dict()
-    var scope = __BRYTHON__.scope[obj_id].__dict__
+    var scope = $B.scope[obj_id].__dict__
     for(var name in scope){__builtins__.dict.$dict.__setitem__(res,name,scope[name])}
     return res
 }
@@ -634,7 +636,7 @@ function map(){
                 args.push(x)
             }catch(err){
                 if(err.__name__==='StopIteration'){
-                    __BRYTHON__.$pop_exc();flag=false;break
+                    $B.$pop_exc();flag=false;break
                 }else{throw err}
             }
         }
@@ -659,7 +661,7 @@ function $extreme(args,op){ // used by min() and max()
     var last_arg = args[args.length-1]
     var last_i = args.length-1
     var has_key = false
-    if(isinstance(last_arg,__BRYTHON__.$Kw)){
+    if(isinstance(last_arg,$B.$Kw)){
         if(last_arg.name === 'key'){
             var func = last_arg.value
             has_key = true
@@ -733,7 +735,7 @@ function ord(c) {
 
 // pow() (built in function)
 function pow() {
-    var $ns=__BRYTHON__.$MakeArgs('pow',arguments,[],[],'args','kw')
+    var $ns=$B.$MakeArgs('pow',arguments,[],[],'args','kw')
     var args = $ns['args']
     if(args.length<2){throw TypeError(
         "pow expected at least 2 arguments, got "+args.length)
@@ -779,7 +781,7 @@ function pow() {
 
 function $print(){
     var end='\n',sep=' '
-    var $ns=__BRYTHON__.$MakeArgs('print',arguments,[],['end','sep'],'args', null)
+    var $ns=$B.$MakeArgs('print',arguments,[],['end','sep'],'args', null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     var res = ''
     for(var i=0;i<args.length;i++){
@@ -899,7 +901,7 @@ $RangeDict.__repr__ = $RangeDict.__str__ = function(self){
 }
 
 function range(){
-    var $ns=__BRYTHON__.$MakeArgs('range',arguments,[],[],'args',null)
+    var $ns=$B.$MakeArgs('range',arguments,[],[],'args',null)
     var args = $ns['args']
     if(args.length>3){throw TypeError(
         "range expected at most 3 arguments, got "+args.length)
@@ -952,7 +954,7 @@ function reversed(seq){
 
     try{return getattr(seq,'__reversed__')()}
     catch(err){
-        if(err.__name__=='AttributeError'){__BRYTHON__.$pop_exc()}
+        if(err.__name__=='AttributeError'){$B.$pop_exc()}
         else{throw err}
     }
 
@@ -988,7 +990,7 @@ function setattr(obj,attr,value){
     if(!isinstance(attr,__builtins__.str)){throw TypeError("setattr(): attribute name must be string")}
     // descriptor protocol : if obj has attribute attr and this attribute has 
     // a method __set__(), use it
-    if(__BRYTHON__.forbidden.indexOf(attr)>-1){attr='$$'+attr}
+    if($B.forbidden.indexOf(attr)>-1){attr='$$'+attr}
     var res = obj[attr]
     if(res===undefined){
         var mro = obj.__class__.__mro__
@@ -1003,7 +1005,7 @@ function setattr(obj,attr,value){
     
     try{var f = getattr(obj,'__setattr__')}
     catch(err){
-        __BRYTHON__.$pop_exc()
+        $B.$pop_exc()
         obj[attr]=value
         return
     }
@@ -1017,7 +1019,7 @@ var $SliceDict = {__class__:$type,
 $SliceDict.__mro__ = [$SliceDict,$ObjectDict]
 
 function slice(){
-    var $ns=__BRYTHON__.$MakeArgs('slice',arguments,[],[],'args',null)
+    var $ns=$B.$MakeArgs('slice',arguments,[],[],'args',null)
     var args = $ns['args']
     if(args.length>3){throw TypeError(
         "slice expected at most 3 arguments, got "+args.length)
@@ -1048,7 +1050,7 @@ slice.$dict = $SliceDict
 
 // sorted() built in function
 function sorted () {
-    var $ns=__BRYTHON__.$MakeArgs('sorted',arguments,['iterable'],[],null,'kw')
+    var $ns=$B.$MakeArgs('sorted',arguments,['iterable'],[],null,'kw')
     if($ns['iterable']===undefined){throw TypeError("sorted expected 1 positional argument, got 0")}
     else{iterable=$ns['iterable']}
     var key = __builtins__.dict.$dict.get($ns['kw'],'key',None)
@@ -1058,14 +1060,14 @@ function sorted () {
     while(true){
         try{obj.push(next(iterable))}
         catch(err){
-            if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
+            if(err.__name__==='StopIteration'){$B.$pop_exc();break}
             else{throw err}
         }
     }
     // pass arguments to list.sort()
     var args = [obj]
-    if (key !== None) {args.push(__BRYTHON__.$Kw('key',key))}
-    if(reverse){args.push(__BRYTHON__.$Kw('reverse',true))}
+    if (key !== None) {args.push($B.$Kw('key',key))}
+    if(reverse){args.push($B.$Kw('reverse',true))}
     __builtins__.list.$dict.sort.apply(null,args)
     return obj
 }
@@ -1093,7 +1095,7 @@ function sum(iterable,start){
             var _item = next(iterable)
             res = getattr(res,'__add__')(_item)
         }catch(err){
-           if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
+           if(err.__name__==='StopIteration'){$B.$pop_exc();break}
            else{throw err}
         }
     }
@@ -1150,11 +1152,11 @@ function $url_open(){
     // - mode can be 'r' (text, default) or 'rb' (binary)
     // - encoding if mode is 'rb'
     var mode = 'r',encoding='utf-8'
-    var $ns=__BRYTHON__.$MakeArgs('open',arguments,['file'],['mode','encoding'],'args','kw')
+    var $ns=$B.$MakeArgs('open',arguments,['file'],['mode','encoding'],'args','kw')
     for(var attr in $ns){eval('var '+attr+'=$ns["'+attr+'"]')}
     if(args.length>0){var mode=args[0]}
     if(args.length>1){var encoding=args[1]}
-    if(isinstance(file,__BRYTHON__.JSObject)){return new $OpenFile(file.js,mode,encoding)}
+    if(isinstance(file,$B.JSObject)){return new $OpenFile(file.js,mode,encoding)}
     else if(isinstance(file,__builtins__.str)){
         // read the file content and return an object with file object methods
         if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -1254,7 +1256,7 @@ $ZipDict.__mro__ = [$ZipDict,$ObjectDict]
 function zip(){
     var res = {__class__:$ZipDict,items:[]}
     if(arguments.length==0){return res}
-    var $ns=__BRYTHON__.$MakeArgs('zip',arguments,[],[],'args','kw')
+    var $ns=$B.$MakeArgs('zip',arguments,[],[],'args','kw')
     var _args = $ns['args']
     var args = []
     for(var i=0;i<_args.length;i++){args.push(iter(_args[i]))}
@@ -1267,7 +1269,7 @@ function zip(){
                 var x=next(args[i])
                 line.push(x)
             }catch(err){
-                if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();flag=false;break}
+                if(err.__name__==='StopIteration'){$B.$pop_exc();flag=false;break}
                 else{throw err}
             }
         }
@@ -1459,7 +1461,7 @@ var BaseException = function (msg,js_exc){
     err.info = 'Traceback (most recent call last):'
     if(msg===undefined){msg='BaseException'}
     
-    if(__BRYTHON__.debug && !msg.info){
+    if($B.debug && !msg.info){
         if(js_exc!==undefined){
             for(var attr in js_exc){
                 if(attr==='message'){continue}
@@ -1470,10 +1472,10 @@ var BaseException = function (msg,js_exc){
         }
         // call stack
         var last_info
-        for(var i=0;i<__BRYTHON__.call_stack.length;i++){
-            var call_info = __BRYTHON__.call_stack[i]
+        for(var i=0;i<$B.call_stack.length;i++){
+            var call_info = $B.call_stack[i]
             var lib_module = call_info[1]
-            var caller = __BRYTHON__.modules[lib_module].caller
+            var caller = $B.modules[lib_module].caller
             if(caller!==undefined){
                 call_info = caller
                 lib_module = caller[1]
@@ -1487,9 +1489,9 @@ var BaseException = function (msg,js_exc){
             last_info = call_info
         }
         // error line
-        var err_info = __BRYTHON__.line_info
+        var err_info = $B.line_info
         while(true){
-            var mod = __BRYTHON__.modules[err_info[1]]
+            var mod = $B.modules[err_info[1]]
             if(mod===undefined){break}
             var caller = mod.caller
             if(caller===undefined){break}
@@ -1517,7 +1519,7 @@ var BaseException = function (msg,js_exc){
     err.type = 'BaseException'
     err.value = msg
     err.traceback = None
-    __BRYTHON__.exception_stack.push(err)
+    $B.exception_stack.push(err)
     return err
 }
 
@@ -1525,27 +1527,27 @@ BaseException.__name__ = 'BaseException'
 BaseException.__class__ = $factory
 BaseException.$dict = $BaseExceptionDict
 
-__BRYTHON__.exception = function(js_exc){
+$B.exception = function(js_exc){
     // thrown by eval(), exec() or by a function
     // js_exc is the Javascript exception, which can be raised by the
     // code generated by Python - in this case it has attribute py_error set 
     // or by the Javascript interpreter (ReferenceError for instance)
-    if(js_exc.py_error && __BRYTHON__.debug>0){console.log('info '+js_exc.info)}
+    if(js_exc.py_error && $B.debug>0){console.log('info '+js_exc.info)}
     if(!js_exc.py_error){
-        if(__BRYTHON__.debug>0 && js_exc.info===undefined){
-            if(__BRYTHON__.line_info!==undefined){
-                var mod_name = __BRYTHON__.line_info[1]
-                var module = __BRYTHON__.modules[mod_name]
+        if($B.debug>0 && js_exc.info===undefined){
+            if($B.line_info!==undefined){
+                var mod_name = $B.line_info[1]
+                var module = $B.modules[mod_name]
                 if(module){
                     if(module.caller!==undefined){
                         // for list comprehension and the likes, replace
                         // by the line in the enclosing module
-                        __BRYTHON__.line_info = module.caller
-                        var mod_name = __BRYTHON__.line_info[1]
+                        $B.line_info = module.caller
+                        var mod_name = $B.line_info[1]
                     }
                     var lib_module = mod_name
                     if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-                    var line_num = __BRYTHON__.line_info[0]
+                    var line_num = $B.line_info[0]
                     var lines = document.$py_src[mod_name].split('\n')
                     js_exc.message += "\n  module '"+lib_module+"' line "+line_num
                     js_exc.message += '\n'+lines[line_num-1]
@@ -1567,15 +1569,15 @@ __BRYTHON__.exception = function(js_exc){
     }else{
         var exc = js_exc
     }
-    __BRYTHON__.exception_stack.push(exc)
+    $B.exception_stack.push(exc)
     return exc
 }
 
-__BRYTHON__.is_exc=function(exc,exc_list){
+$B.is_exc=function(exc,exc_list){
     // used in try/except to check if an exception is an instance of
     // one of the classes in exc_list
     if(exc.__class__===undefined){
-        exc = __BRYTHON__.exception(exc)
+        exc = $B.exception(exc)
     }
     var exc_class = exc.__class__.$factory
     for(var i=0;i<exc_list.length;i++){
@@ -1599,7 +1601,7 @@ function $make_exc(names,parent){
         eval('$'+name+'Dict.$factory='+name)
         eval(name+'.$dict=$'+name+'Dict')
         // insert in returned value
-        eval('py_env.'+name+'='+name)
+        eval('__builtins__.'+name+'='+name)
     }
 }
 
@@ -1645,9 +1647,9 @@ var builtin_names=[ 'Ellipsis', 'False',  'None',
 for(var i=0;i<builtin_names.length;i++){
     var name = builtin_names[i]
     try{
-        eval('py_env.'+name+'='+name)
-        if(typeof py_env[name]=='function'){
-            py_env[name].__repr__ = py_env[name].__str__ = (function(x){
+        eval('__builtins__.'+name+'='+name)
+        if(typeof __builtins__[name]=='function'){
+            __builtins__[name].__repr__ = __builtins__[name].__str__ = (function(x){
                 return function(){return '<built-in function '+x+'>'}
             })(name)
         }
@@ -1655,9 +1657,9 @@ for(var i=0;i<builtin_names.length;i++){
     catch(err){}
 }
 
-__BRYTHON__._alert = _alert
-py_env['$open']=$url_open
-py_env['$print']=$print
-py_env['$$super']=$$super
+$B._alert = _alert
+__builtins__['$open']=$url_open
+__builtins__['$print']=$print
+__builtins__['$$super']=$$super
 
-})(__builtins__)
+})(__BRYTHON__)

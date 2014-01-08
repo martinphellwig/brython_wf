@@ -1,4 +1,6 @@
-$module = (function(){
+$module = (function($B){
+
+var __builtins__ = $B.builtins
 
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 
@@ -9,12 +11,12 @@ function $SVGTag(tag_name,args){
     // represents an SVG tag
     var $i = null
     var $obj = this
-    var obj = __BRYTHON__.$DOMNode(document.createElementNS($svgNS,tag_name))
+    var obj = $B.$DOMNode(document.createElementNS($svgNS,tag_name))
     if(args!=undefined && args.length>0){
         $start = 0
         $first = args[0]
         // if first argument is not a keyword, it's the tag content
-        if($first.__class__!==__BRYTHON__.$KwDict){
+        if($first.__class__!==$B.$KwDict){
             $start = 1
             if(isinstance($first,[str,int,float])){
                 txt = document.createTextNode(str($first))
@@ -32,11 +34,11 @@ function $SVGTag(tag_name,args){
         for($i=$start;$i<args.length;$i++){
             // keyword arguments
             $arg = args[$i]
-            if($arg && $arg.__class__===__BRYTHON__.$KwDict){
+            if($arg && $arg.__class__===$B.$KwDict){
                 if($arg.name.toLowerCase().substr(0,2)=="on"){ // events
-                    eval('__BRYTHON__.DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
+                    eval('$B.DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
                 }else if($arg.name.toLowerCase()=="style"){
-                    __BRYTHON__.DOMNode.set_style(obj,$arg.value)
+                    $B.DOMNode.set_style(obj,$arg.value)
                 }else if($arg.name.toLowerCase().indexOf("href") !== -1){ // xlink:href
                     obj.elt.setAttributeNS( "http://www.w3.org/1999/xlink","href",$arg.value)
                 } else {
@@ -97,4 +99,4 @@ for(var i=0;i<$svg_tags.length;i++){
 }
 obj.__getattr__ = function(attr){return this[attr]}
 return obj
-})()
+})(__BRYTHON__)

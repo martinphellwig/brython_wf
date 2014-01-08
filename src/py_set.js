@@ -1,5 +1,6 @@
-;(function(){
+;(function($B){
 
+var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 
 // set
@@ -78,7 +79,7 @@ $SetDict.__init__ = function(self){
             while(true){
                 try{$SetDict.add(obj,next(iterable))}
                 catch(err){
-                    if(err.__name__=='StopIteration'){__BRYTHON__.$pop_exc();break}
+                    if(err.__name__=='StopIteration'){$B.$pop_exc();break}
                     throw err
                 }
             }
@@ -279,4 +280,4 @@ $FrozensetDict.$factory = frozenset
 __builtins__.set = set
 __builtins__.frozenset = frozenset
 
-})()
+})(__BRYTHON__)

@@ -1,5 +1,6 @@
-$module = (function(){
+$module = (function($B){
 
+var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 
 function _py(obj){
@@ -27,7 +28,7 @@ function _py(obj){
         }
         return res
     }
-    return __BRYTHON__.JSObject(obj)
+    return $B.JSObject(obj)
 }
 function _js(obj){
     // obj is a Python object
@@ -58,4 +59,4 @@ return  {
     dumps : function(obj){return JSON.stringify(_js(obj))},
 }
 
-})()
+})(__BRYTHON__)

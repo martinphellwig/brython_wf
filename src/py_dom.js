@@ -1,5 +1,6 @@
-;(function(br_obj){
+;(function($B){
 
+var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict = object.$dict
 var $JSObject = __BRYTHON__.$JSObject
@@ -56,14 +57,14 @@ var $DOMNodeAttrs = ['nodeName','nodeValue','nodeType','parentNode',
     'childNodes','firstChild','lastChild','previousSibling','nextSibling',
     'attributes','ownerDocument']
 
-br_obj.$isNode = function(obj){
+$B.$isNode = function(obj){
     for(var i=0;i<$DOMNodeAttrs.length;i++){
         if(obj[$DOMNodeAttrs[i]]===undefined){return false}
     }
     return true
 }
 
-br_obj.$isNodeList = function(nodes) {
+$B.$isNodeList = function(nodes) {
     // copied from http://stackoverflow.com/questions/7238177/
     // detect-htmlcollection-nodelist-in-javascript
     try{
@@ -90,7 +91,7 @@ var $DOMEventAttrs_IE = ['altKey','altLeft','button','cancelBubble',
     'source','srcElement','srcFilter','srcUrn','toElement','type',
     'url','wheelDelta','x','y']
 
-br_obj.$isEvent = function(obj){
+$B.$isEvent = function(obj){
     flag = true
     for(var i=0;i<$DOMEventAttrs_W3C.length;i++){
         if(obj[$DOMEventAttrs_W3C[i]]===undefined){flag=false;break}
@@ -1197,7 +1198,7 @@ win.get_postMessage = function(msg,targetOrigin){
     return window.postMessage(msg,targetOrigin)
 }
 
-br_obj.DOMNode = DOMNode
-br_obj.$DOMNode = $DOMNode
-br_obj.win = win
+$B.DOMNode = DOMNode
+$B.$DOMNode = $DOMNode
+$B.win = win
 })(__BRYTHON__)

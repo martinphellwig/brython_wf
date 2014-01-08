@@ -7,7 +7,7 @@ function $__new__(factory){
         var res = factory.apply(null,[])
         res.__class__ = cls.$dict
         var init_func = null
-        try{init_func = __builtins__.getattr(res,'__init__')}
+        try{init_func = __BRYTHON__.builtins.getattr(res,'__init__')}
         catch(err){__BRYTHON__.$pop_exc()}
         if(init_func!==null){
             var args = []
@@ -19,7 +19,7 @@ function $__new__(factory){
     }
 }
 
-__builtins__.object = (function(){
+__BRYTHON__.builtins.object = (function($B){
 
 
 // class object for the built-in class 'object'
@@ -32,7 +32,7 @@ var $ObjectDict = {
 // function used to generate the methods that return 'unorderable types'
 var $ObjectNI = function(name,op){
     return function(other){
-        throw TypeError('unorderable types: object() '+op+' '+__builtins__.str(other.__class__.__name__)+'()')
+        throw TypeError('unorderable types: object() '+op+' '+$B.builtins.str(other.__class__.__name__)+'()')
     }
 }
 
@@ -139,7 +139,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                             local_args.push(arguments[i])
                         }
                         var x = res.apply(obj,local_args)
-                        if(x===undefined){return __builtins__.None}else{return x}
+                        if(x===undefined){return $B.builtins.None}else{return x}
                     }})(args)
                 method.__class__ = $MethodDict
                 method.__func__ = __func__
@@ -177,12 +177,12 @@ $ObjectDict.__getattribute__ = function(obj,attr){
 $ObjectDict.__gt__ = $ObjectNI('__gt__','>')
 
 $ObjectDict.__hash__ = function (self) { 
-    __BRYTHON__.$py_next_hash+=1; 
-    return __BRYTHON__.$py_next_hash;
+    $B.$py_next_hash+=1; 
+    return $B.$py_next_hash;
 }
 
 $ObjectDict.__in__ = function(self,other){
-    return __builtins__.getattr(other,'__contains__')(self)
+    return $B.builtins.getattr(other,'__contains__')(self)
 }
 
 $ObjectDict.__le__ = $ObjectNI('__le__','<=')
@@ -201,7 +201,7 @@ $ObjectDict.__new__ = function(cls){
 $ObjectDict.__ne__ = function(self,other){return self!==other}
 
 $ObjectDict.__or__ = function(self,other){
-    if(__builtins__.bool(self)){return self}else{return other}
+    if($B.builtins.bool(self)){return self}else{return other}
 }
 
 $ObjectDict.__repr__ = function(self){
@@ -241,4 +241,4 @@ $ObjectDict.$factory = object
 
 return object
 
-})()
+})(__BRYTHON__)

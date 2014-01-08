@@ -1,5 +1,5 @@
-
-__BRYTHON__.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw){
+;(function($B){
+$B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw){
     // builds a namespace from the arguments provided in $args
     // in a function call like foo(x,y,z=1,*args,**kw) the parameters are
     // $required : ['x','y']
@@ -15,13 +15,13 @@ __BRYTHON__.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$o
         $arg = $args[i]
         if($arg===undefined){console.log('arg '+i+' undef in '+$fname)}
         if($arg===null){upargs.push(null)}
-        else if($arg.__class__===__BRYTHON__.$ptupleDict){
+        else if($arg.__class__===$B.$ptupleDict){
             for(var j=0;j<$arg.arg.length;j++){
                 upargs.push($arg.arg[j])
             }
-        }else if($arg.__class__===__BRYTHON__.$pdictDict){
+        }else if($arg.__class__===$B.$pdictDict){
             for(var j=0;j<$arg.arg.$keys.length;j++){
-                upargs.push(__BRYTHON__.$Kw($arg.arg.$keys[j],$arg.arg.$values[j]))
+                upargs.push($B.$Kw($arg.arg.$keys[j],$arg.arg.$values[j]))
             }
         }else{
             upargs.push($arg)
@@ -29,8 +29,8 @@ __BRYTHON__.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$o
     }
     for(var $i=0;$i<upargs.length;$i++){
         var $arg=upargs[$i]
-        var $PyVar=__BRYTHON__.$JS2Py($arg)
-        if($arg && $arg.__class__===__BRYTHON__.$KwDict){ // keyword argument
+        var $PyVar=$B.$JS2Py($arg)
+        if($arg && $arg.__class__===$B.$KwDict){ // keyword argument
             $PyVar = $arg.value
             if($set_vars.indexOf($arg.name)>-1){
                 throw new TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
@@ -62,7 +62,7 @@ __BRYTHON__.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$o
                 $ns[$var_name]=$PyVar
                 $set_vars.push($var_name)
             } else {
-                console.log(''+__BRYTHON__.line_info)
+                console.log(''+$B.line_info)
                 msg = $fname+"() takes "+$required.length+' positional argument'
                 msg += $required.length == 1 ? '' : 's'
                 msg += ' but more were given'
@@ -84,22 +84,22 @@ __BRYTHON__.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$o
         throw TypeError(msg)
     }
     if($other_kw!=null){
-        $ns[$other_kw]=__builtins__.dict()
+        $ns[$other_kw]=__BRYTHON__.builtins.dict()
         $ns[$other_kw].$keys = $dict_keys
         $ns[$other_kw].$values = $dict_values
     }
-    if($other_args!=null){$ns[$other_args]=__builtins__.tuple($ns[$other_args])}
+    if($other_args!=null){$ns[$other_args]=__BRYTHON__.builtins.tuple($ns[$other_args])}
     return $ns
 }
 
-__BRYTHON__.$mkdict = function(glob,loc){
+$B.$mkdict = function(glob,loc){
     var res = {}
     for(var arg in glob){res[arg]=glob[arg]}
     for(var arg in loc){res[arg]=loc[arg]}
     return res
 }
 
-__BRYTHON__.$list_comp = function(){
+$B.$list_comp = function(){
     var $env = arguments[0]
     for(var $arg in $env){
         eval("var "+$arg+'=$env["'+$arg+'"]')
@@ -118,17 +118,17 @@ __BRYTHON__.$list_comp = function(){
     $py += "    return res\n"
     $py += "res"+$ix+"=func"+$ix+"()"
     var $mod_name = 'lc'+$ix
-    var $root = __BRYTHON__.py2js($py,$mod_name,__BRYTHON__.line_info)
-    $root.caller = __BRYTHON__.line_info
+    var $root = $B.py2js($py,$mod_name,$B.line_info)
+    $root.caller = $B.line_info
     var $js = $root.to_js()
-    __BRYTHON__.scope[$mod_name].__dict__ = $env
+    $B.scope[$mod_name].__dict__ = $env
     try{
     eval($js)
-    }catch(err){throw __BRYTHON__.exception(err)}
+    }catch(err){throw $B.exception(err)}
     return eval("res"+$ix)
 }
 
-__BRYTHON__.$gen_expr = function(){ // generator expresssion
+$B.$gen_expr = function(){ // generator expresssion
     var $env = arguments[0]
     for(var $arg in $env){
         try{
@@ -153,10 +153,10 @@ __BRYTHON__.$gen_expr = function(){ // generator expresssion
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.append('+arguments[1]+')'
     var $mod_name = 'ge'+$ix
-    var $root = __BRYTHON__.py2js($py,$mod_name,__BRYTHON__.line_info)
-    $root.caller = __BRYTHON__.line_info
+    var $root = $B.py2js($py,$mod_name,$B.line_info)
+    $root.caller = $B.line_info
     var $js = $root.to_js()
-    __BRYTHON__.scope[$mod_name].__dict__=$env
+    $B.scope[$mod_name].__dict__=$env
     eval($js)
     var $res1 = eval($res)
     var $GenExprDict = {
@@ -164,8 +164,8 @@ __BRYTHON__.$gen_expr = function(){ // generator expresssion
         __name__:'generator',
         toString:function(){return '(generator)'}
     }
-    $GenExprDict.__mro__ = [$GenExprDict,__builtins__.object.$dict]
-    $GenExprDict.__iter__ = function(self){return __builtins__.list.$dict.__iter__(self.value)}
+    $GenExprDict.__mro__ = [$GenExprDict,__BRYTHON__.builtins.object.$dict]
+    $GenExprDict.__iter__ = function(self){return __BRYTHON__.builtins.list.$dict.__iter__(self.value)}
     $GenExprDict.__str__ = function(self){
         if(self===undefined){return "<class 'generator'>"}
         return '<generator object <genexpr>>'
@@ -178,7 +178,7 @@ __BRYTHON__.$gen_expr = function(){ // generator expresssion
     return $res2
 }
 
-__BRYTHON__.$dict_comp = function(){ // dictionary comprehension
+$B.$dict_comp = function(){ // dictionary comprehension
     var $env = arguments[0]
     for(var $arg in $env){
         eval("var "+$arg+'=$env["'+$arg+'"]')
@@ -195,15 +195,15 @@ __BRYTHON__.$dict_comp = function(){ // dictionary comprehension
     for(var $j=0;$j<indent;$j++){$py += ' '}
     $py += $res+'.update({'+arguments[1]+'})'
     var $mod_name = 'dc'+$ix
-    var $root = __BRYTHON__.py2js($py,$mod_name,__BRYTHON__.line_info)
-    $root.caller = __BRYTHON__.line_info
+    var $root = $B.py2js($py,$mod_name,$B.line_info)
+    $root.caller = $B.line_info
     var $js = $root.to_js()
-    __BRYTHON__.scope[$mod_name].__dict__ = $env
+    $B.scope[$mod_name].__dict__ = $env
     eval($js)
     return eval($res)
 }
 
-__BRYTHON__.$generator = function(func){
+$B.$generator = function(func){
     // a cheap and buggy implementation of generators
     // actually executes the function and stores the result of
     // successive yields in a list
@@ -226,7 +226,7 @@ __BRYTHON__.$generator = function(func){
         }
         else{throw StopIteration("")}
     }
-    $GeneratorDict.__mro__ = [$GeneratorDict,__builtins__.object.$dict]
+    $GeneratorDict.__mro__ = [$GeneratorDict,__BRYTHON__.builtins.object.$dict]
 
     var res = function(){
         func.$iter = []
@@ -234,7 +234,7 @@ __BRYTHON__.$generator = function(func){
         // cheat ! capture all standard output
         var save_stdout = document.$stdout
         var output = {}
-        document.$stdout = __BRYTHON__.JSObject({
+        document.$stdout = $B.JSObject({
             write : function(data){
                 var loop_num = func.$iter.length
                 if(output[loop_num]===undefined){
@@ -258,14 +258,14 @@ __BRYTHON__.$generator = function(func){
     res.__repr__ = function(){return "<function "+func.__name__+">"}
     return res
 }
-__BRYTHON__.$generator.__repr__ = function(){return "<class 'generator'>"}
-__BRYTHON__.$generator.__str__ = function(){return "<class 'generator'>"}
-__BRYTHON__.$generator.__class__ = $type
+$B.$generator.__repr__ = function(){return "<class 'generator'>"}
+$B.$generator.__str__ = function(){return "<class 'generator'>"}
+$B.$generator.__class__ = $type
 
-__BRYTHON__.$ternary = function(env,cond,expr1,expr2){
+$B.$ternary = function(env,cond,expr1,expr2){
     // env is the environment to run the ternary expression
     // built-in names must be available to evaluate the expression
-    for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+    for(var $py_builtin in __BRYTHON__.builtins){eval("var "+$py_builtin+"=__BRYTHON__.builtins[$py_builtin]")}
 
     for(var attr in env){eval('var '+attr+'=env["'+attr+'"]')}
     var res = 'if ('+cond+'){\n'
@@ -275,13 +275,13 @@ __BRYTHON__.$ternary = function(env,cond,expr1,expr2){
     return $res
 }
 
-__BRYTHON__.$lambda = function($mod,$globals,$locals,$args,$body){
+$B.$lambda = function($mod,$globals,$locals,$args,$body){
     for(var $attr in $globals){eval('var '+$attr+'=$globals["'+$attr+'"]')}
     for(var $attr in $locals){eval('var '+$attr+'=$locals["'+$attr+'"]')}
     var $res = 'res'+Math.random().toString(36).substr(2,8)
     var $py = 'def '+$res+'('+$args+'):\n'
     $py += '    return '+$body
-    var $js = __BRYTHON__.py2js($py,'lambda').to_js()
+    var $js = $B.py2js($py,'lambda').to_js()
     eval($js)
     var $res = eval($res)
     $res.__module__ = $mod
@@ -290,43 +290,43 @@ __BRYTHON__.$lambda = function($mod,$globals,$locals,$args,$body){
 }
 
 // transform native JS types into Brython types
-__BRYTHON__.$JS2Py = function(src){
-    if(src===null||src===undefined){return __builtins__.None}
+$B.$JS2Py = function(src){
+    if(src===null||src===undefined){return __BRYTHON__.builtins.None}
     if(typeof src==='number'){
         if(src%1===0){return src}
         else{return float(src)}
     }
     if(src.__class__!==undefined){
-        if(src.__class__===__builtins__.list.$dict){
+        if(src.__class__===__BRYTHON__.builtins.list.$dict){
             for(var i=0;i<src.length;i++){
-                src[i] = __BRYTHON__.$JS2Py(src[i])
+                src[i] = $B.$JS2Py(src[i])
             }
         }
         return src
     }
     if(typeof src=="object"){
-        if(__BRYTHON__.$isNode(src)){return __BRYTHON__.$DOMNode(src)}
-        else if(__BRYTHON__.$isEvent(src)){return __BRYTHON__.$DOMEvent(src)}
-        else if(src.constructor===Array||__BRYTHON__.$isNodeList(src)){
+        if($B.$isNode(src)){return $B.$DOMNode(src)}
+        else if($B.$isEvent(src)){return $B.$DOMEvent(src)}
+        else if(src.constructor===Array||$B.$isNodeList(src)){
             var res = []
             for(var i=0;i<src.length;i++){
-                res.push(__BRYTHON__.$JS2Py(src[i]))
+                res.push($B.$JS2Py(src[i]))
             }
             return res
         }
     }
-    return __BRYTHON__.JSObject(src)
+    return $B.JSObject(src)
 }
 
 // exceptions
-__BRYTHON__.$raise= function(){
+$B.$raise= function(){
     // used for "raise" without specifying an exception
     // if there is an exception in the stack, use it, else throw a simple Exception
-    if(__BRYTHON__.exception_stack.length>0){throw $last(__BRYTHON__.exception_stack)}
+    if($B.exception_stack.length>0){throw $last($B.exception_stack)}
     else{throw Error('Exception')}
 }
 
-__BRYTHON__.$syntax_err_line = function(module,pos) {
+$B.$syntax_err_line = function(module,pos) {
     // map position to line number
     var pos2line = {}
     var lnum=1
@@ -354,131 +354,85 @@ __BRYTHON__.$syntax_err_line = function(module,pos) {
     return info
 }
 
-__BRYTHON__.$SyntaxError = function(module,msg,pos) {
+$B.$SyntaxError = function(module,msg,pos) {
     var exc = SyntaxError(msg)
-    exc.info += __BRYTHON__.$syntax_err_line(module,pos)
+    exc.info += $B.$syntax_err_line(module,pos)
     throw exc
 }
 
-__BRYTHON__.$IndentationError = function(module,msg,pos) {
+$B.$IndentationError = function(module,msg,pos) {
     var exc = IndentationError(msg)
-    exc.info += __BRYTHON__.$syntax_err_line(module,pos)
+    exc.info += $B.$syntax_err_line(module,pos)
     throw exc
 }
 
 // function to remove internal exceptions from stack exposed to programs
-__BRYTHON__.$pop_exc=function(){__BRYTHON__.exception_stack.pop()}
+$B.$pop_exc=function(){$B.exception_stack.pop()}
 
 // classes used for passing parameters to functions
 // keyword arguments : foo(x=1)
-__BRYTHON__.$KwDict = {__class__:$type,__name__:'kw'}
-__BRYTHON__.$KwDict.__mro__ = [__BRYTHON__.$KwDict,__builtins__.object.$dict]
+$B.$KwDict = {__class__:$type,__name__:'kw'}
+$B.$KwDict.__mro__ = [$B.$KwDict,__BRYTHON__.builtins.object.$dict]
 
-__BRYTHON__.$Kw = function(name,value){
-    return {__class__:__BRYTHON__.$KwDict,name:name,value:value}
+$B.$Kw = function(name,value){
+    return {__class__:$B.$KwDict,name:name,value:value}
 }
-__BRYTHON__.$Kw.$dict = __BRYTHON__.$KwDict // for insinstance
-__BRYTHON__.$KwDict.$factory = __BRYTHON__.$Kw
+$B.$Kw.$dict = $B.$KwDict // for insinstance
+$B.$KwDict.$factory = $B.$Kw
 
 // packed tuple : foo(*args)
-__BRYTHON__.$ptupleDict = {
+$B.$ptupleDict = {
     __class__:$type,
     __name__:'packed tuple',
     toString:function(){return 'ptuple'}
 }
-__BRYTHON__.$ptupleDict.$dict = __BRYTHON__.$ptupleDict
+$B.$ptupleDict.$dict = $B.$ptupleDict
 
-__BRYTHON__.$ptuple = function(arg){
+$B.$ptuple = function(arg){
     return {
-        __class__:__BRYTHON__.$ptupleDict,
+        __class__:$B.$ptupleDict,
         arg:arg
     }
 }
-__BRYTHON__.$ptuple.$dict = __BRYTHON__.$ptupleDict
-__BRYTHON__.$ptupleDict.$factory = __BRYTHON__.$ptuple
+$B.$ptuple.$dict = $B.$ptupleDict
+$B.$ptupleDict.$factory = $B.$ptuple
 
 // packed dict : foo(**kw)
-__BRYTHON__.$pdictDict = {
+$B.$pdictDict = {
     __class__ : $type,
     __name__:'packed dict'
 }
-__BRYTHON__.$pdictDict.$dict = __BRYTHON__.$pdictDict
+$B.$pdictDict.$dict = $B.$pdictDict
 
-__BRYTHON__.$pdict = function(arg){
+$B.$pdict = function(arg){
     return {
-        __class__:__BRYTHON__.$pdictDict,
+        __class__:$B.$pdictDict,
         arg:arg
     }
 }
-__BRYTHON__.$pdict.$dict = __BRYTHON__.$pdictDict
-__BRYTHON__.$pdict.$factory = __BRYTHON__.$pdict
+$B.$pdict.$dict = $B.$pdictDict
+$B.$pdict.$factory = $B.$pdict
 
-function $test_item(expr){
+$B.$test_item = function(expr){
     // used to evaluate expressions with "and" or "or"
     // returns a Javascript boolean (true or false) and stores
     // the evaluation in a global variable $test_result
-    document.$test_result = expr
-    return __builtins__.bool(expr)
+    $B.$test_result = expr
+    return __BRYTHON__.builtins.bool(expr)
 }
 
-function $test_expr(){
+$B.$test_expr = function(){
     // returns the last evaluated item
-    return document.$test_result
+    return $B.$test_result
 }
 
-Array.prototype.match = function(other){
-    // return true if array and other have the same first items
-    var $i = 0
-    while($i<this.length && $i<other.length){
-        if(this[$i]!==other[$i]){return false}
-        $i++
-    }
-    return true
-}
-
-// IE doesn't implement indexOf on Arrays
-if(!Array.indexOf){  
-Array.prototype.indexOf = function(obj){  
-    for(var i=0;i<this.length;i++){  
-        if(this[i]==obj){  
-            return i;  
-        }  
-    }  
-    return -1;  
- }  
-}
-
-// in case console is not defined
-try{console}
-catch(err){
-    console = {'log':function(data){void(0)}}
-}
-
-function $List2Dict(){
-    var res = {},i
-    if(arguments.length==1 && arguments[0].constructor==Array){
-        // arguments passed as a list
-        for(i=0;i<arguments[0].length;i++){
-            res[arguments[0][i]]=0
-        }
-    } else {
-        for(i=0;i<arguments.length;i++){
-            res[arguments[i]]=0
-        }
-    }
-    return res
-}
-
-function $last(item){
-    if(typeof item=="string"){return item.charAt(item.length-1)}
-    else if(typeof item=="object"){return item[item.length-1]}
-}
+})(__BRYTHON__)
 
 // override IDBObjectStore's add, put, etc functions since we need
 // to convert python style objects to a js object type
 
 function pyobject2jsobject(obj) {
-    if(__builtins__.isinstance(obj,__builtins__.dict)){
+    if(__BRYTHON__.builtins.isinstance(obj,__BRYTHON__.builtins.dict)){
         var temp = new Object()
         temp.__class__ = 'dict'
         for(var i=0;i<obj.$keys.length;i++){temp[obj.$keys[i]]=obj.$values[i]}
@@ -490,9 +444,9 @@ function pyobject2jsobject(obj) {
 }
 
 function jsobject2pyobject(obj) {
-    if(obj === undefined) return __builtins__.None
+    if(obj === undefined) return __BRYTHON__.builtins.None
     if(obj.__class__ === 'dict'){
-       var d = __builtins__.dict()
+       var d = __BRYTHON__.builtins.dict()
        for(var attr in obj){
           if (attr !== '__class__') d.__setitem__(attr, obj[attr])
        }
@@ -522,6 +476,35 @@ if (window.IDBRequest !== undefined) {
        return jsobject2pyobject(this.result);
     }
 }
+
+Array.prototype.match = function(other){
+    // return true if array and other have the same first items
+    var $i = 0
+    while($i<this.length && $i<other.length){
+        if(this[$i]!==other[$i]){return false}
+        $i++
+    }
+    return true
+}
+
+// IE doesn't implement indexOf on Arrays
+if(!Array.indexOf){  
+Array.prototype.indexOf = function(obj){  
+    for(var i=0;i<this.length;i++){  
+        if(this[i]==obj){  
+            return i;  
+        }  
+    }  
+    return -1;  
+ }  
+}
+
+// in case console is not defined
+try{console}
+catch(err){
+    var console = {'log':function(data){void(0)}}
+}
+
 
 // default standard output and error
 // can be reset by sys.stdout or sys.stderr

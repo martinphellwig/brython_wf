@@ -1,17 +1,19 @@
 // creation of an HTML element
-$module = (function(){
+$module = (function($B){
+
+var __builtins__ = $B.builtins
 
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 
 function $Tag(tagName,args){
-    var obj = __BRYTHON__.$DOMNode(document.createElement(tagName))
+    var obj = $B.$DOMNode(document.createElement(tagName))
     // obj.elt is the DOM element
     obj.parent = this
     if(args!=undefined && args.length>0){
         $start = 0
         $first = args[0]
         // if first argument is not a keyword, it's the tag content
-        if($first.__class__!==__BRYTHON__.$KwDict){
+        if($first.__class__!==$B.$KwDict){
             $start = 1
             if(isinstance($first,[str,int,float])){
                 txt = document.createTextNode(str($first))
@@ -29,11 +31,11 @@ function $Tag(tagName,args){
         for(var $i=$start;$i<args.length;$i++){
             // keyword arguments
             $arg = args[$i]
-            if($arg && $arg.__class__===__BRYTHON__.$KwDict){
+            if($arg && $arg.__class__===$B.$KwDict){
                 if($arg.name.toLowerCase().substr(0,2)==="on"){ // events
-                    eval('__BRYTHON__.DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
+                    eval('$B.DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
                 }else if($arg.name.toLowerCase()=="style"){
-                    __BRYTHON__.DOMNode.set_style(obj,$arg.value)
+                    $B.DOMNode.set_style(obj,$arg.value)
                 } else {
                     if($arg.value!==false){
                         // option.selected=false sets it to true :-)
@@ -102,4 +104,4 @@ for($i=0;$i<$tags.length;$i++){
 }
 obj.__getattr__ = function(attr){return this[attr]}
 return obj
-})()
+})(__BRYTHON__)

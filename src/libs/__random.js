@@ -1,8 +1,9 @@
-$module = (function(){
+$module = (function($B){
 
+    var __builtins__ = $B.builtins
     for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
-    var $JSObject = __BRYTHON__.$JSObject
-    var JSObject = __BRYTHON__.JSObject
+    var $JSObject = $B.$JSObject
+    var JSObject = $B.JSObject
     
     return {
         choice:function(seq){
@@ -54,5 +55,5 @@ $module = (function(){
         }
     }
 
-})()
+})(__BRYTHON__)
 

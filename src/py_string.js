@@ -1,5 +1,6 @@
-__builtins__.str = function(){
+;(function($B){
 
+var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict = object.$dict
 
@@ -108,7 +109,6 @@ $StringDict.__len__ = function(self){return self.length}
 
 $legacy_format=$StringDict.__mod__ = function(self,args){
     // string formatting (old style with %)
-    var flags = $List2Dict('#','0','-',' ','+')
     var ph = [] // placeholders for replacements
 
     function format(s){
@@ -347,8 +347,8 @@ var $notimplemented = function(self,other){
     throw NotImplementedError("OPERATOR not implemented for class str")
 }
 $notimplemented += '' // coerce to string
-for($op in __BRYTHON__.$operators){
-    var $opfunc = '__'+__BRYTHON__.$operators[$op]+'__'
+for($op in $B.$operators){
+    var $opfunc = '__'+$B.$operators[$op]+'__'
     if(!($opfunc in str)){
         //eval('$StringDict.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
     }
@@ -400,7 +400,7 @@ $StringDict.endswith = function(self){
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
     var start=null,end=null
-    var $ns=__BRYTHON__.$MakeArgs("$StringDict.endswith",args,['suffix'],
+    var $ns=$B.$MakeArgs("$StringDict.endswith",args,['suffix'],
         ['start','end'],null,null)
     var suffixes = $ns['suffix']
     if(!isinstance(suffixes,__builtins__.tuple)){suffixes=[suffixes]}
@@ -425,7 +425,7 @@ $StringDict.find = function(self){
     // arguments start and end are interpreted as in slice notation. 
     // Return -1 if sub is not found.
     var start=0,end=self.length
-    var $ns=__BRYTHON__.$MakeArgs("$StringDict.find",arguments,['self','sub'],
+    var $ns=$B.$MakeArgs("$StringDict.find",arguments,['self','sub'],
         ['start','end'],null,null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     if(!isinstance(sub,str)){throw TypeError(
@@ -559,7 +559,7 @@ var $FormattableString=function(format_string) {
 
     this.format=function() {
        // same as str.format() and unicode.format in Python 2.6+
-       var $ns=__BRYTHON__.$MakeArgs('format',arguments,[],[],'args','kwargs')
+       var $ns=$B.$MakeArgs('format',arguments,[],[],'args','kwargs')
        var args=$ns['args']
        var kwargs=$ns['kwargs']
 
@@ -931,7 +931,7 @@ $StringDict.join = function(self,obj){
             res += obj2+self
             count++
         }catch(err){
-            if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
+            if(err.__name__==='StopIteration'){$B.$pop_exc();break}
             else{throw err}
         }
     }
@@ -1006,7 +1006,7 @@ $StringDict.rfind = function(self){
     // such that sub is contained within s[start:end]. Optional arguments 
     // start and end are interpreted as in slice notation. Return -1 on failure.
     var start=0,end=self.length
-    var $ns=__BRYTHON__.$MakeArgs("$StringDict.find",arguments,['self','sub'],
+    var $ns=$B.$MakeArgs("$StringDict.find",arguments,['self','sub'],
         ['start','end'],null,null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     if(!isinstance(sub,str)){throw TypeError(
@@ -1030,7 +1030,7 @@ $StringDict.rindex = function(){
 
 $StringDict.rjust = function(self) {
     var fillchar = ' '
-    var $ns=__BRYTHON__.$MakeArgs("$StringDict.rjust",arguments,['self','width'],
+    var $ns=$B.$MakeArgs("$StringDict.rjust",arguments,['self','width'],
                       ['fillchar'],null,null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 
@@ -1058,7 +1058,7 @@ $StringDict.rpartition = function(self,sep) {
 $StringDict.rsplit = function(self) {
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    var $ns=__BRYTHON__.$MakeArgs("$StringDict.split",args,[],[],'args','kw')
+    var $ns=$B.$MakeArgs("$StringDict.split",args,[],[],'args','kw')
     var sep=None,maxsplit=-1
     if($ns['args'].length>=1){sep=$ns['args'][0]}
     if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -1093,7 +1093,7 @@ $StringDict.rstrip = function(self,x){
 $StringDict.split = function(self){
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    var $ns=__BRYTHON__.$MakeArgs("$StringDict.split",args,[],[],'args','kw')
+    var $ns=$B.$MakeArgs("$StringDict.split",args,[],[],'args','kw')
     var sep=None,maxsplit=-1
     if($ns['args'].length>=1){sep=$ns['args'][0]}
     if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -1159,7 +1159,7 @@ $StringDict.startswith = function(self){
     // prefix can also be a tuple of prefixes to look for. With optional 
     // start, test string beginning at that position. With optional end, 
     // stop comparing string at that position.
-    $ns=__BRYTHON__.$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
+    $ns=$B.$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
         ['start','end'],null,null)
     var prefixes = $ns['prefix']
     if(!isinstance(prefixes,__builtins__.tuple)){prefixes=[prefixes]}
@@ -1229,12 +1229,12 @@ function str(arg){
             return f()
         }
         catch(err){
-            __BRYTHON__.$pop_exc()
+            $B.$pop_exc()
             try{ // try __repr__
                 var f = getattr(arg,'__repr__')
                 return f()
             }catch(err){
-                __BRYTHON__.$pop_exc()
+                $B.$pop_exc()
                 console.log(err+'\ndefault to toString '+arg);return arg.toString()
             }
         }
@@ -1283,6 +1283,5 @@ $StringSubclassFactory = {
     $dict:$StringSubclassDict
 }
 
-
-return str
-}()
+$B.builtins.str = str
+})(__BRYTHON__)

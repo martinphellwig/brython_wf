@@ -1,20 +1,24 @@
-$module =  {
+$module = (function($B){
 
-    __name__ : 'timer',
+    var __builtins__ = $B.builtins
+    return {
 
-    clear_interval : function(int_id){window.clearInterval(int_id)},
+        __name__ : 'timer',
     
-    clear_timeout : function(timeout_id){window.clearTimeout(timeout_id)},
-
-    set_interval : function(func,interval){
-        return __builtins__.int(window.setInterval(func,interval))
-    },
-
-    set_timeout : function(func,interval){window.setTimeout(func,interval)},
+        clear_interval : function(int_id){window.clearInterval(int_id)},
+        
+        clear_timeout : function(timeout_id){window.clearTimeout(timeout_id)},
     
-    request_animation_frame: function(func){
-        return __builtins__.int(window.requestAnimationFrame(func))},
+        set_interval : function(func,interval){
+            return __builtins__.int(window.setInterval(func,interval))
+        },
     
-    cancel_animation_frame: function(int_id){window.cancelAnimationFrame(int_id)},
+        set_timeout : function(func,interval){window.setTimeout(func,interval)},
+        
+        request_animation_frame: function(func){
+            return __builtins__.int(window.requestAnimationFrame(func))},
+        
+        cancel_animation_frame: function(int_id){window.cancelAnimationFrame(int_id)}
+    }
 
-}
+})(__BRYTHON__)
