@@ -789,7 +789,7 @@ function $print(){
         if(i<args.length-1){res += sep}
     }
     res += end
-    getattr(document.$stdout,'write')(res)
+    getattr($B.stdout,'write')(res)
 }
 $print.__name__ = 'print'
 

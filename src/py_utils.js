@@ -1,4 +1,5 @@
 ;(function($B){
+
 $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw){
     // builds a namespace from the arguments provided in $args
     // in a function call like foo(x,y,z=1,*args,**kw) the parameters are
@@ -355,13 +356,13 @@ $B.$syntax_err_line = function(module,pos) {
 }
 
 $B.$SyntaxError = function(module,msg,pos) {
-    var exc = SyntaxError(msg)
+    var exc = $B.builtins.SyntaxError(msg)
     exc.info += $B.$syntax_err_line(module,pos)
     throw exc
 }
 
 $B.$IndentationError = function(module,msg,pos) {
-    var exc = IndentationError(msg)
+    var exc = $B.builtins.IndentationError(msg)
     exc.info += $B.$syntax_err_line(module,pos)
     throw exc
 }
@@ -425,6 +426,22 @@ $B.$test_expr = function(){
     // returns the last evaluated item
     return $B.$test_result
 }
+
+// default standard output and error
+// can be reset by sys.stdout or sys.stderr
+$B.stderr = {
+    __getattr__:function(attr){return this[attr]},
+    write:function(data){console.log(data)},
+    flush:function(){}
+}
+$B.stderr_buff = '' // buffer for standard output
+
+$B.stdout = {
+    __getattr__:function(attr){return this[attr]},
+    write: function(data){console.log(data)},
+    flush:function(){}
+}
+
 
 })(__BRYTHON__)
 
@@ -505,19 +522,4 @@ catch(err){
     var console = {'log':function(data){void(0)}}
 }
 
-
-// default standard output and error
-// can be reset by sys.stdout or sys.stderr
-document.$stderr = {
-    __getattr__:function(attr){return this[attr]},
-    write:function(data){console.log(data)},
-    flush:function(){}
-}
-document.$stderr_buff = '' // buffer for standard output
-
-document.$stdout = {
-    __getattr__:function(attr){return this[attr]},
-    write: function(data){console.log(data)},
-    flush:function(){}
-}
 
