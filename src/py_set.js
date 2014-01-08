@@ -78,7 +78,7 @@ $SetDict.__init__ = function(self){
             while(true){
                 try{$SetDict.add(obj,next(iterable))}
                 catch(err){
-                    if(err.__name__=='StopIteration'){$pop_exc();break}
+                    if(err.__name__=='StopIteration'){__BRYTHON__.$pop_exc();break}
                     throw err
                 }
             }

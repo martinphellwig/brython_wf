@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140107-211437
+// version 1.4.20140108-121359
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __builtins__={
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140107-211437', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140108-121359', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -135,11 +135,11 @@ var module=tree_node.module
 var line_num=tree_node.line_num
 __BRYTHON__.line_info=[line_num,module]
 if(indent===undefined){
-if(msg.constructor===Array){$SyntaxError(module,msg[0],$pos)}
+if(msg.constructor===Array){__BRYTHON__.$SyntaxError(module,msg[0],$pos)}
 if(msg==="Triple string end not found"){
-$SyntaxError(module,'invalid syntax : triple string end not found',$pos)
+__BRYTHON__.$SyntaxError(module,'invalid syntax : triple string end not found',$pos)
 }
-$SyntaxError(module,'invalid syntax',$pos)
+__BRYTHON__.$SyntaxError(module,'invalid syntax',$pos)
 }else{throw $IndentationError(module,msg,$pos)}
 }
 var $first_op_letter=[]
@@ -412,13 +412,13 @@ new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
 new_nodes.push(catch_node)
 var catch_node1=new $Node('expression')
 var js='if($err'+$loop_num+'.__name__=="StopIteration")'
-js +='{$pop_exc();throw ValueError("need more than "+$counter+" value"+'
+js +='{__BRYTHON__.$pop_exc();throw ValueError("need more than "+$counter+" value"+'
 js +='($counter>1 ? "s" : "")+" to unpack")}else{throw $err'+$loop_num+'};'
 new $NodeJSCtx(catch_node1,js)
 catch_node.add(catch_node1)
 var exhausted=new $Node('expression')
 js='var $exhausted=true;try{__builtins__.next($right);$exhausted=false}'
-js +='catch(err){if(err.__name__=="StopIteration"){$pop_exc()}}'
+js +='catch(err){if(err.__name__=="StopIteration"){__BRYTHON__.$pop_exc()}}'
 js +='if(!$exhausted){throw ValueError('
 js +='"too many values to unpack (expected "+($counter+1)+")")}'
 new $NodeJSCtx(exhausted,js)
@@ -432,7 +432,7 @@ $loop_num++
 }
 this.to_js=function(){
 if(this.parent.type==='call'){
-return '$Kw('+this.tree[0].to_js()+','+this.tree[1].to_js()+')'
+return '__BRYTHON__.$Kw('+this.tree[0].to_js()+','+this.tree[1].to_js()+')'
 }else{
 var left=this.tree[0]
 if(left.type==='expr'){
@@ -928,7 +928,7 @@ var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
 }
-var js='var $ns=$MakeArgs("'+this.name+'",arguments,['+required+'],'
+var js='var $ns=__BRYTHON__.$MakeArgs("'+this.name+'",arguments,['+required+'],'
 js +='['+defaults.join(',')+'],'+other_args+','+other_kw+')'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
@@ -1018,7 +1018,7 @@ var node=this.parent.node
 if(this.type==='generator' && !this.declared){
 var offset=2
 if(this.decorators !==undefined){offset++}
-js='$generator('
+js='__BRYTHON__.$generator('
 if(scope.ntype==='class'){js +='$class.'}
 js +='$'+this.name+')'
 var gen_node=new $Node('expression')
@@ -1137,7 +1137,7 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.toString=function(){return '**'+this.tree}
-this.to_js=function(){return '$pdict('+$to_js(this.tree)+')'}
+this.to_js=function(){return '__BRYTHON__.$pdict('+$to_js(this.tree)+')'}
 }
 function $ExceptCtx(C){
 this.type='except'
@@ -1240,7 +1240,7 @@ var assign=new $AssignCtx(target_expr)
 assign.tree[1]=new $JSCode('$next'+$loop_num+'()')
 try_node.add(iter_node)
 var catch_node=new $Node('expression')
-var js='catch($err){if(__BRYTHON__.is_exc($err,[StopIteration])){$pop_exc();break}'
+var js='catch($err){if(__BRYTHON__.is_exc($err,[StopIteration])){__BRYTHON__.$pop_exc();break}'
 js +='else{throw($err)}}'
 new $NodeJSCtx(catch_node,js)
 node.insert(1,catch_node)
@@ -1671,7 +1671,7 @@ scope.var2node[varname].splice(ix,1)
 this.to_js=function(){
 var key=this.tree[0].to_js()
 if(key.substr(0,2)=='$$'){key=key.substr(2)}
-var res='$Kw("'+key+'",'
+var res='__BRYTHON__.$Kw("'+key+'",'
 res +=$to_js(this.tree.slice(1,this.tree.length))+')'
 return res
 }
@@ -1694,7 +1694,7 @@ var qesc=new RegExp('"',"g")
 var args=src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
 var body=src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
 body=body.replace(/\n/g,' ')
-return '$lambda("'+module+'",$globals,$locals,"'+args+'","'+body+'")'
+return '__BRYTHON__.$lambda("'+module+'",$globals,$locals,"'+args+'","'+body+'")'
 }
 }
 function $ListOrTupleCtx(C,real){
@@ -1725,7 +1725,7 @@ this.to_js=function(){
 if(this.real==='list'){return 'list.__call__(['+$to_js(this.tree)+'])'}
 else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
 var src=this.get_src()
-var res='$mkdict($globals,$locals),'
+var res='__BRYTHON__.$mkdict($globals,$locals),'
 var qesc=new RegExp('"',"g")
 for(var i=1;i<this.intervals.length;i++){
 var txt=src.substring(this.intervals[i-1],this.intervals[i])
@@ -1735,11 +1735,11 @@ txt=txt.replace(qesc,'\\"')
 res +='"'+txt+'"'
 if(i<this.intervals.length-1){res+=','}
 }
-if(this.real==='list_comp'){return '$list_comp('+res+')'}
+if(this.real==='list_comp'){return '__BRYTHON__.$list_comp('+res+')'}
 else if(this.real==='dict_or_set_comp'){
-if(this.expression.length===1){return '$gen_expr('+res+')'}
-else{return '$dict_comp('+res+')'}
-}else{return '$gen_expr('+res+')'}
+if(this.expression.length===1){return '__BRYTHON__.$gen_expr('+res+')'}
+else{return '__BRYTHON__.$dict_comp('+res+')'}
+}else{return '__BRYTHON__.$gen_expr('+res+')'}
 }else if(this.real==='tuple'){
 if(this.tree.length===1 && this.has_comma===undefined){return this.tree[0].to_js()}
 else{return 'tuple(['+$to_js(this.tree)+'])'}
@@ -1842,7 +1842,7 @@ this.parent=C
 this.tree=[]
 C.tree.push(this)
 this.to_js=function(){
-if(this.tree.length===0){return '$raise()'}
+if(this.tree.length===0){return '__BRYTHON__.$raise()'}
 var exc=this.tree[0]
 if(exc.type==='id'){return 'throw '+exc.value+'("")'}
 else if(exc.type==='expr' && exc.tree[0].type==='id'){
@@ -1900,7 +1900,7 @@ this.tree=[]
 C.tree.push(this)
 this.toString=function(){return '(star arg) '+this.tree}
 this.to_js=function(){
-return '$ptuple('+$to_js(this.tree)+')'
+return '__BRYTHON__.$ptuple('+$to_js(this.tree)+')'
 }
 }
 function $StringCtx(C,value){
@@ -2140,7 +2140,7 @@ res +='try{$'+this.func_name+'.$iter.push('
 res +='$subiter'+$loop_num+'())}\n'
 res +=indent+$ws(4)+'catch($err'+$loop_num+'){\n'
 res +=indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===StopIteration)'
-res +='{$pop_exc();break}\n'
+res +='{__BRYTHON__.$pop_exc();break}\n'
 res +=indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
 $loop_num++
 return res
@@ -2870,7 +2870,6 @@ $_SyntaxError(C,'token '+token+' after '+C)
 if(token===','){return new $CallArgCtx(C.parent)}
 else{return $transition(C.parent,token)}
 }else if(C.type==="lambda"){
-console.log('lambda, token '+token+' '+arguments[2])
 if(token===':' && C.args===undefined){
 C.args=C.tree
 C.tree=[]
@@ -3566,7 +3565,7 @@ __BRYTHON__.path.push($script_path)
 }
 for(var $i=0;$i<$elts.length;$i++){
 var $elt=$elts[$i]
-var $br_scripts=['brython.js','py2js.js','py_loader.js']
+var $br_scripts=['brython.js','py2js.js','brython_full.js']
 for(var $j=0;$j<$br_scripts.length;$j++){
 var $bs=$br_scripts[$j]
 if($elt.src.substr($elt.src.length-$bs.length)==$bs){
@@ -3574,6 +3573,7 @@ if($elt.src.length===$bs.length ||
 $elt.src.charAt($elt.src.length-$bs.length-1)=='/'){
 var $path=$elt.src.substr(0,$elt.src.length-$bs.length)
 __BRYTHON__.brython_path=$path
+console.log('brythonpath '+$path)
 if(!(__BRYTHON__.path.indexOf($path+'Lib')> -1)){
 __BRYTHON__.path.push($path+'Lib')
 }
@@ -3652,7 +3652,7 @@ var res=factory.apply(null,[])
 res.__class__=cls.$dict
 var init_func=null
 try{init_func=__builtins__.getattr(res,'__init__')}
-catch(err){$pop_exc()}
+catch(err){__BRYTHON__.$pop_exc()}
 if(init_func!==null){
 var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
@@ -4070,18 +4070,15 @@ return function(){
 var new_func=null,init_func=null,obj
 try{
 new_func=getattr(klass,'__new__')
-}catch(err){console.log('new err '+err);$pop_exc()}
+}catch(err){__BRYTHON__.$pop_exc()}
 if(new_func!==null){
 var args=[klass.$factory]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 obj=new_func.apply(null,args)
 }
 if(!obj.__initialized__){
-try{
-init_func=getattr(klass,'__init__')
-}catch(err){
-$pop_exc()
-}
+try{init_func=getattr(klass,'__init__')}
+catch(err){__BRYTHON__.$pop_exc()}
 if(init_func!==null){
 var args=[obj]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
@@ -4102,7 +4099,7 @@ $factory:$MethodFactory
 }
 $MethodFactory.$dict=$MethodDict
 
-function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
+__BRYTHON__.$MakeArgs=function($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$ns={}
 if($other_args !=null){$ns[$other_args]=[]}
 if($other_kw !=null){$dict_keys=[];$dict_values=[]}
@@ -4111,13 +4108,13 @@ for(var i=0;i<$args.length;i++){
 $arg=$args[i]
 if($arg===undefined){console.log('arg '+i+' undef in '+$fname)}
 if($arg===null){upargs.push(null)}
-else if($arg.__class__===$ptupleDict){
+else if($arg.__class__===__BRYTHON__.$ptupleDict){
 for(var j=0;j<$arg.arg.length;j++){
 upargs.push($arg.arg[j])
 }
-}else if($arg.__class__===$pdictDict){
+}else if($arg.__class__===__BRYTHON__.$pdictDict){
 for(var j=0;j<$arg.arg.$keys.length;j++){
-upargs.push($Kw($arg.arg.$keys[j],$arg.arg.$values[j]))
+upargs.push(__BRYTHON__.$Kw($arg.arg.$keys[j],$arg.arg.$values[j]))
 }
 }else{
 upargs.push($arg)
@@ -4125,8 +4122,8 @@ upargs.push($arg)
 }
 for(var $i=0;$i<upargs.length;$i++){
 var $arg=upargs[$i]
-var $PyVar=$JS2Py($arg)
-if($arg && $arg.__class__===$KwDict){
+var $PyVar=__BRYTHON__.$JS2Py($arg)
+if($arg && $arg.__class__===__BRYTHON__.$KwDict){
 $PyVar=$arg.value
 if($set_vars.indexOf($arg.name)>-1){
 throw new TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
@@ -4186,13 +4183,13 @@ $ns[$other_kw].$values=$dict_values
 if($other_args!=null){$ns[$other_args]=__builtins__.tuple($ns[$other_args])}
 return $ns
 }
-function $mkdict(glob,loc){
+__BRYTHON__.$mkdict=function(glob,loc){
 var res={}
 for(var arg in glob){res[arg]=glob[arg]}
 for(var arg in loc){res[arg]=loc[arg]}
 return res
 }
-function $list_comp(){
+__BRYTHON__.$list_comp=function(){
 var $env=arguments[0]
 for(var $arg in $env){
 eval("var "+$arg+'=$env["'+$arg+'"]')
@@ -4220,7 +4217,7 @@ eval($js)
 }catch(err){throw __BRYTHON__.exception(err)}
 return eval("res"+$ix)
 }
-function $gen_expr(){
+__BRYTHON__.$gen_expr=function(){
 var $env=arguments[0]
 for(var $arg in $env){
 try{
@@ -4267,7 +4264,7 @@ var $res2={value:$res1,__class__:$GenExprDict}
 $res2.toString=function(){return 'ge object'}
 return $res2
 }
-function $dict_comp(){
+__BRYTHON__.$dict_comp=function(){
 var $env=arguments[0]
 for(var $arg in $env){
 eval("var "+$arg+'=$env["'+$arg+'"]')
@@ -4291,7 +4288,7 @@ __BRYTHON__.scope[$mod_name].__dict__=$env
 eval($js)
 return eval($res)
 }
-function $generator(func){
+__BRYTHON__.$generator=function(func){
 $GeneratorDict={__class__:$type,
 __name__:'generator'
 }
@@ -4336,9 +4333,9 @@ return obj
 res.__repr__=function(){return "<function "+func.__name__+">"}
 return res
 }
-$generator.__repr__=function(){return "<class 'generator'>"}
-$generator.__str__=function(){return "<class 'generator'>"}
-$generator.__class__=$type
+__BRYTHON__.$generator.__repr__=function(){return "<class 'generator'>"}
+__BRYTHON__.$generator.__str__=function(){return "<class 'generator'>"}
+__BRYTHON__.$generator.__class__=$type
 __BRYTHON__.$ternary=function(env,cond,expr1,expr2){
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 for(var attr in env){eval('var '+attr+'=env["'+attr+'"]')}
@@ -4348,7 +4345,7 @@ res +='    var $res = '+unescape(expr2)+'\n}'
 eval(res)
 return $res
 }
-function $lambda($mod,$globals,$locals,$args,$body){
+__BRYTHON__.$lambda=function($mod,$globals,$locals,$args,$body){
 for(var $attr in $globals){eval('var '+$attr+'=$globals["'+$attr+'"]')}
 for(var $attr in $locals){eval('var '+$attr+'=$locals["'+$attr+'"]')}
 var $res='res'+Math.random().toString(36).substr(2,8)
@@ -4361,7 +4358,7 @@ $res.__module__=$mod
 $res.__name__='<lambda>'
 return $res
 }
-function $JS2Py(src){
+__BRYTHON__.$JS2Py=function(src){
 if(src===null||src===undefined){return __builtins__.None}
 if(typeof src==='number'){
 if(src%1===0){return src}
@@ -4370,7 +4367,7 @@ else{return float(src)}
 if(src.__class__!==undefined){
 if(src.__class__===__builtins__.list.$dict){
 for(var i=0;i<src.length;i++){
-src[i]=$JS2Py(src[i])
+src[i]=__BRYTHON__.$JS2Py(src[i])
 }
 }
 return src
@@ -4381,30 +4378,18 @@ else if(__BRYTHON__.$isEvent(src)){return __BRYTHON__.$DOMEvent(src)}
 else if(src.constructor===Array||__BRYTHON__.$isNodeList(src)){
 var res=[]
 for(var i=0;i<src.length;i++){
-res.push($JS2Py(src[i]))
+res.push(__BRYTHON__.$JS2Py(src[i]))
 }
 return res
 }
 }
 return __BRYTHON__.JSObject(src)
 }
-function $getattr(obj,attr){
-if(obj[attr]!==undefined){
-var res=obj[attr]
-if(typeof res==="function"){
-res=$bind(res, obj)
-}
-return $JS2Py(res)
-}
-}
-function $bind(func, thisValue){
-return function(){return func.apply(thisValue, arguments)}
-}
-function $raise(){
+__BRYTHON__.$raise=function(){
 if(__BRYTHON__.exception_stack.length>0){throw $last(__BRYTHON__.exception_stack)}
 else{throw Error('Exception')}
 }
-function $syntax_err_line(module,pos){
+__BRYTHON__.$syntax_err_line=function(module,pos){
 var pos2line={}
 var lnum=1
 var src=document.$py_src[module]
@@ -4428,71 +4413,51 @@ for(var i=0;i<lpos;i++){info+=' '}
 info +='^'
 return info
 }
-function $SyntaxError(module,msg,pos){
-console.log('Syntax error')
+__BRYTHON__.$SyntaxError=function(module,msg,pos){
 var exc=SyntaxError(msg)
-console.log('info '+exc)
-exc.info +=$syntax_err_line(module,pos)
-console.log('syntax error '+exc.info)
+exc.info +=__BRYTHON__.$syntax_err_line(module,pos)
 throw exc
 }
-function $IndentationError(module,msg,pos){
+__BRYTHON__.$IndentationError=function(module,msg,pos){
 var exc=IndentationError(msg)
-exc.info +=$syntax_err_line(module,pos)
+exc.info +=__BRYTHON__.$syntax_err_line(module,pos)
 throw exc
 }
-function $pop_exc(){__BRYTHON__.exception_stack.pop()}
-var $dq_regexp=new RegExp('"',"g")
-function $escape_dq(arg){return arg.replace($dq_regexp,'\\"')}
-document.$stderr={
-__getattr__:function(attr){return this[attr]},
-write:function(data){console.log(data)},
-flush:function(){}
+__BRYTHON__.$pop_exc=function(){__BRYTHON__.exception_stack.pop()}
+__BRYTHON__.$KwDict={__class__:$type,__name__:'kw'}
+__BRYTHON__.$KwDict.__mro__=[__BRYTHON__.$KwDict,__builtins__.object.$dict]
+__BRYTHON__.$Kw=function(name,value){
+return{__class__:__BRYTHON__.$KwDict,name:name,value:value}
 }
-document.$stderr_buff='' 
-document.$stdout={
-__getattr__:function(attr){return this[attr]},
-write: function(data){console.log(data)},
-flush:function(){}
-}
-function $UnsupportedOpType(op,class1,class2){
-$raise('TypeError',
-"unsupported operand type(s) for "+op+": '"+class1+"' and '"+class2+"'")
-}
-$KwDict={__class__:$type,__name__:'kw'}
-$KwDict.__mro__=[$KwDict,__builtins__.object.$dict]
-function $Kw(name,value){
-return{__class__:$KwDict,name:name,value:value}
-}
-$Kw.$dict=$KwDict 
-$KwDict.$factory=$Kw
-$ptupleDict={
+__BRYTHON__.$Kw.$dict=__BRYTHON__.$KwDict 
+__BRYTHON__.$KwDict.$factory=__BRYTHON__.$Kw
+__BRYTHON__.$ptupleDict={
 __class__:$type,
 __name__:'packed tuple',
 toString:function(){return 'ptuple'}
 }
-$ptupleDict.$dict=$ptupleDict
-function $ptuple(arg){
+__BRYTHON__.$ptupleDict.$dict=__BRYTHON__.$ptupleDict
+__BRYTHON__.$ptuple=function(arg){
 return{
-__class__:$ptupleDict,
+__class__:__BRYTHON__.$ptupleDict,
 arg:arg
 }
 }
-$ptuple.$dict=$ptupleDict
-$ptupleDict.$factory=$ptuple
-$pdictDict={
+__BRYTHON__.$ptuple.$dict=__BRYTHON__.$ptupleDict
+__BRYTHON__.$ptupleDict.$factory=__BRYTHON__.$ptuple
+__BRYTHON__.$pdictDict={
 __class__ : $type,
 __name__:'packed dict'
 }
-$pdictDict.$dict=$pdictDict
-function $pdict(arg){
+__BRYTHON__.$pdictDict.$dict=__BRYTHON__.$pdictDict
+__BRYTHON__.$pdict=function(arg){
 return{
-__class__:$pdictDict,
+__class__:__BRYTHON__.$pdictDict,
 arg:arg
 }
 }
-$pdict.$dict=$pdictDict
-$pdict.$factory=$pdict
+__BRYTHON__.$pdict.$dict=__BRYTHON__.$pdictDict
+__BRYTHON__.$pdict.$factory=__BRYTHON__.$pdict
 function $test_item(expr){
 document.$test_result=expr
 return __builtins__.bool(expr)
@@ -4576,6 +4541,17 @@ window.IDBRequest.prototype.pyresult=function(){
 return jsobject2pyobject(this.result)
 }
 }
+document.$stderr={
+__getattr__:function(attr){return this[attr]},
+write:function(data){console.log(data)},
+flush:function(){}
+}
+document.$stderr_buff='' 
+document.$stdout={
+__getattr__:function(attr){return this[attr]},
+write: function(data){console.log(data)},
+flush:function(){}
+}
 
 __debug__=false
 var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
@@ -4650,7 +4626,7 @@ return charCode > 127 ? charEscape(charCode): char
 .join("")
 }
 function assert_raises(){
-var $ns=$MakeArgs('assert_raises',arguments,['exc','func'],[],'args','kw')
+var $ns=__BRYTHON__.$MakeArgs('assert_raises',arguments,['exc','func'],[],'args','kw')
 var args=$ns['args']
 try{$ns['func'].apply(this,args)}
 catch(err){
@@ -4698,9 +4674,9 @@ if(obj){return true}else{return false}
 }else{
 try{return getattr(obj,'__bool__')()}
 catch(err){
-$pop_exc()
+__BRYTHON__.$pop_exc()
 try{return getattr(obj,'__len__')()>0}
-catch(err){$pop_exc();return true}
+catch(err){__BRYTHON__.$pop_exc();return true}
 }
 }
 }
@@ -4826,7 +4802,7 @@ var $EnumerateDict={__class__:$type,__name__:'enumerate'}
 $EnumerateDict.__mro__=[$EnumerateDict,$ObjectDict]
 function enumerate(){
 var _start=0
-var $ns=$MakeArgs("enumerate",arguments,["iterable"],
+var $ns=__BRYTHON__.$MakeArgs("enumerate",arguments,["iterable"],
 ["start"], null, null)
 var _iter=iter($ns["iterable"])
 var _start=$ns["start"]|| _start
@@ -4871,7 +4847,7 @@ try{
 var _item=next(iterable)
 if(func(_item)){res.push(_item)}
 }catch(err){
-if(err.__name__==='StopIteration'){$pop_exc();break}
+if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
 else{throw err}
 }
 }
@@ -4972,7 +4948,7 @@ return res
 }
 function hasattr(obj,attr){
 try{getattr(obj,attr);return True}
-catch(err){$pop_exc();return False}
+catch(err){__BRYTHON__.$pop_exc();return False}
 }
 function hash(obj){
 if(isinstance(obj, int)){return obj.valueOf();}
@@ -5063,7 +5039,7 @@ throw TypeError("issubclass() arg 2 must be a class or tuple of classes")
 function iter(obj){
 try{return getattr(obj,'__iter__')()}
 catch(err){
-$pop_exc()
+__BRYTHON__.$pop_exc()
 throw TypeError("'"+obj.__class__.__name__+"' object is not iterable")
 }
 }
@@ -5095,7 +5071,7 @@ var x=next(iter_args[i])
 args.push(x)
 }catch(err){
 if(err.__name__==='StopIteration'){
-$pop_exc();flag=false;break
+__BRYTHON__.$pop_exc();flag=false;break
 }else{throw err}
 }
 }
@@ -5119,7 +5095,7 @@ if(args.length==0){throw TypeError($op_name+" expected 1 argument, got 0")}
 var last_arg=args[args.length-1]
 var last_i=args.length-1
 var has_key=false
-if(isinstance(last_arg,$Kw)){
+if(isinstance(last_arg,__BRYTHON__.$Kw)){
 if(last_arg.name==='key'){
 var func=last_arg.value
 has_key=true
@@ -5180,7 +5156,7 @@ function ord(c){
 return c.charCodeAt(0)
 }
 function pow(){
-var $ns=$MakeArgs('pow',arguments,[],[],'args','kw')
+var $ns=__BRYTHON__.$MakeArgs('pow',arguments,[],[],'args','kw')
 var args=$ns['args']
 if(args.length<2){throw TypeError(
 "pow expected at least 2 arguments, got "+args.length)
@@ -5225,7 +5201,7 @@ return Math.pow(a,b)%c
 }
 function $print(){
 var end='\n',sep=' '
-var $ns=$MakeArgs('print',arguments,[],['end','sep'],'args', null)
+var $ns=__BRYTHON__.$MakeArgs('print',arguments,[],['end','sep'],'args', null)
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 var res=''
 for(var i=0;i<args.length;i++){
@@ -5326,7 +5302,7 @@ if(self.step!=1){res +=', '+self.step}
 return res+')'
 }
 function range(){
-var $ns=$MakeArgs('range',arguments,[],[],'args',null)
+var $ns=__BRYTHON__.$MakeArgs('range',arguments,[],[],'args',null)
 var args=$ns['args']
 if(args.length>3){throw TypeError(
 "range expected at most 3 arguments, got "+args.length)
@@ -5371,7 +5347,7 @@ return self.getter(self.$counter)
 function reversed(seq){
 try{return getattr(seq,'__reversed__')()}
 catch(err){
-if(err.__name__=='AttributeError'){$pop_exc()}
+if(err.__name__=='AttributeError'){__BRYTHON__.$pop_exc()}
 else{throw err}
 }
 try{
@@ -5415,7 +5391,7 @@ return res.__set__(res,obj,value)
 }
 try{var f=getattr(obj,'__setattr__')}
 catch(err){
-$pop_exc()
+__BRYTHON__.$pop_exc()
 obj[attr]=value
 return
 }
@@ -5426,7 +5402,7 @@ __name__:'slice'
 }
 $SliceDict.__mro__=[$SliceDict,$ObjectDict]
 function slice(){
-var $ns=$MakeArgs('slice',arguments,[],[],'args',null)
+var $ns=__BRYTHON__.$MakeArgs('slice',arguments,[],[],'args',null)
 var args=$ns['args']
 if(args.length>3){throw TypeError(
 "slice expected at most 3 arguments, got "+args.length)
@@ -5455,7 +5431,7 @@ return res
 slice.__class__=$factory
 slice.$dict=$SliceDict
 function sorted(){
-var $ns=$MakeArgs('sorted',arguments,['iterable'],[],null,'kw')
+var $ns=__BRYTHON__.$MakeArgs('sorted',arguments,['iterable'],[],null,'kw')
 if($ns['iterable']===undefined){throw TypeError("sorted expected 1 positional argument, got 0")}
 else{iterable=$ns['iterable']}
 var key=__builtins__.dict.$dict.get($ns['kw'],'key',None)
@@ -5465,13 +5441,13 @@ iterable=iter(iterable)
 while(true){
 try{obj.push(next(iterable))}
 catch(err){
-if(err.__name__==='StopIteration'){$pop_exc();break}
+if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
 else{throw err}
 }
 }
 var args=[obj]
-if(key !==None){args.push($Kw('key',key))}
-if(reverse){args.push($Kw('reverse',true))}
+if(key !==None){args.push(__BRYTHON__.$Kw('key',key))}
+if(reverse){args.push(__BRYTHON__.$Kw('reverse',true))}
 __builtins__.list.$dict.sort.apply(null,args)
 return obj
 }
@@ -5493,7 +5469,7 @@ try{
 var _item=next(iterable)
 res=getattr(res,'__add__')(_item)
 }catch(err){
-if(err.__name__==='StopIteration'){$pop_exc();break}
+if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
 else{throw err}
 }
 }
@@ -5538,7 +5514,7 @@ __self_class__:_type2 || None
 }
 function $url_open(){
 var mode='r',encoding='utf-8'
-var $ns=$MakeArgs('open',arguments,['file'],['mode','encoding'],'args','kw')
+var $ns=__BRYTHON__.$MakeArgs('open',arguments,['file'],['mode','encoding'],'args','kw')
 for(var attr in $ns){eval('var '+attr+'=$ns["'+attr+'"]')}
 if(args.length>0){var mode=args[0]}
 if(args.length>1){var encoding=args[1]}
@@ -5633,7 +5609,7 @@ $ZipDict.__mro__=[$ZipDict,$ObjectDict]
 function zip(){
 var res={__class__:$ZipDict,items:[]}
 if(arguments.length==0){return res}
-var $ns=$MakeArgs('zip',arguments,[],[],'args','kw')
+var $ns=__BRYTHON__.$MakeArgs('zip',arguments,[],[],'args','kw')
 var _args=$ns['args']
 var args=[]
 for(var i=0;i<_args.length;i++){args.push(iter(_args[i]))}
@@ -5646,7 +5622,7 @@ try{
 var x=next(args[i])
 line.push(x)
 }catch(err){
-if(err.__name__==='StopIteration'){$pop_exc();flag=false;break}
+if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();flag=false;break}
 else{throw err}
 }
 }
@@ -6082,13 +6058,13 @@ args.push(arg)
 var res=obj.js[attr].apply(obj.js,args)
 if(typeof res=='object'){return JSObject(res)}
 else if(res===undefined){return None}
-else{return $JS2Py(res)}
+else{return __BRYTHON__.$JS2Py(res)}
 }
 res.__repr__=function(){return '<function '+attr+'>'}
 res.__str__=function(){return '<function '+attr+'>'}
 return res
 }else{
-return $JS2Py(obj.js[attr])
+return __BRYTHON__.$JS2Py(obj.js[attr])
 }
 }else if(obj.js===window && attr==='$$location'){
 return $Location()
@@ -6117,7 +6093,7 @@ args.push(arg)
 return res.apply(obj,args)
 }
 }
-return $JS2Py(res)
+return __BRYTHON__.$JS2Py(res)
 }else{
 throw AttributeError("no attribute "+attr+' for '+this)
 }
@@ -6597,6 +6573,9 @@ return float
 __builtins__.int=(function(){
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict=object.$dict
+function $UnsupportedOpType(op,class1,class2){
+throw TypeError("unsupported operand type(s) for "+op+": '"+class1+"' and '"+class2+"'")
+}
 var $IntDict={__class__:$type,
 __name__:'int',
 toString:function(){return '$IntDict'},
@@ -6825,7 +6804,7 @@ if(!getattr(other.$values[j],'__eq__')(self.$values[i])){
 return False
 }
 }
-}catch(err){$pop_exc()}
+}catch(err){__BRYTHON__.$pop_exc()}
 }
 }
 return True
@@ -6862,7 +6841,7 @@ self.$jsobj=obj.js
 return
 }
 }
-var $ns=$MakeArgs('dict',args,[],[],'args','kw')
+var $ns=__BRYTHON__.$MakeArgs('dict',args,[],[],'args','kw')
 var args=$ns['args']
 var kw=$ns['kw']
 if(args.length>0){
@@ -6877,7 +6856,7 @@ var elt=next(iterable)
 self.$keys.push(getattr(elt,'__getitem__')(0))
 self.$values.push(getattr(elt,'__getitem__')(1))
 }catch(err){
-if(err.__name__==='StopIteration'){$pop_exc();break}
+if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
 else{throw err}
 }
 }
@@ -6924,7 +6903,7 @@ self.$values[i]=value
 return
 }
 }catch(err){
-$pop_exc()
+__BRYTHON__.$pop_exc()
 }
 }
 self.$keys.push(key)
@@ -6948,7 +6927,7 @@ return res
 $DictDict.get=function(self,key,_default){
 try{return $DictDict.__getitem__(self,key)}
 catch(err){
-$pop_exc()
+__BRYTHON__.$pop_exc()
 if(_default!==undefined){return _default}
 else{return None}
 }
@@ -6971,7 +6950,7 @@ var res=$DictDict.__getitem__(self,key)
 $DictDict.__delitem__(self,key)
 return res
 }catch(err){
-$pop_exc()
+__BRYTHON__.$pop_exc()
 if(err.__name__==='KeyError'){
 if(_default!==undefined){return _default}
 throw err
@@ -6993,7 +6972,7 @@ return _default
 $DictDict.update=function(self){
 var params=[]
 for(var i=1;i<arguments.length;i++){params.push(arguments[i])}
-var $ns=$MakeArgs('$DictDict.update',params,[],[],'args','kw')
+var $ns=__BRYTHON__.$MakeArgs('$DictDict.update',params,[],[],'args','kw')
 var args=$ns['args']
 if(args.length>0 && isinstance(args[0],dict)){
 var other=args[0]
@@ -7043,7 +7022,7 @@ $ListDict.__class__=$type
 $ListDict.__contains__=function(self,item){
 for(var i=0;i<self.length;i++){
 try{if(getattr(self[i],'__eq__')(item)){return true}
-}catch(err){$pop_exc();void(0)}
+}catch(err){__BRYTHON__.$pop_exc();void(0)}
 }
 return false
 }
@@ -7179,7 +7158,7 @@ var arg=iter(arg)
 var next_func=getattr(arg,'__next__')
 while(true){
 try{self.push(next_func())}
-catch(err){if(err.__name__=='StopIteration'){$pop_exc()};break}
+catch(err){if(err.__name__=='StopIteration'){__BRYTHON__.$pop_exc()};break}
 }
 }
 $list_iterator=$iterator_class('list_iterator')
@@ -7270,7 +7249,7 @@ other=iter(other)
 while(true){
 try{self.push(next(other))}
 catch(err){
-if(err.__name__=='StopIteration'){$pop_exc();break}
+if(err.__name__=='StopIteration'){__BRYTHON__.$pop_exc();break}
 else{throw err}
 }
 }
@@ -7349,7 +7328,7 @@ var func=function(x){return x}
 var reverse=false
 for(var i=1;i<arguments.length;i++){
 var arg=arguments[i]
-if(arg.__class__==$KwDict){
+if(arg.__class__==__BRYTHON__.$KwDict){
 if(arg.name==='key'){func=arg.value}
 else if(arg.name==='reverse'){reverse=arg.value}
 }
@@ -7377,7 +7356,7 @@ while(true){
 try{res.push(next_func())}
 catch(err){
 if(err.__name__=='StopIteration'){
-$pop_exc()
+__BRYTHON__.$pop_exc()
 }else{
 }
 break
@@ -7789,7 +7768,7 @@ $StringDict.endswith=function(self){
 var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
 var start=null,end=null
-var $ns=$MakeArgs("$StringDict.endswith",args,['suffix'],
+var $ns=__BRYTHON__.$MakeArgs("$StringDict.endswith",args,['suffix'],
 ['start','end'],null,null)
 var suffixes=$ns['suffix']
 if(!isinstance(suffixes,__builtins__.tuple)){suffixes=[suffixes]}
@@ -7808,7 +7787,7 @@ throw NotImplementedError("function expandtabs not implemented yet")
 }
 $StringDict.find=function(self){
 var start=0,end=self.length
-var $ns=$MakeArgs("$StringDict.find",arguments,['self','sub'],
+var $ns=__BRYTHON__.$MakeArgs("$StringDict.find",arguments,['self','sub'],
 ['start','end'],null,null)
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 if(!isinstance(sub,str)){throw TypeError(
@@ -7916,7 +7895,7 @@ this._kwords[_name].push(_rv)
 return '%(' + id(_rv)+ ')s'
 }
 this.format=function(){
-var $ns=$MakeArgs('format',arguments,[],[],'args','kwargs')
+var $ns=__BRYTHON__.$MakeArgs('format',arguments,[],[],'args','kwargs')
 var args=$ns['args']
 var kwargs=$ns['kwargs']
 if(args){
@@ -8202,7 +8181,7 @@ if(!isinstance(obj2,str)){throw TypeError(
 res +=obj2+self
 count++
 }catch(err){
-if(err.__name__==='StopIteration'){$pop_exc();break}
+if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
 else{throw err}
 }
 }
@@ -8265,7 +8244,7 @@ return self.replace(re,_new)
 }
 $StringDict.rfind=function(self){
 var start=0,end=self.length
-var $ns=$MakeArgs("$StringDict.find",arguments,['self','sub'],
+var $ns=__BRYTHON__.$MakeArgs("$StringDict.find",arguments,['self','sub'],
 ['start','end'],null,null)
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 if(!isinstance(sub,str)){throw TypeError(
@@ -8286,7 +8265,7 @@ else{return res}
 }
 $StringDict.rjust=function(self){
 var fillchar=' '
-var $ns=$MakeArgs("$StringDict.rjust",arguments,['self','width'],
+var $ns=__BRYTHON__.$MakeArgs("$StringDict.rjust",arguments,['self','width'],
 ['fillchar'],null,null)
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 if(width <=self.length)return self
@@ -8310,7 +8289,7 @@ if(pos<0){return __builtins__.tuple(['','',self])}
 $StringDict.rsplit=function(self){
 var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-var $ns=$MakeArgs("$StringDict.split",args,[],[],'args','kw')
+var $ns=__BRYTHON__.$MakeArgs("$StringDict.split",args,[],[],'args','kw')
 var sep=None,maxsplit=-1
 if($ns['args'].length>=1){sep=$ns['args'][0]}
 if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -8340,7 +8319,7 @@ return str(self.replace(sp,""))
 $StringDict.split=function(self){
 var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-var $ns=$MakeArgs("$StringDict.split",args,[],[],'args','kw')
+var $ns=__BRYTHON__.$MakeArgs("$StringDict.split",args,[],[],'args','kw')
 var sep=None,maxsplit=-1
 if($ns['args'].length>=1){sep=$ns['args'][0]}
 if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -8396,7 +8375,7 @@ $StringDict.splitlines=function(self){
 return $StringDict.split(self,'\n')
 }
 $StringDict.startswith=function(self){
-$ns=$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
+$ns=__BRYTHON__.$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
 ['start','end'],null,null)
 var prefixes=$ns['prefix']
 if(!isinstance(prefixes,__builtins__.tuple)){prefixes=[prefixes]}
@@ -8453,13 +8432,13 @@ var f=getattr(arg,'__str__')
 return f()
 }
 catch(err){
-$pop_exc()
+__BRYTHON__.$pop_exc()
 try{
 var f=getattr(arg,'__repr__')
 return f()
 }catch(err){
-$pop_exc()
-console.log(err+'\ndefault to toString '+arg);$pop_exc();return arg.toString()
+__BRYTHON__.$pop_exc()
+console.log(err+'\ndefault to toString '+arg);return arg.toString()
 }
 }
 }
@@ -8568,7 +8547,7 @@ var obj={$items:[]}
 while(true){
 try{$SetDict.add(obj,next(iterable))}
 catch(err){
-if(err.__name__=='StopIteration'){$pop_exc();break}
+if(err.__name__=='StopIteration'){__BRYTHON__.$pop_exc();break}
 throw err
 }
 }
@@ -8963,7 +8942,7 @@ $OptionsDict.__setattr__=function(self,attr,value){
 self.parent.options[attr]=value
 }
 $OptionsDict.__setitem__=function(self,attr,value){
-self.parent.options[attr]=$JS2Py(value)
+self.parent.options[attr]=__BRYTHON__.$JS2Py(value)
 }
 $OptionsDict.__str__=function(self){
 return "<object Options wraps "+self.parent.options+">"
@@ -9089,7 +9068,7 @@ args.push(null)
 args.push(arguments[i])
 }
 }
-return $JS2Py(f.apply(elt,args))
+return __BRYTHON__.$JS2Py(f.apply(elt,args))
 }
 })(res,self.elt)
 func.__name__=attr
@@ -9099,7 +9078,7 @@ return $Options(self.elt)
 }else if(attr=='style'){
 return $Style(self.elt[attr])
 }else{
-return $JS2Py(self.elt[attr])
+return __BRYTHON__.$JS2Py(self.elt[attr])
 }
 }
 if(self.elt[attr]!==undefined){return self.elt[attr]}
@@ -9269,7 +9248,7 @@ DOMNode.get=function(self){
 var obj=self.elt
 var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-var $ns=$MakeArgs('get',args,[],[],null,'kw')
+var $ns=__BRYTHON__.$MakeArgs('get',args,[],[],null,'kw')
 var $dict={}
 for(var i=0;i<$ns['kw'].$keys.length;i++){
 $dict[$ns['kw'].$keys[i]]=$ns['kw'].$values[i]
@@ -9544,7 +9523,7 @@ return result
 $QueryDict.getvalue=function(self,key,_default){
 try{return self.__getitem__(key)}
 catch(err){
-$pop_exc()
+__BRYTHON__.$pop_exc()
 if(_default===undefined){return None}
 else{return _default}
 }
@@ -9621,7 +9600,7 @@ var _dom=document.createElement('html')
 _dom.innerHTML=content
 return _dom
 }
-$raise('Error', 'Invalid argument' + content)
+throw Error('Invalid argument' + content)
 }
 DOMNode.prototype.addClass=function(classname){
 var _c=this.__getattr__('class')

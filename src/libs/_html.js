@@ -11,7 +11,7 @@ function $Tag(tagName,args){
         $start = 0
         $first = args[0]
         // if first argument is not a keyword, it's the tag content
-        if($first.__class__!==$KwDict){
+        if($first.__class__!==__BRYTHON__.$KwDict){
             $start = 1
             if(isinstance($first,[str,int,float])){
                 txt = document.createTextNode(str($first))
@@ -29,7 +29,7 @@ function $Tag(tagName,args){
         for(var $i=$start;$i<args.length;$i++){
             // keyword arguments
             $arg = args[$i]
-            if($arg && $arg.__class__===$KwDict){
+            if($arg && $arg.__class__===__BRYTHON__.$KwDict){
                 if($arg.name.toLowerCase().substr(0,2)==="on"){ // events
                     eval('__BRYTHON__.DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
                 }else if($arg.name.toLowerCase()=="style"){

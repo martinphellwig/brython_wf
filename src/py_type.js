@@ -326,7 +326,7 @@ function $instance_creator(klass){
         // apply __new__ to initialize the instance
         try{
             new_func = getattr(klass,'__new__')
-        }catch(err){console.log('new err '+err);$pop_exc()}
+        }catch(err){__BRYTHON__.$pop_exc()}
         if(new_func!==null){
             var args = [klass.$factory]
             for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
@@ -334,11 +334,8 @@ function $instance_creator(klass){
         }
         // __initialized__ is set in object.__new__ if klass has a method __init__
         if(!obj.__initialized__){
-            try{
-                init_func = getattr(klass,'__init__')
-            }catch(err){
-                $pop_exc()
-            }
+            try{init_func = getattr(klass,'__init__')}
+            catch(err){__BRYTHON__.$pop_exc()}
             if(init_func!==null){
                 var args = [obj]
                 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}

@@ -55,13 +55,13 @@ function $_SyntaxError(context,msg,indent){
     var line_num = tree_node.line_num
     __BRYTHON__.line_info = [line_num,module]
     if(indent===undefined){
-        if(msg.constructor===Array){$SyntaxError(module,msg[0],$pos)}
+        if(msg.constructor===Array){__BRYTHON__.$SyntaxError(module,msg[0],$pos)}
         if(msg==="Triple string end not found"){
             // add an extra argument : used in interactive mode to
             // prompt for the rest of the triple-quoted string
-            $SyntaxError(module,'invalid syntax : triple string end not found',$pos)
+            __BRYTHON__.$SyntaxError(module,'invalid syntax : triple string end not found',$pos)
         }
-        $SyntaxError(module,'invalid syntax',$pos)
+        __BRYTHON__.$SyntaxError(module,'invalid syntax',$pos)
     }else{throw $IndentationError(module,msg,$pos)}
 }
 
@@ -368,7 +368,7 @@ function $AssignCtx(context){
             
             var catch_node1 = new $Node('expression')
             var js = 'if($err'+$loop_num+'.__name__=="StopIteration")'
-            js += '{$pop_exc();throw ValueError("need more than "+$counter+" value"+'
+            js += '{__BRYTHON__.$pop_exc();throw ValueError("need more than "+$counter+" value"+'
             js += '($counter>1 ? "s" : "")+" to unpack")}else{throw $err'+$loop_num+'};'
             new $NodeJSCtx(catch_node1,js)
             catch_node.add(catch_node1)
@@ -376,7 +376,7 @@ function $AssignCtx(context){
             // add a test to see if iterator is exhausted
             var exhausted = new $Node('expression')
             js = 'var $exhausted=true;try{__builtins__.next($right);$exhausted=false}'
-            js += 'catch(err){if(err.__name__=="StopIteration"){$pop_exc()}}'
+            js += 'catch(err){if(err.__name__=="StopIteration"){__BRYTHON__.$pop_exc()}}'
             js += 'if(!$exhausted){throw ValueError('
             js += '"too many values to unpack (expected "+($counter+1)+")")}'
             new $NodeJSCtx(exhausted,js)
@@ -391,7 +391,7 @@ function $AssignCtx(context){
     }
     this.to_js = function(){
         if(this.parent.type==='call'){ // like in foo(x=0)
-            return '$Kw('+this.tree[0].to_js()+','+this.tree[1].to_js()+')'
+            return '__BRYTHON__.$Kw('+this.tree[0].to_js()+','+this.tree[1].to_js()+')'
         }else{ // assignment
             var left = this.tree[0]
             if(left.type==='expr'){
@@ -1033,7 +1033,7 @@ function $DefCtx(context){
             nodes.push(new_node)
         }
 
-        var js = 'var $ns=$MakeArgs("'+this.name+'",arguments,['+required+'],'
+        var js = 'var $ns=__BRYTHON__.$MakeArgs("'+this.name+'",arguments,['+required+'],'
         js += '['+defaults.join(',')+'],'+other_args+','+other_kw+')'
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
@@ -1143,13 +1143,13 @@ function $DefCtx(context){
         this.transformed = true
     }
     this.add_generator_declaration = function(){
-        // if generator, add line 'foo = $generator($foo)'
+        // if generator, add line 'foo = __BRYTHON__.$generator($foo)'
         var scope = $get_scope(this)
         var node = this.parent.node
         if(this.type==='generator' && !this.declared){
             var offset = 2
             if(this.decorators !== undefined){offset++}
-            js = '$generator('
+            js = '__BRYTHON__.$generator('
             if(scope.ntype==='class'){js += '$class.'}
             js += '$'+this.name+')'
             var gen_node = new $Node('expression')
@@ -1276,7 +1276,7 @@ function $DoubleStarArgCtx(context){
     this.tree = []
     context.tree.push(this)
     this.toString = function(){return '**'+this.tree}
-    this.to_js = function(){return '$pdict('+$to_js(this.tree)+')'}
+    this.to_js = function(){return '__BRYTHON__.$pdict('+$to_js(this.tree)+')'}
 }
 
 function $ExceptCtx(context){
@@ -1399,7 +1399,7 @@ function $ForExpr(context){
         try_node.add(iter_node)
 
         var catch_node = new $Node('expression')
-        var js = 'catch($err){if(__BRYTHON__.is_exc($err,[StopIteration])){$pop_exc();break}'
+        var js = 'catch($err){if(__BRYTHON__.is_exc($err,[StopIteration])){__BRYTHON__.$pop_exc();break}'
         js += 'else{throw($err)}}'
         new $NodeJSCtx(catch_node,js)
         node.insert(1,catch_node)
@@ -1922,7 +1922,7 @@ function $KwArgCtx(context){
     this.to_js = function(){
         var key = this.tree[0].to_js()
         if(key.substr(0,2)=='$$'){key=key.substr(2)}
-        var res = '$Kw("'+key+'",'
+        var res = '__BRYTHON__.$Kw("'+key+'",'
         res += $to_js(this.tree.slice(1,this.tree.length))+')'
         return res
     }
@@ -1947,7 +1947,7 @@ function $LambdaCtx(context){
         var args = src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
         var body = src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
         body = body.replace(/\n/g,' ')
-        return '$lambda("'+module+'",$globals,$locals,"'+args+'","'+body+'")'
+        return '__BRYTHON__.$lambda("'+module+'",$globals,$locals,"'+args+'","'+body+'")'
     }
 }
 
@@ -1982,7 +1982,7 @@ function $ListOrTupleCtx(context,real){
         if(this.real==='list'){return 'list.__call__(['+$to_js(this.tree)+'])'}
         else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
             var src = this.get_src()
-            var res = '$mkdict($globals,$locals),'
+            var res = '__BRYTHON__.$mkdict($globals,$locals),'
 
             var qesc = new RegExp('"',"g") // to escape double quotes in arguments
             for(var i=1;i<this.intervals.length;i++){
@@ -1994,11 +1994,11 @@ function $ListOrTupleCtx(context,real){
                 if(i<this.intervals.length-1){res+=','}
             }
 
-            if(this.real==='list_comp'){return '$list_comp('+res+')'}
+            if(this.real==='list_comp'){return '__BRYTHON__.$list_comp('+res+')'}
             else if(this.real==='dict_or_set_comp'){
-                if(this.expression.length===1){return '$gen_expr('+res+')'}
-                else{return '$dict_comp('+res+')'}
-            }else{return '$gen_expr('+res+')'}
+                if(this.expression.length===1){return '__BRYTHON__.$gen_expr('+res+')'}
+                else{return '__BRYTHON__.$dict_comp('+res+')'}
+            }else{return '__BRYTHON__.$gen_expr('+res+')'}
         }else if(this.real==='tuple'){
             if(this.tree.length===1 && this.has_comma===undefined){return this.tree[0].to_js()}
             else{return 'tuple(['+$to_js(this.tree)+'])'}
@@ -2111,7 +2111,7 @@ function $RaiseCtx(context){
     this.tree = []
     context.tree.push(this)
     this.to_js = function(){
-        if(this.tree.length===0){return '$raise()'}
+        if(this.tree.length===0){return '__BRYTHON__.$raise()'}
         var exc = this.tree[0]
         if(exc.type==='id'){return 'throw '+exc.value+'("")'}
         else if(exc.type==='expr' && exc.tree[0].type==='id'){
@@ -2181,7 +2181,7 @@ function $StarArgCtx(context){
     context.tree.push(this)
     this.toString = function(){return '(star arg) '+this.tree}
     this.to_js = function(){
-        return '$ptuple('+$to_js(this.tree)+')'
+        return '__BRYTHON__.$ptuple('+$to_js(this.tree)+')'
     }
 }
 
@@ -2444,7 +2444,7 @@ function $YieldCtx(context){ // subscription or slicing
             res += '$subiter'+$loop_num+'())}\n'
             res += indent+$ws(4)+'catch($err'+$loop_num+'){\n'
             res += indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===StopIteration)'
-            res += '{$pop_exc();break}\n'
+            res += '{__BRYTHON__.$pop_exc();break}\n'
             res += indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
             $loop_num++
             return res
@@ -3324,7 +3324,6 @@ function $transition(context,token){
 
     }else if(context.type==="lambda"){
     
-        console.log('lambda, token '+token+' '+arguments[2])
         if(token===':' && context.args===undefined){
             context.args = context.tree
             context.tree = []
@@ -4128,7 +4127,7 @@ function brython(options){
 
     for(var $i=0;$i<$elts.length;$i++){
         var $elt = $elts[$i]
-        var $br_scripts = ['brython.js','py2js.js','py_loader.js']
+        var $br_scripts = ['brython.js','py2js.js','brython_full.js']
         for(var $j=0;$j<$br_scripts.length;$j++){
             var $bs = $br_scripts[$j]
             if($elt.src.substr($elt.src.length-$bs.length)==$bs){
@@ -4136,6 +4135,7 @@ function brython(options){
                     $elt.src.charAt($elt.src.length-$bs.length-1)=='/'){
                         var $path = $elt.src.substr(0,$elt.src.length-$bs.length)
                         __BRYTHON__.brython_path = $path
+                        console.log('brythonpath '+$path)
                         if (!(__BRYTHON__.path.indexOf($path+'Lib')> -1)) {
                            __BRYTHON__.path.push($path+'Lib')
                         }

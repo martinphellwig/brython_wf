@@ -8,7 +8,7 @@ function $__new__(factory){
         res.__class__ = cls.$dict
         var init_func = null
         try{init_func = __builtins__.getattr(res,'__init__')}
-        catch(err){$pop_exc()}
+        catch(err){__BRYTHON__.$pop_exc()}
         if(init_func!==null){
             var args = []
             for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
