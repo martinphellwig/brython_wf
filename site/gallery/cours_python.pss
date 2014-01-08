@@ -18,7 +18,7 @@ Historique
  - version courante 3.3.3
  - plus cohérent, "propre", meilleur support d'Unicode
 
-- reco : __choisir Python3 pour les nouveaux projets__
+- recommandation : __choisir Python3 pour les nouveaux projets__
  - sauf dépendence incontournable à une librairie pas encore migrée en Python 3
  
 ../..
@@ -50,16 +50,16 @@ Projets créés sur Github en 2013
 
 <pre>
 Rank    Language      # Repositories Created
-1    JavaScript    264131
-2    Ruby          218812
-3    Java          157618
-4    PHP           114384
-5    Python         95002
-6    C++            78327
-7    C              67706
-8    Objective-C    36344
-9    C#             32170
-10    Shell          28561
+1       JavaScript    264131
+2       Ruby          218812
+3       Java          157618
+4       PHP           114384
+5       Python         95002
+6       C++            78327
+7       C              67706
+8       Objective-C    36344
+9       C#             32170
+10      Shell          28561
 </pre>
 ../..
 Popularité
@@ -103,6 +103,9 @@ Définition de noms
 ==================
 
     >>> width = 20
+    >>> width += 10
+    >>> width
+    30
     >>> height = 5*9
     
     >>> x = y = z = 0
@@ -1275,9 +1278,9 @@ Classes
     ...
     >>> print(MyClass.i)
 
-Les noms définis dans `MyClass` (_attributs_) sont accessibles depuis l'espace de noms "supérieur" par des _noms qualifiés_
+Les noms définis dans `MyClass` (_attributs_) sont accessibles depuis l'espace de noms "supérieur" par des _noms qualifiés_ (forme `klass.X`)
 
-On peut modifier les attributs de la classe
+On peut modifier dynamiquement les attributs de la classe
 
     >>> MyClass.i = 23456    
 ../..
@@ -1313,7 +1316,7 @@ Par convention, on les écrit avec l'instance comme premier argument, appelé `s
     >>> x.greet('world')
     hello, world
 
-`x.greet('world')` est équivalent à `MyClass.greet(x,'world')`
+`x.greet('world')` est équivalent à  `MyClass.greet(x,'world')`
 
 ../..
 Classes
@@ -1464,7 +1467,7 @@ Méthodes spéciales
     c
 
 La définition d'une méthode `__getitem__(self, pos)` permet d'utiliser l'accès par index
-
+../..
 Itérateurs
 ==========
 Utilisés très fréquemment en Python
@@ -1523,7 +1526,7 @@ Pour pouvoir itérer sur les instances d'une classe il faut lui définir une fon
             self.index = self.index - 1
             return self.data[self.index]
 ../..
-Generateurs
+Générateurs
 ===========
 Création automatique d'itérateurs : fonctions qui utilisent `yield` au lieu de `return`
 
