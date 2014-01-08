@@ -6,7 +6,7 @@ var $operators = {
     "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
     "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
     "+=":"iadd","-=":"isub","*=":"imul","/=":"itruediv",
-    "%=":"imod","&=":"iand","|=":"ior","^=":"ixor","**=":"ipow",
+    "%=":"imod","&=":"iand","|=":"ior","^=":"ixor",
     "+":"add","-":"sub","*":"mul",
     "/":"truediv","%":"mod","&":"and","|":"or","~":"invert",
     "^":"xor","<":"lt",">":"gt",
@@ -42,7 +42,7 @@ for (var $i=0;$i<$op_order.length;$i++){
 var $augmented_assigns = {
     "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
     "**=":"ipow","+=":"iadd","-=":"isub","*=":"imul","/=":"itruediv",
-    "%=":"imod","^=":"ipow",
+    "%=":"imod",
     "&=":"iand","|=":"ior","^=":"ixor"
 }
 
