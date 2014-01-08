@@ -93,7 +93,7 @@ function ascii(obj) {
 // not in Python but used for tests until unittest works
 // "assert_raises(exception,function,*args)" becomes "if condition: pass else: raise AssertionError"
 function assert_raises(){
-    var $ns=$MakeArgs('assert_raises',arguments,['exc','func'],[],'args','kw')
+    var $ns=__BRYTHON__.$MakeArgs('assert_raises',arguments,['exc','func'],[],'args','kw')
     var args = $ns['args']
     try{$ns['func'].apply(this,args)}
     catch(err){
@@ -148,9 +148,9 @@ function bool(obj){ // return true or false
     }else{
         try{return getattr(obj,'__bool__')()}
         catch(err){
-            $pop_exc()
+            __BRYTHON__.$pop_exc()
             try{return getattr(obj,'__len__')()>0}
-            catch(err){$pop_exc();return true}
+            catch(err){__BRYTHON__.$pop_exc();return true}
         }
     }
 }
@@ -312,7 +312,7 @@ $EnumerateDict.__mro__ = [$EnumerateDict,$ObjectDict]
 
 function enumerate(){
     var _start = 0
-    var $ns = $MakeArgs("enumerate",arguments,["iterable"],
+    var $ns = __BRYTHON__.$MakeArgs("enumerate",arguments,["iterable"],
                 ["start"], null, null)
     var _iter = iter($ns["iterable"])
     var _start = $ns["start"] || _start
@@ -362,7 +362,7 @@ function filter(){
             var _item = next(iterable)
             if(func(_item)){res.push(_item)}
         }catch(err){
-            if(err.__name__==='StopIteration'){$pop_exc();break}
+            if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
             else{throw err}
         }
     }
@@ -486,7 +486,7 @@ function globals(module){
 
 function hasattr(obj,attr){
     try{getattr(obj,attr);return True}
-    catch(err){$pop_exc();return False}
+    catch(err){__BRYTHON__.$pop_exc();return False}
 }
 
 function hash(obj){
@@ -593,7 +593,7 @@ function issubclass(klass,classinfo){
 function iter(obj){
     try{return getattr(obj,'__iter__')()}
     catch(err){
-        $pop_exc()
+        __BRYTHON__.$pop_exc()
         throw TypeError("'"+obj.__class__.__name__+"' object is not iterable")
     }
 }
@@ -634,7 +634,7 @@ function map(){
                 args.push(x)
             }catch(err){
                 if(err.__name__==='StopIteration'){
-                    $pop_exc();flag=false;break
+                    __BRYTHON__.$pop_exc();flag=false;break
                 }else{throw err}
             }
         }
@@ -659,7 +659,7 @@ function $extreme(args,op){ // used by min() and max()
     var last_arg = args[args.length-1]
     var last_i = args.length-1
     var has_key = false
-    if(isinstance(last_arg,$Kw)){
+    if(isinstance(last_arg,__BRYTHON__.$Kw)){
         if(last_arg.name === 'key'){
             var func = last_arg.value
             has_key = true
@@ -733,7 +733,7 @@ function ord(c) {
 
 // pow() (built in function)
 function pow() {
-    var $ns=$MakeArgs('pow',arguments,[],[],'args','kw')
+    var $ns=__BRYTHON__.$MakeArgs('pow',arguments,[],[],'args','kw')
     var args = $ns['args']
     if(args.length<2){throw TypeError(
         "pow expected at least 2 arguments, got "+args.length)
@@ -779,7 +779,7 @@ function pow() {
 
 function $print(){
     var end='\n',sep=' '
-    var $ns=$MakeArgs('print',arguments,[],['end','sep'],'args', null)
+    var $ns=__BRYTHON__.$MakeArgs('print',arguments,[],['end','sep'],'args', null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     var res = ''
     for(var i=0;i<args.length;i++){
@@ -899,7 +899,7 @@ $RangeDict.__repr__ = $RangeDict.__str__ = function(self){
 }
 
 function range(){
-    var $ns=$MakeArgs('range',arguments,[],[],'args',null)
+    var $ns=__BRYTHON__.$MakeArgs('range',arguments,[],[],'args',null)
     var args = $ns['args']
     if(args.length>3){throw TypeError(
         "range expected at most 3 arguments, got "+args.length)
@@ -952,7 +952,7 @@ function reversed(seq){
 
     try{return getattr(seq,'__reversed__')()}
     catch(err){
-        if(err.__name__=='AttributeError'){$pop_exc()}
+        if(err.__name__=='AttributeError'){__BRYTHON__.$pop_exc()}
         else{throw err}
     }
 
@@ -1003,7 +1003,7 @@ function setattr(obj,attr,value){
     
     try{var f = getattr(obj,'__setattr__')}
     catch(err){
-        $pop_exc()
+        __BRYTHON__.$pop_exc()
         obj[attr]=value
         return
     }
@@ -1017,7 +1017,7 @@ var $SliceDict = {__class__:$type,
 $SliceDict.__mro__ = [$SliceDict,$ObjectDict]
 
 function slice(){
-    var $ns=$MakeArgs('slice',arguments,[],[],'args',null)
+    var $ns=__BRYTHON__.$MakeArgs('slice',arguments,[],[],'args',null)
     var args = $ns['args']
     if(args.length>3){throw TypeError(
         "slice expected at most 3 arguments, got "+args.length)
@@ -1048,7 +1048,7 @@ slice.$dict = $SliceDict
 
 // sorted() built in function
 function sorted () {
-    var $ns=$MakeArgs('sorted',arguments,['iterable'],[],null,'kw')
+    var $ns=__BRYTHON__.$MakeArgs('sorted',arguments,['iterable'],[],null,'kw')
     if($ns['iterable']===undefined){throw TypeError("sorted expected 1 positional argument, got 0")}
     else{iterable=$ns['iterable']}
     var key = __builtins__.dict.$dict.get($ns['kw'],'key',None)
@@ -1058,14 +1058,14 @@ function sorted () {
     while(true){
         try{obj.push(next(iterable))}
         catch(err){
-            if(err.__name__==='StopIteration'){$pop_exc();break}
+            if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
             else{throw err}
         }
     }
     // pass arguments to list.sort()
     var args = [obj]
-    if (key !== None) {args.push($Kw('key',key))}
-    if(reverse){args.push($Kw('reverse',true))}
+    if (key !== None) {args.push(__BRYTHON__.$Kw('key',key))}
+    if(reverse){args.push(__BRYTHON__.$Kw('reverse',true))}
     __builtins__.list.$dict.sort.apply(null,args)
     return obj
 }
@@ -1093,7 +1093,7 @@ function sum(iterable,start){
             var _item = next(iterable)
             res = getattr(res,'__add__')(_item)
         }catch(err){
-           if(err.__name__==='StopIteration'){$pop_exc();break}
+           if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
            else{throw err}
         }
     }
@@ -1150,7 +1150,7 @@ function $url_open(){
     // - mode can be 'r' (text, default) or 'rb' (binary)
     // - encoding if mode is 'rb'
     var mode = 'r',encoding='utf-8'
-    var $ns=$MakeArgs('open',arguments,['file'],['mode','encoding'],'args','kw')
+    var $ns=__BRYTHON__.$MakeArgs('open',arguments,['file'],['mode','encoding'],'args','kw')
     for(var attr in $ns){eval('var '+attr+'=$ns["'+attr+'"]')}
     if(args.length>0){var mode=args[0]}
     if(args.length>1){var encoding=args[1]}
@@ -1254,7 +1254,7 @@ $ZipDict.__mro__ = [$ZipDict,$ObjectDict]
 function zip(){
     var res = {__class__:$ZipDict,items:[]}
     if(arguments.length==0){return res}
-    var $ns=$MakeArgs('zip',arguments,[],[],'args','kw')
+    var $ns=__BRYTHON__.$MakeArgs('zip',arguments,[],[],'args','kw')
     var _args = $ns['args']
     var args = []
     for(var i=0;i<_args.length;i++){args.push(iter(_args[i]))}
@@ -1267,7 +1267,7 @@ function zip(){
                 var x=next(args[i])
                 line.push(x)
             }catch(err){
-                if(err.__name__==='StopIteration'){$pop_exc();flag=false;break}
+                if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();flag=false;break}
                 else{throw err}
             }
         }

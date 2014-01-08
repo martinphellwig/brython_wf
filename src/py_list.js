@@ -25,7 +25,7 @@ $ListDict.__class__ = $type
 $ListDict.__contains__ = function(self,item){
     for(var i=0;i<self.length;i++){
         try{if(getattr(self[i],'__eq__')(item)){return true}
-        }catch(err){$pop_exc();void(0)}
+        }catch(err){__BRYTHON__.$pop_exc();void(0)}
     }
     return false
 }
@@ -172,7 +172,7 @@ $ListDict.__init__ = function(self,arg){
     var next_func = getattr(arg,'__next__')
     while(true){
         try{self.push(next_func())}
-        catch(err){if(err.__name__=='StopIteration'){$pop_exc()};break}
+        catch(err){if(err.__name__=='StopIteration'){__BRYTHON__.$pop_exc()};break}
     }
 }
 
@@ -283,7 +283,7 @@ $ListDict.extend = function(self,other){
     while(true){
         try{self.push(next(other))}
         catch(err){
-            if(err.__name__=='StopIteration'){$pop_exc();break}
+            if(err.__name__=='StopIteration'){__BRYTHON__.$pop_exc();break}
             else{throw err}
         }
     }
@@ -372,7 +372,7 @@ $ListDict.sort = function(self){
     var reverse = false
     for(var i=1;i<arguments.length;i++){
         var arg = arguments[i]
-        if(arg.__class__==$KwDict){
+        if(arg.__class__==__BRYTHON__.$KwDict){
             if(arg.name==='key'){func=arg.value}
             else if(arg.name==='reverse'){reverse=arg.value}
         }
@@ -406,7 +406,7 @@ function list(){
         try{res.push(next_func())}
         catch(err){
             if(err.__name__=='StopIteration'){
-                $pop_exc()
+                __BRYTHON__.$pop_exc()
             }else{
                 //console.log('err in next func '+err+'\n'+dir(arguments[0]))
             }

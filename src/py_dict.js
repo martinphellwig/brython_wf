@@ -58,7 +58,7 @@ $DictDict.__eq__ = function(self,other){
                         return False
                     }
                 }
-            }catch(err){$pop_exc()}
+            }catch(err){__BRYTHON__.$pop_exc()}
         }
     }
     return True
@@ -101,7 +101,7 @@ $DictDict.__init__ = function(self){
             return
         }
     }
-    var $ns=$MakeArgs('dict',args,[],[],'args','kw')
+    var $ns=__BRYTHON__.$MakeArgs('dict',args,[],[],'args','kw')
     var args = $ns['args']
     var kw = $ns['kw']
     if(args.length>0){ 
@@ -117,7 +117,7 @@ $DictDict.__init__ = function(self){
                     self.$keys.push(getattr(elt,'__getitem__')(0))
                     self.$values.push(getattr(elt,'__getitem__')(1))
                 }catch(err){
-                    if(err.__name__==='StopIteration'){$pop_exc();break}
+                    if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
                     else{throw err}
                 }
             }
@@ -173,7 +173,7 @@ $DictDict.__setitem__ = function(self,key,value){
                 return
             }
         }catch(err){ // if __eq__ throws an exception
-            $pop_exc()
+            __BRYTHON__.$pop_exc()
         }
     }
     // create a new key/value
@@ -205,7 +205,7 @@ $DictDict.copy = function(self){
 $DictDict.get = function(self,key,_default){
     try{return $DictDict.__getitem__(self,key)}
     catch(err){
-        $pop_exc()
+        __BRYTHON__.$pop_exc()
         if(_default!==undefined){return _default}
         else{return None}
     }
@@ -233,7 +233,7 @@ $DictDict.pop = function(self,key,_default){
         $DictDict.__delitem__(self,key)
         return res
     }catch(err){
-        $pop_exc()
+        __BRYTHON__.$pop_exc()
         if(err.__name__==='KeyError'){
             if(_default!==undefined){return _default}
             throw err
@@ -258,7 +258,7 @@ $DictDict.setdefault = function(self,key,_default){
 $DictDict.update = function(self){
     var params = []
     for(var i=1;i<arguments.length;i++){params.push(arguments[i])}
-    var $ns=$MakeArgs('$DictDict.update',params,[],[],'args','kw')
+    var $ns=__BRYTHON__.$MakeArgs('$DictDict.update',params,[],[],'args','kw')
     var args = $ns['args']
     if(args.length>0 && isinstance(args[0],dict)){
         var other = args[0]

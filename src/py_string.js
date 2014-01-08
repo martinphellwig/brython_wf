@@ -400,7 +400,7 @@ $StringDict.endswith = function(self){
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
     var start=null,end=null
-    var $ns=$MakeArgs("$StringDict.endswith",args,['suffix'],
+    var $ns=__BRYTHON__.$MakeArgs("$StringDict.endswith",args,['suffix'],
         ['start','end'],null,null)
     var suffixes = $ns['suffix']
     if(!isinstance(suffixes,__builtins__.tuple)){suffixes=[suffixes]}
@@ -425,7 +425,7 @@ $StringDict.find = function(self){
     // arguments start and end are interpreted as in slice notation. 
     // Return -1 if sub is not found.
     var start=0,end=self.length
-    var $ns=$MakeArgs("$StringDict.find",arguments,['self','sub'],
+    var $ns=__BRYTHON__.$MakeArgs("$StringDict.find",arguments,['self','sub'],
         ['start','end'],null,null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     if(!isinstance(sub,str)){throw TypeError(
@@ -559,7 +559,7 @@ var $FormattableString=function(format_string) {
 
     this.format=function() {
        // same as str.format() and unicode.format in Python 2.6+
-       var $ns=$MakeArgs('format',arguments,[],[],'args','kwargs')
+       var $ns=__BRYTHON__.$MakeArgs('format',arguments,[],[],'args','kwargs')
        var args=$ns['args']
        var kwargs=$ns['kwargs']
 
@@ -835,8 +835,6 @@ var $FormattableString=function(format_string) {
 
 
 $StringDict.format = function(self) {
-    //var $ns=$MakeArgs('str.format',arguments,['self'],{},'args', 'kw')
-    //console.log('args '+$ns['args']+' kw '+str($ns['kw']))
 
     var _fs = $FormattableString(self.valueOf())
     var args=[]
@@ -933,7 +931,7 @@ $StringDict.join = function(self,obj){
             res += obj2+self
             count++
         }catch(err){
-            if(err.__name__==='StopIteration'){$pop_exc();break}
+            if(err.__name__==='StopIteration'){__BRYTHON__.$pop_exc();break}
             else{throw err}
         }
     }
@@ -1008,7 +1006,7 @@ $StringDict.rfind = function(self){
     // such that sub is contained within s[start:end]. Optional arguments 
     // start and end are interpreted as in slice notation. Return -1 on failure.
     var start=0,end=self.length
-    var $ns=$MakeArgs("$StringDict.find",arguments,['self','sub'],
+    var $ns=__BRYTHON__.$MakeArgs("$StringDict.find",arguments,['self','sub'],
         ['start','end'],null,null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     if(!isinstance(sub,str)){throw TypeError(
@@ -1032,7 +1030,7 @@ $StringDict.rindex = function(){
 
 $StringDict.rjust = function(self) {
     var fillchar = ' '
-    var $ns=$MakeArgs("$StringDict.rjust",arguments,['self','width'],
+    var $ns=__BRYTHON__.$MakeArgs("$StringDict.rjust",arguments,['self','width'],
                       ['fillchar'],null,null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 
@@ -1060,7 +1058,7 @@ $StringDict.rpartition = function(self,sep) {
 $StringDict.rsplit = function(self) {
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    var $ns=$MakeArgs("$StringDict.split",args,[],[],'args','kw')
+    var $ns=__BRYTHON__.$MakeArgs("$StringDict.split",args,[],[],'args','kw')
     var sep=None,maxsplit=-1
     if($ns['args'].length>=1){sep=$ns['args'][0]}
     if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -1095,7 +1093,7 @@ $StringDict.rstrip = function(self,x){
 $StringDict.split = function(self){
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    var $ns=$MakeArgs("$StringDict.split",args,[],[],'args','kw')
+    var $ns=__BRYTHON__.$MakeArgs("$StringDict.split",args,[],[],'args','kw')
     var sep=None,maxsplit=-1
     if($ns['args'].length>=1){sep=$ns['args'][0]}
     if($ns['args'].length==2){maxsplit=$ns['args'][1]}
@@ -1161,7 +1159,7 @@ $StringDict.startswith = function(self){
     // prefix can also be a tuple of prefixes to look for. With optional 
     // start, test string beginning at that position. With optional end, 
     // stop comparing string at that position.
-    $ns=$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
+    $ns=__BRYTHON__.$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
         ['start','end'],null,null)
     var prefixes = $ns['prefix']
     if(!isinstance(prefixes,__builtins__.tuple)){prefixes=[prefixes]}
@@ -1231,13 +1229,13 @@ function str(arg){
             return f()
         }
         catch(err){
-            $pop_exc()
+            __BRYTHON__.$pop_exc()
             try{ // try __repr__
                 var f = getattr(arg,'__repr__')
                 return f()
             }catch(err){
-                $pop_exc()
-                console.log(err+'\ndefault to toString '+arg);$pop_exc();return arg.toString()
+                __BRYTHON__.$pop_exc()
+                console.log(err+'\ndefault to toString '+arg);return arg.toString()
             }
         }
     }

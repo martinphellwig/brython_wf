@@ -41,7 +41,7 @@ $module = (function(){
         return res
     }
     obj.findall = function(pattern,string,flags){
-        var $ns=$MakeArgs('re.search',arguments,['pattern','string'],[],'args','kw')
+        var $ns=__BRYTHON__.$MakeArgs('re.search',arguments,['pattern','string'],[],'args','kw')
         var args = $ns['args']
         if(args.length>0){var flags=args[0]}
         else{var flags = getattr($ns['kw'], 'get')('flags','')}
@@ -52,7 +52,7 @@ $module = (function(){
         return jsmatch
     }
     obj.search = function(pattern,string){
-        var $ns=$MakeArgs('re.search',arguments,['pattern','string'],[],'args','kw')
+        var $ns=__BRYTHON__.$MakeArgs('re.search',arguments,['pattern','string'],[],'args','kw')
         var args = $ns['args']
         if(args.length>0){var flags=args[0]}
         else{var flags = getattr($ns['kw'],'get')('flags','')}
@@ -83,7 +83,7 @@ $module = (function(){
         return JSObject(mo)
     }
     obj.sub = function(pattern,repl,string){
-        var $ns=$MakeArgs('re.search',arguments,['pattern','repl','string'],[],'args','kw')
+        var $ns=__BRYTHON__.$MakeArgs('re.search',arguments,['pattern','repl','string'],[],'args','kw')
         for($var in $ns){eval("var "+$var+"=$ns[$var]")}
         var args = $ns['args']
         var count = __builtins__.dict.$dict.get($ns['kw'],'count',0)

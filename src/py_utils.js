@@ -1,5 +1,5 @@
 
-function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
+__BRYTHON__.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw){
     // builds a namespace from the arguments provided in $args
     // in a function call like foo(x,y,z=1,*args,**kw) the parameters are
     // $required : ['x','y']
@@ -15,13 +15,13 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
         $arg = $args[i]
         if($arg===undefined){console.log('arg '+i+' undef in '+$fname)}
         if($arg===null){upargs.push(null)}
-        else if($arg.__class__===$ptupleDict){
+        else if($arg.__class__===__BRYTHON__.$ptupleDict){
             for(var j=0;j<$arg.arg.length;j++){
                 upargs.push($arg.arg[j])
             }
-        }else if($arg.__class__===$pdictDict){
+        }else if($arg.__class__===__BRYTHON__.$pdictDict){
             for(var j=0;j<$arg.arg.$keys.length;j++){
-                upargs.push($Kw($arg.arg.$keys[j],$arg.arg.$values[j]))
+                upargs.push(__BRYTHON__.$Kw($arg.arg.$keys[j],$arg.arg.$values[j]))
             }
         }else{
             upargs.push($arg)
@@ -29,8 +29,8 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
     }
     for(var $i=0;$i<upargs.length;$i++){
         var $arg=upargs[$i]
-        var $PyVar=$JS2Py($arg)
-        if($arg && $arg.__class__===$KwDict){ // keyword argument
+        var $PyVar=__BRYTHON__.$JS2Py($arg)
+        if($arg && $arg.__class__===__BRYTHON__.$KwDict){ // keyword argument
             $PyVar = $arg.value
             if($set_vars.indexOf($arg.name)>-1){
                 throw new TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
@@ -92,14 +92,14 @@ function $MakeArgs($fname,$args,$required,$defaults,$other_args,$other_kw){
     return $ns
 }
 
-function $mkdict(glob,loc){
+__BRYTHON__.$mkdict = function(glob,loc){
     var res = {}
     for(var arg in glob){res[arg]=glob[arg]}
     for(var arg in loc){res[arg]=loc[arg]}
     return res
 }
 
-function $list_comp(){
+__BRYTHON__.$list_comp = function(){
     var $env = arguments[0]
     for(var $arg in $env){
         eval("var "+$arg+'=$env["'+$arg+'"]')
@@ -128,7 +128,7 @@ function $list_comp(){
     return eval("res"+$ix)
 }
 
-function $gen_expr(){ // generator expresssion
+__BRYTHON__.$gen_expr = function(){ // generator expresssion
     var $env = arguments[0]
     for(var $arg in $env){
         try{
@@ -178,7 +178,7 @@ function $gen_expr(){ // generator expresssion
     return $res2
 }
 
-function $dict_comp(){ // dictionary comprehension
+__BRYTHON__.$dict_comp = function(){ // dictionary comprehension
     var $env = arguments[0]
     for(var $arg in $env){
         eval("var "+$arg+'=$env["'+$arg+'"]')
@@ -203,8 +203,7 @@ function $dict_comp(){ // dictionary comprehension
     return eval($res)
 }
 
-
-function $generator(func){
+__BRYTHON__.$generator = function(func){
     // a cheap and buggy implementation of generators
     // actually executes the function and stores the result of
     // successive yields in a list
@@ -259,9 +258,9 @@ function $generator(func){
     res.__repr__ = function(){return "<function "+func.__name__+">"}
     return res
 }
-$generator.__repr__ = function(){return "<class 'generator'>"}
-$generator.__str__ = function(){return "<class 'generator'>"}
-$generator.__class__ = $type
+__BRYTHON__.$generator.__repr__ = function(){return "<class 'generator'>"}
+__BRYTHON__.$generator.__str__ = function(){return "<class 'generator'>"}
+__BRYTHON__.$generator.__class__ = $type
 
 __BRYTHON__.$ternary = function(env,cond,expr1,expr2){
     // env is the environment to run the ternary expression
@@ -276,7 +275,7 @@ __BRYTHON__.$ternary = function(env,cond,expr1,expr2){
     return $res
 }
 
-function $lambda($mod,$globals,$locals,$args,$body){
+__BRYTHON__.$lambda = function($mod,$globals,$locals,$args,$body){
     for(var $attr in $globals){eval('var '+$attr+'=$globals["'+$attr+'"]')}
     for(var $attr in $locals){eval('var '+$attr+'=$locals["'+$attr+'"]')}
     var $res = 'res'+Math.random().toString(36).substr(2,8)
@@ -291,7 +290,7 @@ function $lambda($mod,$globals,$locals,$args,$body){
 }
 
 // transform native JS types into Brython types
-function $JS2Py(src){
+__BRYTHON__.$JS2Py = function(src){
     if(src===null||src===undefined){return __builtins__.None}
     if(typeof src==='number'){
         if(src%1===0){return src}
@@ -300,7 +299,7 @@ function $JS2Py(src){
     if(src.__class__!==undefined){
         if(src.__class__===__builtins__.list.$dict){
             for(var i=0;i<src.length;i++){
-                src[i] = $JS2Py(src[i])
+                src[i] = __BRYTHON__.$JS2Py(src[i])
             }
         }
         return src
@@ -311,7 +310,7 @@ function $JS2Py(src){
         else if(src.constructor===Array||__BRYTHON__.$isNodeList(src)){
             var res = []
             for(var i=0;i<src.length;i++){
-                res.push($JS2Py(src[i]))
+                res.push(__BRYTHON__.$JS2Py(src[i]))
             }
             return res
         }
@@ -319,32 +318,15 @@ function $JS2Py(src){
     return __BRYTHON__.JSObject(src)
 }
 
-// generic attribute getter
-function $getattr(obj,attr){ 
-    if(obj[attr]!==undefined){
-        var res = obj[attr]
-        if(typeof res==="function"){
-            res = $bind(res, obj) // see below
-        }
-        return $JS2Py(res)
-    }    
-}
-
-// this trick is necessary to set "this" to the instance inside functions
-// found at http://yehudakatz.com/2011/08/11/understanding-javascript-function-invocation-and-this/
-function $bind(func, thisValue) {
-    return function() {return func.apply(thisValue, arguments)}
-}
-
 // exceptions
-function $raise(){
+__BRYTHON__.$raise= function(){
     // used for "raise" without specifying an exception
     // if there is an exception in the stack, use it, else throw a simple Exception
     if(__BRYTHON__.exception_stack.length>0){throw $last(__BRYTHON__.exception_stack)}
     else{throw Error('Exception')}
 }
 
-function $syntax_err_line(module,pos) {
+__BRYTHON__.$syntax_err_line = function(module,pos) {
     // map position to line number
     var pos2line = {}
     var lnum=1
@@ -372,92 +354,64 @@ function $syntax_err_line(module,pos) {
     return info
 }
 
-function $SyntaxError(module,msg,pos) {
-    console.log('Syntax error')
+__BRYTHON__.$SyntaxError = function(module,msg,pos) {
     var exc = SyntaxError(msg)
-    console.log('info '+exc)
-    exc.info += $syntax_err_line(module,pos)
-    console.log('syntax error '+exc.info)
+    exc.info += __BRYTHON__.$syntax_err_line(module,pos)
     throw exc
 }
 
-function $IndentationError(module,msg,pos) {
+__BRYTHON__.$IndentationError = function(module,msg,pos) {
     var exc = IndentationError(msg)
-    exc.info += $syntax_err_line(module,pos)
+    exc.info += __BRYTHON__.$syntax_err_line(module,pos)
     throw exc
 }
 
 // function to remove internal exceptions from stack exposed to programs
-function $pop_exc(){__BRYTHON__.exception_stack.pop()}
-
-
-// escaping double quotes
-var $dq_regexp = new RegExp('"',"g") // to escape double quotes in arguments
-function $escape_dq(arg){return arg.replace($dq_regexp,'\\"')}
-
-// default standard output and error
-// can be reset by sys.stdout or sys.stderr
-document.$stderr = {
-    __getattr__:function(attr){return this[attr]},
-    write:function(data){console.log(data)},
-    flush:function(){}
-}
-document.$stderr_buff = '' // buffer for standard output
-
-document.$stdout = {
-    __getattr__:function(attr){return this[attr]},
-    write: function(data){console.log(data)},
-    flush:function(){}
-}
-
-function $UnsupportedOpType(op,class1,class2){
-    $raise('TypeError',
-        "unsupported operand type(s) for "+op+": '"+class1+"' and '"+class2+"'")
-}
+__BRYTHON__.$pop_exc=function(){__BRYTHON__.exception_stack.pop()}
 
 // classes used for passing parameters to functions
 // keyword arguments : foo(x=1)
-$KwDict = {__class__:$type,__name__:'kw'}
-$KwDict.__mro__ = [$KwDict,__builtins__.object.$dict]
+__BRYTHON__.$KwDict = {__class__:$type,__name__:'kw'}
+__BRYTHON__.$KwDict.__mro__ = [__BRYTHON__.$KwDict,__builtins__.object.$dict]
 
-function $Kw(name,value){
-    return {__class__:$KwDict,name:name,value:value}
+__BRYTHON__.$Kw = function(name,value){
+    return {__class__:__BRYTHON__.$KwDict,name:name,value:value}
 }
-$Kw.$dict = $KwDict // for insinstance
-$KwDict.$factory = $Kw
+__BRYTHON__.$Kw.$dict = __BRYTHON__.$KwDict // for insinstance
+__BRYTHON__.$KwDict.$factory = __BRYTHON__.$Kw
 
 // packed tuple : foo(*args)
-$ptupleDict = {
+__BRYTHON__.$ptupleDict = {
     __class__:$type,
     __name__:'packed tuple',
     toString:function(){return 'ptuple'}
 }
-$ptupleDict.$dict = $ptupleDict
+__BRYTHON__.$ptupleDict.$dict = __BRYTHON__.$ptupleDict
 
-function $ptuple(arg){
+__BRYTHON__.$ptuple = function(arg){
     return {
-        __class__:$ptupleDict,
+        __class__:__BRYTHON__.$ptupleDict,
         arg:arg
     }
 }
-$ptuple.$dict = $ptupleDict
-$ptupleDict.$factory = $ptuple
+__BRYTHON__.$ptuple.$dict = __BRYTHON__.$ptupleDict
+__BRYTHON__.$ptupleDict.$factory = __BRYTHON__.$ptuple
 
 // packed dict : foo(**kw)
-$pdictDict = {
+__BRYTHON__.$pdictDict = {
     __class__ : $type,
     __name__:'packed dict'
 }
-$pdictDict.$dict = $pdictDict
+__BRYTHON__.$pdictDict.$dict = __BRYTHON__.$pdictDict
 
-function $pdict(arg){
+__BRYTHON__.$pdict = function(arg){
     return {
-        __class__:$pdictDict,
+        __class__:__BRYTHON__.$pdictDict,
         arg:arg
     }
 }
-$pdict.$dict = $pdictDict
-$pdict.$factory = $pdict
+__BRYTHON__.$pdict.$dict = __BRYTHON__.$pdictDict
+__BRYTHON__.$pdict.$factory = __BRYTHON__.$pdict
 
 function $test_item(expr){
     // used to evaluate expressions with "and" or "or"
@@ -568,3 +522,19 @@ if (window.IDBRequest !== undefined) {
        return jsobject2pyobject(this.result);
     }
 }
+
+// default standard output and error
+// can be reset by sys.stdout or sys.stderr
+document.$stderr = {
+    __getattr__:function(attr){return this[attr]},
+    write:function(data){console.log(data)},
+    flush:function(){}
+}
+document.$stderr_buff = '' // buffer for standard output
+
+document.$stdout = {
+    __getattr__:function(attr){return this[attr]},
+    write: function(data){console.log(data)},
+    flush:function(){}
+}
+

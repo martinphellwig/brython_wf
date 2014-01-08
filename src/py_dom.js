@@ -265,7 +265,7 @@ $OptionsDict.__setattr__ = function(self,attr,value){
 }
 
 $OptionsDict.__setitem__ = function(self,attr,value){
-    self.parent.options[attr]= $JS2Py(value)
+    self.parent.options[attr]= __BRYTHON__.$JS2Py(value)
 }
 
 $OptionsDict.__str__ = function(self){
@@ -426,7 +426,7 @@ DOMNode.__getattribute__ = function(self,attr){
                             args.push(arguments[i])
                         }
                     }
-                    return $JS2Py(f.apply(elt,args))
+                    return __BRYTHON__.$JS2Py(f.apply(elt,args))
                 }
             })(res,self.elt)
             func.__name__ = attr
@@ -436,7 +436,7 @@ DOMNode.__getattribute__ = function(self,attr){
         }else if(attr=='style'){
             return $Style(self.elt[attr])
         }else{
-            return $JS2Py(self.elt[attr])
+            return __BRYTHON__.$JS2Py(self.elt[attr])
         }
     }
     if(self.elt[attr]!==undefined){return self.elt[attr]}
@@ -636,7 +636,7 @@ DOMNode.get = function(self){
     var obj = self.elt
     var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
-    var $ns=$MakeArgs('get',args,[],[],null,'kw')
+    var $ns=__BRYTHON__.$MakeArgs('get',args,[],[],null,'kw')
     var $dict = {}
     for(var i=0;i<$ns['kw'].$keys.length;i++){
         $dict[$ns['kw'].$keys[i]]=$ns['kw'].$values[i]
@@ -958,7 +958,7 @@ $QueryDict.getlist = function(self,key){
 $QueryDict.getvalue = function(self,key,_default){
     try{return self.__getitem__(key)}
     catch(err){
-        $pop_exc()
+        __BRYTHON__.$pop_exc()
         if(_default===undefined){return None}
         else{return _default}
     }
@@ -1055,7 +1055,7 @@ var $toDOM = function (content) {
    }
 
    // if we got this far there is a problem..
-   $raise('Error', 'Invalid argument' + content)
+   throw Error('Invalid argument' + content)
 }
 
 DOMNode.prototype.addClass = function(classname){

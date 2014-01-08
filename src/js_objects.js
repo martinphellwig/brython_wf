@@ -126,13 +126,13 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
                 var res = obj.js[attr].apply(obj.js,args)
                 if(typeof res == 'object'){return JSObject(res)}
                 else if(res===undefined){return None}
-                else{return $JS2Py(res)}
+                else{return __BRYTHON__.$JS2Py(res)}
             }
             res.__repr__ = function(){return '<function '+attr+'>'}
             res.__str__ = function(){return '<function '+attr+'>'}
             return res
         }else{
-            return $JS2Py(obj.js[attr])
+            return __BRYTHON__.$JS2Py(obj.js[attr])
         }
     }else if(obj.js===window && attr==='$$location'){
         // special lookup because of Firefox bug 
@@ -167,7 +167,7 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
                 return res.apply(obj,args)
             }
         }
-        return $JS2Py(res)
+        return __BRYTHON__.$JS2Py(res)
     }else{
         // XXX search __getattr__
         throw AttributeError("no attribute "+attr+' for '+this)
