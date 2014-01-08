@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140108-164755
+// version 1.4.20140108-181430
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140108-164755', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140108-181430', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -3575,7 +3575,6 @@ if($elt.src.length===$bs.length ||
 $elt.src.charAt($elt.src.length-$bs.length-1)=='/'){
 var $path=$elt.src.substr(0,$elt.src.length-$bs.length)
 __BRYTHON__.brython_path=$path
-console.log('brythonpath '+$path)
 if(!(__BRYTHON__.path.indexOf($path+'Lib')> -1)){
 __BRYTHON__.path.push($path+'Lib')
 }
@@ -3634,7 +3633,7 @@ console.log('line info '+__BRYTHON__.line_info)
 if($err.py_error===undefined){$err=__BRYTHON__.builtins.RuntimeError($err+'')}
 var $trace=$err.__name__+': '+$err.message
 $trace +='\n'+$err.info
-document.$stderr.__getattr__('write')($trace)
+__BRYTHON__.stderr.__getattr__('write')($trace)
 throw $err
 }
 }
@@ -4468,6 +4467,17 @@ return __BRYTHON__.builtins.bool(expr)
 $B.$test_expr=function(){
 return $B.$test_result
 }
+$B.stderr={
+__getattr__:function(attr){return this[attr]},
+write:function(data){console.log(data)},
+flush:function(){}
+}
+$B.stderr_buff='' 
+$B.stdout={
+__getattr__:function(attr){return this[attr]},
+write: function(data){console.log(data)},
+flush:function(){}
+}
 })(__BRYTHON__)
 function pyobject2jsobject(obj){
 if(__BRYTHON__.builtins.isinstance(obj,__BRYTHON__.builtins.dict)){
@@ -4527,17 +4537,6 @@ return -1;
 try{console}
 catch(err){
 var console={'log':function(data){void(0)}}
-}
-document.$stderr={
-__getattr__:function(attr){return this[attr]},
-write:function(data){console.log(data)},
-flush:function(){}
-}
-document.$stderr_buff='' 
-document.$stdout={
-__getattr__:function(attr){return this[attr]},
-write: function(data){console.log(data)},
-flush:function(){}
 }
 
 __debug__=false
@@ -5197,7 +5196,7 @@ res +=__builtins__.str(args[i])
 if(i<args.length-1){res +=sep}
 }
 res +=end
-getattr(document.$stdout,'write')(res)
+getattr($B.stdout,'write')(res)
 }
 $print.__name__='print'
 log=function(arg){console.log(arg)}

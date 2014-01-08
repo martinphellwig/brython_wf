@@ -62,7 +62,7 @@ function $_SyntaxError(context,msg,indent){
             __BRYTHON__.$SyntaxError(module,'invalid syntax : triple string end not found',$pos)
         }
         __BRYTHON__.$SyntaxError(module,'invalid syntax',$pos)
-    }else{throw $IndentationError(module,msg,$pos)}
+    }else{throw __BRYTHON__.$IndentationError(module,msg,$pos)}
 }
 
 var $first_op_letter = []
@@ -4137,7 +4137,6 @@ function brython(options){
                     $elt.src.charAt($elt.src.length-$bs.length-1)=='/'){
                         var $path = $elt.src.substr(0,$elt.src.length-$bs.length)
                         __BRYTHON__.brython_path = $path
-                        console.log('brythonpath '+$path)
                         if (!(__BRYTHON__.path.indexOf($path+'Lib')> -1)) {
                            __BRYTHON__.path.push($path+'Lib')
                         }
@@ -4207,7 +4206,7 @@ function brython(options){
                 //if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
                     $trace += '\n'+$err.info
                 //}
-                document.$stderr.__getattr__('write')($trace)
+                __BRYTHON__.stderr.__getattr__('write')($trace)
                 //$err.message += '\n'+$err.info
                 throw $err
             }

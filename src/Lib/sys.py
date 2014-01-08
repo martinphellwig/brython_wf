@@ -1,14 +1,7 @@
 # hack to return special attributes
 from _sys import *
 from javascript import JSObject
-
 from browser import doc
-__stdout__=getattr(doc,"$stdout")
-__stderr__=getattr(doc,"$stderr")
-
-stdout = getattr(doc,"$stdout")
-stderr = getattr(doc,"$stderr")
-
 
 has_local_storage=__BRYTHON__.has_local_storage
 has_json=__BRYTHON__.has_json
