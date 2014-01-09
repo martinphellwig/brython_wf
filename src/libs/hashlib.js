@@ -80,7 +80,7 @@ function $hashlib_new(alg) {
        $raise('AttributeError', 'Invalid hash algorithm:' + alg)
     }
  
-    this.__class__ = $type
+    this.__class__ = __BRYTHON__.$type
     this.__getattr__ = function(attr){return $getattr(this,attr)}
     this.__str__ = function(){return this.hexdigest()}
     this.update = function(msg){this.hash.update(msg)}

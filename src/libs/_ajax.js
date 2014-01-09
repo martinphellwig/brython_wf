@@ -119,7 +119,7 @@ function ajax(){
     return res
 }
 
-ajax.__class__ = $factory
+ajax.__class__ = $B.$factory
 ajax.$dict = $AjaxDict
 
 return {ajax:ajax}

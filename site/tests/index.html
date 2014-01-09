@@ -30,8 +30,7 @@
 <script type="text/python" src="editor.py"></script>
 
 <script type="text/python3">
-from browser import timer
-from javascript import expose
+from browser import doc,timer
 
 script_num = -1
 failed = []
@@ -53,14 +52,22 @@ def test_next():
         doc['console'].value = ''
         print('completed all tests !')
         print('failed : %s' %failed)
-
-@expose        
-def test_all():
+    
+def test_all(ev):
     global script_num,failed
     script_num = -1
     failed = []
     test_next()
 
+# bindings
+doc['test_all'].bind('click',test_all)
+
+# next functions are defined in editor.py
+doc['show_js'].bind('click',show_js)
+doc['run'].bind('click',run)
+doc['clear_text'].bind('click',clear_text)
+doc['show_console'].bind('click',show_console)
+doc['files'].bind('change',load)
 </script>
 <script type="text/python3">
 from .. import header
@@ -137,7 +144,7 @@ Theme:
 </select>
 
 Test suite:
-<select name="filename" onChange="load(event)" id="files">
+<select name="filename" id="files">
   <optgroup label="Core language features">
     <option value="test_suite.py">basic test suite</option>
     <option value="classes_tests.py">built-in classes</option>
@@ -170,7 +177,7 @@ Test suite:
     <option value="test_unittest.py">unittest</option>
   </optgroup>
 </select>
-<br><button onclick="test_all()">Run all tests</button>
+<br><button id="test_all">Run all tests</button>
 
 </div>
   <div id="editor"></div>
@@ -179,12 +186,12 @@ Test suite:
 <div id="right-div">
 <div style="padding: 3px 3px 3px 3px;">
   <div style="float:left">
-    <button onClick="run()">run</button>
-    <button onClick="clear_text()">clear</button>
+    <button id="run">run</button>
+    <button id="clear_text">clear</button>
   </div>
   <div style="float:right">
-    <button onClick="show_console()">Console</button>
-    <button onClick="show_js()">Javascript</button>
+    <button id="show_console">Console</button>
+    <button id="show_js">Javascript</button>
   </div>
 </div>
 

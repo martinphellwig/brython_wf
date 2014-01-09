@@ -14,7 +14,7 @@ $module = (function($B){
     obj.M = obj.MULTILINE = 'm'
     obj.VERBOSE = 64
     $SRE_PatternDict = {
-        __class__:$type,
+        __class__:$B.$type,
         __name__:'SRE_Pattern'
     }
     $SRE_PatternDict.__mro__ = [$SRE_PatternDict,object.$dict]

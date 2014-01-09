@@ -14,7 +14,7 @@ function $DictClass($keys,$values){
     this.$values = $values // idem
 }
 
-var $DictDict = {__class__:$type,
+var $DictDict = {__class__:$B.$type,
     __name__ : 'dict',
     $native:true
 }
@@ -295,7 +295,7 @@ $dict = dict // used for dict literals : "x={}" is translated to "x=$dict()",
              //     x = {}
              // because inside the function, 'dict' has beeen set to the 
              // value of argument 'dict'
-dict.__class__ = $factory
+dict.__class__ = $B.$factory
 dict.$dict = $DictDict
 $DictDict.$factory = dict
 $DictDict.__new__ = $__new__(dict)

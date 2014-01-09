@@ -4,11 +4,11 @@ for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_
 var $ObjectDict = object.$dict
 
 // dictionary for built-in class 'float'
-var $FloatDict = {$native:true}
+var $FloatDict = {__class__:$B.$type,__name__:'float',$native:true}
 
 $FloatDict.__bool__ = function(self){return bool(self.value)}
 
-$FloatDict.__class__ = $type
+$FloatDict.__class__ = $B.$type
 
 $FloatDict.__eq__ = function(self,other){
     if(other===undefined){ // compare object "self" to class "float"
@@ -80,8 +80,6 @@ $FloatDict.__mod__ = function(self,other) {
 }
 
 $FloatDict.__mro__ = [$FloatDict,$ObjectDict]
-
-$FloatDict.__name__ = 'float'
 
 $FloatDict.__ne__ = function(self,other){return !$FloatDict.__eq__(self,other)}
 
@@ -185,7 +183,7 @@ float = function (value){
     
     throw ValueError("Could not convert to float(): '"+__builtins__.str(value)+"'")
 }
-float.__class__ = $factory
+float.__class__ = $B.$factory
 float.$dict = $FloatDict
 $FloatDict.$factory = float
 $FloatDict.__new__ = $__new__(float)

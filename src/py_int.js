@@ -7,7 +7,7 @@ function $UnsupportedOpType(op,class1,class2){
     throw TypeError("unsupported operand type(s) for "+op+": '"+class1+"' and '"+class2+"'")
 }
 
-var $IntDict = {__class__:$type,
+var $IntDict = {__class__:$B.$type,
     __name__:'int',
     toString:function(){return '$IntDict'},
     $native:true
@@ -30,7 +30,7 @@ $IntDict.__and__ = function(self,other){return self & other} // bitwise AND
 
 $IntDict.__bool__ = function(self){return new Boolean(self.valueOf())}
 
-$IntDict.__class__ = $type
+$IntDict.__class__ = $B.$type
 
 $IntDict.__eq__ = function(self,other){
     if(other===undefined){ // compare object "self" to class "int"
@@ -224,7 +224,7 @@ int = function(value){
     return res
 }
 int.$dict = $IntDict
-int.__class__ = $factory
+int.__class__ = $B.$factory
 $IntDict.$factory = int
 
 $B.builtins.int = int

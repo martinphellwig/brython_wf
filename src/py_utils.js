@@ -161,7 +161,7 @@ $B.$gen_expr = function(){ // generator expresssion
     eval($js)
     var $res1 = eval($res)
     var $GenExprDict = {
-        __class__:$type,
+        __class__:__BRYTHON__.$type,
         __name__:'generator',
         toString:function(){return '(generator)'}
     }
@@ -211,7 +211,7 @@ $B.$generator = function(func){
     // calls to stdout.write() are captured and indexed by the iteration
     // counter
 
-    $GeneratorDict = {__class__:$type,
+    $GeneratorDict = {__class__:__BRYTHON__.$type,
         __name__:'generator'
     }
     $GeneratorDict.__iter__ = function(self){return self}
@@ -261,7 +261,7 @@ $B.$generator = function(func){
 }
 $B.$generator.__repr__ = function(){return "<class 'generator'>"}
 $B.$generator.__str__ = function(){return "<class 'generator'>"}
-$B.$generator.__class__ = $type
+$B.$generator.__class__ = __BRYTHON__.$type
 
 $B.$ternary = function(env,cond,expr1,expr2){
     // env is the environment to run the ternary expression
@@ -372,7 +372,7 @@ $B.$pop_exc=function(){$B.exception_stack.pop()}
 
 // classes used for passing parameters to functions
 // keyword arguments : foo(x=1)
-$B.$KwDict = {__class__:$type,__name__:'kw'}
+$B.$KwDict = {__class__:__BRYTHON__.$type,__name__:'kw'}
 $B.$KwDict.__mro__ = [$B.$KwDict,__BRYTHON__.builtins.object.$dict]
 
 $B.$Kw = function(name,value){
@@ -383,7 +383,7 @@ $B.$KwDict.$factory = $B.$Kw
 
 // packed tuple : foo(*args)
 $B.$ptupleDict = {
-    __class__:$type,
+    __class__:__BRYTHON__.$type,
     __name__:'packed tuple',
     toString:function(){return 'ptuple'}
 }
@@ -400,7 +400,7 @@ $B.$ptupleDict.$factory = $B.$ptuple
 
 // packed dict : foo(**kw)
 $B.$pdictDict = {
-    __class__ : $type,
+    __class__ : __BRYTHON__.$type,
     __name__:'packed dict'
 }
 $B.$pdictDict.$dict = $B.$pdictDict
@@ -442,14 +442,8 @@ $B.stdout = {
     flush:function(){}
 }
 
-
-})(__BRYTHON__)
-
-// override IDBObjectStore's add, put, etc functions since we need
-// to convert python style objects to a js object type
-
 function pyobject2jsobject(obj) {
-    if(__BRYTHON__.builtins.isinstance(obj,__BRYTHON__.builtins.dict)){
+    if($B.builtins.isinstance(obj,$B.builtins.dict)){
         var temp = new Object()
         temp.__class__ = 'dict'
         for(var i=0;i<obj.$keys.length;i++){temp[obj.$keys[i]]=obj.$values[i]}
@@ -461,9 +455,9 @@ function pyobject2jsobject(obj) {
 }
 
 function jsobject2pyobject(obj) {
-    if(obj === undefined) return __BRYTHON__.builtins.None
+    if(obj === undefined) return $B.builtins.None
     if(obj.__class__ === 'dict'){
-       var d = __BRYTHON__.builtins.dict()
+       var d = $B.builtins.dict()
        for(var attr in obj){
           if (attr !== '__class__') d.__setitem__(attr, obj[attr])
        }
@@ -474,16 +468,19 @@ function jsobject2pyobject(obj) {
     return obj
 }
 
+// override IDBObjectStore's add, put, etc functions since we need
+// to convert python style objects to a js object type
+
 if (window.IDBObjectStore !== undefined) {
     window.IDBObjectStore.prototype._put=window.IDBObjectStore.prototype.put
     window.IDBObjectStore.prototype.put=function(obj, key) {
-       var myobj=pyobject2jsobject(obj);
+       var myobj = pyobject2jsobject(obj)
        return window.IDBObjectStore.prototype._put.apply(this, [myobj, key]);
     }
     
     window.IDBObjectStore.prototype._add=window.IDBObjectStore.prototype.add
     window.IDBObjectStore.prototype.add=function(obj, key) {
-       var myobj=pyobject2jsobject(obj);
+       var myobj= pyobject2jsobject(obj);
        return window.IDBObjectStore.prototype._add.apply(this, [myobj, key]);
     }
 }
@@ -493,6 +490,9 @@ if (window.IDBRequest !== undefined) {
        return jsobject2pyobject(this.result);
     }
 }
+
+})(__BRYTHON__)
+
 
 Array.prototype.match = function(other){
     // return true if array and other have the same first items

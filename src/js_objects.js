@@ -10,7 +10,7 @@ function $applyToConstructor(constructor, argArray) {
     return new factoryFunction();
 }
 
-$LocationDict = {__class__:$type,
+$LocationDict = {__class__:$B.$type,
     __name__:'Location'
 }
 $LocationDict.__mro__ = [$LocationDict,$ObjectDict]
@@ -41,7 +41,7 @@ $LocationDict.$factory = $Location
 $Location.$dict = $LocationDict
 
 $JSConstructorDict = {
-    __class__:$type,
+    __class__:$B.$type,
     __name__:'JSConstructor'
 }
 
@@ -76,7 +76,7 @@ function JSConstructor(obj){
         js:obj
     }
 }
-JSConstructor.__class__ = $factory
+JSConstructor.__class__ = $B.$factory
 JSConstructor.$dict = $JSConstructorDict
 
 // JSObject : wrapper around a native Javascript object
@@ -89,7 +89,7 @@ function $JSObject(js){
 }
 
 $JSObjectDict = {
-    __class__:$type,
+    __class__:$B.$type,
     __name__:'JSObject',
     toString:function(){return '(JSObject)'}
 }
@@ -224,7 +224,7 @@ function JSObject(obj){
     if(obj.__class__!==undefined && (typeof obj!=='function')){return obj}
     return new $JSObject(obj)
 }
-JSObject.__class__ = $factory
+JSObject.__class__ = $B.$factory
 JSObject.$dict = $JSObjectDict
 
 $B.JSObject = JSObject

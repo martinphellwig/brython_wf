@@ -118,7 +118,7 @@ $NodeTypes = {1:"ELEMENT",
     12:"NOTATION"
 }
 
-$DOMEventDict = {__class__:$type,
+$DOMEventDict = {__class__:__BRYTHON__.$type,
     __name__:'DOMEvent'
 }
 
@@ -153,11 +153,11 @@ __BRYTHON__.$DOMEvent = $DOMEvent = function(ev){
     ev.toString = ev.__str__
     return ev
 }
-$DOMEvent.__class__ = $factory
+$DOMEvent.__class__ = __BRYTHON__.$factory
 $DOMEvent.$dict = $DOMEventDict
 
 $ClipboardDict = {
-    __class__:$type,
+    __class__:__BRYTHON__.$type,
     __name__:'Clipboard'
 }
 
@@ -233,9 +233,9 @@ function $OpenFile(file,mode,encoding){
 var dom = { File : function(){},
     FileReader : function(){}
     }
-dom.File.__class__ = $type
+dom.File.__class__ = __BRYTHON__.$type
 dom.File.__str__ = function(){return "<class 'File'>"}
-dom.FileReader.__class__ = $type
+dom.FileReader.__class__ = __BRYTHON__.$type
 dom.FileReader.__str__ = function(){return "<class 'FileReader'>"}
 
 function $Options(parent){
@@ -245,7 +245,7 @@ function $Options(parent){
     }
 }
 $OptionsDict = {
-    __class__:$type,
+    __class__:__BRYTHON__.$type,
     __name__:'Options'
 }
 
@@ -294,7 +294,7 @@ $OptionsDict.remove = function(self,arg){self.parent.options.remove(arg.elt)}
     
 //$OptionsDict.toString = $OptionsDict.__str__
     
-$StyleDict = {__class__:$type,__name__:'CSSProperty'}
+$StyleDict = {__class__:__BRYTHON__.$type,__name__:'CSSProperty'}
 
 $StyleDict.__mro__ = [$StyleDict,$ObjectDict]
 
@@ -317,12 +317,12 @@ function $Style(style){
     // property "style"
     return {__class__:$StyleDict,js:style}
 }
-$Style.__class__ = $factory
+$Style.__class__ = __BRYTHON__.$factory
 $Style.$dict = $StyleDict
 $StyleDict.$factory = $Style
 
 function DOMNode(){} // define a Node object
-DOMNode.__class__ = $type
+DOMNode.__class__ = __BRYTHON__.$type
 DOMNode.__mro__ = [DOMNode,__builtins__.object.$dict]
 DOMNode.__name__ = 'DOMNode'
 DOMNode.$dict = DOMNode // for isinstance
@@ -361,7 +361,7 @@ DOMNode.__add__ = function(self,other){
 
 DOMNode.__bool__ = function(self){return true}
 
-DOMNode.__class__ = $type
+DOMNode.__class__ = __BRYTHON__.$type
 
 DOMNode.__contains__ = function(self,key){
     try{self.__getitem__(key);return True}
@@ -917,7 +917,7 @@ _doc.$dict.headers = function(){
 
 // return query string as an object with methods to access keys and values
 // same interface as cgi.FieldStorage, with getvalue / getlist / getfirst
-$QueryDict = {__class__:$type,__name__:'query'}
+$QueryDict = {__class__:__BRYTHON__.$type,__name__:'query'}
 
 $QueryDict.__contains__ = function(self,key){
     return self._keys.indexOf(key)>-1
@@ -991,7 +991,7 @@ DOMNode.query = function(self){
 
 // class used for tag sums
 $TagSumDict = {
-    __class__ : $type,
+    __class__ : __BRYTHON__.$type,
     __name__:'TagSum'
 }
 
@@ -1041,7 +1041,7 @@ function $TagSum(){
         toString:function(){return '(TagSum)'}
     }
 }
-$TagSum.__class__=$factory
+$TagSum.__class__=__BRYTHON__.$factory
 $TagSum.$dict = $TagSumDict
 
 //creation of jquery like helper functions..

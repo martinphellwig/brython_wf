@@ -97,7 +97,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                 // class A, its method __init__ must be called without B's
                 // self as first argument
     
-                if(res1.__class__===$factory){return res}
+                if(res1.__class__===$B.$factory){return res}
                 // instance method object
                 var __self__,__func__,__repr__,__str__
                 if(res.$type===undefined || res.$type==='instancemethod'){
@@ -207,7 +207,7 @@ $ObjectDict.__or__ = function(self,other){
 $ObjectDict.__repr__ = function(self){
     if(self===object){return "<class 'object'>"}
     else if(self===undefined){return "<class 'object'>"}
-    else if(self.__class__===$type){return "<class '"+self.__class__.__name__+"'>"}
+    else if(self.__class__===$B.$type){return "<class '"+self.__class__.__name__+"'>"}
     else{return "<"+self.__class__.__name__+" object>"}
 }
 
