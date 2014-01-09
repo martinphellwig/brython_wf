@@ -22,17 +22,17 @@ function $iterator(items,klass){
 
 function $iterator_class(name){
     var res = {
-        __class__:$type,
+        __class__:__BRYTHON__.$type,
         __name__:name
     }
     res.__str__ = res.toString = res.__repr__
     res.__mro__ = [res,__BRYTHON__.builtins.object.$dict]
-    res.$factory = {__class__:$factory,$dict:res}
+    res.$factory = {__class__:__BRYTHON__.$factory,$dict:res}
     return res
 }
 
 // class dict of functions attribute __code__
-var $CodeDict = {__class__:$type,__name__:'code'}
+var $CodeDict = {__class__:__BRYTHON__.$type,__name__:'code'}
 $CodeDict.__mro__ = [$CodeDict,__BRYTHON__.builtins.object.$dict]
 
 // built-in functions
@@ -156,7 +156,7 @@ function bool(obj){ // return true or false
         }
     }
 }
-bool.__class__ = $type
+bool.__class__ = $B.$type
 bool.__mro__ = [bool,object]
 bool.__name__ = 'bool'
 bool.__str__ = function(){return "<class 'bool'>"}
@@ -167,7 +167,7 @@ bool.__hash__ = function() {
 }
 
 //bytearray() (built in function)
-var $BytearrayDict = {__class__:$type,__name__:'bytearray'}
+var $BytearrayDict = {__class__:$B.$type,__name__:'bytearray'}
 
 $bytearray_iterator = $iterator_class('bytearray_iterator')
 $BytearrayDict.__iter__ = function(self){
@@ -178,13 +178,13 @@ $BytearrayDict.__mro__ = [$BytearrayDict,$ObjectDict]
 function bytearray(source, encoding, errors) {
   return {__class__:$BytearrayDict,source:source} // XXX fix me
 }
-bytearray.__class__=$factory
+bytearray.__class__=$B.$factory
 bytearray.$dict = $BytearrayDict
 $BytearrayDict.$factory = bytearray
 
 //bytes() (built in function)
 var $BytesDict = {
-    __class__ : $type,
+    __class__ : $B.$type,
     __name__ : 'bytes'
 }
 
@@ -208,7 +208,7 @@ function bytes(source, encoding, errors) {
         errors:errors
     }
 }
-bytes.__class__ = $factory
+bytes.__class__ = $B.$factory
 bytes.$dict = $BytesDict
 
 //callable() (built in function)
@@ -224,20 +224,20 @@ function chr(i) {
 }
 
 //classmethod() (built in function)
-var $ClassmethodDict = {__class__:$type,__name__:'classmethod'}
+var $ClassmethodDict = {__class__:$B.$type,__name__:'classmethod'}
 $ClassmethodDict.__mro__=[$ClassmethodDict,$ObjectDict]
 function classmethod(klass,func) {
     // the first argument klass is added by py2js in $CallCtx
     func.$type = 'classmethod'
     return func
 }
-classmethod.__class__=$factory
+classmethod.__class__=$B.$factory
 classmethod.$dict = $ClassmethodDict
 $ClassmethodDict.$factory = classmethod
 function $class(obj,info){
     this.obj = obj
     this.__name__ = info
-    this.__class__ = $type
+    this.__class__ = $B.$type
     this.__mro__ = [this,$ObjectDict]
 }
 
@@ -247,7 +247,7 @@ function compile(source, filename, mode) {
     return $B.py2js(source, filename).to_js()
 }
 
-var $ComplexDict = {__class__:$type,__name__:'complex'}
+var $ComplexDict = {__class__:$B.$type,__name__:'complex'}
 $ComplexDict.__mro__ = [$ComplexDict,$ObjectDict]
 
 function complex(real,imag){
@@ -309,7 +309,7 @@ function divmod(x,y) {
     return [int(Math.floor(x/y)), x.__class__.__mod__(x,y)]
 }
 
-var $EnumerateDict = {__class__:$type,__name__:'enumerate'}
+var $EnumerateDict = {__class__:$B.$type,__name__:'enumerate'}
 $EnumerateDict.__mro__ = [$EnumerateDict,$ObjectDict]
 
 function enumerate(){
@@ -340,14 +340,14 @@ function enumerate(){
     }
     return res
 }
-enumerate.__class__ = $factory
+enumerate.__class__ = $B.$factory
 enumerate.$dict = $EnumerateDict
 $EnumerateDict.$factory = enumerate
 
 //eval() (built in function)
 //exec() (built in function)
 
-var $FilterDict = {__class__:$type,__name__:'filter'}
+var $FilterDict = {__class__:$B.$type,__name__:'filter'}
 $filter_iterator = $iterator_class('filter iterator')
 $FilterDict.__iter__ = function(self){
     return $iterator(self.$items,$filter_iterator)
@@ -448,7 +448,7 @@ function getattr(obj,attr,_default){
     var is_class = obj.__class__.is_class, mro, attr_func
     //if(attr=='register'){console.log('getattr '+attr+' of '+obj+' ('+obj.__class__+') '+' class '+is_class)}
     if(is_class){
-        attr_func=$type.__getattribute__
+        attr_func=$B.$type.__getattribute__
         if(obj.$dict===undefined){console.log('obj '+obj+' $dict undefined')}
         obj=obj.$dict
     }else{
@@ -621,7 +621,7 @@ function locals(obj_id,module){
     return res
 }
 
-var $MapDict = {__class__:$type,__name__:'map'}
+var $MapDict = {__class__:$B.$type,__name__:'map'}
 $MapDict.__mro__ = [$MapDict,$ObjectDict]
 
 function map(){
@@ -714,7 +714,7 @@ function next(obj){
     throw TypeError("'"+obj.__class__.__name__+"' object is not an iterator")
 }
 
-var $NotImplementedDict = {__class__:$type,__name__:'NotImplementedType'}
+var $NotImplementedDict = {__class__:$B.$type,__name__:'NotImplementedType'}
 $NotImplementedDict.__mro__ = [$NotImplementedDict,$ObjectDict]
 $NotImplementedDict.__repr__ = $NotImplementedDict.__str__ = function(){return 'NotImplemented'}
 
@@ -800,7 +800,7 @@ function $prompt(text,fill){return prompt(text,fill || '')}
 
 // property (built in function)
 var $PropertyDict = {
-    __class__ : $type,
+    __class__ : $B.$type,
     __name__ : 'property',
     __repr__ : function(){return "<property object>"},
     __str__ : function(){return "<property object>"},
@@ -843,11 +843,11 @@ function property(fget, fset, fdel, doc) {
     return p
 }
 
-property.__class__ = $factory
+property.__class__ = $B.$factory
 property.$dict = $PropertyDict
 
 // range
-var $RangeDict = {__class__:$type,__name__:'range',$native:true}
+var $RangeDict = {__class__:$B.$type,__name__:'range',$native:true}
 
 $RangeDict.__contains__ = function(self,other){
     var x = iter(self)
@@ -927,7 +927,7 @@ function range(){
         }
     return res
 }
-range.__class__ = $factory
+range.__class__ = $B.$factory
 range.$dict = $RangeDict
 $RangeDict.$factory = range
 
@@ -937,7 +937,7 @@ function repr(obj){
     else{throw AttributeError("object has no attribute __repr__")}
 }
 
-var $ReversedDict = {__class__:$type,__name__:'reversed'}
+var $ReversedDict = {__class__:$B.$type,__name__:'reversed'}
 $ReversedDict.__mro__ = [$ReversedDict,$ObjectDict]
 $ReversedDict.__iter__ = function(self){return self}
 $ReversedDict.__next__ = function(self){
@@ -969,7 +969,7 @@ function reversed(seq){
         throw TypeError("argument to reversed() must be a sequence")
     }
 }
-reversed.__class__=$factory
+reversed.__class__=$B.$factory
 reversed.$dict = $ReversedDict
 $ReversedDict.$factory = reversed
 
@@ -1013,7 +1013,7 @@ function setattr(obj,attr,value){
 }
 
 // slice
-var $SliceDict = {__class__:$type,
+var $SliceDict = {__class__:$B.$type,
     __name__:'slice'
 }
 $SliceDict.__mro__ = [$SliceDict,$ObjectDict]
@@ -1045,8 +1045,9 @@ function slice(){
         }
     return res
 }
-slice.__class__ = $factory
+slice.__class__ = $B.$factory
 slice.$dict = $SliceDict
+$SliceDict.$factory = slice
 
 // sorted() built in function
 function sorted () {
@@ -1073,14 +1074,14 @@ function sorted () {
 }
 
 // staticmethod() built in function
-$StaticmethodDict = {__class__:$type,__name__:'staticmethod'}
+$StaticmethodDict = {__class__:$B.$type,__name__:'staticmethod'}
 $StaticmethodDict.__mro__ = [$StaticmethodDict,$ObjectDict]
 
 function staticmethod(func) {
     func.$type = 'staticmethod'
     return func
 }
-staticmethod.__class__=$factory
+staticmethod.__class__=$B.$factory
 staticmethod.$dict = $StaticmethodDict
 $StaticmethodDict.$factory = staticmethod
 
@@ -1103,7 +1104,7 @@ function sum(iterable,start){
 }
 
 // super() built in function
-var $SuperDict = {__class__:$type,__name__:'super'}
+var $SuperDict = {__class__:$B.$type,__name__:'super'}
 
 $SuperDict.__getattribute__ = function(self,attr){
     var mro = self.__thisclass__.$dict.__mro__,res
@@ -1123,7 +1124,7 @@ $SuperDict.__getattribute__ = function(self,attr){
                         if(x===undefined){return None}else{return x}
                     }})([self.__self_class__])
                 method.__class__ = {
-                    __class__:$type,
+                    __class__:$B.$type,
                     __name__:'method',
                     __mro__:[$ObjectDict]
                 }
@@ -1244,7 +1245,7 @@ function $url_open(){
 }
 
 
-var $ZipDict = {__class__:$type,__name__:'zip'}
+var $ZipDict = {__class__:$B.$type,__name__:'zip'}
 
 $zip_iterator = $iterator_class('zip_iterator')
 $ZipDict.__iter__ = function(self){
@@ -1280,7 +1281,7 @@ function zip(){
     res.items = items
     return res
 }
-zip.__class__=$factory
+zip.__class__=$B.$factory
 zip.$dict = $ZipDict
 $ZipDict.$factory = zip
 
@@ -1289,14 +1290,14 @@ $ZipDict.$factory = zip
 var True = true
 var False = false
 
-var $BoolDict = {__class__:$type,
+var $BoolDict = {__class__:$B.$type,
     __name__:'bool',
     __repr__ : function(){return "<class 'bool'>"},
     __str__ : function(){return "<class 'bool'>"},
     toString : function(){return "<class 'bool'>"},
 }
 $BoolDict.__mro__ = [$BoolDict,$ObjectDict]
-bool.__class__ = $factory
+bool.__class__ = $B.$factory
 bool.$dict = $BoolDict
 $BoolDict.$factory = bool
 
@@ -1348,7 +1349,7 @@ $BoolDict.__sub__ = function(self,other){
 }
 
 
-var $EllipsisDict = {__class__:$type,
+var $EllipsisDict = {__class__:$B.$type,
     __name__:'Ellipsis',
 }
 $EllipsisDict.__mro__ = [$ObjectDict]
@@ -1382,7 +1383,7 @@ for(var $func in Ellipsis){
     }
 }
 
-var $NoneDict = {__class__:$type,__name__:'NoneType',}
+var $NoneDict = {__class__:$B.$type,__name__:'NoneType',}
 $NoneDict.__mro__ = [$NoneDict,$ObjectDict]
 $NoneDict.$factory = $NoneDict
 
@@ -1415,12 +1416,12 @@ for(var $func in None){
 }
 
 // add attributes to native Function
-var $FunctionDict = {__class__:$type}
+var $FunctionDict = {__class__:$B.$type}
 $FunctionDict.__repr__=$FunctionDict.__str__ = function(self){return '<function '+self.__name__+'>'}
 
 $FunctionDict.__mro__ = [$FunctionDict,$ObjectDict]
 Function.__name__ = 'function'
-Function.__class__ = $type
+Function.__class__ = $B.$type
 
 Function.prototype.__call__ = function(){return this.apply(null,arguments)}
 Function.prototype.__class__ = $FunctionDict
@@ -1436,7 +1437,7 @@ $FunctionDict.$factory = Function
 // built-in exceptions
 
 var $BaseExceptionDict = {
-    __class__:$type,
+    __class__:$B.$type,
     __name__:'BaseException'
 }
 
@@ -1524,7 +1525,7 @@ var BaseException = function (msg,js_exc){
 }
 
 BaseException.__name__ = 'BaseException'
-BaseException.__class__ = $factory
+BaseException.__class__ = $B.$factory
 BaseException.$dict = $BaseExceptionDict
 
 $B.exception = function(js_exc){
@@ -1594,9 +1595,9 @@ function $make_exc(names,parent){
         // class constructor
         eval(name+'='+$exc)
         eval(name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
-        eval(name+'.__class__=$factory')
+        eval(name+'.__class__=$B.$factory')
         // class dictionary
-        eval('$'+name+'Dict={__class__:$type,__name__:"'+name+'"}')
+        eval('$'+name+'Dict={__class__:$B.$type,__name__:"'+name+'"}')
         eval('$'+name+'Dict.__mro__=[$'+name+'Dict].concat(parent.$dict.__mro__)')
         eval('$'+name+'Dict.$factory='+name)
         eval(name+'.$dict=$'+name+'Dict')

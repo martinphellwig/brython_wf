@@ -4,7 +4,7 @@ var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict = object.$dict
 
-var $StringDict = {__class__:$type,
+var $StringDict = {__class__:$B.$type,
     __name__:'str',
     $native:true
 }
@@ -1240,7 +1240,7 @@ function str(arg){
         }
     }
 }
-str.__class__ = $factory
+str.__class__ = $B.$factory
 str.$dict = $StringDict
 $StringDict.$factory = str
 $StringDict.__new__ = function(cls){
@@ -1253,7 +1253,7 @@ $StringDict.__new__ = function(cls){
 
 // dictionary and factory for subclasses of string
 $StringSubclassDict = {
-    __class__:$type,
+    __class__:$B.$type,
     __name__:'str'
 }
 
@@ -1279,7 +1279,7 @@ $StringSubclassDict.__mro__ = [$StringSubclassDict,$ObjectDict]
 
 // factory for str subclasses
 $StringSubclassFactory = {
-    __class__:$factory,
+    __class__:$B.$factory,
     $dict:$StringSubclassDict
 }
 

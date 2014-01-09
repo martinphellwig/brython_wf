@@ -10,12 +10,14 @@
 
 <body onload="brython()">
 <script type="text/python">
-from browser import doc,alert
-def echo(ev):
+from browser import doc,alert,window
+def echo(*args):
     alert("Hello %s !" %doc["zone"].value)
 doc["test"].bind("click",echo)
+window.echo = echo
 </script>
 <p>Your name is : <input id="zone"><button id="test">clic !</button>
+<button onclick="echo()">avec window</button>
 </body>
 
 </html>

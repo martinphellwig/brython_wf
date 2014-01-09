@@ -11,9 +11,8 @@
 
 <script type="text/python3">
 """Code for the header menu"""
-from browser import doc
-from javascript import expose
-
+print('script brython')
+from browser import doc,html
 import header
 
 qs_lang,language = header.show()
@@ -22,11 +21,15 @@ doc["content"].html = doc["content_%s" %language].html
 
 if qs_lang:
     doc["c_%s" %qs_lang].href += "?lang=%s" %qs_lang
-
-@expose    
-def change_lang(sel):
+ 
+def ch_lang(ev):
+    sel = ev.target
     new_lang = sel.options[sel.selectedIndex].value
     doc.location.href = 'index.html?lang=%s' %new_lang
+
+for elt in doc[html.SELECT]:
+    if elt.id.startswith('change_lang_'):
+        doc[elt.id].bind('change',ch_lang)
 </script>
 
 <script type="text/python3">
@@ -164,7 +167,7 @@ options:
 <H2>A Python 3 implementation for client-side web programming</H2>
 </td>
 <td valign="top">
-<select class="language" onchange="change_lang(this)">
+<select class="language" id="change_lang_en">
 <option value="en" selected>English
 <option value="es">Espa&ntilde;ol
 <option value="fr">Fran&ccedil;ais
@@ -206,7 +209,7 @@ However, right click and view the source of this page...
 <H2>Une implémentation de Python 3 pour la programmation web côté client</H2>
 </td>
 <td valign="top">
-<select class="language" onchange="change_lang(this)">
+<select class="language" id="change_lang_fr">
 <option value="en">English
 <option value="es">Espa&ntilde;ol
 <option value="fr" selected>Fran&ccedil;ais
@@ -246,7 +249,7 @@ Maintenant, regardez le code source de cette page...
 <H2>Una implementación de Python para la programación web del lado del cliente</H2>
 </td>
 <td valign="top">
-<select class="language" onchange="change_lang(this)">
+<select class="language" id="change_lang_en">
 <option value="en">English
 <option value="es" selected>Espa&ntilde;ol
 <option value="fr">Fran&ccedil;ais
@@ -285,7 +288,7 @@ Pero, mira el código fuente de esta página...
 <H2>Uma implementação de Python 3 para a programação web do lado do cliente</H2>
 </td>
 <td valign="top">
-<select class="language" onchange="change_lang(this)">
+<select class="language" id="change_lang_pt">
 <option value="en">English
 <option value="es">Espa&ntilde;ol
 <option value="fr">Fran&ccedil;ais

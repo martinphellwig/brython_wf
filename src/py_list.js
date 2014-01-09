@@ -13,15 +13,13 @@ function $list(){
     return new $ListDict(args)
 }
 
-var $ListDict = {$native:true}
+var $ListDict = {__class__:$B.$type,__name__:'list',$native:true}
 
 $ListDict.__add__ = function(self,other){
     var res = self.valueOf().concat(other.valueOf())
     if(isinstance(self,tuple)){res = tuple(res)}
     return res
 }
-
-$ListDict.__class__ = $type
 
 $ListDict.__contains__ = function(self,item){
     for(var i=0;i<self.length;i++){
@@ -200,8 +198,6 @@ $ListDict.__mul__ = function(self,other){
         throw TypeError("can't multiply sequence by non-int of type '"+other.__class__.__name__+"'")
     }
 }
-
-$ListDict.__name__ = 'list'
 
 $ListDict.__ne__ = function(self,other){return !$ListDict.__eq__(self,other)}
 
@@ -417,7 +413,7 @@ function list(){
     res.__brython__ = true // false for Javascript arrays - used in sort()
     return res
 }
-list.__class__ = $factory
+list.__class__ = $B.$factory
 list.$dict = $ListDict
 $ListDict.$factory = list
 
@@ -431,7 +427,7 @@ Array.prototype.$dict = {
 
 function $tuple(arg){return arg} // used for parenthesed expressions
 
-var $TupleDict = {__class__:$type,__name__:'tuple'}
+var $TupleDict = {__class__:$B.$type,__name__:'tuple',$native:true}
 
 $TupleDict.__iter__ = function(self){
     return $iterator(self,$tuple_iterator)
@@ -460,7 +456,7 @@ function tuple(){
     }
     return obj
 }
-tuple.__class__ = $factory
+tuple.__class__ = $B.$factory
 tuple.$dict = $TupleDict
 $TupleDict.$factory = tuple
 $TupleDict.__new__ = $__new__(tuple) //function(arg){return tuple(arg)}

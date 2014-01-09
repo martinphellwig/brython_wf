@@ -6,7 +6,7 @@ for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_
 // set
 
 $SetDict = {
-    __class__:$type,
+    __class__:$B.$type,
     __name__:'set',
     $native:true
 }
@@ -237,12 +237,12 @@ function set(){
     $SetDict.__init__.apply(null,args)
     return res
 }
-set.__class__ = $factory
+set.__class__ = $B.$factory
 set.$dict = $SetDict
 $SetDict.$factory = set
 $SetDict.__new__ = $__new__(set)
 
-$FrozensetDict = {__class__:$type,
+$FrozensetDict = {__class__:$B.$type,
     __name__:'frozenset',
 }
 $FrozensetDict.__mro__ = [$FrozensetDict,object.$dict]
@@ -272,7 +272,7 @@ function frozenset(){
     res.__class__ = $FrozensetDict
     return res
 }
-frozenset.__class__ = $factory
+frozenset.__class__ = $B.$factory
 frozenset.$dict = $FrozensetDict
 $FrozensetDict.__new__ = $__new__(frozenset)
 $FrozensetDict.$factory = frozenset

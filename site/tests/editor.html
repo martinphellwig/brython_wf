@@ -33,7 +33,6 @@
 
 <script type="text/python3">
 from browser import doc
-from javascript import expose
 from .. import header
 
 qs_lang,language = header.show('../')
@@ -58,13 +57,20 @@ tplink = doc['test_page']
 if qs_lang:
     tplink.href += '?lang=%s' %qs_lang
 
-@expose
-def set_debug():
-    v = doc['debug']
-    if v.checked:
+def set_debug(ev):
+    if ev.target.checked:
         __BRYTHON__.debug = 1
     else:
         __BRYTHON__.debug = 0
+
+# bindings
+doc['run_js'].bind('click',run_js)
+doc['set_debug'].bind('change',set_debug)
+
+# next functions are defined in editor.py
+doc['show_js'].bind('click',show_js)
+doc['run'].bind('click',run)
+doc['show_console'].bind('click',show_console)
 </script>
 
 <script>
@@ -135,14 +141,14 @@ Theme: <select id="ace_theme" onChange="change_theme(event)">
 <div id="right-div">
 <div style="padding: 3px 3px 3px 3px;">
   <div style="float:left">
-    <button onClick="run()" id="run Python">run</button>
-    <button onClick="run_js()" id="clear">run Javascript</button>
-    debug<input type="checkbox" id="debug" onchange="set_debug()" checked>
+    <button id="run">run</button>
+    <button id="run_js">run Javascript</button>
+    debug<input type="checkbox" id="set_debug" checked>
   </div>
 
   <div style="float:right">
-    <button onClick="show_console()" id="show_console">Console</button>
-    <button onClick="show_js()">Javascript</button>
+    <button id="show_console">Console</button>
+    <button id="show_js">Javascript</button>
   </div>
 </div>
 <div style="width:100%;height:100%;">

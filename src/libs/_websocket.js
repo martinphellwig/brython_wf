@@ -31,7 +31,7 @@ $module = (function($B){
         res.$websocket = $socket
         return res
     }
-    websocket.__class__ = $factory
+    websocket.__class__ = $B.$factory
     websocket.$dict = $WebSocketDict
     
     return {websocket:websocket}
