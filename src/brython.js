@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140109-211814
+// version 1.4.20140110-204953
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140109-211814', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140110-204953', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -92,7 +92,7 @@ var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
 "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
 "+=":"iadd","-=":"isub","*=":"imul","/=":"itruediv",
-"%=":"imod","&=":"iand","|=":"ior","^=":"ixor","**=":"ipow",
+"%=":"imod","&=":"iand","|=":"ior","^=":"ixor",
 "+":"add","-":"sub","*":"mul",
 "/":"truediv","%":"mod","&":"and","|":"or","~":"invert",
 "^":"xor","<":"lt",">":"gt",
@@ -123,7 +123,7 @@ $weight++
 var $augmented_assigns={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
 "**=":"ipow","+=":"iadd","-=":"isub","*=":"imul","/=":"itruediv",
-"%=":"imod","^=":"ipow",
+"%=":"imod",
 "&=":"iand","|=":"ior","^=":"ixor"
 }
 function $_SyntaxError(C,msg,indent){
@@ -3744,7 +3744,7 @@ local_args.push(arguments[i])
 var x=res.apply(obj,local_args)
 if(x===undefined){return $B.builtins.None}else{return x}
 }})(args)
-method.__class__=$MethodDict
+method.__class__=__BRYTHON__.$MethodDict
 method.__func__=__func__
 method.__repr__=__repr__
 method.__self__=__self__
@@ -4094,12 +4094,12 @@ function $MethodFactory(){}
 $MethodFactory.__name__='method'
 $MethodFactory.__class__=__BRYTHON__.$factory
 $MethodFactory.__repr__=$MethodFactory.__str__=$MethodFactory.toString=function(){return 'method'}
-$MethodDict={__class__:__BRYTHON__.$type,
+__BRYTHON__.$MethodDict={__class__:__BRYTHON__.$type,
 __name__:'method',
 __mro__:[__BRYTHON__.builtins.object.$dict],
 $factory:$MethodFactory
 }
-$MethodFactory.$dict=$MethodDict
+$MethodFactory.$dict=__BRYTHON__.$MethodDict
 ;(function($B){
 $B.$MakeArgs=function($fname,$args,$required,$defaults,$other_args,$other_kw){
 var i=null,$set_vars=[],$ns={}

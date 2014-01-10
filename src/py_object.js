@@ -141,7 +141,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                         var x = res.apply(obj,local_args)
                         if(x===undefined){return $B.builtins.None}else{return x}
                     }})(args)
-                method.__class__ = $MethodDict
+                method.__class__ = __BRYTHON__.$MethodDict
                 method.__func__ = __func__
                 method.__repr__ = __repr__
                 method.__self__ = __self__
