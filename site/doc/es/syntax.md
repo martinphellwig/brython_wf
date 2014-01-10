@@ -22,7 +22,7 @@ Brython usa la misma sintaxis que Python:
  - `from foo import X as Y`
  - `from foo import *`
  
- Keywords y funciones integradas (built-in functions)
+Keywords y funciones integradas (built-in functions)
 ----------------------------------------------------
 
 Brython soporta la mayor parte de keywords y funciones de Python 3 :

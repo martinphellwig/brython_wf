@@ -8,15 +8,13 @@
 <script src="/src/brython.js"></script>
 
 <script type="text/python3">
-from browser import doc
-from javascript import expose
+from browser import doc, window
 from ... import header
 header.show('../../')
 
 import browser.markdown as markdown
 import time
 
-@expose
 def load(url,target):
     # fake query string to bypass browser cache
     qs = '?foo=%s' %time.time()
@@ -29,6 +27,9 @@ def load(url,target):
     for script in scripts:
         exec(script,globals())
     return False
+
+# put in global namespace, for inline callbacks
+window.load = load
     
 language = "en"
 </script>
