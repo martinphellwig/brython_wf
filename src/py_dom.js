@@ -932,9 +932,9 @@ $QueryDict.__getitem__ = function(self,key){
     return result
 }
 
-$QueryDict_iterator = $iterator_class('query string iterator')
+$QueryDict_iterator = __BRYTHON__.$iterator_class('query string iterator')
 $QueryDict.__iter__ = function(self){
-    return $iterator(self._keys,$QueryDict_iterator)
+    return __BRYTHON__.$iterator(self._keys,$QueryDict_iterator)
 }
 
 $QueryDict.__mro__ = [$QueryDict,$ObjectDict]

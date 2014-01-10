@@ -99,10 +99,10 @@ $StringDict.__init__ = function(self,arg){
     self.toString = function(){return arg}
 }
 
-$str_iterator = $iterator_class('str_iterator')
+$str_iterator = $B.$iterator_class('str_iterator')
 $StringDict.__iter__ = function(self){
     var items = self.split('') // list of all characters in string
-    return $iterator(items,$str_iterator)
+    return $B.$iterator(items,$str_iterator)
 }
 
 $StringDict.__len__ = function(self){return self.length}

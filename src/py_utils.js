@@ -491,6 +491,40 @@ if (window.IDBRequest !== undefined) {
     }
 }
 
+// functions to define iterators
+$B.$iterator = function(items,klass){
+    var res = {
+        __class__:klass,
+        __iter__:function(){return res},
+        __len__:function(){return items.length},
+        __next__:function(){
+            res.counter++
+            if(res.counter<items.length){return items[res.counter]}
+            else{throw StopIteration("StopIteration")}
+        },
+        __repr__:function(){return "<"+klass.__name__+" object>"},
+        counter:-1
+    }
+    res.__str__ = res.toString = res.__repr__
+    return res
+}
+
+$B.$iterator_class = function(name){
+    var res = {
+        __class__:__BRYTHON__.$type,
+        __name__:name
+    }
+    res.__str__ = res.toString = res.__repr__
+    res.__mro__ = [res,__BRYTHON__.builtins.object.$dict]
+    res.$factory = {__class__:__BRYTHON__.$factory,$dict:res}
+    return res
+}
+
+// class dict of functions attribute __code__
+$B.$CodeDict = {__class__:__BRYTHON__.$type,__name__:'code'}
+$B.$CodeDict.__mro__ = [$B.$CodeDict,__BRYTHON__.builtins.object.$dict]
+
+
 })(__BRYTHON__)
 
 

@@ -1128,7 +1128,7 @@ function $DefCtx(context){
         offset++
 
         // add attribute __code__
-        js = prefix+this.name+'.__code__= {__class__:$CodeDict}'
+        js = prefix+this.name+'.__code__= {__class__:__BRYTHON__.$CodeDict}'
         js += ';None;' // end with None for interactive interpreter
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
