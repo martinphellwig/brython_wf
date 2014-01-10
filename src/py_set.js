@@ -93,9 +93,9 @@ $SetDict.__init__ = function(self){
     }
 }
 
-$set_iterator = $iterator_class('set iterator')
+$set_iterator = $B.$iterator_class('set iterator')
 $SetDict.__iter__ = function(self){
-    return $iterator(self.$items,$set_iterator)
+    return $B.$iterator(self.$items,$set_iterator)
 }
 
 $SetDict.__le__ = function(self,other){

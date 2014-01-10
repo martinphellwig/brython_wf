@@ -130,9 +130,9 @@ $DictDict.__init__ = function(self){
     }
 }
 
-var $dict_iterator = $iterator_class('dict iterator')
+var $dict_iterator = $B.$iterator_class('dict iterator')
 $DictDict.__iter__ = function(self){
-    return $iterator(self.$keys,$dict_iterator)
+    return $B.$iterator(self.$keys,$dict_iterator)
 }
 
 $DictDict.__len__ = function(self) {return self.$keys.length}
@@ -212,20 +212,20 @@ $DictDict.get = function(self,key,_default){
     }
 }
 
-$dict_itemsDict = $iterator_class('dict_itemiterator')
+$dict_itemsDict = $B.$iterator_class('dict_itemiterator')
 
 $DictDict.items = function(self){
     var items = []
     for(var i=0;i<self.$keys.length;i++){
         items.push(__builtins__.tuple([self.$keys[i],self.$values[i]]))
     }
-    return $iterator(items,$dict_itemsDict)
+    return $B.$iterator(items,$dict_itemsDict)
 }
 
-$dict_keysDict = $iterator_class('dict_keys')
+$dict_keysDict = $B.$iterator_class('dict_keys')
 
 $DictDict.keys = function(self){
-    return $iterator(self.$keys,$dict_keysDict)
+    return $B.$iterator(self.$keys,$dict_keysDict)
 }
 
 $DictDict.pop = function(self,key,_default){
@@ -274,10 +274,10 @@ $DictDict.update = function(self){
     }
 }
 
-$dict_valuesDict = $iterator_class('dict_values')
+$dict_valuesDict = $B.$iterator_class('dict_values')
 
 $DictDict.values = function(self){
-    return $iterator(self.$values,$dict_valuesDict)
+    return $B.$iterator(self.$values,$dict_valuesDict)
 }
 
 function dict(){
