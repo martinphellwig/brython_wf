@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140110-213826
+// version 1.4.20140110-221013
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140110-213826', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140110-221013', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -1001,7 +1001,7 @@ new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 node.parent.children.splice(rank+offset,0,new_node)
 offset++
-js=prefix+this.name+'.__code__= {__class__:$CodeDict}'
+js=prefix+this.name+'.__code__= {__class__:__BRYTHON__.$CodeDict}'
 js +=';None;' 
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
@@ -4515,6 +4515,34 @@ window.IDBRequest.prototype.pyresult=function(){
 return jsobject2pyobject(this.result)
 }
 }
+$B.$iterator=function(items,klass){
+var res={
+__class__:klass,
+__iter__:function(){return res},
+__len__:function(){return items.length},
+__next__:function(){
+res.counter++
+if(res.counter<items.length){return items[res.counter]}
+else{throw StopIteration("StopIteration")}
+},
+__repr__:function(){return "<"+klass.__name__+" object>"},
+counter:-1
+}
+res.__str__=res.toString=res.__repr__
+return res
+}
+$B.$iterator_class=function(name){
+var res={
+__class__:__BRYTHON__.$type,
+__name__:name
+}
+res.__str__=res.toString=res.__repr__
+res.__mro__=[res,__BRYTHON__.builtins.object.$dict]
+res.$factory={__class__:__BRYTHON__.$factory,$dict:res}
+return res
+}
+$B.$CodeDict={__class__:__BRYTHON__.$type,__name__:'code'}
+$B.$CodeDict.__mro__=[$B.$CodeDict,__BRYTHON__.builtins.object.$dict]
 })(__BRYTHON__)
 Array.prototype.match=function(other){
 var $i=0
@@ -4539,40 +4567,12 @@ catch(err){
 var console={'log':function(data){void(0)}}
 }
 
-__debug__=false
-var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
-function $iterator(items,klass){
-var res={
-__class__:klass,
-__iter__:function(){return res},
-__len__:function(){return items.length},
-__next__:function(){
-res.counter++
-if(res.counter<items.length){return items[res.counter]}
-else{throw StopIteration("StopIteration")}
-},
-__repr__:function(){return "<"+klass.__name__+" object>"},
-counter:-1
-}
-res.__str__=res.toString=res.__repr__
-return res
-}
-function $iterator_class(name){
-var res={
-__class__:__BRYTHON__.$type,
-__name__:name
-}
-res.__str__=res.toString=res.__repr__
-res.__mro__=[res,__BRYTHON__.builtins.object.$dict]
-res.$factory={__class__:__BRYTHON__.$factory,$dict:res}
-return res
-}
-var $CodeDict={__class__:__BRYTHON__.$type,__name__:'code'}
-$CodeDict.__mro__=[$CodeDict,__BRYTHON__.builtins.object.$dict]
 ;(function($B){
+$B.builtins.__debug__=false
 var __builtins__=$B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 $ObjectDict=__builtins__.object.$dict
+$B.$comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
 function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
 else if(isinstance(obj,float)){return float(Math.abs(obj.value))}
@@ -4677,9 +4677,9 @@ if(this.valueOf())return 1
 return 0
 }
 var $BytearrayDict={__class__:$B.$type,__name__:'bytearray'}
-$bytearray_iterator=$iterator_class('bytearray_iterator')
+$bytearray_iterator=$B.$iterator_class('bytearray_iterator')
 $BytearrayDict.__iter__=function(self){
-return $iterator(self.source,$bytearray_iterator)
+return $B.$iterator(self.source,$bytearray_iterator)
 }
 $BytearrayDict.__mro__=[$BytearrayDict,$ObjectDict]
 function bytearray(source, encoding, errors){
@@ -4692,9 +4692,9 @@ var $BytesDict={
 __class__ : $B.$type,
 __name__ : 'bytes'
 }
-var $bytes_iterator=$iterator_class('bytes_iterator')
+var $bytes_iterator=$B.$iterator_class('bytes_iterator')
 $BytesDict.__iter__=function(self){
-return $iterator(self.source,$bytes_iterator)
+return $B.$iterator(self.source,$bytes_iterator)
 }
 $BytesDict.__len__=function(self){return self.source.length}
 $BytesDict.__mro__=[$BytesDict,$ObjectDict]
@@ -4819,9 +4819,9 @@ enumerate.__class__=$B.$factory
 enumerate.$dict=$EnumerateDict
 $EnumerateDict.$factory=enumerate
 var $FilterDict={__class__:$B.$type,__name__:'filter'}
-$filter_iterator=$iterator_class('filter iterator')
+$filter_iterator=$B.$iterator_class('filter iterator')
 $FilterDict.__iter__=function(self){
-return $iterator(self.$items,$filter_iterator)
+return $B.$iterator(self.$items,$filter_iterator)
 }
 $FilterDict.__mro__=[$FilterDict,$ObjectDict]
 function filter(){
@@ -5589,9 +5589,9 @@ return res
 }
 }
 var $ZipDict={__class__:$B.$type,__name__:'zip'}
-$zip_iterator=$iterator_class('zip_iterator')
+$zip_iterator=$B.$iterator_class('zip_iterator')
 $ZipDict.__iter__=function(self){
-return $iterator(self.items,$zip_iterator)
+return $B.$iterator(self.items,$zip_iterator)
 }
 $ZipDict.__mro__=[$ZipDict,$ObjectDict]
 function zip(){
@@ -5683,9 +5683,9 @@ __str__ : function(){return 'Ellipsis'},
 toString : function(){return 'Ellipsis'}
 }
 var $comp_ops=['ge','gt','le','lt']
-for(var $key in $comps){
-if($comp_ops.indexOf($comps[$key])>-1){
-Ellipsis['__'+$comps[$key]+'__']=(function(k){
+for(var $key in $B.$comps){
+if($comp_ops.indexOf($B.$comps[$key])>-1){
+Ellipsis['__'+$B.$comps[$key]+'__']=(function(k){
 return function(other){
 throw TypeError("unorderable types: ellipsis() "+k+" "+
 other.__class__.__name__)}
@@ -5711,10 +5711,9 @@ __str__ : function(){return 'None'},
 toString : function(){return 'None'}
 }
 var $comp_ops=['ge','gt','le','lt']
-var $comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
-for(var $key in $comps){
-if($comp_ops.indexOf($comps[$key])>-1){
-None['__'+$comps[$key]+'__']=(function(k){
+for(var $key in $B.$comps){
+if($comp_ops.indexOf($B.$comps[$key])>-1){
+None['__'+$B.$comps[$key]+'__']=(function(k){
 return function(other){
 throw TypeError("unorderable types: NoneType() "+k+" "+
 other.__class__.__name__)}
@@ -6094,9 +6093,9 @@ if(self.js[rank]!==undefined){return JSObject(self.js[rank])}
 else{throw AttributeError(self+' has no attribute __getitem__')}
 }
 }
-$JSObject_iterator=$iterator_class('JS object iterator')
+$JSObject_iterator=$B.$iterator_class('JS object iterator')
 $JSObjectDict.__iter__=function(self){
-return $iterator(self.js,$JSObject_iterator)
+return $B.$iterator(self.js,$JSObject_iterator)
 }
 $JSObjectDict.__len__=function(self){
 try{return getattr(self.js,'__len__')()}
@@ -6721,8 +6720,8 @@ else{throw TypeError(
 "unorderable types: "+self.__class__.__name__+'() > '+other.__class__.__name__+"()")}
 }
 $comp_func +='' 
-for($op in $comps){
-eval("$IntDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
+for($op in $B.$comps){
+eval("$IntDict.__"+$B.$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 Number.prototype.__class__=$IntDict
 Number.prototype.$fast_augm=true 
@@ -6859,9 +6858,9 @@ self.$keys=kw.$keys
 self.$values=kw.$values
 }
 }
-var $dict_iterator=$iterator_class('dict iterator')
+var $dict_iterator=$B.$iterator_class('dict iterator')
 $DictDict.__iter__=function(self){
-return $iterator(self.$keys,$dict_iterator)
+return $B.$iterator(self.$keys,$dict_iterator)
 }
 $DictDict.__len__=function(self){return self.$keys.length}
 $DictDict.__mro__=[$DictDict,$ObjectDict]
@@ -6924,17 +6923,17 @@ if(_default!==undefined){return _default}
 else{return None}
 }
 }
-$dict_itemsDict=$iterator_class('dict_itemiterator')
+$dict_itemsDict=$B.$iterator_class('dict_itemiterator')
 $DictDict.items=function(self){
 var items=[]
 for(var i=0;i<self.$keys.length;i++){
 items.push(__builtins__.tuple([self.$keys[i],self.$values[i]]))
 }
-return $iterator(items,$dict_itemsDict)
+return $B.$iterator(items,$dict_itemsDict)
 }
-$dict_keysDict=$iterator_class('dict_keys')
+$dict_keysDict=$B.$iterator_class('dict_keys')
 $DictDict.keys=function(self){
-return $iterator(self.$keys,$dict_keysDict)
+return $B.$iterator(self.$keys,$dict_keysDict)
 }
 $DictDict.pop=function(self,key,_default){
 try{
@@ -6978,9 +6977,9 @@ for(var i=0;i<keys.length;i++){
 $DictDict.__setitem__(self,keys[i],kw.$values(keys[i]))
 }
 }
-$dict_valuesDict=$iterator_class('dict_values')
+$dict_valuesDict=$B.$iterator_class('dict_values')
 $DictDict.values=function(self){
-return $iterator(self.$values,$dict_valuesDict)
+return $B.$iterator(self.$values,$dict_valuesDict)
 }
 function dict(){
 var res={__class__:$DictDict}
@@ -7153,9 +7152,9 @@ try{self.push(next_func())}
 catch(err){if(err.__name__=='StopIteration'){__BRYTHON__.$pop_exc()};break}
 }
 }
-$list_iterator=$iterator_class('list_iterator')
+$list_iterator=$B.$iterator_class('list_iterator')
 $ListDict.__iter__=function(self){
-return $iterator(self,$list_iterator)
+return $B.$iterator(self,$list_iterator)
 }
 $ListDict.__le__=function(self,other){
 return !$ListDict.__gt__(self,other)
@@ -7367,10 +7366,10 @@ Array.prototype.$dict={
 function $tuple(arg){return arg}
 var $TupleDict={__class__:$B.$type,__name__:'tuple',$native:true}
 $TupleDict.__iter__=function(self){
-return $iterator(self,$tuple_iterator)
+return $B.$iterator(self,$tuple_iterator)
 }
 $TupleDict.toString=function(){return '$TupleDict'}
-var $tuple_iterator=$iterator_class('tuple_iterator')
+var $tuple_iterator=$B.$iterator_class('tuple_iterator')
 function tuple(){
 var obj=__builtins__.list.apply(null,arguments)
 obj.__class__=$TupleDict
@@ -7498,10 +7497,10 @@ $StringDict.__init__=function(self,arg){
 self.valueOf=function(){return arg}
 self.toString=function(){return arg}
 }
-$str_iterator=$iterator_class('str_iterator')
+$str_iterator=$B.$iterator_class('str_iterator')
 $StringDict.__iter__=function(self){
 var items=self.split('')
-return $iterator(items,$str_iterator)
+return $B.$iterator(items,$str_iterator)
 }
 $StringDict.__len__=function(self){return self.length}
 $legacy_format=$StringDict.__mod__=function(self,args){
@@ -8552,9 +8551,9 @@ throw TypeError("'"+arg.__class__.__name__+"' object is not iterable")
 throw TypeError("set expected at most 1 argument, got "+args.length)
 }
 }
-$set_iterator=$iterator_class('set iterator')
+$set_iterator=$B.$iterator_class('set iterator')
 $SetDict.__iter__=function(self){
-return $iterator(self.$items,$set_iterator)
+return $B.$iterator(self.$items,$set_iterator)
 }
 $SetDict.__le__=function(self,other){
 for(var i=0;i<self.$items.length;i++){
@@ -9037,6 +9036,21 @@ return DOMNode[attr](self)
 if(attr=='remove'){
 return function(){DOMNode[attr](self,arguments[0])}
 }
+if(attr=='headers' && self.elt.nodeType==9){
+var req=new XMLHttpRequest()
+req.open('GET', document.location, false)
+req.send(null)
+var headers=req.getAllResponseHeaders()
+headers=headers.split('\r\n')
+var res=__BRYTHON__.builtins.dict()
+for(var i=0;i<headers.length;i++){
+var header=headers[i]
+if(header.strip().length==0){continue}
+var pos=header.search(':')
+res.__setitem__(header.substr(0,pos),header.substr(pos+1).lstrip())
+}
+return res
+}
 if(attr=='$$location'){attr='location'}
 if(self.elt.getAttribute!==undefined){
 res=self.elt.getAttribute(attr)
@@ -9469,22 +9483,6 @@ __BRYTHON__.events.$values[ix_elt][ix_event]=events
 }
 }
 }
-_doc=$DOMNode(document)
-_doc.$dict.headers=function(){
-var req=new XMLHttpRequest()
-req.open('GET', document.location, false)
-req.send(null)
-var headers=req.getAllResponseHeaders()
-headers=headers.split('\r\n')
-var res=dict()
-for(var i=0;i<headers.length;i++){
-var header=headers[i]
-if(header.strip().length==0){continue}
-var pos=header.search(':')
-res.__setitem__(header.substr(0,pos),header.substr(pos+1).lstrip())
-}
-return res
-}
 $QueryDict={__class__:__BRYTHON__.$type,__name__:'query'}
 $QueryDict.__contains__=function(self,key){
 return self._keys.indexOf(key)>-1
@@ -9495,9 +9493,9 @@ if(result===undefined){throw KeyError(key)}
 else if(result.length==1){return result[0]}
 return result
 }
-$QueryDict_iterator=$iterator_class('query string iterator')
+$QueryDict_iterator=__BRYTHON__.$iterator_class('query string iterator')
 $QueryDict.__iter__=function(self){
-return $iterator(self._keys,$QueryDict_iterator)
+return __BRYTHON__.$iterator(self._keys,$QueryDict_iterator)
 }
 $QueryDict.__mro__=[$QueryDict,$ObjectDict]
 $QueryDict.getfirst=function(self,key,_default){

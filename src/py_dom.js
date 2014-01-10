@@ -399,6 +399,22 @@ DOMNode.__getattribute__ = function(self,attr){
     if(attr=='remove'){
         return function(){DOMNode[attr](self,arguments[0])}
     }
+    if(attr=='headers' && self.elt.nodeType==9){
+        // HTTP headers
+        var req = new XMLHttpRequest();
+        req.open('GET', document.location, false);
+        req.send(null);
+        var headers = req.getAllResponseHeaders();
+        headers = headers.split('\r\n')
+        var res = __BRYTHON__.builtins.dict()
+        for(var i=0;i<headers.length;i++){
+            var header = headers[i]
+            if(header.strip().length==0){continue}
+            var pos = header.search(':')
+            res.__setitem__(header.substr(0,pos),header.substr(pos+1).lstrip())
+        }
+        return res;
+    }
     if(attr=='$$location'){attr='location'}
     if(self.elt.getAttribute!==undefined){
         res = self.elt.getAttribute(attr)
@@ -895,24 +911,6 @@ DOMNode.unbind = function(self,event){
             __BRYTHON__.events.$values[ix_elt][ix_event] = events
         }
     }
-}
-
-_doc = $DOMNode(document)
-
-_doc.$dict.headers = function(){
-    var req = new XMLHttpRequest();
-    req.open('GET', document.location, false);
-    req.send(null);
-    var headers = req.getAllResponseHeaders();
-    headers = headers.split('\r\n')
-    var res = dict()
-    for(var i=0;i<headers.length;i++){
-        var header = headers[i]
-        if(header.strip().length==0){continue}
-        var pos = header.search(':')
-        res.__setitem__(header.substr(0,pos),header.substr(pos+1).lstrip())
-    }
-    return res;
 }
 
 // return query string as an object with methods to access keys and values
