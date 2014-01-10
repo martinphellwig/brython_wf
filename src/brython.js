@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140110-223119
+// version 1.4.20140110-223750
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140110-223119', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140110-223750', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -1290,7 +1290,7 @@ if(mod){
 search_path_parts.push(mod)
 }
 var search_path=search_path_parts.join('/')
-res +="$mod=$import_list_intra('"+this.module+"','"
+res +="$mod=__BRYTHON__.$import_list_intra('"+this.module+"','"
 res +=__BRYTHON__.$py_module_path[parent_module]
 res +="',["
 for(var i=0;i<this.names.length;i++){
@@ -1312,7 +1312,7 @@ res +='=getattr($mod,"'+this.names[i]+'")\n'
 }
 }else{
 if(this.names[0]=='*'){
-res +='$import("'+this.module+'","'+mod+'")\n'
+res +='__BRYTHON__.$import("'+this.module+'","'+mod+'")\n'
 res +=head+'var $mod=__BRYTHON__.imported["'+this.module+'"]\n'
 res +=head+'for(var $attr in $mod){\n'
 res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
@@ -1321,7 +1321,7 @@ res +='=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
 }
 res +='=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x)}}'
 }else{
-res +='$import_from("'+this.module+'",['
+res +='__BRYTHON__.$import_from("'+this.module+'",['
 for(var i=0;i<this.names.length;i++){
 res +='"'+this.names[i]+'",'
 }
@@ -1589,7 +1589,7 @@ elts.pop()
 path=elts.join('/')
 var res=''
 for(var i=0;i<this.tree.length;i++){
-res +='$import('+this.tree[i].to_js()+');'
+res +='__BRYTHON__.$import('+this.tree[i].to_js()+');'
 var parts=this.tree[i].name.split('.')
 for(j=0;j<parts.length;j++){
 if(j==0 && 
@@ -4969,7 +4969,7 @@ return obj.__hash__()
 return null
 }
 function __import__(mod_name){
-$import(mod_name)
+$B.$import(mod_name)
 return $B.imported[mod_name]
 }
 function input(src){
@@ -6141,6 +6141,7 @@ __name__ : 'module',
 $ModuleDict.__repr__=function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__str__=function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__mro__=[$ModuleDict,$ObjectDict]
+;(function($B){
 function $importer(){
 var $xmlhttp=new XMLHttpRequest()
 var __builtins__=__BRYTHON__.builtins
@@ -6400,6 +6401,10 @@ __BRYTHON__.imported[names[i]]=mod[names[i]]
 }
 return mod
 }
+$B.$import=$import
+$B.$import_from=$import_from
+$B.$import_list_intra=$import_list_intra
+})(__BRYTHON__)
 ;(function($B){
 var __builtins__=$B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
