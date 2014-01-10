@@ -498,7 +498,7 @@ function id(obj) {
 }
 
 function __import__(mod_name){
-    $import(mod_name)
+    $B.$import(mod_name)
     return $B.imported[mod_name]
 }
 //not a direct alias of prompt: input has no default value

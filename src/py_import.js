@@ -8,6 +8,8 @@ $ModuleDict.__repr__ = function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__str__ = function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
 
+;(function($B){
+
 function $importer(){
     // returns the XMLHTTP object to handle imports
     var $xmlhttp = new XMLHttpRequest();
@@ -336,3 +338,8 @@ function $import_list_intra(src,current_url,names){
     }
     return mod
 }
+
+$B.$import = $import
+$B.$import_from = $import_from
+$B.$import_list_intra = $import_list_intra
+})(__BRYTHON__)
