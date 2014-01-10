@@ -1481,7 +1481,7 @@ function $FromCtx(context){
             }
         }else{
            if(this.names[0]=='*'){
-             res += '$import_list(["'+this.module+'"],"'+mod+'")\n'
+             res += '$import("'+this.module+'","'+mod+'")\n'
              res += head+'var $mod=__BRYTHON__.imported["'+this.module+'"]\n'
              res += head+'for(var $attr in $mod){\n'
              res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
@@ -1822,7 +1822,7 @@ function $ImportCtx(context){
         path =elts.join('/')
         var res = ''
         for(var i=0;i<this.tree.length;i++){
-            res += '$import_list(['+this.tree[i].to_js()+']);'
+            res += '$import('+this.tree[i].to_js()+');'
             var parts = this.tree[i].name.split('.')
             // $import returns an object
             // for "import a.b.c" this object has attributes

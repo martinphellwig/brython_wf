@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140110-221013
+// version 1.4.20140110-223119
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140110-221013', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140110-223119', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -87,7 +87,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_warnings",
 "_weakref"]
 
-brython=(function(){
+;(function(){
 var $operators={
 "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
 "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
@@ -1312,7 +1312,7 @@ res +='=getattr($mod,"'+this.names[i]+'")\n'
 }
 }else{
 if(this.names[0]=='*'){
-res +='$import_list(["'+this.module+'"],"'+mod+'")\n'
+res +='$import("'+this.module+'","'+mod+'")\n'
 res +=head+'var $mod=__BRYTHON__.imported["'+this.module+'"]\n'
 res +=head+'for(var $attr in $mod){\n'
 res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
@@ -1589,7 +1589,7 @@ elts.pop()
 path=elts.join('/')
 var res=''
 for(var i=0;i<this.tree.length;i++){
-res +='$import_list(['+this.tree[i].to_js()+']);'
+res +='$import('+this.tree[i].to_js()+');'
 var parts=this.tree[i].name.split('.')
 for(j=0;j<parts.length;j++){
 if(j==0 && 
@@ -3642,10 +3642,11 @@ throw $err
 __BRYTHON__.$operators=$operators
 __BRYTHON__.$Node=$Node
 __BRYTHON__.$NodeJSCtx=$NodeJSCtx
-return brython
+__BRYTHON__.brython=brython 
 })()
+var brython=__BRYTHON__.brython
 
-function $__new__(factory){
+__BRYTHON__.$__new__=function(factory){
 return function(cls){
 if(cls===undefined){
 throw TypeError(factory.$dict.__name__+'.__new__(): not enough arguments')
@@ -4968,7 +4969,7 @@ return obj.__hash__()
 return null
 }
 function __import__(mod_name){
-$import_list([mod_name])
+$import(mod_name)
 return $B.imported[mod_name]
 }
 function input(src){
@@ -6324,10 +6325,8 @@ throw err
 }
 }
 }
-function $import_list(modules,origin){
+function $import(mod_name,origin){
 var res=[]
-for(var i=0;i<modules.length;i++){
-var mod_name=modules[i]
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod
 var stored=__BRYTHON__.imported[mod_name]
@@ -6349,19 +6348,18 @@ __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
 mod=stored
 }
 res.push(mod)
-}
 return res
 }
 function $import_from(mod_name,names,origin){
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod=__BRYTHON__.imported[mod_name]
-if(mod===undefined){$import_list([mod_name]);mod=__BRYTHON__.modules[mod_name]}
+if(mod===undefined){$import(mod_name);mod=__BRYTHON__.modules[mod_name]}
 var mod_ns=mod
 for(var i=0;i<names.length;i++){
 if(mod_ns[names[i]]===undefined){
 if(mod.$package){
 var sub_mod=mod_name+'.'+names[i]
-$import_list([sub_mod],origin)
+$import(sub_mod,origin)
 mod[names[i]]=__BRYTHON__.modules[sub_mod]
 }else{
 throw ImportError("cannot import name "+names[i])
@@ -6556,7 +6554,7 @@ throw ValueError("Could not convert to float(): '"+__builtins__.str(value)+"'")
 float.__class__=$B.$factory
 float.$dict=$FloatDict
 $FloatDict.$factory=float
-$FloatDict.__new__=$__new__(float)
+$FloatDict.__new__=$B.$__new__(float)
 $B.builtins.float=float
 })(__BRYTHON__)
 ;(function($B){
@@ -6992,7 +6990,7 @@ $dict=dict
 dict.__class__=$B.$factory
 dict.$dict=$DictDict
 $DictDict.$factory=dict
-$DictDict.__new__=$__new__(dict)
+$DictDict.__new__=$B.$__new__(dict)
 $B.builtins.dict=dict
 })(__BRYTHON__)
 ;(function($B){
@@ -7171,7 +7169,7 @@ throw TypeError("can't multiply sequence by non-int of type '"+other.__class__._
 }
 }
 $ListDict.__ne__=function(self,other){return !$ListDict.__eq__(self,other)}
-$ListDict.__new__=$__new__(list)
+$ListDict.__new__=$B.$__new__(list)
 $ListDict.__not_in__=function(self,item){return !$ListDict.__in__(self,item)}
 $ListDict.__repr__=function(self){
 if(self===undefined){return "<class 'list'>"}
@@ -7386,7 +7384,7 @@ return obj
 tuple.__class__=$B.$factory
 tuple.$dict=$TupleDict
 $TupleDict.$factory=tuple
-$TupleDict.__new__=$__new__(tuple)
+$TupleDict.__new__=$B.$__new__(tuple)
 for(var attr in $ListDict){
 if(['__delitem__','__setitem__',
 'append','extend','insert','remove','pop','reverse','sort'].indexOf(attr)>-1){continue}
@@ -8675,7 +8673,7 @@ return res
 set.__class__=$B.$factory
 set.$dict=$SetDict
 $SetDict.$factory=set
-$SetDict.__new__=$__new__(set)
+$SetDict.__new__=$B.$__new__(set)
 $FrozensetDict={__class__:$B.$type,
 __name__:'frozenset',
 }
@@ -8704,7 +8702,7 @@ return res
 }
 frozenset.__class__=$B.$factory
 frozenset.$dict=$FrozensetDict
-$FrozensetDict.__new__=$__new__(frozenset)
+$FrozensetDict.__new__=$B.$__new__(frozenset)
 $FrozensetDict.$factory=frozenset
 __builtins__.set=set
 __builtins__.frozenset=frozenset
