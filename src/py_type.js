@@ -349,12 +349,12 @@ $MethodFactory.__name__ = 'method'
 $MethodFactory.__class__ = __BRYTHON__.$factory
 $MethodFactory.__repr__ = $MethodFactory.__str__ = $MethodFactory.toString = function(){return 'method'}
 
-$MethodDict = {__class__:__BRYTHON__.$type,
+__BRYTHON__.$MethodDict = {__class__:__BRYTHON__.$type,
     __name__:'method',
     __mro__:[__BRYTHON__.builtins.object.$dict],
     $factory:$MethodFactory
 }
-$MethodFactory.$dict = $MethodDict
+$MethodFactory.$dict = __BRYTHON__.$MethodDict
 
 
 
