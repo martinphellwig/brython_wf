@@ -3,48 +3,32 @@ Utiliser des objets Javascript
 
 Il faut gérer la période transitoire où Brython va cohabiter avec Javascript ;-)
 
-### Appel de fonctions Brython depuis Javascript
+### Accès aux objets Brython depuis Javascript
 
-Un cas courant est celui où on appelle une fonction pour réagir à un événement :
+Brython n'expose par défaut que deux noms dans l'espace de noms global de Javascript :
+
+> `brython()` : la fonction exécutée au lancement de la page web
+
+> `__BRYTHON__` : un objet utilisé en interne par Brython pour stocker les objets nécessaires à l'exécution des scripts
+
+Par défaut, un programme Javascript ne donc peut pas accéder aux objets Brython. Par exemple, si on veut utiliser une fonction `echo()` définie dans un script Brython pour réagir à un événement sur un élément de la page, au lieu de la syntaxe
 
     <button onclick="echo()">
 
-Pour qu'une fonction soit utilisable de cette façon il faut l'exposer explicitement en utilisant la fonction <code>expose(_func_)</code> du module intégré **javascript**. Le plus simple est de l'utiliser comme décorateur :
+qui ne fonctionne pas puisque le nom _echo_ n'est pas accessible depuis Javascript, il faut plutôt affecter un id à l'élément :
 
-    from javascript import expose
-    
-    @expose
-    def echo():
-        ...
+    <button id="echo">
 
-### Arguments des fonctions de rappel
+et définir le lien entre cet élément et un événement _click_ par :
 
-Le code HTML peut attacher des fonctions de rappel à des événement DOM et leur passer un certain nombre de paramètres. La fonction de rappel les recevra transformés en types gérés par Brython :
+    doc['echo'].bind('click',echo)
 
-<table border='1'>
-<tr><th>Type d'argument dans l'appel de fonction</th><th>Argument reçu par la fonction de rappel</th></tr>
-<tr><td>Elément DOM</td><td>instance de `DOMNode`</td></tr>
-<tr><td>Evénement DOM</td><td>instance de `DOMEvent`</td></tr>
-<tr><td>Liste de DOM nodes</td><td>liste d'instances de `DOMNode`</td></tr>
-<tr><td>`null, true, false`</td><td>`None, True, False`</td></tr>
-<tr><td>entier</td><td>instance de `int`</td></tr>
-<tr><td>réel</td><td>instance de `float`</td></tr>
-<tr><td>chaine</td><td>instance de `str`</td></tr>
-<tr><td>tableau Javascript</td><td>instance de `list`</td></tr>
-<tr><td>objet Javascript</td><td>instance de `JSObject`</td></tr>
-</table>
+Une autre possibilité est de forcer l'inscription de _echo_ dans l'espace de noms Javascript en le définissant comme attribut de l'objet `window` du module **browser** :
 
-Par exemple, si l'événement clic sur un bouton déclenche l'exécution de la fonction _foo()_ :
+    from browser import window
+    window.echo = echo
 
-    <button onclick="foo(this,33,{'x':99})">Click</button>
-
-cette fonction aura comme signature
-
-    def foo(elt,valeur,obj):
-
-où _elt_ sera l'instance de `DOMNode` pour l'élément bouton, _valeur_ sera l'entier 33 et _obj_ sera une instance de la classe intégrée `JSObject`
-
-Les instances de `JSObject` sont utilisées comme des objets Python ordinaires ; ici, la valeur de l'attribut "x" est `obj.x`. Pour les convertir en dictionnaire Python, utilisez la fonction intégrée `dict()` : `dict(obj)['x']`
+Cette méthode n'est pas recommandée, parce qu'elle introduit un risque de conflit avec des noms définis dans un programme ou une librairie Javascript utilisée dans la page
 
 ### Utilisation d'objets Javascript dans un script Brython
 
