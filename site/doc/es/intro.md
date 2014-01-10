@@ -12,14 +12,14 @@ Un ejemplo simple :
     </head>
     <body onload="brython()">
     <script type="text/python">
-    from browser import doc
-    from javascript import expose
-    
-    @expose
-    def echo():
+    from browser import doc, alert
+
+    def echo(ev):
         alert(doc["zone"].value)
+    
+    doc['echo'].bind('click',echo)
     </script>
-    <input id="zone"><button onclick="echo()">click !</button>
+    <input id="zone"><button idk="echo">click !</button>
     </body>
     </html>
 
@@ -30,14 +30,14 @@ Try it!
 
 <script type="text/python">
 from browser import doc, alert
-from javascript import expose
 
-@expose
-def echo():
+def echo(ev):
     alert(doc["zone"].value)
+
+doc['echo'].bind('click',echo)
 </script>
 
-<input id="zone"><button onclick="echo()">click !</button>
+<input id="zone"><button id="echo">click !</button>
 
 </td>
 </tr>

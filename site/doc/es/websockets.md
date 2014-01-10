@@ -62,7 +62,7 @@ Ejemplo :
     
     def on_message(evt):
         # message reeived from server
-        alert("Message reÃ§u : %s" %evt.data)
+        alert("Message reçu : %s" %evt.data)
     
     def on_close(evt):
         # websocket is closed
