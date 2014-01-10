@@ -623,33 +623,31 @@ function locals(obj_id,module){
 
 var $MapDict = {__class__:$B.$type,__name__:'map'}
 $MapDict.__mro__ = [$MapDict,$ObjectDict]
+$MapDict.__iter__ = function (self){return self}
 
 function map(){
-    var func = arguments[0],res=[],rank=0
+    var func = arguments[0]
     var iter_args = []
     for(var i=1;i<arguments.length;i++){iter_args.push(iter(arguments[i]))}
-    while(true){
-        var args = [],flag=true
+    var __next__ = function(){
+        var args = []
         for(var i=0;i<iter_args.length;i++){
             try{
                 var x = next(iter_args[i])
                 args.push(x)
             }catch(err){
                 if(err.__name__==='StopIteration'){
-                    $B.$pop_exc();flag=false;break
+                    $pop_exc();throw StopIteration('')
                 }else{throw err}
             }
         }
-        if(!flag){break}
-        res.push(func.apply(null,args))
-        rank++
+        return func.apply(null,args)
     }
     var obj = {
         __class__:$MapDict,
-        __getattr__:function(attr){return obj[attr]},
-        __iter__:function(){return iter(res)},
         __repr__:function(){return "<map object>"},
-        __str__:function(){return "<map object>"}
+        __str__:function(){return "<map object>"},
+        __next__: __next__
     }
     return obj
 }
