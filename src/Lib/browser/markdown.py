@@ -17,8 +17,16 @@ class CodeBlock:
         self.lines = [line]
     
     def to_html(self):
+        lang = None
+        if self.lines[0].startswith('`'): # indicate language
+            lang = self.lines[0][1:]
+            self.lines = self.lines[1:]
         res = escape('\n'.join(self.lines))
-        res = unmark(res)
+        #res = unmark(res)
+        if lang == 'python':
+            from browser import syntax_highlight
+            tag = browser.html.PRE(syntax_highlight.colorize(res))
+            res = tag.html
         res = '<pre class="marked">%s</pre>\n' %res
         return res,[]
 
