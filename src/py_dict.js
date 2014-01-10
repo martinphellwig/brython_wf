@@ -298,7 +298,7 @@ $dict = dict // used for dict literals : "x={}" is translated to "x=$dict()",
 dict.__class__ = $B.$factory
 dict.$dict = $DictDict
 $DictDict.$factory = dict
-$DictDict.__new__ = $__new__(dict)
+$DictDict.__new__ = $B.$__new__(dict)
 
 $B.builtins.dict = dict
 })(__BRYTHON__)

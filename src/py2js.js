@@ -1,6 +1,6 @@
 // Python to Javascript translation engine
 
-brython = (function(){
+;(function(){
 
 var $operators = {
     "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
@@ -4216,5 +4216,12 @@ function brython(options){
 __BRYTHON__.$operators = $operators
 __BRYTHON__.$Node = $Node
 __BRYTHON__.$NodeJSCtx = $NodeJSCtx
-return brython
+
+// in case the name 'brython' is used in a Javascript library,
+// we can use __BRYTHON__.brython
+
+__BRYTHON__.brython = brython 
+                              
 })()
+var brython = __BRYTHON__.brython
+

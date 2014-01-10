@@ -240,7 +240,7 @@ function set(){
 set.__class__ = $B.$factory
 set.$dict = $SetDict
 $SetDict.$factory = set
-$SetDict.__new__ = $__new__(set)
+$SetDict.__new__ = $B.$__new__(set)
 
 $FrozensetDict = {__class__:$B.$type,
     __name__:'frozenset',
@@ -274,7 +274,7 @@ function frozenset(){
 }
 frozenset.__class__ = $B.$factory
 frozenset.$dict = $FrozensetDict
-$FrozensetDict.__new__ = $__new__(frozenset)
+$FrozensetDict.__new__ = $B.$__new__(frozenset)
 $FrozensetDict.$factory = frozenset
 
 __builtins__.set = set
