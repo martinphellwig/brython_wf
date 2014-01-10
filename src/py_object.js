@@ -1,5 +1,5 @@
 // A function that builds the __new__ method for the factory function
-function $__new__(factory){
+__BRYTHON__.$__new__ = function(factory){
     return function(cls){
         if(cls===undefined){
             throw TypeError(factory.$dict.__name__+'.__new__(): not enough arguments')

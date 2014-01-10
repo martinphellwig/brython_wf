@@ -201,7 +201,7 @@ $ListDict.__mul__ = function(self,other){
 
 $ListDict.__ne__ = function(self,other){return !$ListDict.__eq__(self,other)}
 
-$ListDict.__new__ = $__new__(list)
+$ListDict.__new__ = $B.$__new__(list)
 
 $ListDict.__not_in__ = function(self,item){return !$ListDict.__in__(self,item)}
 
@@ -459,7 +459,7 @@ function tuple(){
 tuple.__class__ = $B.$factory
 tuple.$dict = $TupleDict
 $TupleDict.$factory = tuple
-$TupleDict.__new__ = $__new__(tuple) //function(arg){return tuple(arg)}
+$TupleDict.__new__ = $B.$__new__(tuple)
 
 // add tuple methods
 for(var attr in $ListDict){
