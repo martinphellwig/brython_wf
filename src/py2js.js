@@ -601,7 +601,7 @@ function $CallCtx(context){
             // execute the Python code and return its result
             // the namespace built inside the function will be in
             // __BRYTHON__.scope[_name].__dict__
-            res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();console.log("exec "+$jscode);'
+            res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
             res += 'if(__BRYTHON__.debug>1){console.log($jscode)};'
             res += 'var $res = eval($jscode);'
             res += 'if($res===undefined){return None};return $res'
@@ -982,14 +982,20 @@ function $DefCtx(context){
         var scope = $get_scope(this)
         var required = ''
         var defaults = [],defs=[],defs1=[]
+        var after_star = []
         var other_args = null
         var other_kw = null
         var env = []
         for(var i=0;i<this.tree[0].tree.length;i++){
             var arg = this.tree[0].tree[i]
             if(arg.type==='func_arg_id'){
-                if(arg.tree.length===0){required+='"'+arg.name+'",'}
-                else{
+                if(arg.tree.length===0){
+                    if(other_args==null){
+                        required+='"'+arg.name+'",'
+                    }else{
+                        after_star.push('"'+arg.name+'"')
+                    }
+                }else{
                     defaults.push('"'+arg.name+'"')
                     defs.push(arg.name+' = '+$to_js(arg.tree))
                     defs1.push(arg.name+':'+$to_js(arg.tree))
@@ -1032,7 +1038,7 @@ function $DefCtx(context){
         }
 
         var js = 'var $ns=__BRYTHON__.$MakeArgs("'+this.name+'",arguments,['+required+'],'
-        js += '['+defaults.join(',')+'],'+other_args+','+other_kw+')'
+        js += '['+defaults.join(',')+'],'+other_args+','+other_kw+',['+after_star.join(',')+'])'
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
@@ -2797,6 +2803,7 @@ function $transition(context,token){
     }else if(context.type==='call'){ 
         if(token===','){return context}
         else if($expr_starters.indexOf(token)>-1){
+            if(context.has_dstar){$_SyntaxError(context,token)}
             var expr = new $CallArgCtx(context)
             return $transition(expr,token,arguments[2])
         }else if(token===')'){context.end=$pos;return context.parent}
@@ -2804,8 +2811,8 @@ function $transition(context,token){
             var op=arguments[2]
             if(op==='-'||op==='~'){return new $UnaryCtx(new $ExprCtx(context,'unary',false),op)}
             else if(op==='+'){return context}
-            else if(op==='*'){return new $StarArgCtx(context)}
-            else if(op==='**'){return new $DoubleStarArgCtx(context)}
+            else if(op==='*'){context.has_star = true;return new $StarArgCtx(context)}
+            else if(op==='**'){context_has_dstar = true;return new $DoubleStarArgCtx(context)}
             else{throw Error('SyntaxError')}
         }else{return $transition(context.parent,token,arguments[2])}
 
