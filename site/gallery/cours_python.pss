@@ -94,6 +94,7 @@ Commentaires
 ============
 Introduits par #
 
+    `python
     # this is the first comment
     SPAM = 1                 # and this is the second comment
                              # ... and now a third!
@@ -119,6 +120,7 @@ Définition de noms
 Chaines de caractères
 =====================
 Utilise ' ou "
+    `python
     'spam eggs'
     "spam eggs"
 
@@ -127,6 +129,7 @@ Utilise ' ou "
 
 <code>\</code> pour "échappement"
 
+    `python
     'doesn\'t'
     "\"Yes,\" he said."
     '"Isn\'t," she said.'
@@ -134,12 +137,14 @@ Utilise ' ou "
 Chaines de caractères
 =====================
 \ pour continuer une ligne
+    `python
     hello = "This is a rather long string containing\n\
     several lines of text just as you would do in C.\n\
         Note that whitespace at the beginning of the line is\
      significant."
 
 """ sur plusieurs lignes
+    `python
     print """
     Usage: thingy [OPTIONS]
          -h                        Display this usage message
@@ -810,6 +815,7 @@ Scripts
 =======
 Enregistrement du programme dans un fichier _script.py_
 
+    `python
     for i in range(1):
         print(i)
 
@@ -827,6 +833,7 @@ Modules
 =======
 Sauvegarde dans un fichier fibo.py
 
+    `python
     def fib(n):    # write Fibonacci series up to n
         a, b = 0, 1
         while b < n:
@@ -985,6 +992,7 @@ Fichiers
 
 Itération sur les lignes :
 
+    `python
     for line in f:
         ...
 ../..
@@ -1022,6 +1030,7 @@ Sérialisation : le module `pickle`
 ==================================
 Permet de transformer en chaine des objets complexes (listes, dictionnaires...) pour les stocker ou les envoyer sur le réseau
 
+    `python
     import pickle
     pickle.dump(x, f) # écrit l'objet x dans le fichier f
     
@@ -1094,6 +1103,7 @@ Exceptions
 ==========
 Variantes de `except` :
 
+    `python
     try:
         ...
     except IOError:
@@ -1107,6 +1117,7 @@ Exceptions
 ==========
 `else` si aucune exception n'a été déclenchée
 
+    `python
     try:
         x = 1
     except:
@@ -1679,3 +1690,4 @@ Modules standard `zlib, gzip, bz2, zipfile, tarfile`
     'witch which has which witches wrist watch'
     >>> zlib.crc32(s)
     226805979
+

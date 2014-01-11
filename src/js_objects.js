@@ -183,9 +183,9 @@ $JSObjectDict.__getitem__ = function(self,rank){
     }
 }
 
-$JSObject_iterator = $iterator_class('JS object iterator')
+$JSObject_iterator = $B.$iterator_class('JS object iterator')
 $JSObjectDict.__iter__ = function(self){
-    return $iterator(self.js,$JSObject_iterator)
+    return $B.$iterator(self.js,$JSObject_iterator)
 }
 
 $JSObjectDict.__len__ = function(self){

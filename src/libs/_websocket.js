@@ -4,7 +4,7 @@ $module = (function($B){
     var __builtins__ = $B.builtins
     
     $WebSocketDict = {
-        __class__ : $type,
+        __class__ :$B.$type,
         __name__:'WebSocket'
     }
     

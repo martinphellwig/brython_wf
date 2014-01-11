@@ -35,7 +35,7 @@ Implementa métodos que permiten la ejecución de funciones de forma repetida o 
     counter = 0
     
     def show():
-        doc['timer'].text = '%.2f' %(time.time()-counter)
+        doc['_timer'].text = '%.2f' %(time.time()-counter)
     
     def start_timer():
         global _timer,counter
@@ -45,7 +45,7 @@ Implementa métodos que permiten la ejecución de funciones de forma repetida o 
             doc['start'].text = 'Hold'
         elif _timer == 'hold': # restart
             # restart timer
-            counter = time.time()-float(doc['timer'].text)
+            counter = time.time()-float(doc['_timer'].text)
             _timer = timer.set_interval(show,10)
             doc['start'].text = 'Hold'
         else: # hold
@@ -58,7 +58,7 @@ Implementa métodos que permiten la ejecución de funciones de forma repetida o 
         timer.clear_interval(_timer)
         _timer = None
         t = 0
-        doc['timer'].text = '%.2f' %0
+        doc['_timer'].text = '%.2f' %0
         doc['start'].text = 'Start'
 
 </div>
@@ -74,7 +74,7 @@ exec(doc['py_source'].text)
 <br><button id="stop" onclick="stop_timer()">Stop</button>
 </td>
 <td>
-<div id="timer" style="background-color:black;color:#0F0;padding:15px;font-family:courier;font-weight:bold;font-size:23px;">0.00</div>
+<div id="_timer" style="background-color:black;color:#0F0;padding:15px;font-family:courier;font-weight:bold;font-size:23px;">0.00</div>
 </td>
 </tr>
 </table>

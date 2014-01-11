@@ -8,6 +8,8 @@ $ModuleDict.__repr__ = function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__str__ = function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
 
+;(function($B){
+
 function $importer(){
     // returns the XMLHTTP object to handle imports
     var $xmlhttp = new XMLHttpRequest();
@@ -240,37 +242,34 @@ function $import_single(module,origin){
     }
 }
 
-function $import_list(modules,origin){
+function $import(mod_name,origin){
     var res = []
-    for(var i=0;i<modules.length;i++){
-        var mod_name=modules[i]
-        if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
-        var mod;
-        var stored = __BRYTHON__.imported[mod_name]
-        if(stored===undefined){
-            // if module is in a package (eg "import X.Y") then we must first import X
-            // by searching for the file X/__init__.py, then import X.Y searching either
-            // X/Y.py or X/Y/__init__.py
-            var mod = {}
-            var parts = mod_name.split('.')
-            for(var i=0;i<parts.length;i++){
-                var module = new Object()
-                module.name = parts.slice(0,i+1).join('.')
-                if(__BRYTHON__.modules[module.name]===undefined){
-                    // this could be a recursive import, so lets set modules={}
-                    __BRYTHON__.modules[module.name]={__class__:$ModuleDict}
-                    __BRYTHON__.imported[module.name]={__class__:$ModuleDict}
-                    // indicate if package only, or package or file
-                    if(i<parts.length-1){module.package_only = true}
-                    __BRYTHON__.modules[module.name] = $import_single(module,origin)
-                    __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
-                }
+    if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
+    var mod;
+    var stored = __BRYTHON__.imported[mod_name]
+    if(stored===undefined){
+        // if module is in a package (eg "import X.Y") then we must first import X
+        // by searching for the file X/__init__.py, then import X.Y searching either
+        // X/Y.py or X/Y/__init__.py
+        var mod = {}
+        var parts = mod_name.split('.')
+        for(var i=0;i<parts.length;i++){
+            var module = new Object()
+            module.name = parts.slice(0,i+1).join('.')
+            if(__BRYTHON__.modules[module.name]===undefined){
+                // this could be a recursive import, so lets set modules={}
+                __BRYTHON__.modules[module.name]={__class__:$ModuleDict}
+                __BRYTHON__.imported[module.name]={__class__:$ModuleDict}
+                // indicate if package only, or package or file
+                if(i<parts.length-1){module.package_only = true}
+                __BRYTHON__.modules[module.name] = $import_single(module,origin)
+                __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
             }
-        }else{
-            mod=stored
         }
-        res.push(mod)
+    }else{
+        mod=stored
     }
+    res.push(mod)
     return res
 }
 
@@ -284,13 +283,13 @@ function $import_from(mod_name,names,origin){
     // are searched in __init__.py, or as module names in the package
     if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
     var mod = __BRYTHON__.imported[mod_name]
-    if(mod===undefined){$import_list([mod_name]);mod=__BRYTHON__.modules[mod_name]}
+    if(mod===undefined){$import(mod_name);mod=__BRYTHON__.modules[mod_name]}
     var mod_ns = mod
     for(var i=0;i<names.length;i++){
         if(mod_ns[names[i]]===undefined){
             if(mod.$package){
                 var sub_mod = mod_name+'.'+names[i]
-                $import_list([sub_mod],origin)
+                $import(sub_mod,origin)
                 mod[names[i]] = __BRYTHON__.modules[sub_mod]
             }else{
                 throw ImportError("cannot import name "+names[i])
@@ -339,3 +338,8 @@ function $import_list_intra(src,current_url,names){
     }
     return mod
 }
+
+$B.$import = $import
+$B.$import_from = $import_from
+$B.$import_list_intra = $import_list_intra
+})(__BRYTHON__)

@@ -1,48 +1,16 @@
-// built-in variable
-__debug__ = false
-
-var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
-
-function $iterator(items,klass){
-    var res = {
-        __class__:klass,
-        __iter__:function(){return res},
-        __len__:function(){return items.length},
-        __next__:function(){
-            res.counter++
-            if(res.counter<items.length){return items[res.counter]}
-            else{throw StopIteration("StopIteration")}
-        },
-        __repr__:function(){return "<"+klass.__name__+" object>"},
-        counter:-1
-    }
-    res.__str__ = res.toString = res.__repr__
-    return res
-}
-
-function $iterator_class(name){
-    var res = {
-        __class__:__BRYTHON__.$type,
-        __name__:name
-    }
-    res.__str__ = res.toString = res.__repr__
-    res.__mro__ = [res,__BRYTHON__.builtins.object.$dict]
-    res.$factory = {__class__:__BRYTHON__.$factory,$dict:res}
-    return res
-}
-
-// class dict of functions attribute __code__
-var $CodeDict = {__class__:__BRYTHON__.$type,__name__:'code'}
-$CodeDict.__mro__ = [$CodeDict,__BRYTHON__.builtins.object.$dict]
 
 // built-in functions
 ;(function($B){
 
+$B.builtins.__debug__ = false
 var __builtins__ = $B.builtins
 
 // insert already defined builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 $ObjectDict = __builtins__.object.$dict
+
+// maps comparison operator to method names
+$B.$comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
 
 function abs(obj){
     if(isinstance(obj,int)){return int(Math.abs(obj))}
@@ -169,9 +137,9 @@ bool.__hash__ = function() {
 //bytearray() (built in function)
 var $BytearrayDict = {__class__:$B.$type,__name__:'bytearray'}
 
-$bytearray_iterator = $iterator_class('bytearray_iterator')
+$bytearray_iterator = $B.$iterator_class('bytearray_iterator')
 $BytearrayDict.__iter__ = function(self){
-    return $iterator(self.source,$bytearray_iterator)
+    return $B.$iterator(self.source,$bytearray_iterator)
 }
 $BytearrayDict.__mro__ = [$BytearrayDict,$ObjectDict]
 
@@ -188,9 +156,9 @@ var $BytesDict = {
     __name__ : 'bytes'
 }
 
-var $bytes_iterator = $iterator_class('bytes_iterator')
+var $bytes_iterator = $B.$iterator_class('bytes_iterator')
 $BytesDict.__iter__ = function(self){
-    return $iterator(self.source,$bytes_iterator)
+    return $B.$iterator(self.source,$bytes_iterator)
 }
 $BytesDict.__len__ = function(self){return self.source.length}
 
@@ -348,9 +316,9 @@ $EnumerateDict.$factory = enumerate
 //exec() (built in function)
 
 var $FilterDict = {__class__:$B.$type,__name__:'filter'}
-$filter_iterator = $iterator_class('filter iterator')
+$filter_iterator = $B.$iterator_class('filter iterator')
 $FilterDict.__iter__ = function(self){
-    return $iterator(self.$items,$filter_iterator)
+    return $B.$iterator(self.$items,$filter_iterator)
 }
 $FilterDict.__mro__ = [$FilterDict,$ObjectDict]
 
@@ -530,7 +498,7 @@ function id(obj) {
 }
 
 function __import__(mod_name){
-    $import_list([mod_name])
+    $B.$import(mod_name)
     return $B.imported[mod_name]
 }
 //not a direct alias of prompt: input has no default value
@@ -1245,9 +1213,9 @@ function $url_open(){
 
 var $ZipDict = {__class__:$B.$type,__name__:'zip'}
 
-$zip_iterator = $iterator_class('zip_iterator')
+$zip_iterator = $B.$iterator_class('zip_iterator')
 $ZipDict.__iter__ = function(self){
-    return $iterator(self.items,$zip_iterator)
+    return $B.$iterator(self.items,$zip_iterator)
 }
 
 $ZipDict.__mro__ = [$ZipDict,$ObjectDict]
@@ -1363,9 +1331,9 @@ Ellipsis = {
 }
 
 var $comp_ops = ['ge','gt','le','lt']
-for(var $key in $comps){ // Ellipsis is not orderable with any type
-    if($comp_ops.indexOf($comps[$key])>-1){
-        Ellipsis['__'+$comps[$key]+'__']=(function(k){
+for(var $key in $B.$comps){ // Ellipsis is not orderable with any type
+    if($comp_ops.indexOf($B.$comps[$key])>-1){
+        Ellipsis['__'+$B.$comps[$key]+'__']=(function(k){
             return function(other){
             throw TypeError("unorderable types: ellipsis() "+k+" "+
                 other.__class__.__name__)}
@@ -1395,10 +1363,9 @@ var None = {
 }
 
 var $comp_ops = ['ge','gt','le','lt']
-var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
-for(var $key in $comps){ // None is not orderable with any type
-    if($comp_ops.indexOf($comps[$key])>-1){
-        None['__'+$comps[$key]+'__']=(function(k){
+for(var $key in $B.$comps){ // None is not orderable with any type
+    if($comp_ops.indexOf($B.$comps[$key])>-1){
+        None['__'+$B.$comps[$key]+'__']=(function(k){
             return function(other){
             throw TypeError("unorderable types: NoneType() "+k+" "+
                 other.__class__.__name__)}
