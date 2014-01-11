@@ -1,40 +1,42 @@
+;(function($B){
+
 // generic code for class constructor
-__BRYTHON__.$class_constructor = function(class_name,class_obj,parents,parents_names,kwargs){
-    var cl_dict=__BRYTHON__.builtins.dict(),bases=null
+$B.$class_constructor = function(class_name,class_obj,parents,parents_names,kwargs){
+    var cl_dict=$B.builtins.dict(),bases=null
     // transform class object into a dictionary
     for(var attr in class_obj){
-        __BRYTHON__.builtins.dict.$dict.__setitem__(cl_dict,attr,class_obj[attr])
+        $B.builtins.dict.$dict.__setitem__(cl_dict,attr,class_obj[attr])
     }
     // check if parents are defined
     if(parents!==undefined){
         for(var i=0;i<parents.length;i++){
             if(parents[i]===undefined){
                 // restore the line of class definition
-                __BRYTHON__.line_info = class_obj.$def_line
+                $B.line_info = class_obj.$def_line
                 throw NameError("name '"+parents_names[i]+"' is not defined")
             }
         }
     }
     bases = parents
-    if(bases.indexOf(__BRYTHON__.builtins.object)==-1){
-        bases=bases.concat(__BRYTHON__.builtins.tuple([__BRYTHON__.builtins.object]))
+    if(bases.indexOf($B.builtins.object)==-1){
+        bases=bases.concat($B.builtins.tuple([$B.builtins.object]))
     }
     // see if there is 'metaclass' in kwargs
-    var metaclass = __BRYTHON__.builtins.type
+    var metaclass = $B.builtins.type
     for(var i=0;i<kwargs.length;i++){
         var key=kwargs[i][0],val=kwargs[i][1]
         if(key=='metaclass'){metaclass=val}
     }
-    if(metaclass===__BRYTHON__.builtins.type){
+    if(metaclass===$B.builtins.type){
         // see if one of the subclasses uses a metaclass
         for(var i=0;i<parents.length;i++){
-            if(parents[i].$dict.__class__!==__BRYTHON__.$type){
+            if(parents[i].$dict.__class__!==$B.$type){
                 metaclass = parents[i].__class__.$factory
                 break
             }
         }
     }
-    if(metaclass===__BRYTHON__.builtins.type){return __BRYTHON__.builtins.type(class_name,bases,cl_dict)}
+    if(metaclass===$B.builtins.type){return $B.builtins.type(class_name,bases,cl_dict)}
     else{
         // create the factory function
         var factory = (function(_class){
@@ -42,9 +44,9 @@ __BRYTHON__.$class_constructor = function(class_name,class_obj,parents,parents_n
                     return $instance_creator(_class).apply(null,arguments)
                 }
             })(class_dict)
-        var new_func = __BRYTHON__.builtins.getattr(metaclass,'__new__')
-        var factory = __BRYTHON__.builtins.getattr(metaclass,'__new__').apply(null,[factory,class_name,bases,cl_dict])
-        __BRYTHON__.builtins.getattr(metaclass,'__init__').apply(null,[factory,class_name,bases,cl_dict])
+        var new_func = $B.builtins.getattr(metaclass,'__new__')
+        var factory = $B.builtins.getattr(metaclass,'__new__').apply(null,[factory,class_name,bases,cl_dict])
+        $B.builtins.getattr(metaclass,'__init__').apply(null,[factory,class_name,bases,cl_dict])
         // set functions defined in metaclass dictionary as class methods, except __new__
         for(var member in metaclass.$dict){
             if(typeof metaclass.$dict[member]=='function' && member != '__new__'){
@@ -52,7 +54,7 @@ __BRYTHON__.$class_constructor = function(class_name,class_obj,parents,parents_n
             }
         }
         factory.__class__ = {toString:function(){return '<'+metaclass.$dict+'>'},
-            __class__:__BRYTHON__.$type,
+            __class__:$B.$type,
             $factory:metaclass,
             is_class:true,
             __mro__:metaclass.$dict.__mro__
@@ -62,7 +64,7 @@ __BRYTHON__.$class_constructor = function(class_name,class_obj,parents,parents_n
     }
 }
 
-__BRYTHON__.builtins.type = function(name,bases,cl_dict){
+$B.builtins.type = function(name,bases,cl_dict){
     // if called with a single argument, returns the class of the first argument
     if(arguments.length==1){return name.__class__.$factory}
 
@@ -84,7 +86,7 @@ __BRYTHON__.builtins.type = function(name,bases,cl_dict){
     class_dict = new Object()
         
     // class attributes
-    class_dict.__class__ = __BRYTHON__.$type
+    class_dict.__class__ = $B.$type
     class_dict.__name__ = name
     class_dict.__bases__ = bases
     class_dict.__dict__ = cl_dict
@@ -104,7 +106,7 @@ __BRYTHON__.builtins.type = function(name,bases,cl_dict){
     for(var i=0;i<bases.length;i++){
         // we can't simply push bases[i].__mro__ 
         // because it would be modified in the algorithm
-        if(bases[i]===__BRYTHON__.builtins.str){bases[i] = $StringSubclassFactory}
+        if(bases[i]===$B.builtins.str){bases[i] = $StringSubclassFactory}
         var bmro = []
         for(var k=0;k<bases[i].$dict.__mro__.length;k++){
             bmro.push(bases[i].$dict.__mro__[k])
@@ -154,7 +156,7 @@ __BRYTHON__.builtins.type = function(name,bases,cl_dict){
                 return $instance_creator(_class).apply(null,arguments)
             }
         })(class_dict)
-    factory.__class__ = __BRYTHON__.$factory
+    factory.__class__ = $B.$factory
     factory.$dict = class_dict
     
     // factory compares equal to class_dict
@@ -169,34 +171,34 @@ __BRYTHON__.builtins.type = function(name,bases,cl_dict){
 }
 
 // class of classes
-__BRYTHON__.$type = {
-    $factory:__BRYTHON__.builtins.type,
+$B.$type = {
+    $factory:$B.builtins.type,
     __init__ : function(self,name,bases,dct){},
     __name__:'type',
     __new__ : function(self,name,bases,dct){
-        return __BRYTHON__.builtins.type(name,bases,dct)
+        return $B.builtins.type(name,bases,dct)
     },
     __str__ : function(){return "<class 'type'>"}
 }
-__BRYTHON__.$type.__class__ = __BRYTHON__.$type
-__BRYTHON__.$type.__mro__ = [__BRYTHON__.$type,__BRYTHON__.builtins.object.$dict]
-__BRYTHON__.$type.toString = __BRYTHON__.$type.__str__
+$B.$type.__class__ = $B.$type
+$B.$type.__mro__ = [$B.$type,$B.builtins.object.$dict]
+$B.$type.toString = $B.$type.__str__
 
-__BRYTHON__.builtins.type.$dict = __BRYTHON__.$type
+$B.builtins.type.$dict = $B.$type
 
 // class of constructors
-__BRYTHON__.$factory = {toString:function(){return '<factory>'},
-    __class__:__BRYTHON__.$type,
-    $factory:__BRYTHON__.builtins.type,
+$B.$factory = {toString:function(){return '<factory>'},
+    __class__:$B.$type,
+    $factory:$B.builtins.type,
     is_class:true
 }
-__BRYTHON__.$factory.__mro__ = [__BRYTHON__.$factory,__BRYTHON__.$type]
+$B.$factory.__mro__ = [$B.$factory,$B.$type]
 
 // this could not be done before $type and $factory are defined
-__BRYTHON__.builtins.object.$dict.__class__ = __BRYTHON__.$type
-__BRYTHON__.builtins.object.__class__ = __BRYTHON__.$factory
+$B.builtins.object.$dict.__class__ = $B.$type
+$B.builtins.object.__class__ = $B.$factory
 
-__BRYTHON__.$type.__getattribute__=function(klass,attr){
+$B.$type.__getattribute__=function(klass,attr){
     // klass is a class dictionary : in getattr(obj,attr), if obj is a factory,
     // we call $type.__getattribute__(obj.$dict,attr)
     if(attr==='__call__'){return $instance_creator(klass)}
@@ -251,7 +253,7 @@ __BRYTHON__.$type.__getattribute__=function(klass,attr){
             if(res.__get__!==undefined){ // descriptor
             // __new__ is a static method
             if(attr=='__new__'){res.$type='staticmethod'}
-            res1 = res.__get__.apply(null,[res,__BRYTHON__.builtins.None,klass])
+            res1 = res.__get__.apply(null,[res,$B.builtins.None,klass])
             var args
             if(typeof res1=='function'){
                 res.__name__ = attr
@@ -295,9 +297,9 @@ __BRYTHON__.$type.__getattribute__=function(klass,attr){
                         return res.apply(null,local_args)
                     }})(args)
                 method.__class__ = {
-                    __class__:__BRYTHON__.$type,
+                    __class__:$B.$type,
                     __name__:'method',
-                    __mro__:[__BRYTHON__.builtins.object.$dict]
+                    __mro__:[$B.builtins.object.$dict]
                 }
                 method.__func__ = __func__
                 method.__repr__ = __repr__
@@ -317,13 +319,13 @@ __BRYTHON__.$type.__getattribute__=function(klass,attr){
 
 function $instance_creator(klass){
     // return the function to initalise a class instance
-    var getattr = __BRYTHON__.builtins.getattr
+    var getattr = $B.builtins.getattr
     return function(){
         var new_func=null,init_func=null,obj
         // apply __new__ to initialize the instance
         try{
             new_func = getattr(klass,'__new__')
-        }catch(err){__BRYTHON__.$pop_exc()}
+        }catch(err){$B.$pop_exc()}
         if(new_func!==null){
             var args = [klass.$factory]
             for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
@@ -332,7 +334,7 @@ function $instance_creator(klass){
         // __initialized__ is set in object.__new__ if klass has a method __init__
         if(!obj.__initialized__){
             try{init_func = getattr(klass,'__init__')}
-            catch(err){__BRYTHON__.$pop_exc()}
+            catch(err){$B.$pop_exc()}
             if(init_func!==null){
                 var args = [obj]
                 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
@@ -346,15 +348,15 @@ function $instance_creator(klass){
 // used as the factory for method objects
 function $MethodFactory(){}
 $MethodFactory.__name__ = 'method'
-$MethodFactory.__class__ = __BRYTHON__.$factory
+$MethodFactory.__class__ = $B.$factory
 $MethodFactory.__repr__ = $MethodFactory.__str__ = $MethodFactory.toString = function(){return 'method'}
 
-__BRYTHON__.$MethodDict = {__class__:__BRYTHON__.$type,
+$B.$MethodDict = {__class__:$B.$type,
     __name__:'method',
-    __mro__:[__BRYTHON__.builtins.object.$dict],
+    __mro__:[$B.builtins.object.$dict],
     $factory:$MethodFactory
 }
-$MethodFactory.$dict = __BRYTHON__.$MethodDict
+$MethodFactory.$dict = $B.$MethodDict
 
-
+})(__BRYTHON__)
 
