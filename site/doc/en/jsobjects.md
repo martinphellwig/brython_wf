@@ -3,50 +3,32 @@ Using Javascript objects
 
 We have to handle the transition period when Brython is going to coexist with Javascript ;-)
 
-### Calling Brython functions from Javascript
+### Accessing Brython objects from Javascript
 
-A frequent use case is inline code in an HTML tag :
+By default, Brython only exposes two names in the global Javascript namespace :
+
+> `brython()` : the function run on page load
+
+> `__BRYTHON__` : an object use internally par Brython to store the objects needed for scripts execution
+
+Consequently, by default, a Javascript program can't access Brython objects. For instance, to use a function `echo()` defined in a Brython script to react to an event on an element in the page, instead of the syntax
 
     <button onclick="echo()">
 
-To make a Brython function usable in this context, it must be explicitely exposed with the function <code>expose(_func_)</code> in the built-in module **javascript**. The most simple is to use it as a decorator :
+that doesn't work since the name _echo_ is not accessible from Javascript, the solution is to set an id to the element :
 
-    from javascript import expose
-    
-    @expose
-    def echo():
-        ...
+    <button id="echo">
 
-### Arguments of callback functions
+and to define the link between this element and the event _click_ by :
 
-The HTML code can attach callback functions to DOM events and pass them a number of parameters. The callback function will receive them transformed into types managed by Brython :
+    doc['echo'].bind('click',echo)
 
-<table border='1'>
-<tr><th>Argument type in function call</th><th>Argument received by the callback function</th></tr>
-<tr><td>DOM element</td><td>`DOMNode` instance</td></tr>
-<tr><td>DOM event</td><td>`DOMEvent` instance</td></tr>
-<tr><td>DOM nodes list</td><td>list of `DOMNode` instances</td></tr>
-<tr><td>`null, true, false`</td><td>`None, True, False`</td></tr>
-<tr><td>integer</td><td>`int` instance</td></tr>
-<tr><td>float</td><td>`float` instance</td></tr>
-<tr><td>string</td><td>`str` instance</td></tr>
-<tr><td>Javascript array</td><td>`list` instance</td></tr>
-<tr><td>Javascript object</td><td>`JSObject` instance</td></tr>
-</table>
+Another option is to force the introduction of the name _echo_ in the Javascript namespace, by defining it as an attribute of the object `window` in module **browser** :
 
+    from browser import window
+    window.echo = echo
 
-
-For instance, if the click event on a button triggers the execution of function foo :
-
-    <button onclick="foo(this,33,{'x':99})">Click</button>
-
-this function will have the signature
-
-    def foo(elt,value,obj):
-
-where _elt_ will be the `DOMNode` instance for the button element, _value_ will be the integer 33 and _obj_ will be an instance of the built-in class `JSObject`
-
-Instances of `JSObject` are used as ordinary Python objects ; here, the value of attribute "x" is `obj.x`. To convert them to Python dictionary, use the built-in function `dict()` : `dict(obj)['x']`
+This method is not recommended, because it introduces a risk of conflict with names defined in a Javascript program or library used in the page
 
 ### Objects in Javascript programs
 

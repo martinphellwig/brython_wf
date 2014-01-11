@@ -1,12 +1,12 @@
 // Python to Javascript translation engine
 
-brython = (function(){
+;(function(){
 
 var $operators = {
     "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
     "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
     "+=":"iadd","-=":"isub","*=":"imul","/=":"itruediv",
-    "%=":"imod","&=":"iand","|=":"ior","^=":"ixor","**=":"ipow",
+    "%=":"imod","&=":"iand","|=":"ior","^=":"ixor",
     "+":"add","-":"sub","*":"mul",
     "/":"truediv","%":"mod","&":"and","|":"or","~":"invert",
     "^":"xor","<":"lt",">":"gt",
@@ -42,7 +42,7 @@ for (var $i=0;$i<$op_order.length;$i++){
 var $augmented_assigns = {
     "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
     "**=":"ipow","+=":"iadd","-=":"isub","*=":"imul","/=":"itruediv",
-    "%=":"imod","^=":"ipow",
+    "%=":"imod",
     "&=":"iand","|=":"ior","^=":"ixor"
 }
 
@@ -1128,7 +1128,7 @@ function $DefCtx(context){
         offset++
 
         // add attribute __code__
-        js = prefix+this.name+'.__code__= {__class__:$CodeDict}'
+        js = prefix+this.name+'.__code__= {__class__:__BRYTHON__.$CodeDict}'
         js += ';None;' // end with None for interactive interpreter
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
@@ -1459,7 +1459,7 @@ function $FromCtx(context){
                search_path_parts.push(mod)
             }
             var search_path = search_path_parts.join('/')
-            res +="$mod=$import_list_intra('"+this.module+"','"
+            res +="$mod=__BRYTHON__.$import_list_intra('"+this.module+"','"
             res += __BRYTHON__.$py_module_path[parent_module]
             res += "',["
             for(var i=0;i<this.names.length;i++){
@@ -1481,7 +1481,7 @@ function $FromCtx(context){
             }
         }else{
            if(this.names[0]=='*'){
-             res += '$import_list(["'+this.module+'"],"'+mod+'")\n'
+             res += '__BRYTHON__.$import("'+this.module+'","'+mod+'")\n'
              res += head+'var $mod=__BRYTHON__.imported["'+this.module+'"]\n'
              res += head+'for(var $attr in $mod){\n'
              res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
@@ -1490,7 +1490,7 @@ function $FromCtx(context){
               }
              res += '=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x)}}'
            }else{
-             res += '$import_from("'+this.module+'",['
+             res += '__BRYTHON__.$import_from("'+this.module+'",['
              for(var i=0;i<this.names.length;i++){
                  res += '"'+this.names[i]+'",'
              }
@@ -1822,7 +1822,7 @@ function $ImportCtx(context){
         path =elts.join('/')
         var res = ''
         for(var i=0;i<this.tree.length;i++){
-            res += '$import_list(['+this.tree[i].to_js()+']);'
+            res += '__BRYTHON__.$import('+this.tree[i].to_js()+');'
             var parts = this.tree[i].name.split('.')
             // $import returns an object
             // for "import a.b.c" this object has attributes
@@ -4216,5 +4216,12 @@ function brython(options){
 __BRYTHON__.$operators = $operators
 __BRYTHON__.$Node = $Node
 __BRYTHON__.$NodeJSCtx = $NodeJSCtx
-return brython
+
+// in case the name 'brython' is used in a Javascript library,
+// we can use __BRYTHON__.brython
+
+__BRYTHON__.brython = brython 
+                              
 })()
+var brython = __BRYTHON__.brython
+

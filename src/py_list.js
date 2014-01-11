@@ -175,9 +175,9 @@ $ListDict.__init__ = function(self,arg){
     }
 }
 
-$list_iterator = $iterator_class('list_iterator')
+$list_iterator = $B.$iterator_class('list_iterator')
 $ListDict.__iter__ = function(self){
-    return $iterator(self,$list_iterator)
+    return $B.$iterator(self,$list_iterator)
 }
 
 $ListDict.__le__ = function(self,other){
@@ -201,7 +201,7 @@ $ListDict.__mul__ = function(self,other){
 
 $ListDict.__ne__ = function(self,other){return !$ListDict.__eq__(self,other)}
 
-$ListDict.__new__ = $__new__(list)
+$ListDict.__new__ = $B.$__new__(list)
 
 $ListDict.__not_in__ = function(self,item){return !$ListDict.__in__(self,item)}
 
@@ -430,14 +430,14 @@ function $tuple(arg){return arg} // used for parenthesed expressions
 var $TupleDict = {__class__:$B.$type,__name__:'tuple',$native:true}
 
 $TupleDict.__iter__ = function(self){
-    return $iterator(self,$tuple_iterator)
+    return $B.$iterator(self,$tuple_iterator)
 }
 
 $TupleDict.toString = function(){return '$TupleDict'}
 
 // other attributes are defined in py_list.js, once list is defined
 
-var $tuple_iterator = $iterator_class('tuple_iterator')
+var $tuple_iterator = $B.$iterator_class('tuple_iterator')
 
 // type() is implemented in py_utils
 
@@ -459,7 +459,7 @@ function tuple(){
 tuple.__class__ = $B.$factory
 tuple.$dict = $TupleDict
 $TupleDict.$factory = tuple
-$TupleDict.__new__ = $__new__(tuple) //function(arg){return tuple(arg)}
+$TupleDict.__new__ = $B.$__new__(tuple)
 
 // add tuple methods
 for(var attr in $ListDict){

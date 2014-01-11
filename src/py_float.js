@@ -186,7 +186,7 @@ float = function (value){
 float.__class__ = $B.$factory
 float.$dict = $FloatDict
 $FloatDict.$factory = float
-$FloatDict.__new__ = $__new__(float)
+$FloatDict.__new__ = $B.$__new__(float)
 
 $B.builtins.float = float
 })(__BRYTHON__)
