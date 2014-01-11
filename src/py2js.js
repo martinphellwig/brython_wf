@@ -601,7 +601,7 @@ function $CallCtx(context){
             // execute the Python code and return its result
             // the namespace built inside the function will be in
             // __BRYTHON__.scope[_name].__dict__
-            res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
+            res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();console.log("exec "+$jscode);'
             res += 'if(__BRYTHON__.debug>1){console.log($jscode)};'
             res += 'var $res = eval($jscode);'
             res += 'if($res===undefined){return None};return $res'
@@ -756,14 +756,7 @@ function $ClassCtx(context){
         var cl_cons = new $Node('expression')
         new $NodeJSCtx(cl_cons,js)
         node.parent.insert(rank+2,cl_cons)
-        // add declaration of class at window level
-        if(scope.ntype==="module" && this.parent.node.module==='__main__'){
-            js = 'window.'+this.name+'='+this.name
-            var w_decl = new $Node('expression')
-            new $NodeJSCtx(w_decl,js)
-            node.parent.insert(rank+3,w_decl)
-            rank++
-        }
+        
         // if class is defined at module level, add to module namespace
         if(scope.ntype==='module'){
             js = '__BRYTHON__.scope["'+scope.module+'"].__dict__["'
@@ -771,8 +764,13 @@ function $ClassCtx(context){
             var w_decl = new $Node('expression')
             new $NodeJSCtx(w_decl,js)
             node.parent.insert(rank+3,w_decl)
-            rank++         
+            rank++
         }
+        // end by None for interactive interpreter
+        var end_node = new $Node('expression')
+        new $NodeJSCtx(end_node,'None;')
+        node.parent.insert(rank+3,end_node)
+
         this.transformed = true
                 
     }
