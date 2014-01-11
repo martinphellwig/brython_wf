@@ -1,12 +1,14 @@
 ;(function($B){
 
-$B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw){
+$B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$after_star){
     // builds a namespace from the arguments provided in $args
-    // in a function call like foo(x,y,z=1,*args,**kw) the parameters are
+    // in a function call like foo(x,y,z=1,*args,u,v,**kw) the parameters are
     // $required : ['x','y']
     // $defaults : {'z':int(1)}
     // $other_args = 'args'
     // $other_kw = 'kw'
+    // $after_star = ['u','v']
+    if($after_star !== undefined && $after_star.length>0){console.log('in '+$fname+' after star ['+$after_star+']')}
     var i=null,$set_vars = [],$ns = {}
     if($other_args != null){$ns[$other_args]=[]}
     if($other_kw != null){$dict_keys=[];$dict_values=[]}
@@ -34,12 +36,19 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw){
         if($arg && $arg.__class__===$B.$KwDict){ // keyword argument
             $PyVar = $arg.value
             if($set_vars.indexOf($arg.name)>-1){
+                console.log($arg.name+' already set to '+$ns[$arg.name])
                 throw new TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
             } else if($required.indexOf($arg.name)>-1){
                 var ix = $required.indexOf($arg.name)
                 eval('var '+$required[ix]+"=$PyVar")
                 $ns[$required[ix]]=$PyVar
                 $set_vars.push($required[ix])
+            }else if($other_args!==null && $after_star!==undefined &&
+                $after_star.indexOf($arg.name)>-1){
+                    var ix = $after_star.indexOf($arg.name)
+                    eval('var '+$after_star[ix]+"=$PyVar")
+                    $ns[$after_star[ix]]=$PyVar
+                    $set_vars.push($after_star[ix])
             } else if($defaults.indexOf($arg.name)>-1){
                 $ns[$arg.name]=$PyVar
                 $set_vars.push($arg.name)
