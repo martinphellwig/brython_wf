@@ -108,6 +108,7 @@ def change_theme(evt):
 
     if storage:
        storage["ace_theme"]=_theme
+doc["ace_theme"].bind("change",change_theme)
 
 def reset_theme():
     if storage:
