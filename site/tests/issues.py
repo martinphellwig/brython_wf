@@ -477,13 +477,15 @@ try:
 except TypeError:
     pass
 
+# issue 170
+assert (lambda *args:args)(3,4,5)==(3, 4, 5)
+
 # issue 173
 def gofun(fun):
     def ifun():
         funi = fun
         return [fun(i) for i in (0,1)]
     return ifun()
-
 
 def pr(x):
     return x
@@ -499,5 +501,21 @@ def foo():
     pass
 r = foo()
 assert r is None
+
+# issue 177
+class _ParameterKind(int):
+    def __new__(self, *args, name):
+        obj = int.__new__(self, *args)
+        obj._name = name
+        return obj
+
+    def __str__(self):
+        return self._name
+
+    def __repr__(self):
+        return '<_ParameterKind: {!r}>'.format(self._name)
+
+
+_POSITIONAL_ONLY        = _ParameterKind(0, name='POSITIONAL_ONLY')
 
 print('passed all tests')
