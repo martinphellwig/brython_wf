@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140110-223750
+// version 1.4.20140111-152645
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140110-223750', 'alpha', 0]
+__BRYTHON__.version_info=[1, 4, '20140111-152645', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -720,21 +720,17 @@ js +=')'
 var cl_cons=new $Node('expression')
 new $NodeJSCtx(cl_cons,js)
 node.parent.insert(rank+2,cl_cons)
-if(scope.ntype==="module" && this.parent.node.module==='__main__'){
-js='window.'+this.name+'='+this.name
-var w_decl=new $Node('expression')
-new $NodeJSCtx(w_decl,js)
-node.parent.insert(rank+3,w_decl)
-rank++
-}
 if(scope.ntype==='module'){
 js='__BRYTHON__.scope["'+scope.module+'"].__dict__["'
 js +=this.name+'"]='+this.name
 var w_decl=new $Node('expression')
 new $NodeJSCtx(w_decl,js)
 node.parent.insert(rank+3,w_decl)
-rank++ 
+rank++
 }
+var end_node=new $Node('expression')
+new $NodeJSCtx(end_node,'None;')
+node.parent.insert(rank+3,end_node)
 this.transformed=true
 }
 this.to_js=function(){
@@ -887,14 +883,20 @@ this.rank=rank
 var scope=$get_scope(this)
 var required=''
 var defaults=[],defs=[],defs1=[]
+var after_star=[]
 var other_args=null
 var other_kw=null
 var env=[]
 for(var i=0;i<this.tree[0].tree.length;i++){
 var arg=this.tree[0].tree[i]
 if(arg.type==='func_arg_id'){
-if(arg.tree.length===0){required+='"'+arg.name+'",'}
-else{
+if(arg.tree.length===0){
+if(other_args==null){
+required+='"'+arg.name+'",'
+}else{
+after_star.push('"'+arg.name+'"')
+}
+}else{
 defaults.push('"'+arg.name+'"')
 defs.push(arg.name+' = '+$to_js(arg.tree))
 defs1.push(arg.name+':'+$to_js(arg.tree))
@@ -929,7 +931,7 @@ new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
 }
 var js='var $ns=__BRYTHON__.$MakeArgs("'+this.name+'",arguments,['+required+'],'
-js +='['+defaults.join(',')+'],'+other_args+','+other_kw+')'
+js +='['+defaults.join(',')+'],'+other_args+','+other_kw+',['+after_star.join(',')+'])'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
@@ -2427,6 +2429,7 @@ else{$_SyntaxError(C,token)}
 }else if(C.type==='call'){
 if(token===','){return C}
 else if($expr_starters.indexOf(token)>-1){
+if(C.has_dstar){$_SyntaxError(C,token)}
 var expr=new $CallArgCtx(C)
 return $transition(expr,token,arguments[2])
 }else if(token===')'){C.end=$pos;return C.parent}
@@ -2434,8 +2437,8 @@ else if(token==='op'){
 var op=arguments[2]
 if(op==='-'||op==='~'){return new $UnaryCtx(new $ExprCtx(C,'unary',false),op)}
 else if(op==='+'){return C}
-else if(op==='*'){return new $StarArgCtx(C)}
-else if(op==='**'){return new $DoubleStarArgCtx(C)}
+else if(op==='*'){C.has_star=true;return new $StarArgCtx(C)}
+else if(op==='**'){C_has_dstar=true;return new $DoubleStarArgCtx(C)}
 else{throw Error('SyntaxError')}
 }else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='call_arg'){
@@ -3824,54 +3827,54 @@ object.$dict=$ObjectDict
 $ObjectDict.$factory=object
 return object
 })(__BRYTHON__)
-
-__BRYTHON__.$class_constructor=function(class_name,class_obj,parents,parents_names,kwargs){
-var cl_dict=__BRYTHON__.builtins.dict(),bases=null
+;(function($B){
+$B.$class_constructor=function(class_name,class_obj,parents,parents_names,kwargs){
+var cl_dict=$B.builtins.dict(),bases=null
 for(var attr in class_obj){
-__BRYTHON__.builtins.dict.$dict.__setitem__(cl_dict,attr,class_obj[attr])
+$B.builtins.dict.$dict.__setitem__(cl_dict,attr,class_obj[attr])
 }
 if(parents!==undefined){
 for(var i=0;i<parents.length;i++){
 if(parents[i]===undefined){
-__BRYTHON__.line_info=class_obj.$def_line
+$B.line_info=class_obj.$def_line
 throw NameError("name '"+parents_names[i]+"' is not defined")
 }
 }
 }
 bases=parents
-if(bases.indexOf(__BRYTHON__.builtins.object)==-1){
-bases=bases.concat(__BRYTHON__.builtins.tuple([__BRYTHON__.builtins.object]))
+if(bases.indexOf($B.builtins.object)==-1){
+bases=bases.concat($B.builtins.tuple([$B.builtins.object]))
 }
-var metaclass=__BRYTHON__.builtins.type
+var metaclass=$B.builtins.type
 for(var i=0;i<kwargs.length;i++){
 var key=kwargs[i][0],val=kwargs[i][1]
 if(key=='metaclass'){metaclass=val}
 }
-if(metaclass===__BRYTHON__.builtins.type){
+if(metaclass===$B.builtins.type){
 for(var i=0;i<parents.length;i++){
-if(parents[i].$dict.__class__!==__BRYTHON__.$type){
+if(parents[i].$dict.__class__!==$B.$type){
 metaclass=parents[i].__class__.$factory
 break
 }
 }
 }
-if(metaclass===__BRYTHON__.builtins.type){return __BRYTHON__.builtins.type(class_name,bases,cl_dict)}
+if(metaclass===$B.builtins.type){return $B.builtins.type(class_name,bases,cl_dict)}
 else{
 var factory=(function(_class){
 return function(){
 return $instance_creator(_class).apply(null,arguments)
 }
 })(class_dict)
-var new_func=__BRYTHON__.builtins.getattr(metaclass,'__new__')
-var factory=__BRYTHON__.builtins.getattr(metaclass,'__new__').apply(null,[factory,class_name,bases,cl_dict])
-__BRYTHON__.builtins.getattr(metaclass,'__init__').apply(null,[factory,class_name,bases,cl_dict])
+var new_func=$B.builtins.getattr(metaclass,'__new__')
+var factory=$B.builtins.getattr(metaclass,'__new__').apply(null,[factory,class_name,bases,cl_dict])
+$B.builtins.getattr(metaclass,'__init__').apply(null,[factory,class_name,bases,cl_dict])
 for(var member in metaclass.$dict){
 if(typeof metaclass.$dict[member]=='function' && member !='__new__'){
 metaclass.$dict[member].$type='classmethod'
 }
 }
 factory.__class__={toString:function(){return '<'+metaclass.$dict+'>'},
-__class__:__BRYTHON__.$type,
+__class__:$B.$type,
 $factory:metaclass,
 is_class:true,
 __mro__:metaclass.$dict.__mro__
@@ -3880,10 +3883,10 @@ factory.$dict.__class__=metaclass.$dict
 return factory
 }
 }
-__BRYTHON__.builtins.type=function(name,bases,cl_dict){
+$B.builtins.type=function(name,bases,cl_dict){
 if(arguments.length==1){return name.__class__.$factory}
 class_dict=new Object()
-class_dict.__class__=__BRYTHON__.$type
+class_dict.__class__=$B.$type
 class_dict.__name__=name
 class_dict.__bases__=bases
 class_dict.__dict__=cl_dict
@@ -3893,7 +3896,7 @@ class_dict[attr]=val
 }
 var seqs=[]
 for(var i=0;i<bases.length;i++){
-if(bases[i]===__BRYTHON__.builtins.str){bases[i]=$StringSubclassFactory}
+if(bases[i]===$B.builtins.str){bases[i]=$StringSubclassFactory}
 var bmro=[]
 for(var k=0;k<bases[i].$dict.__mro__.length;k++){
 bmro.push(bases[i].$dict.__mro__[k])
@@ -3939,7 +3942,7 @@ return function(){
 return $instance_creator(_class).apply(null,arguments)
 }
 })(class_dict)
-factory.__class__=__BRYTHON__.$factory
+factory.__class__=$B.$factory
 factory.$dict=class_dict
 factory.__eq__=function(other){
 return other===factory.__class__
@@ -3947,28 +3950,28 @@ return other===factory.__class__
 class_dict.$factory=factory
 return factory
 }
-__BRYTHON__.$type={
-$factory:__BRYTHON__.builtins.type,
+$B.$type={
+$factory:$B.builtins.type,
 __init__ : function(self,name,bases,dct){},
 __name__:'type',
 __new__ : function(self,name,bases,dct){
-return __BRYTHON__.builtins.type(name,bases,dct)
+return $B.builtins.type(name,bases,dct)
 },
 __str__ : function(){return "<class 'type'>"}
 }
-__BRYTHON__.$type.__class__=__BRYTHON__.$type
-__BRYTHON__.$type.__mro__=[__BRYTHON__.$type,__BRYTHON__.builtins.object.$dict]
-__BRYTHON__.$type.toString=__BRYTHON__.$type.__str__
-__BRYTHON__.builtins.type.$dict=__BRYTHON__.$type
-__BRYTHON__.$factory={toString:function(){return '<factory>'},
-__class__:__BRYTHON__.$type,
-$factory:__BRYTHON__.builtins.type,
+$B.$type.__class__=$B.$type
+$B.$type.__mro__=[$B.$type,$B.builtins.object.$dict]
+$B.$type.toString=$B.$type.__str__
+$B.builtins.type.$dict=$B.$type
+$B.$factory={toString:function(){return '<factory>'},
+__class__:$B.$type,
+$factory:$B.builtins.type,
 is_class:true
 }
-__BRYTHON__.$factory.__mro__=[__BRYTHON__.$factory,__BRYTHON__.$type]
-__BRYTHON__.builtins.object.$dict.__class__=__BRYTHON__.$type
-__BRYTHON__.builtins.object.__class__=__BRYTHON__.$factory
-__BRYTHON__.$type.__getattribute__=function(klass,attr){
+$B.$factory.__mro__=[$B.$factory,$B.$type]
+$B.builtins.object.$dict.__class__=$B.$type
+$B.builtins.object.__class__=$B.$factory
+$B.$type.__getattribute__=function(klass,attr){
 if(attr==='__call__'){return $instance_creator(klass)}
 else if(attr==='__eq__'){return function(other){return klass.$factory===other}}
 else if(attr==='__repr__'){return function(){return "<class '"+klass.__name__+"'>"}}
@@ -4016,7 +4019,7 @@ break
 if(res!==undefined){
 if(res.__get__!==undefined){
 if(attr=='__new__'){res.$type='staticmethod'}
-res1=res.__get__.apply(null,[res,__BRYTHON__.builtins.None,klass])
+res1=res.__get__.apply(null,[res,$B.builtins.None,klass])
 var args
 if(typeof res1=='function'){
 res.__name__=attr
@@ -4050,9 +4053,9 @@ local_args.push(arguments[i])
 return res.apply(null,local_args)
 }})(args)
 method.__class__={
-__class__:__BRYTHON__.$type,
+__class__:$B.$type,
 __name__:'method',
-__mro__:[__BRYTHON__.builtins.object.$dict]
+__mro__:[$B.builtins.object.$dict]
 }
 method.__func__=__func__
 method.__repr__=__repr__
@@ -4068,12 +4071,12 @@ return res
 }
 }
 function $instance_creator(klass){
-var getattr=__BRYTHON__.builtins.getattr
+var getattr=$B.builtins.getattr
 return function(){
 var new_func=null,init_func=null,obj
 try{
 new_func=getattr(klass,'__new__')
-}catch(err){__BRYTHON__.$pop_exc()}
+}catch(err){$B.$pop_exc()}
 if(new_func!==null){
 var args=[klass.$factory]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
@@ -4081,7 +4084,7 @@ obj=new_func.apply(null,args)
 }
 if(!obj.__initialized__){
 try{init_func=getattr(klass,'__init__')}
-catch(err){__BRYTHON__.$pop_exc()}
+catch(err){$B.$pop_exc()}
 if(init_func!==null){
 var args=[obj]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
@@ -4093,16 +4096,18 @@ return obj
 }
 function $MethodFactory(){}
 $MethodFactory.__name__='method'
-$MethodFactory.__class__=__BRYTHON__.$factory
+$MethodFactory.__class__=$B.$factory
 $MethodFactory.__repr__=$MethodFactory.__str__=$MethodFactory.toString=function(){return 'method'}
-__BRYTHON__.$MethodDict={__class__:__BRYTHON__.$type,
+$B.$MethodDict={__class__:$B.$type,
 __name__:'method',
-__mro__:[__BRYTHON__.builtins.object.$dict],
+__mro__:[$B.builtins.object.$dict],
 $factory:$MethodFactory
 }
-$MethodFactory.$dict=__BRYTHON__.$MethodDict
+$MethodFactory.$dict=$B.$MethodDict
+})(__BRYTHON__)
 ;(function($B){
-$B.$MakeArgs=function($fname,$args,$required,$defaults,$other_args,$other_kw){
+$B.$MakeArgs=function($fname,$args,$required,$defaults,$other_args,$other_kw,$after_star){
+if($after_star !==undefined && $after_star.length>0){console.log('in '+$fname+' after star ['+$after_star+']')}
 var i=null,$set_vars=[],$ns={}
 if($other_args !=null){$ns[$other_args]=[]}
 if($other_kw !=null){$dict_keys=[];$dict_values=[]}
@@ -4129,12 +4134,19 @@ var $PyVar=$B.$JS2Py($arg)
 if($arg && $arg.__class__===$B.$KwDict){
 $PyVar=$arg.value
 if($set_vars.indexOf($arg.name)>-1){
+console.log($arg.name+' already set to '+$ns[$arg.name])
 throw new TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
 }else if($required.indexOf($arg.name)>-1){
 var ix=$required.indexOf($arg.name)
 eval('var '+$required[ix]+"=$PyVar")
 $ns[$required[ix]]=$PyVar
 $set_vars.push($required[ix])
+}else if($other_args!==null && $after_star!==undefined &&
+$after_star.indexOf($arg.name)>-1){
+var ix=$after_star.indexOf($arg.name)
+eval('var '+$after_star[ix]+"=$PyVar")
+$ns[$after_star[ix]]=$PyVar
+$set_vars.push($after_star[ix])
 }else if($defaults.indexOf($arg.name)>-1){
 $ns[$arg.name]=$PyVar
 $set_vars.push($arg.name)
@@ -5047,32 +5059,30 @@ return res
 }
 var $MapDict={__class__:$B.$type,__name__:'map'}
 $MapDict.__mro__=[$MapDict,$ObjectDict]
+$MapDict.__iter__=function(self){return self}
 function map(){
-var func=arguments[0],res=[],rank=0
+var func=arguments[0]
 var iter_args=[]
 for(var i=1;i<arguments.length;i++){iter_args.push(iter(arguments[i]))}
-while(true){
-var args=[],flag=true
+var __next__=function(){
+var args=[]
 for(var i=0;i<iter_args.length;i++){
 try{
 var x=next(iter_args[i])
 args.push(x)
 }catch(err){
 if(err.__name__==='StopIteration'){
-$B.$pop_exc();flag=false;break
+$B.$pop_exc();throw StopIteration('')
 }else{throw err}
 }
 }
-if(!flag){break}
-res.push(func.apply(null,args))
-rank++
+return func.apply(null,args)
 }
 var obj={
 __class__:$MapDict,
-__getattr__:function(attr){return obj[attr]},
-__iter__:function(){return iter(res)},
 __repr__:function(){return "<map object>"},
-__str__:function(){return "<map object>"}
+__str__:function(){return "<map object>"},
+__next__: __next__
 }
 return obj
 }
