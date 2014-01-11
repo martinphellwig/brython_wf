@@ -605,7 +605,7 @@ function map(){
                 args.push(x)
             }catch(err){
                 if(err.__name__==='StopIteration'){
-                    $pop_exc();throw StopIteration('')
+                    $B.$pop_exc();throw StopIteration('')
                 }else{throw err}
             }
         }
