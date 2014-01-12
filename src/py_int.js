@@ -4,7 +4,7 @@ for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_
 var $ObjectDict = object.$dict
 
 function $UnsupportedOpType(op,class1,class2){
-    throw TypeError("unsupported operand type(s) for "+op+": '"+class1+"' and '"+class2+"'")
+    throw __builtins__.TypeError("unsupported operand type(s) for "+op+": '"+class1+"' and '"+class2+"'")
 }
 
 var $IntDict = {__class__:$B.$type,
@@ -82,7 +82,7 @@ $IntDict.__mod__ = function(self,other) {
          var bool_value=0; 
          if (other.valueOf()) bool_value=1;
          return (self%bool_value+bool_value)%bool_value
-    }else{throw TypeError(
+    }else{throw __builtins__.TypeError(
         "unsupported operand type(s) for %: "+self+" (int) and '"+other.__class__+"'")
     }
 }
@@ -118,7 +118,7 @@ $IntDict.__ne__ = function(self,other){return !$IntDict.__eq__(self,other)}
 $IntDict.__neg__ = function(self){return -self}
 
 $IntDict.__new__ = function(cls){
-    if(cls===undefined){throw TypeError('int.__new__(): not enough arguments')}
+    if(cls===undefined){throw __builtins__.TypeError('int.__new__(): not enough arguments')}
     return {__class__:cls.$dict}
 }
 
@@ -143,7 +143,7 @@ $IntDict.__repr__ = function(self){
 $IntDict.__rshift__ = function(self,other){return self >> other} // bitwise right shift
 
 $IntDict.__setattr__ = function(self,attr,value){
-    if(self.__class__===$IntDict){throw AttributeError("'int' object has no attribute "+attr+"'")}
+    if(self.__class__===$IntDict){throw __builtins__.AttributeError("'int' object has no attribute "+attr+"'")}
     // subclasses of int can have attributes set
     self[attr] = value
 }
@@ -181,7 +181,7 @@ var $op_func = function(self,other){
          var bool_value=0;
          if(other.valueOf()) bool_value=1;
          return self.valueOf()-bool_value}
-    else{throw TypeError(
+    else{throw __builtins__.TypeError(
         "unsupported GG operand type(s) for -: "+self.valueOf()+" and '"+__builtins__.str(other.__class__)+"'")
     }
 }
@@ -196,7 +196,7 @@ var $comp_func = function(self,other){
     if(isinstance(other,int)){return self.valueOf() > other.valueOf()}
     else if(isinstance(other,float)){return self.valueOf() > other.value}
     else if(isinstance(other,bool)){return self.valueOf() > __builtins__.bool.$dict.__hash__(other)}
-    else{throw TypeError(
+    else{throw __builtins__.TypeError(
         "unorderable types: "+self.__class__.__name__+'() > '+other.__class__.__name__+"()")}
 }
 $comp_func += '' // source codevar $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}

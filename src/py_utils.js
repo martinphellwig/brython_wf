@@ -37,7 +37,7 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$
             $PyVar = $arg.value
             if($set_vars.indexOf($arg.name)>-1){
                 console.log($arg.name+' already set to '+$ns[$arg.name])
-                throw new TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
+                throw $B.builtins.TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
             } else if($required.indexOf($arg.name)>-1){
                 var ix = $required.indexOf($arg.name)
                 eval('var '+$required[ix]+"=$PyVar")
@@ -56,7 +56,7 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$
                 $dict_keys.push($arg.name)
                 $dict_values.push($PyVar)
             } else {
-                throw new TypeError($fname+"() got an unexpected keyword argument '"+$arg.name+"'")
+                throw $B.builtins.TypeError($fname+"() got an unexpected keyword argument '"+$arg.name+"'")
             }
             var pos_def = $defaults.indexOf($arg.name)
             if(pos_def!=-1){$defaults.splice(pos_def,1)}
@@ -76,7 +76,7 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$
                 msg = $fname+"() takes "+$required.length+' positional argument'
                 msg += $required.length == 1 ? '' : 's'
                 msg += ' but more were given'
-                throw TypeError(msg)
+                throw $B.builtins.TypeError(msg)
             }
         }
     }
@@ -86,12 +86,12 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$
         if($set_vars.indexOf($required[i])==-1){missing.push($required[i])}
     }
     if(missing.length==1){
-        throw TypeError($fname+" missing 1 positional argument: '"+missing[0]+"'")
+        throw $B.builtins.TypeError($fname+" missing 1 positional argument: '"+missing[0]+"'")
     }else if(missing.length>1){
         var msg = $fname+" missing "+missing.length+" positional arguments: "
         for(var i=0;i<missing.length-1;i++){msg += "'"+missing[i]+"', "}
         msg += "and '"+missing.pop()+"'"
-        throw TypeError(msg)
+        throw $B.builtins.TypeError(msg)
     }
     if($other_kw!=null){
         $ns[$other_kw]=__BRYTHON__.builtins.dict()
@@ -234,7 +234,7 @@ $B.$generator = function(func){
             }
             return self.func.$iter[self.$iter]
         }
-        else{throw StopIteration("")}
+        else{throw $B.builtins.StopIteration("")}
     }
     $GeneratorDict.__mro__ = [$GeneratorDict,__BRYTHON__.builtins.object.$dict]
 
@@ -509,7 +509,7 @@ $B.$iterator = function(items,klass){
         __next__:function(){
             res.counter++
             if(res.counter<items.length){return items[res.counter]}
-            else{throw StopIteration("StopIteration")}
+            else{throw $B.builtins.StopIteration("StopIteration")}
         },
         __repr__:function(){return "<"+klass.__name__+" object>"},
         counter:-1

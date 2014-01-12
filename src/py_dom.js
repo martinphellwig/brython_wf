@@ -140,7 +140,7 @@ $DOMEventDict.__getattribute__ = function(self,attr){
         if(typeof res=='function'){return function(){return res.apply(self,arguments)}}
         return res
     }else{
-        throw AttributeError("object DOMEvent has no attribute '"+attr+"'")
+        throw __builtins__.AttributeError("object DOMEvent has no attribute '"+attr+"'")
     }
 }
 
@@ -526,7 +526,7 @@ DOMNode.__next__ = function(self){
    if(self.$counter<self.elt.childNodes.length){
        return $DOMNode(self.elt.childNodes[self.$counter])
    }
-   throw StopIteration('StopIteration')
+   throw __builtins__.StopIteration('StopIteration')
 }
 
 DOMNode.__not_in__ = function(self,other){return !getattr(other,"__contains__")(self)}
@@ -660,7 +660,7 @@ DOMNode.get = function(self){
     }
     if($dict['name']!==undefined){
         if(obj.getElementsByName===undefined){
-            throw TypeError("DOMNode object doesn't support selection by name")
+            throw __builtins__.TypeError("DOMNode object doesn't support selection by name")
         }
         var res = []
         var node_list = document.getElementsByName($dict['name'])
@@ -671,7 +671,7 @@ DOMNode.get = function(self){
     }
     if($dict['tag']!==undefined){
         if(obj.getElementsByTagName===undefined){
-            throw TypeError("DOMNode object doesn't support selection by tag name")
+            throw __builtins__.TypeError("DOMNode object doesn't support selection by tag name")
         }
         var res = []
         var node_list = document.getElementsByTagName($dict['tag'])
@@ -682,7 +682,7 @@ DOMNode.get = function(self){
     }
     if($dict['classname']!==undefined){
         if(obj.getElementsByClassName===undefined){
-            throw TypeError("DOMNode object doesn't support selection by class name")
+            throw __builtins__.TypeError("DOMNode object doesn't support selection by class name")
         }
         var res = []
         var node_list = document.getElementsByClassName($dict['classname'])
@@ -693,7 +693,7 @@ DOMNode.get = function(self){
     }
     if($dict['id']!==undefined){
         if(obj.getElementById===undefined){
-            throw TypeError("DOMNode object doesn't support selection by id")
+            throw __builtins__.TypeError("DOMNode object doesn't support selection by id")
         }
         var id_res = obj.getElementById($dict['id'])
         if(!id_res){return []}
@@ -701,7 +701,7 @@ DOMNode.get = function(self){
     }
     if($dict['selector']!==undefined){
         if(obj.querySelectorAll===undefined){
-            throw TypeError("DOMNode object doesn't support selection by selector")
+            throw __builtins__.TypeError("DOMNode object doesn't support selection by selector")
         }
         var node_list = obj.querySelectorAll($dict['selector'])
         var sel_res = []
@@ -728,7 +728,7 @@ DOMNode.get = function(self){
 }
 
 DOMNode.getContext = function(self){ // for CANVAS tag
-    if(!('getContext' in self.elt)){throw AttributeError(
+    if(!('getContext' in self.elt)){throw __builtins__.AttributeError(
         "object has no attribute 'getContext'")}
     var obj = self.elt
     return function(ctx){return new $JSObject(obj.getContext(ctx))}

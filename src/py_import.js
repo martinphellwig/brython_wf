@@ -10,6 +10,8 @@ $ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
 
 ;(function($B){
 
+var __builtins__ = $B.builtins
+
 function $importer(){
     // returns the XMLHTTP object to handle imports
     var $xmlhttp = new XMLHttpRequest();
@@ -48,7 +50,7 @@ function $importer(){
 
     var timer = setTimeout( function() {
         $xmlhttp.abort()
-        throw ImportError("No module named '"+module+"'")}, 5000)
+        throw __builtins__.ImportError("No module named '"+module+"'")}, 5000)
     return [$xmlhttp,fake_qs,timer]
 }
 
@@ -61,7 +63,7 @@ function $download_module(module,url){
             if($xmlhttp.status==200 || $xmlhttp.status==0){res=$xmlhttp.responseText}
             else{
                 // don't throw an exception here, it will not be caught (issue #30)
-                res = FileNotFoundError("No module named '"+module+"'")
+                res = __builtins__.FileNotFoundError("No module named '"+module+"'")
             }
         }
     }
@@ -87,7 +89,7 @@ function $import_js_module(module,filepath,module_contents){
     eval(module_contents)
     // check that module name is in namespace
     if(eval('$module')===undefined){
-        throw ImportError("name '$module' is not defined in module")
+        throw __builtins__.ImportError("name '$module' is not defined in module")
     }
     // add class and __str__
     __BRYTHON__.scope[module.name] = {__dict__:$module}
@@ -139,7 +141,7 @@ function $import_module_search_path_list(module,path_list,origin){
         if(flag){break}
     }
     if(!flag){
-        throw ImportError("module "+module.name+" not found")
+        throw __builtins__.ImportError("module "+module.name+" not found")
     }
     return mod
 }
@@ -292,7 +294,7 @@ function $import_from(mod_name,names,origin){
                 $import(sub_mod,origin)
                 mod[names[i]] = __BRYTHON__.modules[sub_mod]
             }else{
-                throw ImportError("cannot import name "+names[i])
+                throw __builtins__.ImportError("cannot import name "+names[i])
             }
         }
     }

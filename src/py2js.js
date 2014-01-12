@@ -1403,7 +1403,7 @@ function $ForExpr(context){
         try_node.add(iter_node)
 
         var catch_node = new $Node('expression')
-        var js = 'catch($err){if(__BRYTHON__.is_exc($err,[StopIteration])){__BRYTHON__.$pop_exc();break}'
+        var js = 'catch($err){if(__BRYTHON__.is_exc($err,[__builtins__.StopIteration])){__BRYTHON__.$pop_exc();break}'
         js += 'else{throw($err)}}'
         new $NodeJSCtx(catch_node,js)
         node.insert(1,catch_node)
@@ -1508,8 +1508,8 @@ function $FromCtx(context){
                 }
                 res += '=getattr(__BRYTHON__.imported["'+this.module+'"],"'+this.names[i]+'")}\n'
                 res += 'catch($err'+$loop_num+'){if($err'+$loop_num+'.__class__'
-                res += '===AttributeError.$dict){$err'+$loop_num+'.__class__'
-                res += '=ImportError.$dict};throw $err'+$loop_num+'};'
+                res += '===__builtins__.AttributeError.$dict){$err'+$loop_num+'.__class__'
+                res += '=__builtins__.ImportError.$dict};throw $err'+$loop_num+'};'
              }
            }
         }
@@ -2447,7 +2447,7 @@ function $YieldCtx(context){ // subscription or slicing
             res += 'try{$'+this.func_name+'.$iter.push('
             res += '$subiter'+$loop_num+'())}\n'
             res += indent+$ws(4)+'catch($err'+$loop_num+'){\n'
-            res += indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===StopIteration)'
+            res += indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===__builtins__.StopIteration)'
             res += '{__BRYTHON__.$pop_exc();break}\n'
             res += indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
             $loop_num++

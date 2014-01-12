@@ -37,7 +37,7 @@ $ListDict.__delitem__ = function(self,arg){
             self.splice(pos,1)
             return
         }
-        else{throw IndexError('list index out of range')}
+        else{throw __builtins__.IndexError('list index out of range')}
     } else if(isinstance(arg,slice)) {
         var start = arg.start;if(start===None){start=0}
         var stop = arg.stop;if(stop===None){stop=self.length}
@@ -65,7 +65,7 @@ $ListDict.__delitem__ = function(self,arg){
         }
         return
     } else {
-        throw TypeError('list indices must be integer, not '+__builtins__.str(arg.__class__))
+        throw __builtins__.TypeError('list indices must be integer, not '+__builtins__.str(arg.__class__))
     }
 }
 
@@ -91,7 +91,7 @@ $ListDict.__getitem__ = function(self,arg){
         if(arg<0){pos=items.length+pos}
         if(pos>=0 && pos<items.length){return items[pos]}
         else{
-            throw IndexError('list index out of range')
+            throw __builtins__.IndexError('list index out of range')
         }
     } else if(isinstance(arg,slice)) {
         var step = arg.step===None ? 1 : arg.step
@@ -127,13 +127,13 @@ $ListDict.__getitem__ = function(self,arg){
     } else if(isinstance(arg,bool)){
         return $ListDict.__getitem__(self,int(arg))
     } else {
-        throw TypeError('list indices must be integer, not '+arg.__class__.__name__)
+        throw __builtins__.TypeError('list indices must be integer, not '+arg.__class__.__name__)
     }
 }
 
 $ListDict.__ge__ = function(self,other){
     if(!isinstance(other,list)){
-        throw TypeError("unorderable types: list() >= "+other.__class__.__name__+'()')
+        throw __builtins__.TypeError("unorderable types: list() >= "+other.__class__.__name__+'()')
     }
     var i=0
     while(i<self.length){
@@ -147,7 +147,7 @@ $ListDict.__ge__ = function(self,other){
 
 $ListDict.__gt__ = function(self,other){
     if(!isinstance(other,list)){
-        throw TypeError("unorderable types: list() > "+other.__class__.__name__+'()')
+        throw __builtins__.TypeError("unorderable types: list() > "+other.__class__.__name__+'()')
     }
     var i=0
     while(i<self.length){
@@ -159,7 +159,7 @@ $ListDict.__gt__ = function(self,other){
     return false        
 }
 
-$ListDict.__hash__ = function(){throw TypeError("unhashable type: 'list'")}
+$ListDict.__hash__ = function(){throw __builtins__.TypeError("unhashable type: 'list'")}
 
 $ListDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
 
@@ -195,7 +195,7 @@ $ListDict.__mro__ = [$ListDict,$ObjectDict]
 $ListDict.__mul__ = function(self,other){
     if(isinstance(other,int)){return getattr(other,'__mul__')(self)}
     else{
-        throw TypeError("can't multiply sequence by non-int of type '"+other.__class__.__name__+"'")
+        throw __builtins__.TypeError("can't multiply sequence by non-int of type '"+other.__class__.__name__+"'")
     }
 }
 
@@ -228,7 +228,7 @@ $ListDict.__setitem__ = function(self,arg,value){
         var pos = arg
         if(arg<0){pos=self.length+pos}
         if(pos>=0 && pos<self.length){self[pos]=value}
-        else{throw IndexError('list index out of range')}
+        else{throw __builtins__.IndexError('list index out of range')}
     } else if(isinstance(arg,slice)){
         var start = arg.start===None ? 0 : arg.start
         var stop = arg.stop===None ? self.length : arg.stop
@@ -244,10 +244,10 @@ $ListDict.__setitem__ = function(self,arg,value){
                 self.splice(start,0,$temp[i])
             }
         }else{
-            throw TypeError("can only assign an iterable")
+            throw __builtins__.TypeError("can only assign an iterable")
         }
     }else {
-        throw TypeError('list indices must be integer, not '+arg.__class__.__name__)
+        throw __builtins__.TypeError('list indices must be integer, not '+arg.__class__.__name__)
     }
 }
 
@@ -274,7 +274,7 @@ $ListDict.count = function(self,elt){
 }
 
 $ListDict.extend = function(self,other){
-    if(arguments.length!=2){throw TypeError(
+    if(arguments.length!=2){throw __builtins__.TypeError(
         "extend() takes exactly one argument ("+arguments.length+" given)")}
     other = iter(other)
     while(true){
@@ -316,10 +316,10 @@ $ListDict.pop = function(self,pos){
             self.splice(pos,1)
             return res
         }else{
-            throw TypeError(pos.__class__+" object cannot be interpreted as an integer")
+            throw __builtins__.TypeError(pos.__class__+" object cannot be interpreted as an integer")
         }
     }else{ 
-        throw TypeError("pop() takes at most 1 argument ("+(arguments.length-1)+' given)')
+        throw __builtins__.TypeError("pop() takes at most 1 argument ("+(arguments.length-1)+' given)')
     }
 }
 
@@ -394,7 +394,7 @@ for(var $attr in list){
 function list(){
     if(arguments.length===0){return []}
     else if(arguments.length>1){
-        throw TypeError("list() takes at most 1 argument ("+arguments.length+" given)")
+        throw __builtins__.TypeError("list() takes at most 1 argument ("+arguments.length+" given)")
     }
     var res = []
     var arg = iter(arguments[0])
@@ -471,10 +471,10 @@ for(var attr in $ListDict){
 }
 
 $TupleDict.__delitem__ = function(){
-    throw TypeError("'tuple' object doesn't support item deletion")
+    throw __builtins__.TypeError("'tuple' object doesn't support item deletion")
 }
 $TupleDict.__setitem__ = function(){
-    throw TypeError("'tuple' object does not support item assignment")
+    throw __builtins__.TypeError("'tuple' object does not support item assignment")
 }
 
 $TupleDict.__eq__ = function(self,other){

@@ -16,7 +16,7 @@ function abs(obj){
     if(isinstance(obj,int)){return int(Math.abs(obj))}
     else if(isinstance(obj,float)){return float(Math.abs(obj.value))}
     else if(hasattr(obj,'__abs__')){return getattr(obj,'__abs__')()}
-    else{throw TypeError("Bad operand type for abs(): '"+obj.__class__+"'")}
+    else{throw __builtins__.TypeError("Bad operand type for abs(): '"+obj.__class__+"'")}
 }
 
 function _alert(src){alert(__builtins__.str(src))}
@@ -86,7 +86,7 @@ function $builtin_base_convert_helper(obj, base) {
   }
   if (value === undefined) {
      // need to raise an error
-     Exception('TypeError', 'Error, argument must be an integer or contains an __index__ function')
+     Exception('__builtins__.TypeError', 'Error, argument must be an integer or contains an __index__ function')
      return
   }
   var prefix = "";
@@ -323,7 +323,7 @@ $FilterDict.__iter__ = function(self){
 $FilterDict.__mro__ = [$FilterDict,$ObjectDict]
 
 function filter(){
-    if(arguments.length!=2){throw TypeError(
+    if(arguments.length!=2){throw __builtins__.TypeError(
             "filter expected 2 arguments, got "+arguments.length)}
     var func=arguments[0],iterable=iter(arguments[1])
     var res=[]
@@ -349,7 +349,7 @@ function getattr(obj,attr,_default){
         // for native JS objects used in Python code
         if(obj[attr]!==undefined){return obj[attr]}
         else if(_default!==undefined){return _default}
-        else{throw AttributeError('object has no attribute '+attr)}
+        else{throw __builtins__.AttributeError('object has no attribute '+attr)}
     }
 
     // attribute __class__ is set for all Python objects
@@ -394,7 +394,7 @@ function getattr(obj,attr,_default){
     
         if(klass[attr]===undefined){
             if(_default===undefined){
-                throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
+                throw __builtins__.AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
             }else{return _default}
         }
         if(typeof klass[attr]=='function'){
@@ -440,7 +440,7 @@ function getattr(obj,attr,_default){
     if(res!==undefined){return res}
     if(_default !==undefined){return _default}
     else{
-        throw AttributeError("'"+obj.__class__.__name__+"' object has no attribute '"+attr+"'")
+        throw __builtins__.AttributeError("'"+obj.__class__.__name__+"' object has no attribute '"+attr+"'")
     }
 }
 getattr.__name__ = 'getattr'
@@ -467,12 +467,19 @@ function hash(obj){
        obj.__hashvalue__=obj.__hash__()
        return obj.__hashvalue__
     } else {
-       throw AttributeError(
+       throw __builtins__.AttributeError(
         "'"+__builtins__.str(obj.__class__)+"' object has no attribute '__hash__'")
     }
 }
 
-//help() (built in function)
+function help(obj){
+    if(typeof obj=='string'){
+        try{var obj = eval(obj)}
+        catch(err){throw NameError("name '"+obj+"' is not defined")}
+    }
+    try{return getattr(obj,'__doc__')}
+    catch(err){console.log('help err '+err);return ''}
+}
 
 //hex() (built in function)
 function hex(x) {
@@ -493,7 +500,6 @@ function id(obj) {
    if (obj.__hash__ !== undefined) {
       return obj.__hash__()
    }
-
    return null
 }
 
@@ -541,10 +547,10 @@ function isinstance(obj,arg){
 function issubclass(klass,classinfo){
     if(classinfo.__class__.__mro__===undefined){console.log('issubclass, no mro for '+classinfo.$dict)}
     if(arguments.length!==2){
-        throw TypeError("issubclass expected 2 arguments, got "+arguments.length)
+        throw __builtins__.TypeError("issubclass expected 2 arguments, got "+arguments.length)
     }
     if(!klass.__class__.is_class){
-        throw TypeError("issubclass() arg 1 must be a class")
+        throw __builtins__.TypeError("issubclass() arg 1 must be a class")
     }
     if(isinstance(classinfo,__builtins__.tuple)){
         for(var i=0;i<classinfo.length;i++){
@@ -556,7 +562,7 @@ function issubclass(klass,classinfo){
         return res
     }else{
         //console.log('error in is_subclass '+klass.$dict.__name+' classinfo '+__builtins__.str(classinfo))
-        throw TypeError("issubclass() arg 2 must be a class or tuple of classes")
+        throw __builtins__.TypeError("issubclass() arg 2 must be a class or tuple of classes")
     }
 }
 
@@ -564,14 +570,14 @@ function iter(obj){
     try{return getattr(obj,'__iter__')()}
     catch(err){
         $B.$pop_exc()
-        throw TypeError("'"+obj.__class__.__name__+"' object is not iterable")
+        throw __builtins__.TypeError("'"+obj.__class__.__name__+"' object is not iterable")
     }
 }
 
 function len(obj){
     try{return getattr(obj,'__len__')()}
     catch(err){
-        throw TypeError("object of type '"+obj.__class__.__name__+"' has no len()")}
+        throw __builtins__.TypeError("object of type '"+obj.__class__.__name__+"' has no len()")}
 }
 
 // list built in function is defined in py_list
@@ -605,7 +611,7 @@ function map(){
                 args.push(x)
             }catch(err){
                 if(err.__name__==='StopIteration'){
-                    $B.$pop_exc();throw StopIteration('')
+                    $B.$pop_exc();throw __builtins__.StopIteration('')
                 }else{throw err}
             }
         }
@@ -623,7 +629,7 @@ function map(){
 function $extreme(args,op){ // used by min() and max()
     if(op==='__gt__'){var $op_name = "max"}
     else{var $op_name = "min"}
-    if(args.length==0){throw TypeError($op_name+" expected 1 argument, got 0")}
+    if(args.length==0){throw __builtins__.TypeError($op_name+" expected 1 argument, got 0")}
     var last_arg = args[args.length-1]
     var last_i = args.length-1
     var has_key = false
@@ -632,7 +638,7 @@ function $extreme(args,op){ // used by min() and max()
             var func = last_arg.value
             has_key = true
             last_i--
-        }else{throw TypeError($op_name+"() got an unexpected keyword argument")}
+        }else{throw __builtins__.TypeError($op_name+"() got an unexpected keyword argument")}
     }else{var func = function(x){return x}}
     if((has_key && args.length==2)||(!has_key && args.length==1)){
         var arg = args[0]
@@ -677,7 +683,7 @@ function min(){
 function next(obj){
     var ga = getattr(obj,'__next__')
     if(ga!==undefined){return ga()}
-    throw TypeError("'"+obj.__class__.__name__+"' object is not an iterator")
+    throw __builtins__.TypeError("'"+obj.__class__.__name__+"' object is not an iterator")
 }
 
 var $NotImplementedDict = {__class__:$B.$type,__name__:'NotImplementedType'}
@@ -703,10 +709,10 @@ function ord(c) {
 function pow() {
     var $ns=$B.$MakeArgs('pow',arguments,[],[],'args','kw')
     var args = $ns['args']
-    if(args.length<2){throw TypeError(
+    if(args.length<2){throw __builtins__.TypeError(
         "pow expected at least 2 arguments, got "+args.length)
     }
-    if(args.length>3){throw TypeError(
+    if(args.length>3){throw __builtins__.TypeError(
         "pow expected at most 3 arguments, got "+args.length)
     }
     if(args.length === 2){
@@ -718,7 +724,7 @@ function pow() {
     } else if(isinstance(x, int)){
       a=x
     } else {
-      throw TypeError("unsupported operand type(s) for ** or pow()")
+      throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
     }
         if (isinstance(y, float)){
       b=y.value
@@ -726,7 +732,7 @@ function pow() {
       b=y
     }
         else {
-      throw TypeError("unsupported operand type(s) for ** or pow()")
+      throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
     }
         return Math.pow(a,b)
     }
@@ -735,11 +741,11 @@ function pow() {
         var y = args[1]
         var z = args[2]
         var a,b,c
-        if (isinstance(x, int)) {a=x} else {throw TypeError(
+        if (isinstance(x, int)) {a=x} else {throw __builtins__.TypeError(
             "pow() 3rd argument not allowed unless all arguments are integers")}
-        if (isinstance(y, int)) {b=y} else {throw TypeError(
+        if (isinstance(y, int)) {b=y} else {throw __builtins__.TypeError(
             "pow() 3rd argument not allowed unless all arguments are integers")}
-        if (isinstance(z, int)) {c=z} else {throw TypeError(
+        if (isinstance(z, int)) {c=z} else {throw __builtins__.TypeError(
             "pow() 3rd argument not allowed unless all arguments are integers")}
         return Math.pow(a,b)%c
     }
@@ -786,12 +792,12 @@ function property(fget, fset, fdel, doc) {
     }
     p.__get__ = function(self,obj,objtype) {
         if(obj===undefined){return self}
-        if(self.fget===undefined){throw AttributeError("unreadable attribute")}
+        if(self.fget===undefined){throw __builtins__.AttributeError("unreadable attribute")}
         return getattr(self.fget,'__call__')(obj)
     }
     if(fset!==undefined){
         p.__set__ = function(self,obj,value){
-            if(self.fset===undefined){throw AttributeError("can't set attribute")}
+            if(self.fset===undefined){throw __builtins__.AttributeError("can't set attribute")}
             getattr(self.fset,'__call__')(obj,value)
         }
     }
@@ -830,7 +836,7 @@ $RangeDict.__getitem__ = function(self,rank){
     var res = self.start + rank*self.step
     if((self.step>0 && res >= self.stop) ||
         (self.step<0 && res < self.stop)){
-            throw IndexError('range object index out of range')
+            throw __builtins__.IndexError('range object index out of range')
     }
     return res   
 }
@@ -849,7 +855,7 @@ $RangeDict.__next__ = function(self){
     self.$counter += self.step
     if((self.step>0 && self.$counter >= self.stop)
         || (self.step<0 && self.$counter <= self.stop)){
-            throw StopIteration('')
+            throw __builtins__.StopIteration('')
     }
     return self.$counter
 }
@@ -869,7 +875,7 @@ $RangeDict.__repr__ = $RangeDict.__str__ = function(self){
 function range(){
     var $ns=$B.$MakeArgs('range',arguments,[],[],'args',null)
     var args = $ns['args']
-    if(args.length>3){throw TypeError(
+    if(args.length>3){throw __builtins__.TypeError(
         "range expected at most 3 arguments, got "+args.length)
     }
     var start=0
@@ -900,7 +906,7 @@ $RangeDict.$factory = range
 function repr(obj){
     var func = getattr(obj,'__repr__')
     if(func!==undefined){return func()}
-    else{throw AttributeError("object has no attribute __repr__")}
+    else{throw __builtins__.AttributeError("object has no attribute __repr__")}
 }
 
 var $ReversedDict = {__class__:$B.$type,__name__:'reversed'}
@@ -908,7 +914,7 @@ $ReversedDict.__mro__ = [$ReversedDict,$ObjectDict]
 $ReversedDict.__iter__ = function(self){return self}
 $ReversedDict.__next__ = function(self){
     self.$counter--
-    if(self.$counter<0){throw StopIteration('')}
+    if(self.$counter<0){throw __builtins__.StopIteration('')}
     return self.getter(self.$counter)
 }
 
@@ -932,7 +938,7 @@ function reversed(seq){
         }
         return res
     }catch(err){
-        throw TypeError("argument to reversed() must be a sequence")
+        throw __builtins__.TypeError("argument to reversed() must be a sequence")
     }
 }
 reversed.__class__=$B.$factory
@@ -941,10 +947,10 @@ $ReversedDict.$factory = reversed
 
 function round(arg,n){
     if(!isinstance(arg,[int,float])){
-        throw TypeError("type "+arg.__class__+" doesn't define __round__ method")
+        throw __builtins__.TypeError("type "+arg.__class__+" doesn't define __round__ method")
     }
     if(n===undefined){n=0}
-    if(!isinstance(n,int)){throw TypeError(
+    if(!isinstance(n,int)){throw __builtins__.TypeError(
         "'"+n.__class__+"' object cannot be interpreted as an integer")}
     var mult = Math.pow(10,n)
     var res = __builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
@@ -953,7 +959,7 @@ function round(arg,n){
 
 
 function setattr(obj,attr,value){
-    if(!isinstance(attr,__builtins__.str)){throw TypeError("setattr(): attribute name must be string")}
+    if(!isinstance(attr,__builtins__.str)){throw __builtins__.TypeError("setattr(): attribute name must be string")}
     // descriptor protocol : if obj has attribute attr and this attribute has 
     // a method __set__(), use it
     if($B.forbidden.indexOf(attr)>-1){attr='$$'+attr}
@@ -987,7 +993,7 @@ $SliceDict.__mro__ = [$SliceDict,$ObjectDict]
 function slice(){
     var $ns=$B.$MakeArgs('slice',arguments,[],[],'args',null)
     var args = $ns['args']
-    if(args.length>3){throw TypeError(
+    if(args.length>3){throw __builtins__.TypeError(
         "slice expected at most 3 arguments, got "+args.length)
     }
     var start=0
@@ -1018,7 +1024,7 @@ $SliceDict.$factory = slice
 // sorted() built in function
 function sorted () {
     var $ns=$B.$MakeArgs('sorted',arguments,['iterable'],[],null,'kw')
-    if($ns['iterable']===undefined){throw TypeError("sorted expected 1 positional argument, got 0")}
+    if($ns['iterable']===undefined){throw __builtins__.TypeError("sorted expected 1 positional argument, got 0")}
     else{iterable=$ns['iterable']}
     var key = __builtins__.dict.$dict.get($ns['kw'],'key',None)
     var reverse = __builtins__.dict.$dict.get($ns['kw'],'reverse',false)
@@ -1101,7 +1107,7 @@ $SuperDict.__getattribute__ = function(self,attr){
             return res
         }
     }
-    throw AttributeError("object 'super' has no attribute '"+attr+"'")
+    throw __builtins__.AttributeError("object 'super' has no attribute '"+attr+"'")
 }
 
 $SuperDict.__mro__ = [$SuperDict,$ObjectDict]
@@ -1335,7 +1341,7 @@ for(var $key in $B.$comps){ // Ellipsis is not orderable with any type
     if($comp_ops.indexOf($B.$comps[$key])>-1){
         Ellipsis['__'+$B.$comps[$key]+'__']=(function(k){
             return function(other){
-            throw TypeError("unorderable types: ellipsis() "+k+" "+
+            throw __builtins__.TypeError("unorderable types: ellipsis() "+k+" "+
                 other.__class__.__name__)}
         })($key)
     }
@@ -1367,7 +1373,7 @@ for(var $key in $B.$comps){ // None is not orderable with any type
     if($comp_ops.indexOf($B.$comps[$key])>-1){
         None['__'+$B.$comps[$key]+'__']=(function(k){
             return function(other){
-            throw TypeError("unorderable types: NoneType() "+k+" "+
+            throw __builtins__.TypeError("unorderable types: NoneType() "+k+" "+
                 other.__class__.__name__)}
         })($key)
     }
@@ -1401,22 +1407,22 @@ $FunctionDict.$factory = Function
 
 // built-in exceptions
 
-var $BaseExceptionDict = {
+__builtins__.$BaseExceptionDict = {
     __class__:$B.$type,
     __name__:'BaseException'
 }
 
-$BaseExceptionDict.__init__ = function(self){
+__builtins__.$BaseExceptionDict.__init__ = function(self){
     console.log(self.__class__.__name__+' '+arguments[1])
     self.msg = arguments[1]
 }
 
-$BaseExceptionDict.__repr__ = $BaseExceptionDict.__str__ = function(){return 'BaseException'}
+__builtins__.$BaseExceptionDict.__repr__ = __builtins__.$BaseExceptionDict.__str__ = function(){return 'BaseException'}
 
-$BaseExceptionDict.__mro__ = [$BaseExceptionDict,$ObjectDict]
+__builtins__.$BaseExceptionDict.__mro__ = [__builtins__.$BaseExceptionDict,$ObjectDict]
 
-$BaseExceptionDict.__new__ = function(cls){
-    var err = BaseException()
+__builtins__.$BaseExceptionDict.__new__ = function(cls){
+    var err = __builtins__.BaseException()
     err.__name__ = cls.$dict.__name__
     err.__class__ = cls.$dict
     return err
@@ -1480,7 +1486,7 @@ var BaseException = function (msg,js_exc){
     err.__str__ = function(){return msg}
     err.toString = err.__str__
     err.__name__ = 'BaseException'
-    err.__class__ = $BaseExceptionDict
+    err.__class__ = __builtins__.$BaseExceptionDict
     err.py_error = true
     err.type = 'BaseException'
     err.value = msg
@@ -1491,7 +1497,9 @@ var BaseException = function (msg,js_exc){
 
 BaseException.__name__ = 'BaseException'
 BaseException.__class__ = $B.$factory
-BaseException.$dict = $BaseExceptionDict
+BaseException.$dict = __builtins__.$BaseExceptionDict
+
+__builtins__.BaseException = BaseException
 
 $B.exception = function(js_exc){
     // thrown by eval(), exec() or by a function
@@ -1525,10 +1533,10 @@ $B.exception = function(js_exc){
         }
         var exc = Error()
         exc.__name__ = js_exc.__name__ || js_exc.name
-        exc.__class__ = $ExceptionDict
+        exc.__class__ = __builtins__.$ExceptionDict
         if(js_exc.name=='ReferenceError'){
             exc.__name__='NameError'
-            exc.__class__=$NameErrorDict
+            exc.__class__=__builtins__.$NameErrorDict
         }
         exc.message = js_exc.message
         exc.info = ''
@@ -1558,16 +1566,15 @@ function $make_exc(names,parent){
         var name = names[i]
         var $exc = (BaseException+'').replace(/BaseException/g,name)
         // class constructor
-        eval(name+'='+$exc)
-        eval(name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
-        eval(name+'.__class__=$B.$factory')
         // class dictionary
-        eval('$'+name+'Dict={__class__:$B.$type,__name__:"'+name+'"}')
-        eval('$'+name+'Dict.__mro__=[$'+name+'Dict].concat(parent.$dict.__mro__)')
-        eval('$'+name+'Dict.$factory='+name)
-        eval(name+'.$dict=$'+name+'Dict')
-        // insert in returned value
-        eval('__builtins__.'+name+'='+name)
+        console.log('make exc '+name)
+        eval('__builtins__.$'+name+'Dict={__class__:$B.$type,__name__:"'+name+'"}')
+        eval('__builtins__.$'+name+'Dict.__mro__=[__builtins__.$'+name+'Dict].concat(parent.$dict.__mro__)')
+        eval('__builtins__.'+name+'='+$exc)
+        eval('__builtins__.'+name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
+        eval('__builtins__.'+name+'.__class__=$B.$factory')
+        eval('__builtins__.$'+name+'Dict.$factory=__builtins__.'+name)
+        eval('__builtins__.'+name+'.$dict=__builtins__.$'+name+'Dict')
     }
 }
 
@@ -1575,28 +1582,28 @@ $make_exc(['SystemExit','KeyboardInterrupt','GeneratorExit','Exception'],BaseExc
 $make_exc(['StopIteration','ArithmeticError','AssertionError','AttributeError',
     'BufferError','EOFError','ImportError','LookupError','MemoryError',
     'NameError','OSError','ReferenceError','RuntimeError','SyntaxError',
-    'SystemError','TypeError','ValueError','Warning'],Exception)
+    'SystemError','TypeError','ValueError','Warning'],__builtins__.Exception)
 $make_exc(['FloatingPointError','OverflowError','ZeroDivisionError'],
-    ArithmeticError)
-$make_exc(['IndexError','KeyError'],LookupError)
-$make_exc(['UnboundLocalError'],NameError)
+    __builtins__.ArithmeticError)
+$make_exc(['IndexError','KeyError'],__builtins__.LookupError)
+$make_exc(['UnboundLocalError'],__builtins__.NameError)
 $make_exc(['BlockingIOError','ChildProcessError','ConnectionError',
     'FileExistsError','FileNotFoundError','InterruptedError',
     'IsADirectoryError','NotADirectoryError','PermissionError',
-    'ProcessLookupError','TimeoutError'],OSError)
+    'ProcessLookupError','TimeoutError'],__builtins__.OSError)
 $make_exc(['BrokenPipeError','ConnectionAbortedError','ConnectionRefusedError',
-    'ConnectionResetError'],ConnectionError)
-$make_exc(['NotImplementedError'],RuntimeError)
-$make_exc(['IndentationError'],SyntaxError)
-$make_exc(['TabError'],IndentationError)
-$make_exc(['UnicodeError'],ValueError)
+    'ConnectionResetError'],__builtins__.ConnectionError)
+$make_exc(['NotImplementedError'],__builtins__.RuntimeError)
+$make_exc(['IndentationError'],__builtins__.SyntaxError)
+$make_exc(['TabError'],__builtins__.IndentationError)
+$make_exc(['UnicodeError'],__builtins__.ValueError)
 $make_exc(['UnicodeDecodeError','UnicodeEncodeError','UnicodeTranslateError'],
-    UnicodeError)
+    __builtins__.UnicodeError)
 $make_exc(['DeprecationWarning','PendingDeprecationWarning','RuntimeWarning',
     'SyntaxWarning','UserWarning','FutureWarning','ImportWarning',
-    'UnicodeWarning','BytesWarning','ResourceWarning'],Warning)
+    'UnicodeWarning','BytesWarning','ResourceWarning'],__builtins__.Warning)
 
-$make_exc(['EnvironmentError','IOError','VMSError','WindowsError'],OSError)
+$make_exc(['EnvironmentError','IOError','VMSError','WindowsError'],__builtins__.OSError)
 
 var builtin_names=[ 'Ellipsis', 'False',  'None', 
 'True', '_', '__build_class__', '__debug__', '__doc__', '__import__', '__name__', 

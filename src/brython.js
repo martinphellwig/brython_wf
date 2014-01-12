@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 1.4.20140111-152645
+// version 2.0.rc1.20140112-215040
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -10,7 +10,7 @@ __str__:function(){return "<module 'builtins'>"},
 __BRYTHON__.__getattr__=function(attr){return this[attr]}
 __BRYTHON__.__setattr__=function(attr,value){
 if(['debug'].indexOf(attr)>-1){__BRYTHON__[attr]=value}
-else{throw AttributeError('__BRYTHON__ object has no attribute '+attr)}
+else{throw __BRYTHON__.builtins.AttributeError('__BRYTHON__ object has no attribute '+attr)}
 }
 __BRYTHON__.language=window.navigator.userLanguage || window.navigator.language
 __BRYTHON__.date=function(){
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[1, 4, '20140111-152645', 'alpha', 0]
+__BRYTHON__.version_info=[2, '0.rc1', '20140112-215040', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -1242,7 +1242,7 @@ var assign=new $AssignCtx(target_expr)
 assign.tree[1]=new $JSCode('$next'+$loop_num+'()')
 try_node.add(iter_node)
 var catch_node=new $Node('expression')
-var js='catch($err){if(__BRYTHON__.is_exc($err,[StopIteration])){__BRYTHON__.$pop_exc();break}'
+var js='catch($err){if(__BRYTHON__.is_exc($err,[__builtins__.StopIteration])){__BRYTHON__.$pop_exc();break}'
 js +='else{throw($err)}}'
 new $NodeJSCtx(catch_node,js)
 node.insert(1,catch_node)
@@ -1337,8 +1337,8 @@ res +='"]'
 }
 res +='=getattr(__BRYTHON__.imported["'+this.module+'"],"'+this.names[i]+'")}\n'
 res +='catch($err'+$loop_num+'){if($err'+$loop_num+'.__class__'
-res +='===AttributeError.$dict){$err'+$loop_num+'.__class__'
-res +='=ImportError.$dict};throw $err'+$loop_num+'};'
+res +='===__builtins__.AttributeError.$dict){$err'+$loop_num+'.__class__'
+res +='=__builtins__.ImportError.$dict};throw $err'+$loop_num+'};'
 }
 }
 }
@@ -2141,7 +2141,7 @@ res +=indent+'while(true){\n'+indent+$ws(4)
 res +='try{$'+this.func_name+'.$iter.push('
 res +='$subiter'+$loop_num+'())}\n'
 res +=indent+$ws(4)+'catch($err'+$loop_num+'){\n'
-res +=indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===StopIteration)'
+res +=indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===__builtins__.StopIteration)'
 res +='{__BRYTHON__.$pop_exc();break}\n'
 res +=indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
 $loop_num++
@@ -3652,7 +3652,7 @@ var brython=__BRYTHON__.brython
 __BRYTHON__.$__new__=function(factory){
 return function(cls){
 if(cls===undefined){
-throw TypeError(factory.$dict.__name__+'.__new__(): not enough arguments')
+throw __BRYTHON__.builtins.TypeError(factory.$dict.__name__+'.__new__(): not enough arguments')
 }
 var res=factory.apply(null,[])
 res.__class__=cls.$dict
@@ -3675,7 +3675,7 @@ $native:true
 }
 var $ObjectNI=function(name,op){
 return function(other){
-throw TypeError('unorderable types: object() '+op+' '+$B.builtins.str(other.__class__.__name__)+'()')
+throw $B.builtins.TypeError('unorderable types: object() '+op+' '+$B.builtins.str(other.__class__.__name__)+'()')
 }
 }
 $ObjectDict.__delattr__=function(self,attr){delete self[attr]}
@@ -3790,7 +3790,7 @@ $ObjectDict.__le__=$ObjectNI('__le__','<=')
 $ObjectDict.__lt__=$ObjectNI('__lt__','<')
 $ObjectDict.__mro__=[$ObjectDict]
 $ObjectDict.__new__=function(cls){
-if(cls===undefined){throw TypeError('object.__new__(): not enough arguments')}
+if(cls===undefined){throw $B.builtins.TypeError('object.__new__(): not enough arguments')}
 var obj=new Object()
 obj.__class__=cls.$dict
 return obj
@@ -3807,12 +3807,12 @@ else{return "<"+self.__class__.__name__+" object>"}
 }
 $ObjectDict.__setattr__=function(self,attr,val){
 if(val===undefined){
-throw TypeError("can't set attributes of built-in/extension type 'object'")
+throw $B.builtins.TypeError("can't set attributes of built-in/extension type 'object'")
 }else if(self.__class__===$ObjectDict){
 if($ObjectDict[attr]===undefined){
-throw AttributeError("'object' object has no attribute '"+attr+"'")
+throw $B.builtins.AttributeError("'object' object has no attribute '"+attr+"'")
 }else{
-throw AttributeError("'object' object attribute '"+attr+"' is read-only")
+throw $B.builtins.AttributeError("'object' object attribute '"+attr+"' is read-only")
 }
 }
 self[attr]=val
@@ -3925,7 +3925,7 @@ if(not_head.length>0){candidate=null}
 else{break}
 }
 if(candidate===null){
-throw TypeError("inconsistent hierarchy, no C3 MRO is possible")
+throw $B.builtins.TypeError("inconsistent hierarchy, no C3 MRO is possible")
 }
 mro.push(candidate)
 for(var i=0;i<seqs.length;i++){
@@ -4135,7 +4135,7 @@ if($arg && $arg.__class__===$B.$KwDict){
 $PyVar=$arg.value
 if($set_vars.indexOf($arg.name)>-1){
 console.log($arg.name+' already set to '+$ns[$arg.name])
-throw new TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
+throw $B.builtins.TypeError($fname+"() got multiple values for argument '"+$arg.name+"'")
 }else if($required.indexOf($arg.name)>-1){
 var ix=$required.indexOf($arg.name)
 eval('var '+$required[ix]+"=$PyVar")
@@ -4154,7 +4154,7 @@ $set_vars.push($arg.name)
 $dict_keys.push($arg.name)
 $dict_values.push($PyVar)
 }else{
-throw new TypeError($fname+"() got an unexpected keyword argument '"+$arg.name+"'")
+throw $B.builtins.TypeError($fname+"() got an unexpected keyword argument '"+$arg.name+"'")
 }
 var pos_def=$defaults.indexOf($arg.name)
 if(pos_def!=-1){$defaults.splice(pos_def,1)}
@@ -4174,7 +4174,7 @@ console.log(''+$B.line_info)
 msg=$fname+"() takes "+$required.length+' positional argument'
 msg +=$required.length==1 ? '' : 's'
 msg +=' but more were given'
-throw TypeError(msg)
+throw $B.builtins.TypeError(msg)
 }
 }
 }
@@ -4183,12 +4183,12 @@ for(var i=0;i<$required.length;i++){
 if($set_vars.indexOf($required[i])==-1){missing.push($required[i])}
 }
 if(missing.length==1){
-throw TypeError($fname+" missing 1 positional argument: '"+missing[0]+"'")
+throw $B.builtins.TypeError($fname+" missing 1 positional argument: '"+missing[0]+"'")
 }else if(missing.length>1){
 var msg=$fname+" missing "+missing.length+" positional arguments: "
 for(var i=0;i<missing.length-1;i++){msg +="'"+missing[i]+"', "}
 msg +="and '"+missing.pop()+"'"
-throw TypeError(msg)
+throw $B.builtins.TypeError(msg)
 }
 if($other_kw!=null){
 $ns[$other_kw]=__BRYTHON__.builtins.dict()
@@ -4318,7 +4318,7 @@ document.$stdout.write(self.output[self.$iter][i])
 }
 return self.func.$iter[self.$iter]
 }
-else{throw StopIteration("")}
+else{throw $B.builtins.StopIteration("")}
 }
 $GeneratorDict.__mro__=[$GeneratorDict,__BRYTHON__.builtins.object.$dict]
 var res=function(){
@@ -4536,7 +4536,7 @@ __len__:function(){return items.length},
 __next__:function(){
 res.counter++
 if(res.counter<items.length){return items[res.counter]}
-else{throw StopIteration("StopIteration")}
+else{throw $B.builtins.StopIteration("StopIteration")}
 },
 __repr__:function(){return "<"+klass.__name__+" object>"},
 counter:-1
@@ -4590,7 +4590,7 @@ function abs(obj){
 if(isinstance(obj,int)){return int(Math.abs(obj))}
 else if(isinstance(obj,float)){return float(Math.abs(obj.value))}
 else if(hasattr(obj,'__abs__')){return getattr(obj,'__abs__')()}
-else{throw TypeError("Bad operand type for abs(): '"+obj.__class__+"'")}
+else{throw __builtins__.TypeError("Bad operand type for abs(): '"+obj.__class__+"'")}
 }
 function _alert(src){alert(__builtins__.str(src))}
 function all(obj){
@@ -4646,7 +4646,7 @@ value=obj
 value=obj.__index__()
 }
 if(value===undefined){
-Exception('TypeError', 'Error, argument must be an integer or contains an __index__ function')
+Exception('__builtins__.TypeError', 'Error, argument must be an integer or contains an __index__ function')
 return
 }
 var prefix=""
@@ -4838,7 +4838,7 @@ return $B.$iterator(self.$items,$filter_iterator)
 }
 $FilterDict.__mro__=[$FilterDict,$ObjectDict]
 function filter(){
-if(arguments.length!=2){throw TypeError(
+if(arguments.length!=2){throw __builtins__.TypeError(
 "filter expected 2 arguments, got "+arguments.length)}
 var func=arguments[0],iterable=iter(arguments[1])
 var res=[]
@@ -4858,7 +4858,7 @@ var klass=obj.__class__
 if(klass===undefined){
 if(obj[attr]!==undefined){return obj[attr]}
 else if(_default!==undefined){return _default}
-else{throw AttributeError('object has no attribute '+attr)}
+else{throw __builtins__.AttributeError('object has no attribute '+attr)}
 }
 if(attr=='__class__'){
 return klass.$factory
@@ -4892,7 +4892,7 @@ if(res===undefined){return __builtins__.None}else{return res}
 if(klass.$native){
 if(klass[attr]===undefined){
 if(_default===undefined){
-throw AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
+throw __builtins__.AttributeError(klass.__name__+" object has no attribute '"+attr+"'")
 }else{return _default}
 }
 if(typeof klass[attr]=='function'){
@@ -4936,7 +4936,7 @@ var res=attr_func(obj,attr)
 if(res!==undefined){return res}
 if(_default !==undefined){return _default}
 else{
-throw AttributeError("'"+obj.__class__.__name__+"' object has no attribute '"+attr+"'")
+throw __builtins__.AttributeError("'"+obj.__class__.__name__+"' object has no attribute '"+attr+"'")
 }
 }
 getattr.__name__='getattr'
@@ -4958,9 +4958,17 @@ if(obj.__hash__ !==undefined){
 obj.__hashvalue__=obj.__hash__()
 return obj.__hashvalue__
 }else{
-throw AttributeError(
+throw __builtins__.AttributeError(
 "'"+__builtins__.str(obj.__class__)+"' object has no attribute '__hash__'")
 }
+}
+function help(obj){
+if(typeof obj=='string'){
+try{var obj=eval(obj)}
+catch(err){throw NameError("name '"+obj+"' is not defined")}
+}
+try{return getattr(obj,'__doc__')}
+catch(err){console.log('help err '+err);return ''}
 }
 function hex(x){
 return $builtin_base_convert_helper(x, 16)
@@ -5019,10 +5027,10 @@ return obj.constructor===arg
 function issubclass(klass,classinfo){
 if(classinfo.__class__.__mro__===undefined){console.log('issubclass, no mro for '+classinfo.$dict)}
 if(arguments.length!==2){
-throw TypeError("issubclass expected 2 arguments, got "+arguments.length)
+throw __builtins__.TypeError("issubclass expected 2 arguments, got "+arguments.length)
 }
 if(!klass.__class__.is_class){
-throw TypeError("issubclass() arg 1 must be a class")
+throw __builtins__.TypeError("issubclass() arg 1 must be a class")
 }
 if(isinstance(classinfo,__builtins__.tuple)){
 for(var i=0;i<classinfo.length;i++){
@@ -5033,20 +5041,20 @@ return false
 var res=klass.$dict.__mro__.indexOf(classinfo.$dict)>-1 
 return res
 }else{
-throw TypeError("issubclass() arg 2 must be a class or tuple of classes")
+throw __builtins__.TypeError("issubclass() arg 2 must be a class or tuple of classes")
 }
 }
 function iter(obj){
 try{return getattr(obj,'__iter__')()}
 catch(err){
 $B.$pop_exc()
-throw TypeError("'"+obj.__class__.__name__+"' object is not iterable")
+throw __builtins__.TypeError("'"+obj.__class__.__name__+"' object is not iterable")
 }
 }
 function len(obj){
 try{return getattr(obj,'__len__')()}
 catch(err){
-throw TypeError("object of type '"+obj.__class__.__name__+"' has no len()")}
+throw __builtins__.TypeError("object of type '"+obj.__class__.__name__+"' has no len()")}
 }
 function locals(obj_id,module){
 if($B.scope[obj_id]===undefined){
@@ -5072,7 +5080,7 @@ var x=next(iter_args[i])
 args.push(x)
 }catch(err){
 if(err.__name__==='StopIteration'){
-$B.$pop_exc();throw StopIteration('')
+$B.$pop_exc();throw __builtins__.StopIteration('')
 }else{throw err}
 }
 }
@@ -5089,7 +5097,7 @@ return obj
 function $extreme(args,op){
 if(op==='__gt__'){var $op_name="max"}
 else{var $op_name="min"}
-if(args.length==0){throw TypeError($op_name+" expected 1 argument, got 0")}
+if(args.length==0){throw __builtins__.TypeError($op_name+" expected 1 argument, got 0")}
 var last_arg=args[args.length-1]
 var last_i=args.length-1
 var has_key=false
@@ -5098,7 +5106,7 @@ if(last_arg.name==='key'){
 var func=last_arg.value
 has_key=true
 last_i--
-}else{throw TypeError($op_name+"() got an unexpected keyword argument")}
+}else{throw __builtins__.TypeError($op_name+"() got an unexpected keyword argument")}
 }else{var func=function(x){return x}}
 if((has_key && args.length==2)||(!has_key && args.length==1)){
 var arg=args[0]
@@ -5138,7 +5146,7 @@ return $extreme(args,'__lt__')
 function next(obj){
 var ga=getattr(obj,'__next__')
 if(ga!==undefined){return ga()}
-throw TypeError("'"+obj.__class__.__name__+"' object is not an iterator")
+throw __builtins__.TypeError("'"+obj.__class__.__name__+"' object is not an iterator")
 }
 var $NotImplementedDict={__class__:$B.$type,__name__:'NotImplementedType'}
 $NotImplementedDict.__mro__=[$NotImplementedDict,$ObjectDict]
@@ -5156,10 +5164,10 @@ return c.charCodeAt(0)
 function pow(){
 var $ns=$B.$MakeArgs('pow',arguments,[],[],'args','kw')
 var args=$ns['args']
-if(args.length<2){throw TypeError(
+if(args.length<2){throw __builtins__.TypeError(
 "pow expected at least 2 arguments, got "+args.length)
 }
-if(args.length>3){throw TypeError(
+if(args.length>3){throw __builtins__.TypeError(
 "pow expected at most 3 arguments, got "+args.length)
 }
 if(args.length===2){
@@ -5171,7 +5179,7 @@ a=x.value
 }else if(isinstance(x, int)){
 a=x
 }else{
-throw TypeError("unsupported operand type(s) for ** or pow()")
+throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
 }
 if(isinstance(y, float)){
 b=y.value
@@ -5179,7 +5187,7 @@ b=y.value
 b=y
 }
 else{
-throw TypeError("unsupported operand type(s) for ** or pow()")
+throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
 }
 return Math.pow(a,b)
 }
@@ -5188,11 +5196,11 @@ var x=args[0]
 var y=args[1]
 var z=args[2]
 var a,b,c
-if(isinstance(x, int)){a=x}else{throw TypeError(
+if(isinstance(x, int)){a=x}else{throw __builtins__.TypeError(
 "pow() 3rd argument not allowed unless all arguments are integers")}
-if(isinstance(y, int)){b=y}else{throw TypeError(
+if(isinstance(y, int)){b=y}else{throw __builtins__.TypeError(
 "pow() 3rd argument not allowed unless all arguments are integers")}
-if(isinstance(z, int)){c=z}else{throw TypeError(
+if(isinstance(z, int)){c=z}else{throw __builtins__.TypeError(
 "pow() 3rd argument not allowed unless all arguments are integers")}
 return Math.pow(a,b)%c
 }
@@ -5232,12 +5240,12 @@ toString:function(){return '<property>'}
 }
 p.__get__=function(self,obj,objtype){
 if(obj===undefined){return self}
-if(self.fget===undefined){throw AttributeError("unreadable attribute")}
+if(self.fget===undefined){throw __builtins__.AttributeError("unreadable attribute")}
 return getattr(self.fget,'__call__')(obj)
 }
 if(fset!==undefined){
 p.__set__=function(self,obj,value){
-if(self.fset===undefined){throw AttributeError("can't set attribute")}
+if(self.fset===undefined){throw __builtins__.AttributeError("can't set attribute")}
 getattr(self.fset,'__call__')(obj,value)
 }
 }
@@ -5270,7 +5278,7 @@ $RangeDict.__getitem__=function(self,rank){
 var res=self.start + rank*self.step
 if((self.step>0 && res >=self.stop)||
 (self.step<0 && res < self.stop)){
-throw IndexError('range object index out of range')
+throw __builtins__.IndexError('range object index out of range')
 }
 return res 
 }
@@ -5286,7 +5294,7 @@ $RangeDict.__next__=function(self){
 self.$counter +=self.step
 if((self.step>0 && self.$counter >=self.stop)
 ||(self.step<0 && self.$counter <=self.stop)){
-throw StopIteration('')
+throw __builtins__.StopIteration('')
 }
 return self.$counter
 }
@@ -5302,7 +5310,7 @@ return res+')'
 function range(){
 var $ns=$B.$MakeArgs('range',arguments,[],[],'args',null)
 var args=$ns['args']
-if(args.length>3){throw TypeError(
+if(args.length>3){throw __builtins__.TypeError(
 "range expected at most 3 arguments, got "+args.length)
 }
 var start=0
@@ -5332,14 +5340,14 @@ $RangeDict.$factory=range
 function repr(obj){
 var func=getattr(obj,'__repr__')
 if(func!==undefined){return func()}
-else{throw AttributeError("object has no attribute __repr__")}
+else{throw __builtins__.AttributeError("object has no attribute __repr__")}
 }
 var $ReversedDict={__class__:$B.$type,__name__:'reversed'}
 $ReversedDict.__mro__=[$ReversedDict,$ObjectDict]
 $ReversedDict.__iter__=function(self){return self}
 $ReversedDict.__next__=function(self){
 self.$counter--
-if(self.$counter<0){throw StopIteration('')}
+if(self.$counter<0){throw __builtins__.StopIteration('')}
 return self.getter(self.$counter)
 }
 function reversed(seq){
@@ -5356,7 +5364,7 @@ getter:getattr(seq,'__getitem__')
 }
 return res
 }catch(err){
-throw TypeError("argument to reversed() must be a sequence")
+throw __builtins__.TypeError("argument to reversed() must be a sequence")
 }
 }
 reversed.__class__=$B.$factory
@@ -5364,17 +5372,17 @@ reversed.$dict=$ReversedDict
 $ReversedDict.$factory=reversed
 function round(arg,n){
 if(!isinstance(arg,[int,float])){
-throw TypeError("type "+arg.__class__+" doesn't define __round__ method")
+throw __builtins__.TypeError("type "+arg.__class__+" doesn't define __round__ method")
 }
 if(n===undefined){n=0}
-if(!isinstance(n,int)){throw TypeError(
+if(!isinstance(n,int)){throw __builtins__.TypeError(
 "'"+n.__class__+"' object cannot be interpreted as an integer")}
 var mult=Math.pow(10,n)
 var res=__builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
 if(n==0){return int(res)}else{return float(res)}
 }
 function setattr(obj,attr,value){
-if(!isinstance(attr,__builtins__.str)){throw TypeError("setattr(): attribute name must be string")}
+if(!isinstance(attr,__builtins__.str)){throw __builtins__.TypeError("setattr(): attribute name must be string")}
 if($B.forbidden.indexOf(attr)>-1){attr='$$'+attr}
 var res=obj[attr]
 if(res===undefined){
@@ -5402,7 +5410,7 @@ $SliceDict.__mro__=[$SliceDict,$ObjectDict]
 function slice(){
 var $ns=$B.$MakeArgs('slice',arguments,[],[],'args',null)
 var args=$ns['args']
-if(args.length>3){throw TypeError(
+if(args.length>3){throw __builtins__.TypeError(
 "slice expected at most 3 arguments, got "+args.length)
 }
 var start=0
@@ -5431,7 +5439,7 @@ slice.$dict=$SliceDict
 $SliceDict.$factory=slice
 function sorted(){
 var $ns=$B.$MakeArgs('sorted',arguments,['iterable'],[],null,'kw')
-if($ns['iterable']===undefined){throw TypeError("sorted expected 1 positional argument, got 0")}
+if($ns['iterable']===undefined){throw __builtins__.TypeError("sorted expected 1 positional argument, got 0")}
 else{iterable=$ns['iterable']}
 var key=__builtins__.dict.$dict.get($ns['kw'],'key',None)
 var reverse=__builtins__.dict.$dict.get($ns['kw'],'reverse',false)
@@ -5502,7 +5510,7 @@ return method
 return res
 }
 }
-throw AttributeError("object 'super' has no attribute '"+attr+"'")
+throw __builtins__.AttributeError("object 'super' has no attribute '"+attr+"'")
 }
 $SuperDict.__mro__=[$SuperDict,$ObjectDict]
 function $$super(_type1,_type2){
@@ -5698,7 +5706,7 @@ for(var $key in $B.$comps){
 if($comp_ops.indexOf($B.$comps[$key])>-1){
 Ellipsis['__'+$B.$comps[$key]+'__']=(function(k){
 return function(other){
-throw TypeError("unorderable types: ellipsis() "+k+" "+
+throw __builtins__.TypeError("unorderable types: ellipsis() "+k+" "+
 other.__class__.__name__)}
 })($key)
 }
@@ -5726,7 +5734,7 @@ for(var $key in $B.$comps){
 if($comp_ops.indexOf($B.$comps[$key])>-1){
 None['__'+$B.$comps[$key]+'__']=(function(k){
 return function(other){
-throw TypeError("unorderable types: NoneType() "+k+" "+
+throw __builtins__.TypeError("unorderable types: NoneType() "+k+" "+
 other.__class__.__name__)}
 })($key)
 }
@@ -5749,18 +5757,18 @@ Function.prototype.__get__=function(self,obj,objtype){
 return self
 }
 $FunctionDict.$factory=Function
-var $BaseExceptionDict={
+__builtins__.$BaseExceptionDict={
 __class__:$B.$type,
 __name__:'BaseException'
 }
-$BaseExceptionDict.__init__=function(self){
+__builtins__.$BaseExceptionDict.__init__=function(self){
 console.log(self.__class__.__name__+' '+arguments[1])
 self.msg=arguments[1]
 }
-$BaseExceptionDict.__repr__=$BaseExceptionDict.__str__=function(){return 'BaseException'}
-$BaseExceptionDict.__mro__=[$BaseExceptionDict,$ObjectDict]
-$BaseExceptionDict.__new__=function(cls){
-var err=BaseException()
+__builtins__.$BaseExceptionDict.__repr__=__builtins__.$BaseExceptionDict.__str__=function(){return 'BaseException'}
+__builtins__.$BaseExceptionDict.__mro__=[__builtins__.$BaseExceptionDict,$ObjectDict]
+__builtins__.$BaseExceptionDict.__new__=function(cls){
+var err=__builtins__.BaseException()
 err.__name__=cls.$dict.__name__
 err.__class__=cls.$dict
 return err
@@ -5820,7 +5828,7 @@ err.args=msg
 err.__str__=function(){return msg}
 err.toString=err.__str__
 err.__name__='BaseException'
-err.__class__=$BaseExceptionDict
+err.__class__=__builtins__.$BaseExceptionDict
 err.py_error=true
 err.type='BaseException'
 err.value=msg
@@ -5830,7 +5838,8 @@ return err
 }
 BaseException.__name__='BaseException'
 BaseException.__class__=$B.$factory
-BaseException.$dict=$BaseExceptionDict
+BaseException.$dict=__builtins__.$BaseExceptionDict
+__builtins__.BaseException=BaseException
 $B.exception=function(js_exc){
 if(js_exc.py_error && $B.debug>0){console.log('info '+js_exc.info)}
 if(!js_exc.py_error){
@@ -5857,10 +5866,10 @@ console.log('error '+js_exc)
 }
 var exc=Error()
 exc.__name__=js_exc.__name__ || js_exc.name
-exc.__class__=$ExceptionDict
+exc.__class__=__builtins__.$ExceptionDict
 if(js_exc.name=='ReferenceError'){
 exc.__name__='NameError'
-exc.__class__=$NameErrorDict
+exc.__class__=__builtins__.$NameErrorDict
 }
 exc.message=js_exc.message
 exc.info=''
@@ -5884,41 +5893,41 @@ function $make_exc(names,parent){
 for(var i=0;i<names.length;i++){
 var name=names[i]
 var $exc=(BaseException+'').replace(/BaseException/g,name)
-eval(name+'='+$exc)
-eval(name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
-eval(name+'.__class__=$B.$factory')
-eval('$'+name+'Dict={__class__:$B.$type,__name__:"'+name+'"}')
-eval('$'+name+'Dict.__mro__=[$'+name+'Dict].concat(parent.$dict.__mro__)')
-eval('$'+name+'Dict.$factory='+name)
-eval(name+'.$dict=$'+name+'Dict')
-eval('__builtins__.'+name+'='+name)
+console.log('make exc '+name)
+eval('__builtins__.$'+name+'Dict={__class__:$B.$type,__name__:"'+name+'"}')
+eval('__builtins__.$'+name+'Dict.__mro__=[__builtins__.$'+name+'Dict].concat(parent.$dict.__mro__)')
+eval('__builtins__.'+name+'='+$exc)
+eval('__builtins__.'+name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
+eval('__builtins__.'+name+'.__class__=$B.$factory')
+eval('__builtins__.$'+name+'Dict.$factory=__builtins__.'+name)
+eval('__builtins__.'+name+'.$dict=__builtins__.$'+name+'Dict')
 }
 }
 $make_exc(['SystemExit','KeyboardInterrupt','GeneratorExit','Exception'],BaseException)
 $make_exc(['StopIteration','ArithmeticError','AssertionError','AttributeError',
 'BufferError','EOFError','ImportError','LookupError','MemoryError',
 'NameError','OSError','ReferenceError','RuntimeError','SyntaxError',
-'SystemError','TypeError','ValueError','Warning'],Exception)
+'SystemError','TypeError','ValueError','Warning'],__builtins__.Exception)
 $make_exc(['FloatingPointError','OverflowError','ZeroDivisionError'],
-ArithmeticError)
-$make_exc(['IndexError','KeyError'],LookupError)
-$make_exc(['UnboundLocalError'],NameError)
+__builtins__.ArithmeticError)
+$make_exc(['IndexError','KeyError'],__builtins__.LookupError)
+$make_exc(['UnboundLocalError'],__builtins__.NameError)
 $make_exc(['BlockingIOError','ChildProcessError','ConnectionError',
 'FileExistsError','FileNotFoundError','InterruptedError',
 'IsADirectoryError','NotADirectoryError','PermissionError',
-'ProcessLookupError','TimeoutError'],OSError)
+'ProcessLookupError','TimeoutError'],__builtins__.OSError)
 $make_exc(['BrokenPipeError','ConnectionAbortedError','ConnectionRefusedError',
-'ConnectionResetError'],ConnectionError)
-$make_exc(['NotImplementedError'],RuntimeError)
-$make_exc(['IndentationError'],SyntaxError)
-$make_exc(['TabError'],IndentationError)
-$make_exc(['UnicodeError'],ValueError)
+'ConnectionResetError'],__builtins__.ConnectionError)
+$make_exc(['NotImplementedError'],__builtins__.RuntimeError)
+$make_exc(['IndentationError'],__builtins__.SyntaxError)
+$make_exc(['TabError'],__builtins__.IndentationError)
+$make_exc(['UnicodeError'],__builtins__.ValueError)
 $make_exc(['UnicodeDecodeError','UnicodeEncodeError','UnicodeTranslateError'],
-UnicodeError)
+__builtins__.UnicodeError)
 $make_exc(['DeprecationWarning','PendingDeprecationWarning','RuntimeWarning',
 'SyntaxWarning','UserWarning','FutureWarning','ImportWarning',
-'UnicodeWarning','BytesWarning','ResourceWarning'],Warning)
-$make_exc(['EnvironmentError','IOError','VMSError','WindowsError'],OSError)
+'UnicodeWarning','BytesWarning','ResourceWarning'],__builtins__.Warning)
+$make_exc(['EnvironmentError','IOError','VMSError','WindowsError'],__builtins__.OSError)
 var builtin_names=['Ellipsis', 'False', 'None', 
 'True', '_', '__build_class__', '__debug__', '__doc__', '__import__', '__name__', 
 '__package__', 'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'bytearray', 'bytes',
@@ -6094,14 +6103,14 @@ return res.apply(obj,args)
 }
 return __BRYTHON__.$JS2Py(res)
 }else{
-throw AttributeError("no attribute "+attr+' for '+this)
+throw __builtins__.AttributeError("no attribute "+attr+' for '+this)
 }
 }
 $JSObjectDict.__getitem__=function(self,rank){
 try{return getattr(self.js,'__getitem__')(rank)}
 catch(err){
 if(self.js[rank]!==undefined){return JSObject(self.js[rank])}
-else{throw AttributeError(self+' has no attribute __getitem__')}
+else{throw __builtins__.AttributeError(self+' has no attribute __getitem__')}
 }
 }
 $JSObject_iterator=$B.$iterator_class('JS object iterator')
@@ -6112,7 +6121,7 @@ $JSObjectDict.__len__=function(self){
 try{return getattr(self.js,'__len__')()}
 catch(err){
 console.log('err in JSObject.__len__ : '+err)
-throw AttributeError(this+' has no attribute __len__')
+throw __builtins__.AttributeError(this+' has no attribute __len__')
 }
 }
 $JSObjectDict.__mro__=[$JSObjectDict,$ObjectDict]
@@ -6152,6 +6161,7 @@ $ModuleDict.__repr__=function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__str__=function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__mro__=[$ModuleDict,$ObjectDict]
 ;(function($B){
+var __builtins__=$B.builtins
 function $importer(){
 var $xmlhttp=new XMLHttpRequest()
 var __builtins__=__BRYTHON__.builtins
@@ -6176,7 +6186,7 @@ fake_qs="?v="+Math.random().toString(36).substr(2,8)
 }
 var timer=setTimeout(function(){
 $xmlhttp.abort()
-throw ImportError("No module named '"+module+"'")}, 5000)
+throw __builtins__.ImportError("No module named '"+module+"'")}, 5000)
 return[$xmlhttp,fake_qs,timer]
 }
 function $download_module(module,url){
@@ -6187,7 +6197,7 @@ if($xmlhttp.readyState==4){
 window.clearTimeout(timer)
 if($xmlhttp.status==200 || $xmlhttp.status==0){res=$xmlhttp.responseText}
 else{
-res=FileNotFoundError("No module named '"+module+"'")
+res=__builtins__.FileNotFoundError("No module named '"+module+"'")
 }
 }
 }
@@ -6208,7 +6218,7 @@ return $import_js_module(module, filepath+'.js', module_contents)
 function $import_js_module(module,filepath,module_contents){
 eval(module_contents)
 if(eval('$module')===undefined){
-throw ImportError("name '$module' is not defined in module")
+throw __builtins__.ImportError("name '$module' is not defined in module")
 }
 __BRYTHON__.scope[module.name]={__dict__:$module}
 $module.__class__=$ModuleDict
@@ -6254,7 +6264,7 @@ if(flag){break}
 if(flag){break}
 }
 if(!flag){
-throw ImportError("module "+module.name+" not found")
+throw __builtins__.ImportError("module "+module.name+" not found")
 }
 return mod
 }
@@ -6373,7 +6383,7 @@ var sub_mod=mod_name+'.'+names[i]
 $import(sub_mod,origin)
 mod[names[i]]=__BRYTHON__.modules[sub_mod]
 }else{
-throw ImportError("cannot import name "+names[i])
+throw __builtins__.ImportError("cannot import name "+names[i])
 }
 }
 }
@@ -6437,7 +6447,7 @@ else{return float(Math.floor(self.value/other))}
 }else if(isinstance(other,float)){
 if(!other.value){throw ZeroDivisionError('division by zero')}
 else{return float(Math.floor(self.value/other.value))}
-}else{throw TypeError(
+}else{throw __builtins__.TypeError(
 "unsupported operand type(s) for //: 'float' and '"+other.__class__+"'")
 }
 }
@@ -6476,7 +6486,7 @@ return float(((self.value%other.value)+other.value)%other.value)
 var bool_value=0;
 if(other.valueOf())bool_value=1
 return float((self.value%bool_value+bool_value)%bool_value)
-}else{throw TypeError(
+}else{throw __builtins__.TypeError(
 "unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
 }
 }
@@ -6497,7 +6507,7 @@ else{return float(self.value/other)}
 }else if(isinstance(other,float)){
 if(!other.value){throw ZeroDivisionError('division by zero')}
 else{return float(self.value/other.value)}
-}else{throw TypeError(
+}else{throw __builtins__.TypeError(
 "unsupported operand type(s) for //: 'float' and '"+other.__class__+"'")
 }
 }
@@ -6508,7 +6518,7 @@ else if(isinstance(other,bool)){
 var bool_value=0;
 if(other.valueOf())bool_value=1
 return float(self.value-bool_value)}
-else{throw TypeError(
+else{throw __builtins__.TypeError(
 "unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
 }
 }
@@ -6520,14 +6530,14 @@ eval('$FloatDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 $FloatDict.__pow__=function(self,other){
 if(isinstance(other,int)){return float(Math.pow(self,other))}
 else if(isinstance(other,float)){return float(Math.pow(self.value,other.value))}
-else{throw TypeError(
+else{throw __builtins__.TypeError(
 "unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
 }
 }
 var $comp_func=function(self,other){
 if(isinstance(other,int)){return self.value > other.valueOf()}
 else if(isinstance(other,float)){return self.value > other.value}
-else{throw TypeError(
+else{throw __builtins__.TypeError(
 "unorderable types: "+self.__class__+'() > '+other.__class__+"()")
 }
 }
@@ -6537,7 +6547,7 @@ for($op in $comps){
 eval("$FloatDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 var $notimplemented=function(self,other){
-throw TypeError(
+throw __builtins__.TypeError(
 "unsupported operand types for OPERATOR: '"+self.__class__+"' and '"+other.__class__+"'")
 }
 $notimplemented +='' 
@@ -6577,7 +6587,7 @@ var __builtins__=$B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict=object.$dict
 function $UnsupportedOpType(op,class1,class2){
-throw TypeError("unsupported operand type(s) for "+op+": '"+class1+"' and '"+class2+"'")
+throw __builtins__.TypeError("unsupported operand type(s) for "+op+": '"+class1+"' and '"+class2+"'")
 }
 var $IntDict={__class__:$B.$type,
 __name__:'int',
@@ -6638,7 +6648,7 @@ return((self%other)+other)%other
 var bool_value=0;
 if(other.valueOf())bool_value=1
 return(self%bool_value+bool_value)%bool_value
-}else{throw TypeError(
+}else{throw __builtins__.TypeError(
 "unsupported operand type(s) for %: "+self+" (int) and '"+other.__class__+"'")
 }
 }
@@ -6667,7 +6677,7 @@ $IntDict.__name__='int'
 $IntDict.__ne__=function(self,other){return !$IntDict.__eq__(self,other)}
 $IntDict.__neg__=function(self){return -self}
 $IntDict.__new__=function(cls){
-if(cls===undefined){throw TypeError('int.__new__(): not enough arguments')}
+if(cls===undefined){throw __builtins__.TypeError('int.__new__(): not enough arguments')}
 return{__class__:cls.$dict}
 }
 $IntDict.__not_in__=function(self,item){
@@ -6686,7 +6696,7 @@ return self.toString()
 }
 $IntDict.__rshift__=function(self,other){return self >> other}
 $IntDict.__setattr__=function(self,attr,value){
-if(self.__class__===$IntDict){throw AttributeError("'int' object has no attribute "+attr+"'")}
+if(self.__class__===$IntDict){throw __builtins__.AttributeError("'int' object has no attribute "+attr+"'")}
 self[attr]=value
 }
 $IntDict.__str__=$IntDict.__repr__
@@ -6716,7 +6726,7 @@ else if(isinstance(other,bool)){
 var bool_value=0
 if(other.valueOf())bool_value=1
 return self.valueOf()-bool_value}
-else{throw TypeError(
+else{throw __builtins__.TypeError(
 "unsupported GG operand type(s) for -: "+self.valueOf()+" and '"+__builtins__.str(other.__class__)+"'")
 }
 }
@@ -6729,7 +6739,7 @@ var $comp_func=function(self,other){
 if(isinstance(other,int)){return self.valueOf()> other.valueOf()}
 else if(isinstance(other,float)){return self.valueOf()> other.value}
 else if(isinstance(other,bool)){return self.valueOf()> __builtins__.bool.$dict.__hash__(other)}
-else{throw TypeError(
+else{throw __builtins__.TypeError(
 "unorderable types: "+self.__class__.__name__+'() > '+other.__class__.__name__+"()")}
 }
 $comp_func +='' 
@@ -6775,7 +6785,7 @@ $native:true
 }
 $DictDict.__add__=function(self,other){
 var msg="unsupported operand types for +:'dict' and "
-throw TypeError(msg+"'"+(__builtins__.str(other.__class__)|| typeof other)+"'")
+throw __builtins__.TypeError(msg+"'"+(__builtins__.str(other.__class__)|| typeof other)+"'")
 }
 $DictDict.__bool__=function(self){return self.$keys.length>0}
 $DictDict.__contains__=function(self,item){
@@ -6819,7 +6829,7 @@ if(getattr(arg,'__eq__')(self.$keys[i])){return self.$values[i]}
 }
 throw KeyError(__builtins__.str(arg))
 }
-$DictDict.__hash__=function(self){throw TypeError("unhashable type: 'dict'");}
+$DictDict.__hash__=function(self){throw __builtins__.TypeError("unhashable type: 'dict'");}
 $DictDict.__in__=function(self,item){return getattr(item,'__contains__')(self)}
 $DictDict.__init__=function(self){
 args=[]
@@ -6885,7 +6895,7 @@ self.iter++
 return self.$keys[self.iter-1]
 }else{
 self.iter=null
-throw StopIteration()
+throw __builtins__.StopIteration()
 }
 }
 $DictDict.__not_in__=function(self,item){return !$DictDict.__in__(self,item)}
@@ -7038,7 +7048,7 @@ if(pos>=0 && pos<self.length){
 self.splice(pos,1)
 return
 }
-else{throw IndexError('list index out of range')}
+else{throw __builtins__.IndexError('list index out of range')}
 }else if(isinstance(arg,slice)){
 var start=arg.start;if(start===None){start=0}
 var stop=arg.stop;if(stop===None){stop=self.length}
@@ -7065,7 +7075,7 @@ self.splice(res[i],1)
 }
 return
 }else{
-throw TypeError('list indices must be integer, not '+__builtins__.str(arg.__class__))
+throw __builtins__.TypeError('list indices must be integer, not '+__builtins__.str(arg.__class__))
 }
 }
 $ListDict.__eq__=function(self,other){
@@ -7089,7 +7099,7 @@ var pos=arg
 if(arg<0){pos=items.length+pos}
 if(pos>=0 && pos<items.length){return items[pos]}
 else{
-throw IndexError('list index out of range')
+throw __builtins__.IndexError('list index out of range')
 }
 }else if(isinstance(arg,slice)){
 var step=arg.step===None ? 1 : arg.step
@@ -7125,12 +7135,12 @@ return res
 }else if(isinstance(arg,bool)){
 return $ListDict.__getitem__(self,int(arg))
 }else{
-throw TypeError('list indices must be integer, not '+arg.__class__.__name__)
+throw __builtins__.TypeError('list indices must be integer, not '+arg.__class__.__name__)
 }
 }
 $ListDict.__ge__=function(self,other){
 if(!isinstance(other,list)){
-throw TypeError("unorderable types: list() >= "+other.__class__.__name__+'()')
+throw __builtins__.TypeError("unorderable types: list() >= "+other.__class__.__name__+'()')
 }
 var i=0
 while(i<self.length){
@@ -7142,7 +7152,7 @@ return false
 }
 $ListDict.__gt__=function(self,other){
 if(!isinstance(other,list)){
-throw TypeError("unorderable types: list() > "+other.__class__.__name__+'()')
+throw __builtins__.TypeError("unorderable types: list() > "+other.__class__.__name__+'()')
 }
 var i=0
 while(i<self.length){
@@ -7152,7 +7162,7 @@ else return(self[i]>other[i])
 }
 return false 
 }
-$ListDict.__hash__=function(){throw TypeError("unhashable type: 'list'")}
+$ListDict.__hash__=function(){throw __builtins__.TypeError("unhashable type: 'list'")}
 $ListDict.__in__=function(self,item){return getattr(item,'__contains__')(self)}
 $ListDict.__init__=function(self,arg){
 var len_func=getattr(self,'__len__'),pop_func=getattr(self,'pop')
@@ -7180,7 +7190,7 @@ $ListDict.__mro__=[$ListDict,$ObjectDict]
 $ListDict.__mul__=function(self,other){
 if(isinstance(other,int)){return getattr(other,'__mul__')(self)}
 else{
-throw TypeError("can't multiply sequence by non-int of type '"+other.__class__.__name__+"'")
+throw __builtins__.TypeError("can't multiply sequence by non-int of type '"+other.__class__.__name__+"'")
 }
 }
 $ListDict.__ne__=function(self,other){return !$ListDict.__eq__(self,other)}
@@ -7208,7 +7218,7 @@ if(isinstance(arg,int)){
 var pos=arg
 if(arg<0){pos=self.length+pos}
 if(pos>=0 && pos<self.length){self[pos]=value}
-else{throw IndexError('list index out of range')}
+else{throw __builtins__.IndexError('list index out of range')}
 }else if(isinstance(arg,slice)){
 var start=arg.start===None ? 0 : arg.start
 var stop=arg.stop===None ? self.length : arg.stop
@@ -7222,10 +7232,10 @@ for(var i=$temp.length-1;i>=0;i--){
 self.splice(start,0,$temp[i])
 }
 }else{
-throw TypeError("can only assign an iterable")
+throw __builtins__.TypeError("can only assign an iterable")
 }
 }else{
-throw TypeError('list indices must be integer, not '+arg.__class__.__name__)
+throw __builtins__.TypeError('list indices must be integer, not '+arg.__class__.__name__)
 }
 }
 $ListDict.__str__=$ListDict.__repr__
@@ -7246,7 +7256,7 @@ if(getattr(self[i],'__eq__')(elt)){res++}
 return res
 }
 $ListDict.extend=function(self,other){
-if(arguments.length!=2){throw TypeError(
+if(arguments.length!=2){throw __builtins__.TypeError(
 "extend() takes exactly one argument ("+arguments.length+" given)")}
 other=iter(other)
 while(true){
@@ -7284,10 +7294,10 @@ var res=self[pos]
 self.splice(pos,1)
 return res
 }else{
-throw TypeError(pos.__class__+" object cannot be interpreted as an integer")
+throw __builtins__.TypeError(pos.__class__+" object cannot be interpreted as an integer")
 }
 }else{
-throw TypeError("pop() takes at most 1 argument ("+(arguments.length-1)+' given)')
+throw __builtins__.TypeError("pop() takes at most 1 argument ("+(arguments.length-1)+' given)')
 }
 }
 $ListDict.reverse=function(self){
@@ -7350,7 +7360,7 @@ $ListDict.__dict__.$values.push(list[$attr])
 function list(){
 if(arguments.length===0){return[]}
 else if(arguments.length>1){
-throw TypeError("list() takes at most 1 argument ("+arguments.length+" given)")
+throw __builtins__.TypeError("list() takes at most 1 argument ("+arguments.length+" given)")
 }
 var res=[]
 var arg=iter(arguments[0])
@@ -7408,10 +7418,10 @@ $TupleDict[attr]=$ListDict[attr]
 }
 }
 $TupleDict.__delitem__=function(){
-throw TypeError("'tuple' object doesn't support item deletion")
+throw __builtins__.TypeError("'tuple' object doesn't support item deletion")
 }
 $TupleDict.__setitem__=function(){
-throw TypeError("'tuple' object does not support item assignment")
+throw __builtins__.TypeError("'tuple' object does not support item assignment")
 }
 $TupleDict.__eq__=function(self,other){
 if(other===undefined){
@@ -7435,14 +7445,14 @@ $native:true
 $StringDict.__add__=function(self,other){
 if(!(typeof other==="string")){
 try{return getattr(other,'__radd__')(self)}
-catch(err){throw TypeError(
+catch(err){throw __builtins__.TypeError(
 "Can't convert "+other.__class__+" to str implicitely")}
 }else{
 return self+other
 }
 }
 $StringDict.__contains__=function(self,item){
-if(!(typeof item==="string")){throw TypeError(
+if(!(typeof item==="string")){throw __builtins__.TypeError(
 "'in <string>' requires string as left operand, not "+item.__class__)}
 var nbcar=item.length
 for(var i=0;i<self.length;i++){
@@ -7451,7 +7461,7 @@ if(self.substr(i,nbcar)==item){return True}
 return False
 }
 $StringDict.__delitem__=function(){
-throw TypeError("'str' object doesn't support item deletion")
+throw __builtins__.TypeError("'str' object doesn't support item deletion")
 }
 $StringDict.__eq__=function(self,other){
 if(other===undefined){
@@ -7465,7 +7475,7 @@ if(isinstance(arg,int)){
 var pos=arg
 if(arg<0){pos=self.length+pos}
 if(pos>=0 && pos<self.length){return self.charAt(pos)}
-else{throw IndexError('string index out of range')}
+else{throw __builtins__.IndexError('string index out of range')}
 }else if(isinstance(arg,slice)){
 var step=arg.step===None ? 1 : arg.step
 if(step>0){
@@ -7540,7 +7550,7 @@ return res
 }
 this.format=function(src){
 if(this.mapping_key!==null){
-if(!isinstance(src,__builtins__.dict)){throw TypeError("format requires a mapping")}
+if(!isinstance(src,__builtins__.dict)){throw __builtins__.TypeError("format requires a mapping")}
 src=getattr(src,'__getitem__')(this.mapping_key)
 }
 if(this.type=="s"){
@@ -7556,7 +7566,7 @@ var res=ascii(src)
 if(this.precision){res=res.substr(0,parseInt(this.precision.substr(1)))}
 return res
 }else if(this.type=="g" || this.type=="G"){
-if(!isinstance(src,[int,float])){throw TypeError(
+if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var prec=-4
 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -7581,7 +7591,7 @@ this.type="f"
 return this.format(src)
 }
 }else if(this.type=="e" || this.type=="E"){
-if(!isinstance(src,[int,float])){throw TypeError(
+if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var prec=6
 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -7591,7 +7601,7 @@ var res=elts[0]+this.type+elts[1].charAt(0)
 if(elts[1].length===2){res +='0'}
 return res+elts[1].substr(1)
 }else if(this.type=="x" || this.type=="X"){
-if(!isinstance(src,[int,float])){throw TypeError(
+if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=src
 res=src.toString(16)
@@ -7608,7 +7618,7 @@ while(res.length<parseInt(this.min_width)){res=pad+res}
 }
 return res
 }else if(this.type=="i" || this.type=="d"){
-if(!isinstance(src,[int,float])){throw TypeError(
+if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=parseInt(src)
 if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
@@ -7622,7 +7632,7 @@ while(res.length<parseInt(this.min_width)){res=pad+res}
 }
 return res
 }else if(this.type=="f" || this.type=="F"){
-if(!isinstance(src,[int,float])){throw TypeError(
+if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=parseFloat(src)
 if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
@@ -7638,7 +7648,7 @@ return res
 }else if(this.type=='c'){
 if(isinstance(src,str)&& str.length==1){return src}
 else if(isinstance(src,int)&& src>0 && src<256){return String.fromCharCode(src)}
-else{throw TypeError('%c requires int or char')}
+else{throw __builtins__.TypeError('%c requires int or char')}
 }
 }
 }
@@ -7658,7 +7668,7 @@ nb_repl++
 if(is_mapping===null){is_mapping=f.mapping_key!==null}
 else if(is_mapping!==(f.mapping_key!==null)){
 console.log(f+' not mapping')
-throw TypeError('format required a mapping')
+throw __builtins__.TypeError('format required a mapping')
 }
 }else{
 pos++;pos++
@@ -7673,7 +7683,7 @@ for(var i=1;i<elts.length;i+=2){
 elts[i]=elts[i].format(args)
 }
 }
-else if(nb_repl>1){throw TypeError('not enough arguments for format string')}
+else if(nb_repl>1){throw __builtins__.TypeError('not enough arguments for format string')}
 else{elts[1]=elts[1].format(args)}
 }else{
 if(nb_repl==args.length){
@@ -7681,9 +7691,9 @@ for(var i=0;i<args.length;i++){
 var fmt=elts[1+2*i]
 elts[1+2*i]=fmt.format(args[i])
 }
-}else if(nb_repl<args.length){throw TypeError(
+}else if(nb_repl<args.length){throw __builtins__.TypeError(
 "not all arguments converted during string formatting")
-}else{throw TypeError('not enough arguments for format string')}
+}else{throw __builtins__.TypeError('not enough arguments for format string')}
 }
 var res=''
 for(var i=0;i<elts.length;i++){res+=elts[i]}
@@ -7692,7 +7702,7 @@ return res
 }
 $StringDict.__mro__=[$StringDict,$ObjectDict]
 $StringDict.__mul__=function(self,other){
-if(!isinstance(other,int)){throw TypeError(
+if(!isinstance(other,int)){throw __builtins__.TypeError(
 "Can't multiply sequence by non-int of type '"+str(other.__class__)+"'")}
 $res=''
 for(var i=0;i<other;i++){$res+=self.valueOf()}
@@ -7710,7 +7720,7 @@ return res
 }
 $StringDict.__setattr__=function(self,attr,value){setattr(self,attr,value)}
 $StringDict.__setitem__=function(self,attr,value){
-throw TypeError("'str' object does not support item assignment")
+throw __builtins__.TypeError("'str' object does not support item assignment")
 }
 $StringDict.__str__=function(self){
 if(self===undefined){return "<class 'str'>"}
@@ -7718,7 +7728,7 @@ else{return self.toString()}
 }
 $StringDict.toString=function(){return 'string!'}
 var $comp_func=function(self,other){
-if(typeof other !=="string"){throw TypeError(
+if(typeof other !=="string"){throw __builtins__.TypeError(
 "unorderable types: 'str' > "+other.__class__+"()")}
 return self > other
 }
@@ -7755,7 +7765,7 @@ return res
 }
 }
 $StringDict.count=function(self,elt){
-if(!(typeof elt==="string")){throw TypeError(
+if(!(typeof elt==="string")){throw __builtins__.TypeError(
 "Can't convert '"+str(elt.__class__)+"' object to str implicitly")}
 var n=0, pos=0
 while(true){
@@ -7793,9 +7803,9 @@ var start=0,end=self.length
 var $ns=$B.$MakeArgs("$StringDict.find",arguments,['self','sub'],
 ['start','end'],null,null)
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
-if(!isinstance(sub,str)){throw TypeError(
+if(!isinstance(sub,str)){throw __builtins__.TypeError(
 "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
-if(!isinstance(start,int)||!isinstance(end,int)){throw TypeError(
+if(!isinstance(start,int)||!isinstance(end,int)){throw __builtins__.TypeError(
 "slice indices must be integers or None or have an __index__ method")}
 var s=self.substring(start,end)
 var escaped=['[','.','*','+','?','|','(',')','$','^']
@@ -8179,7 +8189,7 @@ var res='',count=0
 while(true){
 try{
 var obj2=next(iterable)
-if(!isinstance(obj2,str)){throw TypeError(
+if(!isinstance(obj2,str)){throw __builtins__.TypeError(
 "sequence item "+count+": expected str instance, "+obj2.__class__+"found")}
 res +=obj2+self
 count++
@@ -8230,7 +8240,7 @@ return str
 }
 $StringDict.replace=function(self,old,_new,count){
 if(count!==undefined){
-if(!isinstance(count,[int,float])){throw TypeError(
+if(!isinstance(count,[int,float])){throw __builtins__.TypeError(
 "'"+str(count.__class__)+"' object cannot be interpreted as an integer")}
 var re=new RegExp($re_escape(old),'g')
 var res=self.valueOf()
@@ -8250,9 +8260,9 @@ var start=0,end=self.length
 var $ns=$B.$MakeArgs("$StringDict.find",arguments,['self','sub'],
 ['start','end'],null,null)
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
-if(!isinstance(sub,str)){throw TypeError(
+if(!isinstance(sub,str)){throw __builtins__.TypeError(
 "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
-if(!isinstance(start,int)||!isinstance(end,int)){throw TypeError(
+if(!isinstance(start,int)||!isinstance(end,int)){throw __builtins__.TypeError(
 "slice indices must be integers or None or have an __index__ method")}
 var s=self.substring(start,end)
 var reversed=''
@@ -8451,7 +8461,7 @@ str.$dict=$StringDict
 $StringDict.$factory=str
 $StringDict.__new__=function(cls){
 if(cls===undefined){
-throw TypeError('str.__new__(): not enough arguments')
+throw __builtins__.TypeError('str.__new__(): not enough arguments')
 }
 var res={__class__:cls.$dict}
 return res
@@ -8532,7 +8542,7 @@ return !$SetDict.__lt__(self,other)
 $SetDict.__gt__=function(self,other){
 return !$SetDict.__le__(self,other)
 }
-$SetDict.__hash__=function(self){throw TypeError("unhashable type: 'set'");}
+$SetDict.__hash__=function(self){throw __builtins__.TypeError("unhashable type: 'set'");}
 $SetDict.__in__=function(self,item){return getattr(item,'__contains__')(self)}
 $SetDict.__init__=function(self){
 args=[]
@@ -8558,10 +8568,10 @@ throw err
 self.$items=obj.$items
 }catch(err){
 console.log(''+err)
-throw TypeError("'"+arg.__class__.__name__+"' object is not iterable")
+throw __builtins__.TypeError("'"+arg.__class__.__name__+"' object is not iterable")
 }
 }else{
-throw TypeError("set expected at most 1 argument, got "+args.length)
+throw __builtins__.TypeError("set expected at most 1 argument, got "+args.length)
 }
 }
 $set_iterator=$B.$iterator_class('set iterator')
@@ -8843,7 +8853,7 @@ if(res!==undefined){
 if(typeof res=='function'){return function(){return res.apply(self,arguments)}}
 return res
 }else{
-throw AttributeError("object DOMEvent has no attribute '"+attr+"'")
+throw __builtins__.AttributeError("object DOMEvent has no attribute '"+attr+"'")
 }
 }
 __BRYTHON__.$DOMEvent=$DOMEvent=function(ev){
@@ -9162,7 +9172,7 @@ self.$counter++
 if(self.$counter<self.elt.childNodes.length){
 return $DOMNode(self.elt.childNodes[self.$counter])
 }
-throw StopIteration('StopIteration')
+throw __builtins__.StopIteration('StopIteration')
 }
 DOMNode.__not_in__=function(self,other){return !getattr(other,"__contains__")(self)}
 DOMNode.__radd__=function(self,other){
@@ -9275,7 +9285,7 @@ $dict[$ns['kw'].$keys[i]]=$ns['kw'].$values[i]
 }
 if($dict['name']!==undefined){
 if(obj.getElementsByName===undefined){
-throw TypeError("DOMNode object doesn't support selection by name")
+throw __builtins__.TypeError("DOMNode object doesn't support selection by name")
 }
 var res=[]
 var node_list=document.getElementsByName($dict['name'])
@@ -9286,7 +9296,7 @@ res.push($DOMNode(node_list[i]))
 }
 if($dict['tag']!==undefined){
 if(obj.getElementsByTagName===undefined){
-throw TypeError("DOMNode object doesn't support selection by tag name")
+throw __builtins__.TypeError("DOMNode object doesn't support selection by tag name")
 }
 var res=[]
 var node_list=document.getElementsByTagName($dict['tag'])
@@ -9297,7 +9307,7 @@ res.push($DOMNode(node_list[i]))
 }
 if($dict['classname']!==undefined){
 if(obj.getElementsByClassName===undefined){
-throw TypeError("DOMNode object doesn't support selection by class name")
+throw __builtins__.TypeError("DOMNode object doesn't support selection by class name")
 }
 var res=[]
 var node_list=document.getElementsByClassName($dict['classname'])
@@ -9308,7 +9318,7 @@ res.push($DOMNode(node_list[i]))
 }
 if($dict['id']!==undefined){
 if(obj.getElementById===undefined){
-throw TypeError("DOMNode object doesn't support selection by id")
+throw __builtins__.TypeError("DOMNode object doesn't support selection by id")
 }
 var id_res=obj.getElementById($dict['id'])
 if(!id_res){return[]}
@@ -9316,7 +9326,7 @@ else{return[$DOMNode(id_res)]}
 }
 if($dict['selector']!==undefined){
 if(obj.querySelectorAll===undefined){
-throw TypeError("DOMNode object doesn't support selection by selector")
+throw __builtins__.TypeError("DOMNode object doesn't support selection by selector")
 }
 var node_list=obj.querySelectorAll($dict['selector'])
 var sel_res=[]
@@ -9342,7 +9352,7 @@ return res
 return res
 }
 DOMNode.getContext=function(self){
-if(!('getContext' in self.elt)){throw AttributeError(
+if(!('getContext' in self.elt)){throw __builtins__.AttributeError(
 "object has no attribute 'getContext'")}
 var obj=self.elt
 return function(ctx){return new $JSObject(obj.getContext(ctx))}
