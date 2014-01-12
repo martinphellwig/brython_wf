@@ -2,7 +2,7 @@
 __BRYTHON__.$__new__ = function(factory){
     return function(cls){
         if(cls===undefined){
-            throw TypeError(factory.$dict.__name__+'.__new__(): not enough arguments')
+            throw __BRYTHON__.builtins.TypeError(factory.$dict.__name__+'.__new__(): not enough arguments')
         }
         var res = factory.apply(null,[])
         res.__class__ = cls.$dict
@@ -32,7 +32,7 @@ var $ObjectDict = {
 // function used to generate the methods that return 'unorderable types'
 var $ObjectNI = function(name,op){
     return function(other){
-        throw TypeError('unorderable types: object() '+op+' '+$B.builtins.str(other.__class__.__name__)+'()')
+        throw $B.builtins.TypeError('unorderable types: object() '+op+' '+$B.builtins.str(other.__class__.__name__)+'()')
     }
 }
 
@@ -192,7 +192,7 @@ $ObjectDict.__lt__ = $ObjectNI('__lt__','<')
 $ObjectDict.__mro__ = [$ObjectDict]
 
 $ObjectDict.__new__ = function(cls){
-    if(cls===undefined){throw TypeError('object.__new__(): not enough arguments')}
+    if(cls===undefined){throw $B.builtins.TypeError('object.__new__(): not enough arguments')}
     var obj = new Object()
     obj.__class__ = cls.$dict
     return obj
@@ -213,13 +213,13 @@ $ObjectDict.__repr__ = function(self){
 
 $ObjectDict.__setattr__ = function(self,attr,val){
     if(val===undefined){ // setting an attribute to 'object' type is not allowed
-        throw TypeError("can't set attributes of built-in/extension type 'object'")
+        throw $B.builtins.TypeError("can't set attributes of built-in/extension type 'object'")
     }else if(self.__class__===$ObjectDict){
         // setting an attribute to object() is not allowed
         if($ObjectDict[attr]===undefined){
-            throw AttributeError("'object' object has no attribute '"+attr+"'")
+            throw $B.builtins.AttributeError("'object' object has no attribute '"+attr+"'")
         }else{
-            throw AttributeError("'object' object attribute '"+attr+"' is read-only")
+            throw $B.builtins.AttributeError("'object' object attribute '"+attr+"' is read-only")
         }
     }
     self[attr]=val

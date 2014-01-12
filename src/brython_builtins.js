@@ -10,7 +10,7 @@ __BRYTHON__.__getattr__ = function(attr){return this[attr]}
 __BRYTHON__.__setattr__ = function(attr,value){
     // limited to some attributes
     if(['debug'].indexOf(attr)>-1){__BRYTHON__[attr]=value}
-    else{throw AttributeError('__BRYTHON__ object has no attribute '+attr)}
+    else{throw __BRYTHON__.builtins.AttributeError('__BRYTHON__ object has no attribute '+attr)}
 }
 
 // system language ( _not_ the one set in browser settings)

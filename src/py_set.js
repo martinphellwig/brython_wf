@@ -58,7 +58,7 @@ $SetDict.__gt__ = function(self,other){
     return !$SetDict.__le__(self,other)
 }
 
-$SetDict.__hash__ = function(self) {throw TypeError("unhashable type: 'set'");}
+$SetDict.__hash__ = function(self) {throw __builtins__.TypeError("unhashable type: 'set'");}
 
 $SetDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
 
@@ -86,10 +86,10 @@ $SetDict.__init__ = function(self){
             self.$items = obj.$items
         }catch(err){
             console.log(''+err)
-            throw TypeError("'"+arg.__class__.__name__+"' object is not iterable")
+            throw __builtins__.TypeError("'"+arg.__class__.__name__+"' object is not iterable")
         }
     } else {
-        throw TypeError("set expected at most 1 argument, got "+args.length)
+        throw __builtins__.TypeError("set expected at most 1 argument, got "+args.length)
     }
 }
 

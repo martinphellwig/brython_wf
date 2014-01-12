@@ -21,7 +21,7 @@ var $DictDict = {__class__:$B.$type,
 
 $DictDict.__add__ = function(self,other){
     var msg = "unsupported operand types for +:'dict' and "
-    throw TypeError(msg+"'"+(__builtins__.str(other.__class__) || typeof other)+"'")
+    throw __builtins__.TypeError(msg+"'"+(__builtins__.str(other.__class__) || typeof other)+"'")
 }
 
 $DictDict.__bool__ = function (self) {return self.$keys.length>0}
@@ -73,7 +73,7 @@ $DictDict.__getitem__ = function(self,arg){
     throw KeyError(__builtins__.str(arg))
 }
 
-$DictDict.__hash__ = function(self) {throw TypeError("unhashable type: 'dict'");}
+$DictDict.__hash__ = function(self) {throw __builtins__.TypeError("unhashable type: 'dict'");}
 
 $DictDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
 
@@ -148,7 +148,7 @@ $DictDict.__next__ = function(self){
         return self.$keys[self.iter-1]
     } else {
         self.iter = null
-        throw StopIteration()
+        throw __builtins__.StopIteration()
     }
 }
 

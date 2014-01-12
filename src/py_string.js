@@ -12,7 +12,7 @@ var $StringDict = {__class__:$B.$type,
 $StringDict.__add__ = function(self,other){
     if(!(typeof other==="string")){
         try{return getattr(other,'__radd__')(self)}
-        catch(err){throw TypeError(
+        catch(err){throw __builtins__.TypeError(
             "Can't convert "+other.__class__+" to str implicitely")}
     }else{
         return self+other
@@ -20,7 +20,7 @@ $StringDict.__add__ = function(self,other){
 }
 
 $StringDict.__contains__ = function(self,item){
-    if(!(typeof item==="string")){throw TypeError(
+    if(!(typeof item==="string")){throw __builtins__.TypeError(
          "'in <string>' requires string as left operand, not "+item.__class__)}
     var nbcar = item.length
     for(var i=0;i<self.length;i++){
@@ -30,7 +30,7 @@ $StringDict.__contains__ = function(self,item){
 }
 
 $StringDict.__delitem__ = function(){
-    throw TypeError("'str' object doesn't support item deletion")
+    throw __builtins__.TypeError("'str' object doesn't support item deletion")
 }
 
 $StringDict.__eq__ = function(self,other){
@@ -46,7 +46,7 @@ $StringDict.__getitem__ = function(self,arg){
         var pos = arg
         if(arg<0){pos=self.length+pos}
         if(pos>=0 && pos<self.length){return self.charAt(pos)}
-        else{throw IndexError('string index out of range')}
+        else{throw __builtins__.IndexError('string index out of range')}
     } else if(isinstance(arg,slice)) {
         var step = arg.step===None ? 1 : arg.step
         if(step>0){
@@ -134,7 +134,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
         }
         this.format = function(src){
             if(this.mapping_key!==null){
-                if(!isinstance(src,__builtins__.dict)){throw TypeError("format requires a mapping")}
+                if(!isinstance(src,__builtins__.dict)){throw __builtins__.TypeError("format requires a mapping")}
                 src=getattr(src,'__getitem__')(this.mapping_key)
             }
             if(this.type=="s"){
@@ -150,7 +150,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
                 return res
             }else if(this.type=="g" || this.type=="G"){
-                if(!isinstance(src,[int,float])){throw TypeError(
+                if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var prec = -4
                 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -177,7 +177,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                     return this.format(src)
                 }
             }else if(this.type=="e" || this.type=="E"){
-                if(!isinstance(src,[int,float])){throw TypeError(
+                if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var prec = 6
                 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -187,7 +187,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 if(elts[1].length===2){res += '0'}
                 return res+elts[1].substr(1)
             }else if(this.type=="x" || this.type=="X"){
-                if(!isinstance(src,[int,float])){throw TypeError(
+                if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = src
                 res = src.toString(16)
@@ -204,7 +204,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 }
                 return res
             }else if(this.type=="i" || this.type=="d"){
-                if(!isinstance(src,[int,float])){throw TypeError(
+                if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseInt(src)
                 if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
@@ -218,7 +218,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 }
                 return res
             }else if(this.type=="f" || this.type=="F"){
-                if(!isinstance(src,[int,float])){throw TypeError(
+                if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseFloat(src)
                 if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
@@ -234,7 +234,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
             }else if(this.type=='c'){
                 if(isinstance(src,str) && str.length==1){return src}
                 else if(isinstance(src,int) && src>0 && src<256){return String.fromCharCode(src)}
-                else{throw TypeError('%c requires int or char')}
+                else{throw __builtins__.TypeError('%c requires int or char')}
             }
         }
     }  // end $legacy_format
@@ -258,7 +258,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                     else if(is_mapping!==(f.mapping_key!==null)){
                         // can't mix mapping keys with non-mapping
                         console.log(f+' not mapping')
-                        throw TypeError('format required a mapping')
+                        throw __builtins__.TypeError('format required a mapping')
                     }
                 }else{ // form %%
                     pos++;pos++
@@ -274,7 +274,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 elts[i]=elts[i].format(args)
             }
         }
-        else if(nb_repl>1){throw TypeError('not enough arguments for format string')}
+        else if(nb_repl>1){throw __builtins__.TypeError('not enough arguments for format string')}
         else{elts[1]=elts[1].format(args)}
     }else{
         if(nb_repl==args.length){
@@ -282,9 +282,9 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 var fmt = elts[1+2*i]
                 elts[1+2*i]=fmt.format(args[i])
             }
-        }else if(nb_repl<args.length){throw TypeError(
+        }else if(nb_repl<args.length){throw __builtins__.TypeError(
             "not all arguments converted during string formatting")
-        }else{throw TypeError('not enough arguments for format string')}
+        }else{throw __builtins__.TypeError('not enough arguments for format string')}
     }
     var res = ''
     for(var i=0;i<elts.length;i++){res+=elts[i]}
@@ -297,7 +297,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
 $StringDict.__mro__ = [$StringDict,$ObjectDict]
 
 $StringDict.__mul__ = function(self,other){
-    if(!isinstance(other,int)){throw TypeError(
+    if(!isinstance(other,int)){throw __builtins__.TypeError(
         "Can't multiply sequence by non-int of type '"+str(other.__class__)+"'")}
     $res = ''
     for(var i=0;i<other;i++){$res+=self.valueOf()}
@@ -322,7 +322,7 @@ $StringDict.__repr__ = function(self){
 $StringDict.__setattr__ = function(self,attr,value){setattr(self,attr,value)}
 
 $StringDict.__setitem__ = function(self,attr,value){
-    throw TypeError("'str' object does not support item assignment")
+    throw __builtins__.TypeError("'str' object does not support item assignment")
 }
 $StringDict.__str__ = function(self){
     if(self===undefined){return "<class 'str'>"}
@@ -332,7 +332,7 @@ $StringDict.toString = function(){return 'string!'}
 
 // generate comparison methods
 var $comp_func = function(self,other){
-    if(typeof other !=="string"){throw TypeError(
+    if(typeof other !=="string"){throw __builtins__.TypeError(
         "unorderable types: 'str' > "+other.__class__+"()")}
     return self > other
 }
@@ -377,7 +377,7 @@ $StringDict.center = function(self,width,fillchar){
 }
 
 $StringDict.count = function(self,elt){
-    if(!(typeof elt==="string")){throw TypeError(
+    if(!(typeof elt==="string")){throw __builtins__.TypeError(
         "Can't convert '"+str(elt.__class__)+"' object to str implicitly")}
     //needs to be non overlapping occurrences of substring in string.
     var n=0, pos=0
@@ -428,9 +428,9 @@ $StringDict.find = function(self){
     var $ns=$B.$MakeArgs("$StringDict.find",arguments,['self','sub'],
         ['start','end'],null,null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
-    if(!isinstance(sub,str)){throw TypeError(
+    if(!isinstance(sub,str)){throw __builtins__.TypeError(
         "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
-    if(!isinstance(start,int)||!isinstance(end,int)){throw TypeError(
+    if(!isinstance(start,int)||!isinstance(end,int)){throw __builtins__.TypeError(
         "slice indices must be integers or None or have an __index__ method")}
     var s = self.substring(start,end)
     var escaped = ['[','.','*','+','?','|','(',')','$','^']
@@ -926,7 +926,7 @@ $StringDict.join = function(self,obj){
     while(true){
         try{
             var obj2 = next(iterable)
-            if(!isinstance(obj2,str)){throw TypeError(
+            if(!isinstance(obj2,str)){throw __builtins__.TypeError(
                 "sequence item "+count+": expected str instance, "+obj2.__class__+"found")}
             res += obj2+self
             count++
@@ -984,7 +984,7 @@ function $re_escape(str)
 
 $StringDict.replace = function(self,old,_new,count){
     if(count!==undefined){
-        if(!isinstance(count,[int,float])){throw TypeError(
+        if(!isinstance(count,[int,float])){throw __builtins__.TypeError(
             "'"+str(count.__class__)+"' object cannot be interpreted as an integer")}
         var re = new RegExp($re_escape(old),'g')
         
@@ -1009,9 +1009,9 @@ $StringDict.rfind = function(self){
     var $ns=$B.$MakeArgs("$StringDict.find",arguments,['self','sub'],
         ['start','end'],null,null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
-    if(!isinstance(sub,str)){throw TypeError(
+    if(!isinstance(sub,str)){throw __builtins__.TypeError(
         "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
-    if(!isinstance(start,int)||!isinstance(end,int)){throw TypeError(
+    if(!isinstance(start,int)||!isinstance(end,int)){throw __builtins__.TypeError(
         "slice indices must be integers or None or have an __index__ method")}
     var s = self.substring(start,end)
     var reversed = ''
@@ -1245,7 +1245,7 @@ str.$dict = $StringDict
 $StringDict.$factory = str
 $StringDict.__new__ = function(cls){
     if(cls===undefined){
-        throw TypeError('str.__new__(): not enough arguments')
+        throw __builtins__.TypeError('str.__new__(): not enough arguments')
     }
     var res = {__class__:cls.$dict}
     return res

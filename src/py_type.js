@@ -137,7 +137,7 @@ $B.builtins.type = function(name,bases,cl_dict){
             else{break}
         }
         if(candidate===null){
-            throw TypeError("inconsistent hierarchy, no C3 MRO is possible")
+            throw $B.builtins.TypeError("inconsistent hierarchy, no C3 MRO is possible")
         }
         mro.push(candidate)
         for(var i=0;i<seqs.length;i++){

@@ -170,7 +170,7 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
         return __BRYTHON__.$JS2Py(res)
     }else{
         // XXX search __getattr__
-        throw AttributeError("no attribute "+attr+' for '+this)
+        throw __builtins__.AttributeError("no attribute "+attr+' for '+this)
     }
 
 }
@@ -179,7 +179,7 @@ $JSObjectDict.__getitem__ = function(self,rank){
     try{return getattr(self.js,'__getitem__')(rank)}
     catch(err){
         if(self.js[rank]!==undefined){return JSObject(self.js[rank])}
-        else{throw AttributeError(self+' has no attribute __getitem__')}
+        else{throw __builtins__.AttributeError(self+' has no attribute __getitem__')}
     }
 }
 
@@ -192,7 +192,7 @@ $JSObjectDict.__len__ = function(self){
     try{return getattr(self.js,'__len__')()}
     catch(err){
         console.log('err in JSObject.__len__ : '+err)
-        throw AttributeError(this+' has no attribute __len__')
+        throw __builtins__.AttributeError(this+' has no attribute __len__')
     }
 }
 

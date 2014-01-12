@@ -26,7 +26,7 @@ $FloatDict.__floordiv__ = function(self,other){
     }else if(isinstance(other,float)){
         if(!other.value){throw ZeroDivisionError('division by zero')}
         else{return float(Math.floor(self.value/other.value))}
-    }else{throw TypeError(
+    }else{throw __builtins__.TypeError(
         "unsupported operand type(s) for //: 'float' and '"+other.__class__+"'")
     }
 }
@@ -74,7 +74,7 @@ $FloatDict.__mod__ = function(self,other) {
          var bool_value=0; 
          if (other.valueOf()) bool_value=1;
          return float((self.value%bool_value+bool_value)%bool_value)
-    }else{throw TypeError(
+    }else{throw __builtins__.TypeError(
         "unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
     }
 }
@@ -102,7 +102,7 @@ $FloatDict.__truediv__ = function(self,other){
     }else if(isinstance(other,float)){
         if(!other.value){throw ZeroDivisionError('division by zero')}
         else{return float(self.value/other.value)}
-    }else{throw TypeError(
+    }else{throw __builtins__.TypeError(
         "unsupported operand type(s) for //: 'float' and '"+other.__class__+"'")
     }
 }
@@ -115,7 +115,7 @@ var $op_func = function(self,other){
          var bool_value=0; 
          if (other.valueOf()) bool_value=1;
          return float(self.value-bool_value)}
-    else{throw TypeError(
+    else{throw __builtins__.TypeError(
         "unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
     }
 }
@@ -128,7 +128,7 @@ for($op in $ops){
 $FloatDict.__pow__= function(self,other){
     if(isinstance(other,int)){return float(Math.pow(self,other))}
     else if(isinstance(other,float)){return float(Math.pow(self.value,other.value))}
-    else{throw TypeError(
+    else{throw __builtins__.TypeError(
         "unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
     }
 }
@@ -137,7 +137,7 @@ $FloatDict.__pow__= function(self,other){
 var $comp_func = function(self,other){
     if(isinstance(other,int)){return self.value > other.valueOf()}
     else if(isinstance(other,float)){return self.value > other.value}
-    else{throw TypeError(
+    else{throw __builtins__.TypeError(
         "unorderable types: "+self.__class__+'() > '+other.__class__+"()")
     }
 }
@@ -149,7 +149,7 @@ for($op in $comps){
 
 // unsupported operations
 var $notimplemented = function(self,other){
-    throw TypeError(
+    throw __builtins__.TypeError(
         "unsupported operand types for OPERATOR: '"+self.__class__+"' and '"+other.__class__+"'")
 }
 $notimplemented += '' // coerce to string
