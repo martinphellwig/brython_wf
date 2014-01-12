@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 2.0.rc2.20140112-221156
+// version 2.0.rc2.20140112-222956
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[2, '0.rc2', '20140112-221156', 'alpha', 0]
+__BRYTHON__.version_info=[2, '0.rc2', '20140112-222956', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -4584,7 +4584,7 @@ var console={'log':function(data){void(0)}}
 $B.builtins.__debug__=false
 var __builtins__=$B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
-$ObjectDict=__builtins__.object.$dict
+var $ObjectDict=__builtins__.object.$dict
 $B.$comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
 function abs(obj){
 if(isinstance(obj,__builtins__.int)){return __builtins__.int(Math.abs(obj))}
@@ -4646,7 +4646,7 @@ value=obj
 value=obj.__index__()
 }
 if(value===undefined){
-Exception('__builtins__.TypeError', 'Error, argument must be an integer or contains an __index__ function')
+throw __builtins__.TypeError('Error, argument must be an integer or contains an __index__ function')
 return
 }
 var prefix=""
@@ -4690,7 +4690,7 @@ if(this.valueOf())return 1
 return 0
 }
 var $BytearrayDict={__class__:$B.$type,__name__:'bytearray'}
-$bytearray_iterator=$B.$iterator_class('bytearray_iterator')
+var $bytearray_iterator=$B.$iterator_class('bytearray_iterator')
 $BytearrayDict.__iter__=function(self){
 return $B.$iterator(self.source,$bytearray_iterator)
 }
@@ -4832,7 +4832,7 @@ enumerate.__class__=$B.$factory
 enumerate.$dict=$EnumerateDict
 $EnumerateDict.$factory=enumerate
 var $FilterDict={__class__:$B.$type,__name__:'filter'}
-$filter_iterator=$B.$iterator_class('filter iterator')
+var $filter_iterator=$B.$iterator_class('filter iterator')
 $FilterDict.__iter__=function(self){
 return $B.$iterator(self.$items,$filter_iterator)
 }
@@ -5025,7 +5025,6 @@ return obj.constructor===arg
 }
 }
 function issubclass(klass,classinfo){
-if(classinfo.__class__.__mro__===undefined){console.log('issubclass, no mro for '+classinfo.$dict)}
 if(arguments.length!==2){
 throw __builtins__.TypeError("issubclass expected 2 arguments, got "+arguments.length)
 }
@@ -5218,7 +5217,6 @@ res +=end
 getattr($B.stdout,'write')(res)
 }
 $print.__name__='print'
-log=function(arg){console.log(arg)}
 function $prompt(text,fill){return prompt(text,fill || '')}
 var $PropertyDict={
 __class__ : $B.$type,
@@ -6152,13 +6150,13 @@ $B.$JSObject=$JSObject
 $B.JSConstructor=JSConstructor
 })(__BRYTHON__)
 
-$ModuleDict={
+var $ModuleDict={
 __class__ : __BRYTHON__.$type,
 __name__ : 'module',
 }
 $ModuleDict.__repr__=function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__str__=function(self){return '<module '+self.__name__+'>'}
-$ModuleDict.__mro__=[$ModuleDict,$ObjectDict]
+$ModuleDict.__mro__=[$ModuleDict,__BRYTHON__.builtins.object.$dict]
 ;(function($B){
 var __builtins__=$B.builtins
 function $importer(){

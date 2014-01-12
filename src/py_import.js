@@ -1,12 +1,12 @@
 // import modules
 
-$ModuleDict = {
+var $ModuleDict = {
     __class__ : __BRYTHON__.$type,
     __name__ : 'module',
 }
 $ModuleDict.__repr__ = function(self){return '<module '+self.__name__+'>'}
 $ModuleDict.__str__ = function(self){return '<module '+self.__name__+'>'}
-$ModuleDict.__mro__ = [$ModuleDict,$ObjectDict]
+$ModuleDict.__mro__ = [$ModuleDict,__BRYTHON__.builtins.object.$dict]
 
 ;(function($B){
 

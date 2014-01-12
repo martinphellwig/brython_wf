@@ -7,7 +7,7 @@ var __builtins__ = $B.builtins
 
 // insert already defined builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
-$ObjectDict = __builtins__.object.$dict
+var $ObjectDict = __builtins__.object.$dict
 
 // maps comparison operator to method names
 $B.$comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
@@ -86,7 +86,7 @@ function $builtin_base_convert_helper(obj, base) {
   }
   if (value === undefined) {
      // need to raise an error
-     Exception('__builtins__.TypeError', 'Error, argument must be an integer or contains an __index__ function')
+     throw __builtins__.TypeError('Error, argument must be an integer or contains an __index__ function')
      return
   }
   var prefix = "";
@@ -137,7 +137,7 @@ bool.__hash__ = function() {
 //bytearray() (built in function)
 var $BytearrayDict = {__class__:$B.$type,__name__:'bytearray'}
 
-$bytearray_iterator = $B.$iterator_class('bytearray_iterator')
+var $bytearray_iterator = $B.$iterator_class('bytearray_iterator')
 $BytearrayDict.__iter__ = function(self){
     return $B.$iterator(self.source,$bytearray_iterator)
 }
@@ -316,7 +316,7 @@ $EnumerateDict.$factory = enumerate
 //exec() (built in function)
 
 var $FilterDict = {__class__:$B.$type,__name__:'filter'}
-$filter_iterator = $B.$iterator_class('filter iterator')
+var $filter_iterator = $B.$iterator_class('filter iterator')
 $FilterDict.__iter__ = function(self){
     return $B.$iterator(self.$items,$filter_iterator)
 }
@@ -545,7 +545,6 @@ function isinstance(obj,arg){
 }
 
 function issubclass(klass,classinfo){
-    if(classinfo.__class__.__mro__===undefined){console.log('issubclass, no mro for '+classinfo.$dict)}
     if(arguments.length!==2){
         throw __builtins__.TypeError("issubclass expected 2 arguments, got "+arguments.length)
     }
@@ -764,9 +763,6 @@ function $print(){
     getattr($B.stdout,'write')(res)
 }
 $print.__name__ = 'print'
-
-// compatibility with previous versions
-log = function(arg){console.log(arg)} 
 
 function $prompt(text,fill){return prompt(text,fill || '')}
 
