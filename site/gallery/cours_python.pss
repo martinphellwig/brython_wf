@@ -5,6 +5,8 @@ Introduction à Python
 =====================
 
 <h2 style="padding-top:100px;padding-left:100px;">Adapté du [Tutoriel Python](http://docs.python.org/2/tutorial/index.html)</h2>
+<h3 style="padding-top:50px;padding-left:100px;">par Pierre Quentel pierre.quentel@gmail.com</h3>
+
 
 ../..
 Historique
@@ -1690,4 +1692,5 @@ Modules standard `zlib, gzip, bz2, zipfile, tarfile`
     'witch which has which witches wrist watch'
     >>> zlib.crc32(s)
     226805979
+
 
