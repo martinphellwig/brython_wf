@@ -6,7 +6,7 @@ import os
 import sys
 
 # version info
-version = [2,'0.rc1',None,"alpha",0]
+version = [2,'0.rc2',None,"alpha",0]
 
 try:
   import slimit 
