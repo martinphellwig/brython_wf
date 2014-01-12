@@ -13,8 +13,8 @@ $ObjectDict = __builtins__.object.$dict
 $B.$comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
 
 function abs(obj){
-    if(isinstance(obj,int)){return int(Math.abs(obj))}
-    else if(isinstance(obj,float)){return float(Math.abs(obj.value))}
+    if(isinstance(obj,__builtins__.int)){return __builtins__.int(Math.abs(obj))}
+    else if(isinstance(obj,__builtins__.float)){return __builtins__.float(Math.abs(obj.value))}
     else if(hasattr(obj,'__abs__')){return getattr(obj,'__abs__')()}
     else{throw __builtins__.TypeError("Bad operand type for abs(): '"+obj.__class__+"'")}
 }
@@ -79,7 +79,7 @@ function assert_raises(){
 // used by bin, hex and oct functions
 function $builtin_base_convert_helper(obj, base) {
   var value;
-  if (isinstance(obj, int)) {
+  if (isinstance(obj, __builtins__.int)) {
      value=obj;
   } else if (obj.__index__ !== undefined) {
      value=obj.__index__()
@@ -270,11 +270,11 @@ function divmod(x,y) {
     if (x < 0) {
        var x2=(Number(y)+Number(x))%y;
        if (abs(x) <= y) {
-          return [int(Math.floor(x/y)), x2]
+          return [__builtins__.int(Math.floor(x/y)), x2]
        } 
-       return [int(Math.ceil(x/y)), x2]
+       return [__builtins__.int(Math.ceil(x/y)), x2]
     } 
-    return [int(Math.floor(x/y)), x.__class__.__mod__(x,y)]
+    return [__builtins__.int(Math.floor(x/y)), x.__class__.__mod__(x,y)]
 }
 
 var $EnumerateDict = {__class__:$B.$type,__name__:'enumerate'}
@@ -460,8 +460,8 @@ function hasattr(obj,attr){
 }
 
 function hash(obj){
-    if (isinstance(obj, int)) { return obj.valueOf();}
-    if (isinstance(obj, bool)) { return int(obj);}
+    if (isinstance(obj, __builtins__.int)) { return obj.valueOf();}
+    if (isinstance(obj, bool)) { return __builtins__.int(obj);}
     if (obj.__hashvalue__ !== undefined) { return obj.__hashvalue__;}
     if (obj.__hash__ !== undefined) {
        obj.__hashvalue__=obj.__hash__()
@@ -521,12 +521,12 @@ function isinstance(obj,arg){
         }
         return false
     }else{
-        if(arg===int){
+        if(arg===__builtins__.int){
             return ((typeof obj)=="number"||obj.constructor===Number)&&(obj.valueOf()%1===0)
         }
-        if(arg===float){
+        if(arg===__builtins__.float){
             return ((typeof obj=="number" && obj.valueOf()%1!==0))||
-                (obj.__class__===__builtins__.float.$dict)
+                (obj.__class__===__builtins__.__builtins__.float.$dict)
         }
         if(arg===__builtins__.str){return (typeof obj=="string"||obj.__class__===__builtins__.str)}
         if(arg===__builtins__.list){return (obj.constructor===Array)}
@@ -719,16 +719,16 @@ function pow() {
         var x = args[0]
         var y = args[1]
         var a,b
-        if(isinstance(x, float)){
+        if(isinstance(x, __builtins__.float)){
       a=x.value
-    } else if(isinstance(x, int)){
+    } else if(isinstance(x, __builtins__.int)){
       a=x
     } else {
       throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
     }
-        if (isinstance(y, float)){
+        if (isinstance(y, __builtins__.float)){
       b=y.value
-    } else if (isinstance(y, int)){
+    } else if (isinstance(y, __builtins__.int)){
       b=y
     }
         else {
@@ -741,11 +741,11 @@ function pow() {
         var y = args[1]
         var z = args[2]
         var a,b,c
-        if (isinstance(x, int)) {a=x} else {throw __builtins__.TypeError(
+        if (isinstance(x, __builtins__.int)) {a=x} else {throw __builtins__.TypeError(
             "pow() 3rd argument not allowed unless all arguments are integers")}
-        if (isinstance(y, int)) {b=y} else {throw __builtins__.TypeError(
+        if (isinstance(y, __builtins__.int)) {b=y} else {throw __builtins__.TypeError(
             "pow() 3rd argument not allowed unless all arguments are integers")}
-        if (isinstance(z, int)) {c=z} else {throw __builtins__.TypeError(
+        if (isinstance(z, __builtins__.int)) {c=z} else {throw __builtins__.TypeError(
             "pow() 3rd argument not allowed unless all arguments are integers")}
         return Math.pow(a,b)%c
     }
@@ -847,8 +847,8 @@ $RangeDict.__iter__ = function(self){
 }
 
 $RangeDict.__len__ = function(self){
-    if(self.step>0){return 1+int((self.stop-1-self.start)/self.step)}
-    else{return 1+int((self.start-1-self.stop)/-self.step)}
+    if(self.step>0){return 1+__builtins__.int((self.stop-1-self.start)/self.step)}
+    else{return 1+__builtins__.int((self.start-1-self.stop)/-self.step)}
 }
 
 $RangeDict.__next__ = function(self){
@@ -946,15 +946,15 @@ reversed.$dict = $ReversedDict
 $ReversedDict.$factory = reversed
 
 function round(arg,n){
-    if(!isinstance(arg,[int,float])){
+    if(!isinstance(arg,[__builtins__.int,__builtins__.float])){
         throw __builtins__.TypeError("type "+arg.__class__+" doesn't define __round__ method")
     }
     if(n===undefined){n=0}
-    if(!isinstance(n,int)){throw __builtins__.TypeError(
+    if(!isinstance(n,__builtins__.int)){throw __builtins__.TypeError(
         "'"+n.__class__+"' object cannot be interpreted as an integer")}
     var mult = Math.pow(10,n)
-    var res = __builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
-    if(n==0){return int(res)}else{return float(res)}
+    var res = __builtins__.__builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
+    if(n==0){return __builtins__.int(res)}else{return __builtins__.float(res)}
 }
 
 
@@ -1285,11 +1285,11 @@ $BoolDict.__eq__ = function(self,other){
 }
 
 $BoolDict.__ge__ = function(self,other){
-    return __builtins__.int.$dict.__ge__($BoolDict.__hash__(self),other)
+    return __builtins__.__builtins__.int.$dict.__ge__($BoolDict.__hash__(self),other)
 }
 
 $BoolDict.__gt__ = function(self,other){
-    return __builtins__.int.$dict.__gt__($BoolDict.__hash__(self),other)
+    return __builtins__.__builtins__.int.$dict.__gt__($BoolDict.__hash__(self),other)
 }
 
 $BoolDict.__hash__ = function(self) {
@@ -1327,7 +1327,7 @@ var $EllipsisDict = {__class__:$B.$type,
 $EllipsisDict.__mro__ = [$ObjectDict]
 $EllipsisDict.$factory = $EllipsisDict
 
-Ellipsis = {
+var Ellipsis = {
     __bool__ : function(){return False},
     __class__ : $EllipsisDict,
     //__hash__ : function(){return 0},
@@ -1565,11 +1565,10 @@ function $make_exc(names,parent){
     for(var i=0;i<names.length;i++){
         var name = names[i]
         var $exc = (BaseException+'').replace(/BaseException/g,name)
-        // class constructor
         // class dictionary
-        console.log('make exc '+name)
         eval('__builtins__.$'+name+'Dict={__class__:$B.$type,__name__:"'+name+'"}')
         eval('__builtins__.$'+name+'Dict.__mro__=[__builtins__.$'+name+'Dict].concat(parent.$dict.__mro__)')
+        // class constructor
         eval('__builtins__.'+name+'='+$exc)
         eval('__builtins__.'+name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
         eval('__builtins__.'+name+'.__class__=$B.$factory')
@@ -1610,8 +1609,8 @@ var builtin_names=[ 'Ellipsis', 'False',  'None',
 '__package__', 'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'bytearray', 'bytes',
 'callable', 'chr', 'classmethod', 'compile', 'complex', 'copyright', 'credits',
 'delattr', 'dict', 'dir', 'divmod', 'enumerate', 'eval', 'exec', 'exit', 
-'filter', 'float', 'format', 'frozenset', 'getattr', 'globals', 'hasattr', 'hash', 
-'help', 'hex', 'id', 'input', 'int', 'isinstance', 'issubclass', 'iter', 'len', 
+'filter', '__builtins__.float', 'format', 'frozenset', 'getattr', 'globals', 'hasattr', 'hash', 
+'help', 'hex', 'id', 'input', '__builtins__.int', 'isinstance', 'issubclass', 'iter', 'len', 
 'license', 'list', 'locals', 'map', 'max', 'memoryview', 'min', 'next', 'object', 
 'oct', 'open', 'ord', 'pow', 'print', 'property', 'quit', 'range', 'repr', 
 'reversed', 'round', 'set', 'setattr', 'slice', 'sorted', 'staticmethod', 'str', 

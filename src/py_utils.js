@@ -304,7 +304,7 @@ $B.$JS2Py = function(src){
     if(src===null||src===undefined){return __BRYTHON__.builtins.None}
     if(typeof src==='number'){
         if(src%1===0){return src}
-        else{return float(src)}
+        else{return $B.builtins.float(src)}
     }
     if(src.__class__!==undefined){
         if(src.__class__===__BRYTHON__.builtins.list.$dict){

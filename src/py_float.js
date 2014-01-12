@@ -14,13 +14,13 @@ $FloatDict.__eq__ = function(self,other){
     if(other===undefined){ // compare object "self" to class "float"
         return self===float
     }
-    if(isinstance(other,int)){return self.value==other}
+    if(isinstance(other,__builtins__.int)){return self.value==other}
     else if(isinstance(other,float)){return self.value==other.value}
     else{return self.valueOf()===other}
 }
 
 $FloatDict.__floordiv__ = function(self,other){
-    if(isinstance(other,int)){
+    if(isinstance(other,__builtins__.int)){
         if(other===0){throw ZeroDivisionError('division by zero')}
         else{return float(Math.floor(self.value/other))}
     }else if(isinstance(other,float)){
@@ -53,9 +53,9 @@ $FloatDict.__hash__ = function() {
 
     var r=frexp(this.value);
     r[0] *= Math.pow(2,31)
-    hipart = int(r[0])
+    hipart = __builtins__.int(r[0])
     r[0] = (r[0] - hipart) * Math.pow(2,31)
-    var x = hipart + int(r[0]) + (r[1] << 15)
+    var x = hipart + __builtins__.int(r[0]) + (r[1] << 15)
     return x & 0xFFFFFFFF;
 }
 
@@ -65,7 +65,7 @@ $FloatDict.__init__ = function(self,value){self.value=value}
 
 $FloatDict.__mod__ = function(self,other) {
     // can't use Javascript % because it works differently for negative numbers
-    if(isinstance(other,int)){
+    if(isinstance(other,__builtins__.int)){
         return float((self.value%other+other)%other)
     }
     else if(isinstance(other,float)){
@@ -96,7 +96,7 @@ $FloatDict.__repr__ = $FloatDict.__str__ = function(self){
 }
 
 $FloatDict.__truediv__ = function(self,other){
-    if(isinstance(other,int)){
+    if(isinstance(other,__builtins__.int)){
         if(other===0){throw ZeroDivisionError('division by zero')}
         else{return float(self.value/other)}
     }else if(isinstance(other,float)){
@@ -109,7 +109,7 @@ $FloatDict.__truediv__ = function(self,other){
 
 // operations
 var $op_func = function(self,other){
-    if(isinstance(other,int)){return float(self.value-other)}
+    if(isinstance(other,__builtins__.int)){return float(self.value-other)}
     else if(isinstance(other,float)){return float(self.value-other.value)}
     else if(isinstance(other,bool)){ 
          var bool_value=0; 
@@ -126,7 +126,7 @@ for($op in $ops){
 }
 
 $FloatDict.__pow__= function(self,other){
-    if(isinstance(other,int)){return float(Math.pow(self,other))}
+    if(isinstance(other,__builtins__.int)){return float(Math.pow(self,other))}
     else if(isinstance(other,float)){return float(Math.pow(self.value,other.value))}
     else{throw __builtins__.TypeError(
         "unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
@@ -135,7 +135,7 @@ $FloatDict.__pow__= function(self,other){
 
 // comparison methods
 var $comp_func = function(self,other){
-    if(isinstance(other,int)){return self.value > other.valueOf()}
+    if(isinstance(other,__builtins__.int)){return self.value > other.valueOf()}
     else if(isinstance(other,float)){return self.value > other.value}
     else{throw __builtins__.TypeError(
         "unorderable types: "+self.__class__+'() > '+other.__class__+"()")
@@ -170,7 +170,7 @@ function $FloatClass(value){
 }
 
 // constructor for built-in class 'float'
-float = function (value){
+var float = function (value){
     if(value===undefined){return new $FloatClass(0.0)}
     if(typeof value=="number" || (typeof value=="string" && !isNaN(value))){
         var res = new $FloatClass(parseFloat(value))

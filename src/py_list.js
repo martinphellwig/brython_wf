@@ -30,7 +30,7 @@ $ListDict.__contains__ = function(self,item){
 }
 
 $ListDict.__delitem__ = function(self,arg){
-    if(isinstance(arg,int)){
+    if(isinstance(arg,__builtins__.int)){
         var pos = arg
         if(arg<0){pos=self.length+pos}
         if(pos>=0 && pos<self.length){
@@ -85,7 +85,7 @@ $ListDict.__eq__ = function(self,other){
 }
 
 $ListDict.__getitem__ = function(self,arg){
-    if(isinstance(arg,int)){
+    if(isinstance(arg,__builtins__.int)){
         var items=self.valueOf()
         var pos = arg
         if(arg<0){pos=items.length+pos}
@@ -102,7 +102,7 @@ $ListDict.__getitem__ = function(self,arg){
             var start = arg.start===None ? self.length-1 : arg.start
             var stop = arg.stop===None ? 0 : arg.stop
         }
-        if(start<0){start=int(self.length+start)}
+        if(start<0){start=__builtins__.int(self.length+start)}
         if(stop<0){stop=self.length+stop}
         var res = [],i=null,items=self.valueOf()
         if(step>0){
@@ -125,7 +125,7 @@ $ListDict.__getitem__ = function(self,arg){
             }
         } 
     } else if(isinstance(arg,bool)){
-        return $ListDict.__getitem__(self,int(arg))
+        return $ListDict.__getitem__(self,__builtins__.int(arg))
     } else {
         throw __builtins__.TypeError('list indices must be integer, not '+arg.__class__.__name__)
     }
@@ -193,9 +193,9 @@ $ListDict.__lt__ = function(self,other){
 $ListDict.__mro__ = [$ListDict,$ObjectDict]
 
 $ListDict.__mul__ = function(self,other){
-    if(isinstance(other,int)){return getattr(other,'__mul__')(self)}
+    if(isinstance(other,__builtins__.int)){return getattr(other,'__mul__')(self)}
     else{
-        throw __builtins__.TypeError("can't multiply sequence by non-int of type '"+other.__class__.__name__+"'")
+        throw __builtins__.TypeError("can't multiply sequence by non-__builtins__.int of type '"+other.__class__.__name__+"'")
     }
 }
 
@@ -224,7 +224,7 @@ $ListDict.__repr__ = function(self){
 }
 
 $ListDict.__setitem__ = function(self,arg,value){
-    if(isinstance(arg,int)){
+    if(isinstance(arg,__builtins__.int)){
         var pos = arg
         if(arg<0){pos=self.length+pos}
         if(pos>=0 && pos<self.length){self[pos]=value}
@@ -311,7 +311,7 @@ $ListDict.pop = function(self,pos){
         self.splice(self.length-1,1)
         return res
     }else if(arguments.length==2){
-        if(isinstance(pos,int)){
+        if(isinstance(pos,__builtins__.int)){
             var res = self[pos]
             self.splice(pos,1)
             return res

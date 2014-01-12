@@ -42,7 +42,7 @@ $StringDict.__eq__ = function(self,other){
 
 $StringDict.__getitem__ = function(self,arg){
     var i
-    if(isinstance(arg,int)){
+    if(isinstance(arg,__builtins__.int)){
         var pos = arg
         if(arg<0){pos=self.length+pos}
         if(pos>=0 && pos<self.length){return self.charAt(pos)}
@@ -76,7 +76,7 @@ $StringDict.__getitem__ = function(self,arg){
         }            
         return res
     } else if(isinstance(arg,bool)){
-        return self.__getitem__(int(arg))
+        return self.__getitem__(__builtins__.int(arg))
     }
 }
 
@@ -150,7 +150,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
                 return res
             }else if(this.type=="g" || this.type=="G"){
-                if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
+                if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var prec = -4
                 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -177,7 +177,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                     return this.format(src)
                 }
             }else if(this.type=="e" || this.type=="E"){
-                if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
+                if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var prec = 6
                 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -187,7 +187,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 if(elts[1].length===2){res += '0'}
                 return res+elts[1].substr(1)
             }else if(this.type=="x" || this.type=="X"){
-                if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
+                if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = src
                 res = src.toString(16)
@@ -204,7 +204,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 }
                 return res
             }else if(this.type=="i" || this.type=="d"){
-                if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
+                if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseInt(src)
                 if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
@@ -218,7 +218,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 }
                 return res
             }else if(this.type=="f" || this.type=="F"){
-                if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
+                if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseFloat(src)
                 if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
@@ -233,8 +233,8 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 return res
             }else if(this.type=='c'){
                 if(isinstance(src,str) && str.length==1){return src}
-                else if(isinstance(src,int) && src>0 && src<256){return String.fromCharCode(src)}
-                else{throw __builtins__.TypeError('%c requires int or char')}
+                else if(isinstance(src,__builtins__.int) && src>0 && src<256){return String.fromCharCode(src)}
+                else{throw __builtins__.TypeError('%c requires __builtins__.int or char')}
             }
         }
     }  // end $legacy_format
@@ -297,8 +297,8 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
 $StringDict.__mro__ = [$StringDict,$ObjectDict]
 
 $StringDict.__mul__ = function(self,other){
-    if(!isinstance(other,int)){throw __builtins__.TypeError(
-        "Can't multiply sequence by non-int of type '"+str(other.__class__)+"'")}
+    if(!isinstance(other,__builtins__.int)){throw __builtins__.TypeError(
+        "Can't multiply sequence by non-__builtins__.int of type '"+str(other.__class__)+"'")}
     $res = ''
     for(var i=0;i<other;i++){$res+=self.valueOf()}
     return $res
@@ -430,7 +430,7 @@ $StringDict.find = function(self){
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     if(!isinstance(sub,str)){throw __builtins__.TypeError(
         "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
-    if(!isinstance(start,int)||!isinstance(end,int)){throw __builtins__.TypeError(
+    if(!isinstance(start,__builtins__.int)||!isinstance(end,__builtins__.int)){throw __builtins__.TypeError(
         "slice indices must be integers or None or have an __index__ method")}
     var s = self.substring(start,end)
     var escaped = ['[','.','*','+','?','|','(',')','$','^']
@@ -452,7 +452,7 @@ var $FormattableString=function(format_string) {
        //if (match == '%') return '%%'
        if (match.substring(0,1) == match.substring(match.length)) {
           // '{{' or '}}'
-          return match.substring(0, int(match.length/2))
+          return match.substring(0, __builtins__.int(match.length/2))
        }
 
        var _repl
@@ -676,7 +676,7 @@ var $FormattableString=function(format_string) {
        var _conversion=_match[6]
 
        var _is_numeric = isinstance(value, float)
-       var _is_integer = isinstance(value, int)
+       var _is_integer = isinstance(value, __builtins__.int)
 
        if (_prefix && ! _is_numeric) {
           if (_is_numeric) {
@@ -984,7 +984,7 @@ function $re_escape(str)
 
 $StringDict.replace = function(self,old,_new,count){
     if(count!==undefined){
-        if(!isinstance(count,[int,float])){throw __builtins__.TypeError(
+        if(!isinstance(count,[__builtins__.int,float])){throw __builtins__.TypeError(
             "'"+str(count.__class__)+"' object cannot be interpreted as an integer")}
         var re = new RegExp($re_escape(old),'g')
         
@@ -1011,7 +1011,7 @@ $StringDict.rfind = function(self){
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     if(!isinstance(sub,str)){throw __builtins__.TypeError(
         "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
-    if(!isinstance(start,int)||!isinstance(end,int)){throw __builtins__.TypeError(
+    if(!isinstance(start,__builtins__.int)||!isinstance(end,__builtins__.int)){throw __builtins__.TypeError(
         "slice indices must be integers or None or have an __index__ method")}
     var s = self.substring(start,end)
     var reversed = ''

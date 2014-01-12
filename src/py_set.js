@@ -105,7 +105,7 @@ $SetDict.__le__ = function(self,other){
     return true
 }
 
-$SetDict.__len__ = function(self){return int(self.$items.length)}
+$SetDict.__len__ = function(self){return self.$items.length}
 
 $SetDict.__lt__ = function(self,other){
     return $SetDict.__le__(self,other)&&$SetDict.__len__(self)<getattr(other,'__len__')()

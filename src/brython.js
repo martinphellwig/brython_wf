@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 2.0.rc1.20140112-215040
+// version 2.0.rc2.20140112-221156
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[2, '0.rc1', '20140112-215040', 'alpha', 0]
+__BRYTHON__.version_info=[2, '0.rc2', '20140112-221156', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -3499,13 +3499,13 @@ $_SyntaxError(C,'expected an indented block',pos)
 return root
 }
 __BRYTHON__.py2js=function(src,module,parent){
-src=src.replace(/\r\n/gm,'\n')
+var src=src.replace(/\r\n/gm,'\n')
 while(src.length>0 &&(src.charAt(0)=="\n" || src.charAt(0)=="\r")){
 src=src.substr(1)
 }
 if(src.charAt(src.length-1)!="\n"){src+='\n'}
 if(module===undefined){module='__main__'}
-__name__=module
+var __name__=module
 if(__BRYTHON__.scope[module]===undefined){
 __BRYTHON__.scope[module]={}
 __BRYTHON__.scope[module].__dict__={}
@@ -4377,7 +4377,7 @@ $B.$JS2Py=function(src){
 if(src===null||src===undefined){return __BRYTHON__.builtins.None}
 if(typeof src==='number'){
 if(src%1===0){return src}
-else{return float(src)}
+else{return $B.builtins.float(src)}
 }
 if(src.__class__!==undefined){
 if(src.__class__===__BRYTHON__.builtins.list.$dict){
@@ -4587,8 +4587,8 @@ for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_
 $ObjectDict=__builtins__.object.$dict
 $B.$comps={'>':'gt','>=':'ge','<':'lt','<=':'le'}
 function abs(obj){
-if(isinstance(obj,int)){return int(Math.abs(obj))}
-else if(isinstance(obj,float)){return float(Math.abs(obj.value))}
+if(isinstance(obj,__builtins__.int)){return __builtins__.int(Math.abs(obj))}
+else if(isinstance(obj,__builtins__.float)){return __builtins__.float(Math.abs(obj.value))}
 else if(hasattr(obj,'__abs__')){return getattr(obj,'__abs__')()}
 else{throw __builtins__.TypeError("Bad operand type for abs(): '"+obj.__class__+"'")}
 }
@@ -4640,7 +4640,7 @@ throw AssertionError("no exception raised, expected '"+$ns['exc']+"'")
 }
 function $builtin_base_convert_helper(obj, base){
 var value
-if(isinstance(obj, int)){
+if(isinstance(obj, __builtins__.int)){
 value=obj
 }else if(obj.__index__ !==undefined){
 value=obj.__index__()
@@ -4792,11 +4792,11 @@ function divmod(x,y){
 if(x < 0){
 var x2=(Number(y)+Number(x))%y
 if(abs(x)<=y){
-return[int(Math.floor(x/y)), x2]
+return[__builtins__.int(Math.floor(x/y)), x2]
 }
-return[int(Math.ceil(x/y)), x2]
+return[__builtins__.int(Math.ceil(x/y)), x2]
 }
-return[int(Math.floor(x/y)), x.__class__.__mod__(x,y)]
+return[__builtins__.int(Math.floor(x/y)), x.__class__.__mod__(x,y)]
 }
 var $EnumerateDict={__class__:$B.$type,__name__:'enumerate'}
 $EnumerateDict.__mro__=[$EnumerateDict,$ObjectDict]
@@ -4951,8 +4951,8 @@ try{getattr(obj,attr);return True}
 catch(err){$B.$pop_exc();return False}
 }
 function hash(obj){
-if(isinstance(obj, int)){return obj.valueOf();}
-if(isinstance(obj, bool)){return int(obj);}
+if(isinstance(obj, __builtins__.int)){return obj.valueOf();}
+if(isinstance(obj, bool)){return __builtins__.int(obj);}
 if(obj.__hashvalue__ !==undefined){return obj.__hashvalue__;}
 if(obj.__hash__ !==undefined){
 obj.__hashvalue__=obj.__hash__()
@@ -5004,12 +5004,12 @@ if(isinstance(obj,arg[i])){return true}
 }
 return false
 }else{
-if(arg===int){
+if(arg===__builtins__.int){
 return((typeof obj)=="number"||obj.constructor===Number)&&(obj.valueOf()%1===0)
 }
-if(arg===float){
+if(arg===__builtins__.float){
 return((typeof obj=="number" && obj.valueOf()%1!==0))||
-(obj.__class__===__builtins__.float.$dict)
+(obj.__class__===__builtins__.__builtins__.float.$dict)
 }
 if(arg===__builtins__.str){return(typeof obj=="string"||obj.__class__===__builtins__.str)}
 if(arg===__builtins__.list){return(obj.constructor===Array)}
@@ -5174,16 +5174,16 @@ if(args.length===2){
 var x=args[0]
 var y=args[1]
 var a,b
-if(isinstance(x, float)){
+if(isinstance(x, __builtins__.float)){
 a=x.value
-}else if(isinstance(x, int)){
+}else if(isinstance(x, __builtins__.int)){
 a=x
 }else{
 throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
 }
-if(isinstance(y, float)){
+if(isinstance(y, __builtins__.float)){
 b=y.value
-}else if(isinstance(y, int)){
+}else if(isinstance(y, __builtins__.int)){
 b=y
 }
 else{
@@ -5196,11 +5196,11 @@ var x=args[0]
 var y=args[1]
 var z=args[2]
 var a,b,c
-if(isinstance(x, int)){a=x}else{throw __builtins__.TypeError(
+if(isinstance(x, __builtins__.int)){a=x}else{throw __builtins__.TypeError(
 "pow() 3rd argument not allowed unless all arguments are integers")}
-if(isinstance(y, int)){b=y}else{throw __builtins__.TypeError(
+if(isinstance(y, __builtins__.int)){b=y}else{throw __builtins__.TypeError(
 "pow() 3rd argument not allowed unless all arguments are integers")}
-if(isinstance(z, int)){c=z}else{throw __builtins__.TypeError(
+if(isinstance(z, __builtins__.int)){c=z}else{throw __builtins__.TypeError(
 "pow() 3rd argument not allowed unless all arguments are integers")}
 return Math.pow(a,b)%c
 }
@@ -5287,8 +5287,8 @@ self.$counter=self.start-self.step
 return self
 }
 $RangeDict.__len__=function(self){
-if(self.step>0){return 1+int((self.stop-1-self.start)/self.step)}
-else{return 1+int((self.start-1-self.stop)/-self.step)}
+if(self.step>0){return 1+__builtins__.int((self.stop-1-self.start)/self.step)}
+else{return 1+__builtins__.int((self.start-1-self.stop)/-self.step)}
 }
 $RangeDict.__next__=function(self){
 self.$counter +=self.step
@@ -5371,15 +5371,15 @@ reversed.__class__=$B.$factory
 reversed.$dict=$ReversedDict
 $ReversedDict.$factory=reversed
 function round(arg,n){
-if(!isinstance(arg,[int,float])){
+if(!isinstance(arg,[__builtins__.int,__builtins__.float])){
 throw __builtins__.TypeError("type "+arg.__class__+" doesn't define __round__ method")
 }
 if(n===undefined){n=0}
-if(!isinstance(n,int)){throw __builtins__.TypeError(
+if(!isinstance(n,__builtins__.int)){throw __builtins__.TypeError(
 "'"+n.__class__+"' object cannot be interpreted as an integer")}
 var mult=Math.pow(10,n)
-var res=__builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
-if(n==0){return int(res)}else{return float(res)}
+var res=__builtins__.__builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
+if(n==0){return __builtins__.int(res)}else{return __builtins__.float(res)}
 }
 function setattr(obj,attr,value){
 if(!isinstance(attr,__builtins__.str)){throw __builtins__.TypeError("setattr(): attribute name must be string")}
@@ -5664,10 +5664,10 @@ $BoolDict.__eq__=function(self,other){
 if(self.valueOf()){return !!other}else{return !other}
 }
 $BoolDict.__ge__=function(self,other){
-return __builtins__.int.$dict.__ge__($BoolDict.__hash__(self),other)
+return __builtins__.__builtins__.int.$dict.__ge__($BoolDict.__hash__(self),other)
 }
 $BoolDict.__gt__=function(self,other){
-return __builtins__.int.$dict.__gt__($BoolDict.__hash__(self),other)
+return __builtins__.__builtins__.int.$dict.__gt__($BoolDict.__hash__(self),other)
 }
 $BoolDict.__hash__=function(self){
 if(self.valueOf())return 1
@@ -5694,7 +5694,7 @@ __name__:'Ellipsis',
 }
 $EllipsisDict.__mro__=[$ObjectDict]
 $EllipsisDict.$factory=$EllipsisDict
-Ellipsis={
+var Ellipsis={
 __bool__ : function(){return False},
 __class__ : $EllipsisDict,
 __repr__ : function(){return 'Ellipsis'},
@@ -5893,7 +5893,6 @@ function $make_exc(names,parent){
 for(var i=0;i<names.length;i++){
 var name=names[i]
 var $exc=(BaseException+'').replace(/BaseException/g,name)
-console.log('make exc '+name)
 eval('__builtins__.$'+name+'Dict={__class__:$B.$type,__name__:"'+name+'"}')
 eval('__builtins__.$'+name+'Dict.__mro__=[__builtins__.$'+name+'Dict].concat(parent.$dict.__mro__)')
 eval('__builtins__.'+name+'='+$exc)
@@ -5933,8 +5932,8 @@ var builtin_names=['Ellipsis', 'False', 'None',
 '__package__', 'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'bytearray', 'bytes',
 'callable', 'chr', 'classmethod', 'compile', 'complex', 'copyright', 'credits',
 'delattr', 'dict', 'dir', 'divmod', 'enumerate', 'eval', 'exec', 'exit', 
-'filter', 'float', 'format', 'frozenset', 'getattr', 'globals', 'hasattr', 'hash', 
-'help', 'hex', 'id', 'input', 'int', 'isinstance', 'issubclass', 'iter', 'len', 
+'filter', '__builtins__.float', 'format', 'frozenset', 'getattr', 'globals', 'hasattr', 'hash', 
+'help', 'hex', 'id', 'input', '__builtins__.int', 'isinstance', 'issubclass', 'iter', 'len', 
 'license', 'list', 'locals', 'map', 'max', 'memoryview', 'min', 'next', 'object', 
 'oct', 'open', 'ord', 'pow', 'print', 'property', 'quit', 'range', 'repr', 
 'reversed', 'round', 'set', 'setattr', 'slice', 'sorted', 'staticmethod', 'str', 
@@ -6436,12 +6435,12 @@ $FloatDict.__eq__=function(self,other){
 if(other===undefined){
 return self===float
 }
-if(isinstance(other,int)){return self.value==other}
+if(isinstance(other,__builtins__.int)){return self.value==other}
 else if(isinstance(other,float)){return self.value==other.value}
 else{return self.valueOf()===other}
 }
 $FloatDict.__floordiv__=function(self,other){
-if(isinstance(other,int)){
+if(isinstance(other,__builtins__.int)){
 if(other===0){throw ZeroDivisionError('division by zero')}
 else{return float(Math.floor(self.value/other))}
 }else if(isinstance(other,float)){
@@ -6469,15 +6468,15 @@ return 0
 }
 var r=frexp(this.value)
 r[0]*=Math.pow(2,31)
-hipart=int(r[0])
+hipart=__builtins__.int(r[0])
 r[0]=(r[0]- hipart)* Math.pow(2,31)
-var x=hipart + int(r[0])+(r[1]<< 15)
+var x=hipart + __builtins__.int(r[0])+(r[1]<< 15)
 return x & 0xFFFFFFFF
 }
 $FloatDict.__in__=function(self,item){return item.__contains__(self)}
 $FloatDict.__init__=function(self,value){self.value=value}
 $FloatDict.__mod__=function(self,other){
-if(isinstance(other,int)){
+if(isinstance(other,__builtins__.int)){
 return float((self.value%other+other)%other)
 }
 else if(isinstance(other,float)){
@@ -6501,7 +6500,7 @@ if(res.indexOf('.')==-1){res+='.0'}
 return __builtins__.str(res)
 }
 $FloatDict.__truediv__=function(self,other){
-if(isinstance(other,int)){
+if(isinstance(other,__builtins__.int)){
 if(other===0){throw ZeroDivisionError('division by zero')}
 else{return float(self.value/other)}
 }else if(isinstance(other,float)){
@@ -6512,7 +6511,7 @@ else{return float(self.value/other.value)}
 }
 }
 var $op_func=function(self,other){
-if(isinstance(other,int)){return float(self.value-other)}
+if(isinstance(other,__builtins__.int)){return float(self.value-other)}
 else if(isinstance(other,float)){return float(self.value-other.value)}
 else if(isinstance(other,bool)){
 var bool_value=0;
@@ -6528,14 +6527,14 @@ for($op in $ops){
 eval('$FloatDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 }
 $FloatDict.__pow__=function(self,other){
-if(isinstance(other,int)){return float(Math.pow(self,other))}
+if(isinstance(other,__builtins__.int)){return float(Math.pow(self,other))}
 else if(isinstance(other,float)){return float(Math.pow(self.value,other.value))}
 else{throw __builtins__.TypeError(
 "unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
 }
 }
 var $comp_func=function(self,other){
-if(isinstance(other,int)){return self.value > other.valueOf()}
+if(isinstance(other,__builtins__.int)){return self.value > other.valueOf()}
 else if(isinstance(other,float)){return self.value > other.value}
 else{throw __builtins__.TypeError(
 "unorderable types: "+self.__class__+'() > '+other.__class__+"()")
@@ -6564,7 +6563,7 @@ this.__class__=$FloatDict
 this.toString=function(){return this.value}
 this.valueOf=function(){return value}
 }
-float=function(value){
+var float=function(value){
 if(value===undefined){return new $FloatClass(0.0)}
 if(typeof value=="number" ||(typeof value=="string" && !isNaN(value))){
 var res=new $FloatClass(parseFloat(value))
@@ -6613,16 +6612,16 @@ if(other===undefined){
 return self===int
 }
 if(isinstance(other,int)){return self.valueOf()==other.valueOf()}
-else if(isinstance(other,float)){return self.valueOf()==other.value}
+else if(isinstance(other,__builtins__.float)){return self.valueOf()==other.value}
 else{return self.valueOf()===other}
 }
 $IntDict.__floordiv__=function(self,other){
 if(isinstance(other,int)){
 if(other==0){throw ZeroDivisionError('division by zero')}
 else{return Math.floor(self/other)}
-}else if(isinstance(other,float)){
+}else if(isinstance(other,__builtins__.float)){
 if(!other.value){throw ZeroDivisionError('division by zero')}
-else{return float(Math.floor(self/other.value))}
+else{return __builtins__.float(Math.floor(self/other.value))}
 }else{$UnsupportedOpType("//","int",other.__class__)}
 }
 $IntDict.__hash__=function(self){return self.valueOf()}
@@ -6642,7 +6641,7 @@ if(isinstance(other,__builtins__.tuple)&& other.length==1){other=other[0]}
 if(isinstance(other,int)){
 return(self%other+other)%other
 }
-else if(isinstance(other,float)){
+else if(isinstance(other,__builtins__.float)){
 return((self%other)+other)%other
 }else if(isinstance(other,bool)){
 var bool_value=0;
@@ -6656,7 +6655,7 @@ $IntDict.__mro__=[$IntDict,$ObjectDict]
 $IntDict.__mul__=function(self,other){
 var val=self.valueOf(),list=__builtins__.list,tuple=__builtins__.tuple
 if(isinstance(other,int)){return self*other}
-else if(isinstance(other,float)){return float(self*other.value)}
+else if(isinstance(other,__builtins__.float)){return __builtins__.float(self*other.value)}
 else if(isinstance(other,bool)){
 var bool_value=0
 if(other.valueOf())bool_value=1
@@ -6687,7 +6686,7 @@ return !res
 $IntDict.__or__=function(self,other){return self | other}
 $IntDict.__pow__=function(self,other){
 if(isinstance(other, int)){return int(Math.pow(self.valueOf(),other.valueOf()))}
-else if(isinstance(other, float)){return float(Math.pow(self.valueOf(), other.valueOf()))}
+else if(isinstance(other, __builtins__.float)){return __builtins__.float(Math.pow(self.valueOf(), other.valueOf()))}
 else{$UnsupportedOpType("**",int,other.__class__)}
 }
 $IntDict.__repr__=function(self){
@@ -6703,10 +6702,10 @@ $IntDict.__str__=$IntDict.__repr__
 $IntDict.__truediv__=function(self,other){
 if(isinstance(other,int)){
 if(other==0){throw ZeroDivisionError('division by zero')}
-else{return float(self/other)}
-}else if(isinstance(other,float)){
+else{return __builtins__.float(self/other)}
+}else if(isinstance(other,__builtins__.float)){
 if(!other.value){throw ZeroDivisionError('division by zero')}
-else{return float(self/other.value)}
+else{return __builtins__.float(self/other.value)}
 }else{$UnsupportedOpType("//","int",other.__class__)}
 }
 $IntDict.__xor__=function(self,other){return self ^ other}
@@ -6719,9 +6718,9 @@ var $op_func=function(self,other){
 if(isinstance(other,int)){
 var res=self.valueOf()-other.valueOf()
 if(isinstance(res,int)){return res}
-else{return float(res)}
+else{return __builtins__.float(res)}
 }
-else if(isinstance(other,float)){return float(self.valueOf()-other.value)}
+else if(isinstance(other,__builtins__.float)){return __builtins__.float(self.valueOf()-other.value)}
 else if(isinstance(other,bool)){
 var bool_value=0
 if(other.valueOf())bool_value=1
@@ -6737,7 +6736,7 @@ eval('$IntDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 }
 var $comp_func=function(self,other){
 if(isinstance(other,int)){return self.valueOf()> other.valueOf()}
-else if(isinstance(other,float)){return self.valueOf()> other.value}
+else if(isinstance(other,__builtins__.float)){return self.valueOf()> other.value}
 else if(isinstance(other,bool)){return self.valueOf()> __builtins__.bool.$dict.__hash__(other)}
 else{throw __builtins__.TypeError(
 "unorderable types: "+self.__class__.__name__+'() > '+other.__class__.__name__+"()")}
@@ -6748,7 +6747,7 @@ eval("$IntDict.__"+$B.$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 Number.prototype.__class__=$IntDict
 Number.prototype.$fast_augm=true 
-int=function(value){
+var int=function(value){
 var res
 if(value===undefined){res=Number(0)}
 else if(isinstance(value,int)){res=Number(value)}
@@ -6757,7 +6756,7 @@ else if(value===False){res=Number(0)}
 else if(typeof value=="number"){res=Number(parseInt(value))}
 else if(typeof value=="string" &&(new RegExp(/^[]*[+-]?\d+[]*$/)).test(value)){
 res=Number(parseInt(value))
-}else if(isinstance(value,float)){
+}else if(isinstance(value,__builtins__.float)){
 res=Number(parseInt(value.value))
 }else{throw ValueError(
 "Invalid literal for int() with base 10: '"+__builtins__.str(value)+"'")
@@ -7041,7 +7040,7 @@ try{if(getattr(self[i],'__eq__')(item)){return true}
 return false
 }
 $ListDict.__delitem__=function(self,arg){
-if(isinstance(arg,int)){
+if(isinstance(arg,__builtins__.int)){
 var pos=arg
 if(arg<0){pos=self.length+pos}
 if(pos>=0 && pos<self.length){
@@ -7093,7 +7092,7 @@ return True
 return False
 }
 $ListDict.__getitem__=function(self,arg){
-if(isinstance(arg,int)){
+if(isinstance(arg,__builtins__.int)){
 var items=self.valueOf()
 var pos=arg
 if(arg<0){pos=items.length+pos}
@@ -7110,7 +7109,7 @@ var stop=arg.stop===None ? self.length : arg.stop
 var start=arg.start===None ? self.length-1 : arg.start
 var stop=arg.stop===None ? 0 : arg.stop
 }
-if(start<0){start=int(self.length+start)}
+if(start<0){start=__builtins__.int(self.length+start)}
 if(stop<0){stop=self.length+stop}
 var res=[],i=null,items=self.valueOf()
 if(step>0){
@@ -7133,7 +7132,7 @@ return res
 }
 }
 }else if(isinstance(arg,bool)){
-return $ListDict.__getitem__(self,int(arg))
+return $ListDict.__getitem__(self,__builtins__.int(arg))
 }else{
 throw __builtins__.TypeError('list indices must be integer, not '+arg.__class__.__name__)
 }
@@ -7188,9 +7187,9 @@ return !$ListDict.__ge__(self,other)
 }
 $ListDict.__mro__=[$ListDict,$ObjectDict]
 $ListDict.__mul__=function(self,other){
-if(isinstance(other,int)){return getattr(other,'__mul__')(self)}
+if(isinstance(other,__builtins__.int)){return getattr(other,'__mul__')(self)}
 else{
-throw __builtins__.TypeError("can't multiply sequence by non-int of type '"+other.__class__.__name__+"'")
+throw __builtins__.TypeError("can't multiply sequence by non-__builtins__.int of type '"+other.__class__.__name__+"'")
 }
 }
 $ListDict.__ne__=function(self,other){return !$ListDict.__eq__(self,other)}
@@ -7214,7 +7213,7 @@ return res+')'
 else{return res+']'}
 }
 $ListDict.__setitem__=function(self,arg,value){
-if(isinstance(arg,int)){
+if(isinstance(arg,__builtins__.int)){
 var pos=arg
 if(arg<0){pos=self.length+pos}
 if(pos>=0 && pos<self.length){self[pos]=value}
@@ -7289,7 +7288,7 @@ var res=self[self.length-1]
 self.splice(self.length-1,1)
 return res
 }else if(arguments.length==2){
-if(isinstance(pos,int)){
+if(isinstance(pos,__builtins__.int)){
 var res=self[pos]
 self.splice(pos,1)
 return res
@@ -7471,7 +7470,7 @@ return other===self.valueOf()
 }
 $StringDict.__getitem__=function(self,arg){
 var i
-if(isinstance(arg,int)){
+if(isinstance(arg,__builtins__.int)){
 var pos=arg
 if(arg<0){pos=self.length+pos}
 if(pos>=0 && pos<self.length){return self.charAt(pos)}
@@ -7505,7 +7504,7 @@ res +=self.charAt(i)
 }
 return res
 }else if(isinstance(arg,bool)){
-return self.__getitem__(int(arg))
+return self.__getitem__(__builtins__.int(arg))
 }
 }
 $StringDict.__hash__=function(self){
@@ -7566,7 +7565,7 @@ var res=ascii(src)
 if(this.precision){res=res.substr(0,parseInt(this.precision.substr(1)))}
 return res
 }else if(this.type=="g" || this.type=="G"){
-if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
+if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var prec=-4
 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -7591,7 +7590,7 @@ this.type="f"
 return this.format(src)
 }
 }else if(this.type=="e" || this.type=="E"){
-if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
+if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var prec=6
 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -7601,7 +7600,7 @@ var res=elts[0]+this.type+elts[1].charAt(0)
 if(elts[1].length===2){res +='0'}
 return res+elts[1].substr(1)
 }else if(this.type=="x" || this.type=="X"){
-if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
+if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=src
 res=src.toString(16)
@@ -7618,7 +7617,7 @@ while(res.length<parseInt(this.min_width)){res=pad+res}
 }
 return res
 }else if(this.type=="i" || this.type=="d"){
-if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
+if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=parseInt(src)
 if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
@@ -7632,7 +7631,7 @@ while(res.length<parseInt(this.min_width)){res=pad+res}
 }
 return res
 }else if(this.type=="f" || this.type=="F"){
-if(!isinstance(src,[int,float])){throw __builtins__.TypeError(
+if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=parseFloat(src)
 if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
@@ -7647,8 +7646,8 @@ while(res.length<parseInt(this.min_width)){res=pad+res}
 return res
 }else if(this.type=='c'){
 if(isinstance(src,str)&& str.length==1){return src}
-else if(isinstance(src,int)&& src>0 && src<256){return String.fromCharCode(src)}
-else{throw __builtins__.TypeError('%c requires int or char')}
+else if(isinstance(src,__builtins__.int)&& src>0 && src<256){return String.fromCharCode(src)}
+else{throw __builtins__.TypeError('%c requires __builtins__.int or char')}
 }
 }
 }
@@ -7702,8 +7701,8 @@ return res
 }
 $StringDict.__mro__=[$StringDict,$ObjectDict]
 $StringDict.__mul__=function(self,other){
-if(!isinstance(other,int)){throw __builtins__.TypeError(
-"Can't multiply sequence by non-int of type '"+str(other.__class__)+"'")}
+if(!isinstance(other,__builtins__.int)){throw __builtins__.TypeError(
+"Can't multiply sequence by non-__builtins__.int of type '"+str(other.__class__)+"'")}
 $res=''
 for(var i=0;i<other;i++){$res+=self.valueOf()}
 return $res
@@ -7805,7 +7804,7 @@ var $ns=$B.$MakeArgs("$StringDict.find",arguments,['self','sub'],
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 if(!isinstance(sub,str)){throw __builtins__.TypeError(
 "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
-if(!isinstance(start,int)||!isinstance(end,int)){throw __builtins__.TypeError(
+if(!isinstance(start,__builtins__.int)||!isinstance(end,__builtins__.int)){throw __builtins__.TypeError(
 "slice indices must be integers or None or have an __index__ method")}
 var s=self.substring(start,end)
 var escaped=['[','.','*','+','?','|','(',')','$','^']
@@ -7822,7 +7821,7 @@ var $FormattableString=function(format_string){
 this.format_string=format_string
 this._prepare=function(match){
 if(match.substring(0,1)==match.substring(match.length)){
-return match.substring(0, int(match.length/2))
+return match.substring(0, __builtins__.int(match.length/2))
 }
 var _repl
 if(match.length >=2){
@@ -7996,7 +7995,7 @@ var _comma=_match[4]
 var _precision=_match[5]
 var _conversion=_match[6]
 var _is_numeric=isinstance(value, float)
-var _is_integer=isinstance(value, int)
+var _is_integer=isinstance(value, __builtins__.int)
 if(_prefix && ! _is_numeric){
 if(_is_numeric){
 throw ValueError('Alternate form (#) not allowed in float format specifier')
@@ -8240,7 +8239,7 @@ return str
 }
 $StringDict.replace=function(self,old,_new,count){
 if(count!==undefined){
-if(!isinstance(count,[int,float])){throw __builtins__.TypeError(
+if(!isinstance(count,[__builtins__.int,float])){throw __builtins__.TypeError(
 "'"+str(count.__class__)+"' object cannot be interpreted as an integer")}
 var re=new RegExp($re_escape(old),'g')
 var res=self.valueOf()
@@ -8262,7 +8261,7 @@ var $ns=$B.$MakeArgs("$StringDict.find",arguments,['self','sub'],
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 if(!isinstance(sub,str)){throw __builtins__.TypeError(
 "Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
-if(!isinstance(start,int)||!isinstance(end,int)){throw __builtins__.TypeError(
+if(!isinstance(start,__builtins__.int)||!isinstance(end,__builtins__.int)){throw __builtins__.TypeError(
 "slice indices must be integers or None or have an __index__ method")}
 var s=self.substring(start,end)
 var reversed=''
@@ -8584,7 +8583,7 @@ if(!getattr(other,'__contains__')(self.$items[i])){return false}
 }
 return true
 }
-$SetDict.__len__=function(self){return int(self.$items.length)}
+$SetDict.__len__=function(self){return self.$items.length}
 $SetDict.__lt__=function(self,other){
 return $SetDict.__le__(self,other)&&$SetDict.__len__(self)<getattr(other,'__len__')()
 }
@@ -8772,8 +8771,8 @@ posy=ev.clientY + document.body.scrollTop
 + document.documentElement.scrollTop
 }
 var res=object()
-res.x=int(posx)
-res.y=int(posy)
+res.x=__builtins__.int(posx)
+res.y=__builtins__.int(posy)
 res.__getattr__=function(attr){return this[attr]}
 res.__class__="MouseCoords"
 return res
@@ -8987,7 +8986,7 @@ self.js.cssFloat=value
 self.js.styleFloat=value
 }else{
 if(['top','left','height','width','borderWidth'].indexOf(attr)>-1
-&& isinstance(value,int)){value=value+'px'}
+&& isinstance(value,__builtins__.int)){value=value+'px'}
 self.js[attr]=value
 }
 }
@@ -9022,7 +9021,7 @@ var res=$TagSum()
 res.children=[self]
 if(isinstance(other,$TagSum)){
 for(var $i=0;$i<other.children.length;$i++){res.children.push(other.children[$i])}
-}else if(isinstance(other,[__builtins__.str,__builtins__.int,__builtins__.float,__builtins__.list,__builtins__.dict,__builtins__.set,__builtins__.tuple])){
+}else if(isinstance(other,[__builtins__.str,__builtins__.__builtins__.int,__builtins__.float,__builtins__.list,__builtins__.dict,__builtins__.set,__builtins__.tuple])){
 res.children.push($DOMNode(document.createTextNode(__builtins__.str(other))))
 }else{res.children.push(other)}
 return res
@@ -9155,7 +9154,7 @@ elt.appendChild(other.elt)
 }
 DOMNode.__len__=function(self){return self.elt.childNodes.length}
 DOMNode.__mul__=function(self,other){
-if(isinstance(other,int)&& other.valueOf()>0){
+if(isinstance(other,__builtins__.int)&& other.valueOf()>0){
 var res=$TagSum()
 for(var i=0;i<other.valueOf();i++){
 var clone=DOMNode.clone(self)()
@@ -9363,10 +9362,10 @@ return self.elt.getSelectionRange.apply(null,arguments)
 }
 }
 DOMNode.height=function(self){
-return int($getPosition(self.elt)["height"])
+return __builtins__.int($getPosition(self.elt)["height"])
 }
 DOMNode.left=function(self){
-return int($getPosition(self.elt)["left"])
+return __builtins__.int($getPosition(self.elt)["left"])
 }
 DOMNode.id=function(self){
 if(self.elt.id !==undefined){return self.elt.id}
@@ -9399,7 +9398,7 @@ break
 if(!flag){throw ValueError('element '+child+' is not inside '+self)}
 }
 DOMNode.top=function(self){
-return int($getPosition(self.elt)["top"])
+return __builtins__.int($getPosition(self.elt)["top"])
 }
 DOMNode.reset=function(self){
 return function(){self.elt.reset()}
@@ -9437,7 +9436,7 @@ return self.elt.innerText || self.elt.textContent
 DOMNode.html=function(self){return self.elt.innerHTML}
 DOMNode.value=function(self){return self.elt.value}
 DOMNode.width=function(self){
-return int($getPosition(self.elt)["width"])
+return __builtins__.int($getPosition(self.elt)["width"])
 }
 DOMNode.set_class=function(self,arg){self.elt.setAttribute('class',arg)}
 DOMNode.set_html=function(self,value){
@@ -9451,7 +9450,7 @@ self.elt.style.cssFloat=value
 self.elt.style.styleFloat=value
 }else{
 if(['top','left','height','width','borderWidth'].indexOf(key)>-1
-&& isinstance(value,int)){value=value+'px'}
+&& isinstance(value,__builtins__.int)){value=value+'px'}
 self.elt.style[key]=value
 }
 }
@@ -9572,7 +9571,7 @@ self.children.push(child)
 $TagSumDict.__add__=function(self,other){
 if(other.__class__===$TagSumDict){
 self.children=self.children.concat(other.children)
-}else if(isinstance(other,[str,int,float,dict,set,list])){
+}else if(isinstance(other,[str,__builtins__.int,float,dict,set,list])){
 self.children=self.children.concat($DOMNode(document.createTextNode(other)))
 }else{self.children.push(other)}
 return self
