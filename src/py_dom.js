@@ -46,8 +46,8 @@ function $mouseCoords(ev){
             + document.documentElement.scrollTop;
     }
     var res = object()
-    res.x = int(posx)
-    res.y = int(posy)
+    res.x = __builtins__.int(posx)
+    res.y = __builtins__.int(posy)
     res.__getattr__ = function(attr){return this[attr]}
     res.__class__ = "MouseCoords"
     return res
@@ -308,7 +308,7 @@ $StyleDict.__setattr__ = function(self,attr,value){
         self.js.styleFloat = value
     }else{
         if(['top','left','height','width','borderWidth'].indexOf(attr)>-1
-            && isinstance(value,int)){value = value+'px'}
+            && isinstance(value,__builtins__.int)){value = value+'px'}
         self.js[attr] = value
     }
 }
@@ -353,7 +353,7 @@ DOMNode.__add__ = function(self,other){
     res.children = [self]
     if(isinstance(other,$TagSum)){
         for(var $i=0;$i<other.children.length;$i++){res.children.push(other.children[$i])}
-    } else if(isinstance(other,[__builtins__.str,__builtins__.int,__builtins__.float,__builtins__.list,__builtins__.dict,__builtins__.set,__builtins__.tuple])){
+    } else if(isinstance(other,[__builtins__.str,__builtins__.__builtins__.int,__builtins__.float,__builtins__.list,__builtins__.dict,__builtins__.set,__builtins__.tuple])){
         res.children.push($DOMNode(document.createTextNode(__builtins__.str(other))))
     }else{res.children.push(other)}
     return res
@@ -507,7 +507,7 @@ DOMNode.__le__ = function(self,other){
 DOMNode.__len__ = function(self){return self.elt.childNodes.length}
 
 DOMNode.__mul__ = function(self,other){
-    if(isinstance(other,int) && other.valueOf()>0){
+    if(isinstance(other,__builtins__.int) && other.valueOf()>0){
         var res = $TagSum()
         for(var i=0;i<other.valueOf();i++){
             var clone = DOMNode.clone(self)()
@@ -741,11 +741,11 @@ DOMNode.getSelectionRange = function(self){ // for TEXTAREA
 }
 
 DOMNode.height = function(self){
-    return int($getPosition(self.elt)["height"])
+    return __builtins__.int($getPosition(self.elt)["height"])
 }
 
 DOMNode.left = function(self){
-    return int($getPosition(self.elt)["left"])
+    return __builtins__.int($getPosition(self.elt)["left"])
 }
 
 DOMNode.id = function(self){
@@ -787,7 +787,7 @@ DOMNode.remove = function(self,child){
 }
 
 DOMNode.top = function(self){
-    return int($getPosition(self.elt)["top"])
+    return __builtins__.int($getPosition(self.elt)["top"])
 }
 
 DOMNode.reset = function(self){ // for FORM
@@ -834,7 +834,7 @@ DOMNode.html = function(self){return self.elt.innerHTML}
 DOMNode.value = function(self){return self.elt.value}
 
 DOMNode.width = function(self){
-    return int($getPosition(self.elt)["width"])
+    return __builtins__.int($getPosition(self.elt)["width"])
 }
 
 DOMNode.set_class = function(self,arg){self.elt.setAttribute('class',arg)}
@@ -851,7 +851,7 @@ DOMNode.set_style = function(self,style){ // style is a dict
             self.elt.style.styleFloat = value
         }else{
             if(['top','left','height','width','borderWidth'].indexOf(key)>-1
-                && isinstance(value,int)){value = value+'px'}
+                && isinstance(value,__builtins__.int)){value = value+'px'}
             self.elt.style[key] = value
         }
     }
@@ -1000,7 +1000,7 @@ $TagSumDict.appendChild = function(self,child){
 $TagSumDict.__add__ = function(self,other){
     if(other.__class__===$TagSumDict){
         self.children = self.children.concat(other.children)
-    }else if(isinstance(other,[str,int,float,dict,set,list])){
+    }else if(isinstance(other,[str,__builtins__.int,float,dict,set,list])){
         self.children = self.children.concat($DOMNode(document.createTextNode(other)))
     }else{self.children.push(other)}
     return self

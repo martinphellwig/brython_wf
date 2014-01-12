@@ -4047,14 +4047,14 @@ __BRYTHON__.py2js = function(src,module,parent){
     // src = Python source (string)
     // module = module name (string)
     // parent = the name of the "calling" module, eg for a list comprehension (string)
-    src = src.replace(/\r\n/gm,'\n')
+    var src = src.replace(/\r\n/gm,'\n')
     while (src.length>0 && (src.charAt(0)=="\n" || src.charAt(0)=="\r")){
         src = src.substr(1)
     }
     if(src.charAt(src.length-1)!="\n"){src+='\n'}
     if(module===undefined){module='__main__'}
     // Python built-in variable __name__
-    __name__ = module
+    var __name__ = module
     if(__BRYTHON__.scope[module]===undefined){
         __BRYTHON__.scope[module] = {}
         __BRYTHON__.scope[module].__dict__ = {}

@@ -37,7 +37,7 @@ $IntDict.__eq__ = function(self,other){
         return self===int
     }
     if(isinstance(other,int)){return self.valueOf()==other.valueOf()}
-    else if(isinstance(other,float)){return self.valueOf()==other.value}
+    else if(isinstance(other,__builtins__.float)){return self.valueOf()==other.value}
     else{return self.valueOf()===other}
 }
 
@@ -45,9 +45,9 @@ $IntDict.__floordiv__ = function(self,other){
     if(isinstance(other,int)){
         if(other==0){throw ZeroDivisionError('division by zero')}
         else{return Math.floor(self/other)}
-    }else if(isinstance(other,float)){
+    }else if(isinstance(other,__builtins__.float)){
         if(!other.value){throw ZeroDivisionError('division by zero')}
-        else{return float(Math.floor(self/other.value))}
+        else{return __builtins__.float(Math.floor(self/other.value))}
     }else{$UnsupportedOpType("//","int",other.__class__)}
 }
 
@@ -76,7 +76,7 @@ $IntDict.__mod__ = function(self,other) {
     if(isinstance(other,int)){
         return (self%other+other)%other
     }
-    else if(isinstance(other,float)){
+    else if(isinstance(other,__builtins__.float)){
         return ((self%other)+other)%other
     }else if(isinstance(other,bool)){ 
          var bool_value=0; 
@@ -92,7 +92,7 @@ $IntDict.__mro__ = [$IntDict,$ObjectDict]
 $IntDict.__mul__ = function(self,other){
     var val = self.valueOf(),list=__builtins__.list,tuple=__builtins__.tuple
     if(isinstance(other,int)){return self*other}
-    else if(isinstance(other,float)){return float(self*other.value)}
+    else if(isinstance(other,__builtins__.float)){return __builtins__.float(self*other.value)}
     else if(isinstance(other,bool)){
          var bool_value=0
          if (other.valueOf()) bool_value=1
@@ -131,7 +131,7 @@ $IntDict.__or__ = function(self,other){return self | other} // bitwise OR
 
 $IntDict.__pow__ = function(self,other){
     if(isinstance(other, int)) {return int(Math.pow(self.valueOf(),other.valueOf()))}
-    else if (isinstance(other, float)) { return float(Math.pow(self.valueOf(), other.valueOf()))}
+    else if (isinstance(other, __builtins__.float)) { return __builtins__.float(Math.pow(self.valueOf(), other.valueOf()))}
     else{$UnsupportedOpType("**",int,other.__class__)}
 }
 
@@ -153,10 +153,10 @@ $IntDict.__str__ = $IntDict.__repr__
 $IntDict.__truediv__ = function(self,other){
     if(isinstance(other,int)){
         if(other==0){throw ZeroDivisionError('division by zero')}
-        else{return float(self/other)}
-    }else if(isinstance(other,float)){
+        else{return __builtins__.float(self/other)}
+    }else if(isinstance(other,__builtins__.float)){
         if(!other.value){throw ZeroDivisionError('division by zero')}
-        else{return float(self/other.value)}
+        else{return __builtins__.float(self/other.value)}
     }else{$UnsupportedOpType("//","int",other.__class__)}
 }
 
@@ -174,9 +174,9 @@ var $op_func = function(self,other){
     if(isinstance(other,int)){
         var res = self.valueOf()-other.valueOf()
         if(isinstance(res,int)){return res}
-        else{return float(res)}
+        else{return __builtins__.float(res)}
     }
-    else if(isinstance(other,float)){return float(self.valueOf()-other.value)}
+    else if(isinstance(other,__builtins__.float)){return __builtins__.float(self.valueOf()-other.value)}
     else if(isinstance(other,bool)){
          var bool_value=0;
          if(other.valueOf()) bool_value=1;
@@ -194,7 +194,7 @@ for($op in $ops){
 // comparison methods
 var $comp_func = function(self,other){
     if(isinstance(other,int)){return self.valueOf() > other.valueOf()}
-    else if(isinstance(other,float)){return self.valueOf() > other.value}
+    else if(isinstance(other,__builtins__.float)){return self.valueOf() > other.value}
     else if(isinstance(other,bool)){return self.valueOf() > __builtins__.bool.$dict.__hash__(other)}
     else{throw __builtins__.TypeError(
         "unorderable types: "+self.__class__.__name__+'() > '+other.__class__.__name__+"()")}
@@ -207,7 +207,7 @@ for($op in $B.$comps){
 Number.prototype.__class__ = $IntDict
 Number.prototype.$fast_augm = true // used to speed up augmented assigns
 
-int = function(value){
+var int = function(value){
     var res
     if(value===undefined){res = Number(0)}
     else if(isinstance(value,int)){res = Number(value)}
@@ -216,7 +216,7 @@ int = function(value){
     else if(typeof value=="number"){res = Number(parseInt(value))}
     else if(typeof value=="string" && (new RegExp(/^[ ]*[+-]?\d+[ ]*$/)).test(value)){
         res = Number(parseInt(value))
-    }else if(isinstance(value,float)){
+    }else if(isinstance(value,__builtins__.float)){
         res = Number(parseInt(value.value))
     }else{ throw ValueError(
         "Invalid literal for int() with base 10: '"+__builtins__.str(value)+"'")
