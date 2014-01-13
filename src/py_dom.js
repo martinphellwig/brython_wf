@@ -144,7 +144,7 @@ $DOMEventDict.__getattribute__ = function(self,attr){
     }
 }
 
-__BRYTHON__.$DOMEvent = $DOMEvent = function(ev){
+var $DOMEvent = __BRYTHON__.$DOMEvent = function(ev){
     ev.__class__ = $DOMEventDict
     if(ev.preventDefault===undefined){ev.preventDefault = function(){ev.returnValue=false}}
     if(ev.stopPropagation===undefined){ev.stopPropagation = function(){ev.cancelBubble=true}}
@@ -932,7 +932,7 @@ $QueryDict.__getitem__ = function(self,key){
     return result
 }
 
-$QueryDict_iterator = __BRYTHON__.$iterator_class('query string iterator')
+var $QueryDict_iterator = __BRYTHON__.$iterator_class('query string iterator')
 $QueryDict.__iter__ = function(self){
     return __BRYTHON__.$iterator(self._keys,$QueryDict_iterator)
 }

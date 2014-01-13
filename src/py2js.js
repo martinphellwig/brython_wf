@@ -2,6 +2,8 @@
 
 ;(function(){
 
+var js,$pos,res,$op
+
 var $operators = {
     "//=":"ifloordiv",">>=":"irshift","<<=":"ilshift",
     "**=":"ipow","**":"pow","//":"floordiv","<<":"lshift",">>":"rshift",
@@ -1259,7 +1261,7 @@ function $DictOrSetCtx(context){
     context.tree.push(this)
     this.to_js = function(){
         if(this.real==='dict'){
-            var res = '$dict(['
+            var res = '__BRYTHON__.$dict(['
             for(var i=0;i<this.items.length;i+=2){
                 res+='['+this.items[i].to_js()+','+this.items[i+1].to_js()+']'
                 if(i<this.items.length-2){res+=','}
@@ -1269,7 +1271,7 @@ function $DictOrSetCtx(context){
         else if(this.real==='dict_comp'){
             var key_items = this.items[0].expression[0].to_js()
             var value_items = this.items[0].expression[1].to_js()
-            return '$dict('+$to_js(this.items)+')'+$to_js(this.tree)
+            return '__BRYTHON__.$dict('+$to_js(this.items)+')'+$to_js(this.tree)
         }else{return 'set(['+$to_js(this.items)+'])'+$to_js(this.tree)}
     }
 }
@@ -2477,7 +2479,7 @@ function $add_line_num(node,rank){
         else if(elt.type==='except'){flag=false}
         else if(elt.type==='single_kw'){flag=false}
         if(flag){
-            js = '__BRYTHON__.line_info=['+node.line_num+',"'+node.module+'"];'
+            var js = '__BRYTHON__.line_info=['+node.line_num+',"'+node.module+'"];'
             // add a trailing None for interactive mode
             js += 'None;'
             var new_node = new $Node('expression')
@@ -4196,7 +4198,7 @@ function brython(options){
                 for(var $attr in $globals){
                     //console.log('var '+$attr)
                 }
-                _mod.__class__ = $ModuleDict
+                _mod.__class__ = __BRYTHON__.$ModuleDict
                 _mod.__name__ = '__main__'
                 _mod.__file__ = __BRYTHON__.$py_module_path['__main__']
                 __BRYTHON__.imported['__main__'] = _mod

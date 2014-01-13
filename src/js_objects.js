@@ -10,7 +10,7 @@ function $applyToConstructor(constructor, argArray) {
     return new factoryFunction();
 }
 
-$LocationDict = {__class__:$B.$type,
+var $LocationDict = {__class__:$B.$type,
     __name__:'Location'
 }
 $LocationDict.__mro__ = [$LocationDict,$ObjectDict]
@@ -40,7 +40,7 @@ function $Location(){ // used because of Firefox bug #814622
 $LocationDict.$factory = $Location
 $Location.$dict = $LocationDict
 
-$JSConstructorDict = {
+var $JSConstructorDict = {
     __class__:$B.$type,
     __name__:'JSConstructor'
 }
@@ -88,7 +88,7 @@ function $JSObject(js){
     this.toString = this.__str__
 }
 
-$JSObjectDict = {
+var $JSObjectDict = {
     __class__:$B.$type,
     __name__:'JSObject',
     toString:function(){return '(JSObject)'}
@@ -183,7 +183,7 @@ $JSObjectDict.__getitem__ = function(self,rank){
     }
 }
 
-$JSObject_iterator = $B.$iterator_class('JS object iterator')
+var $JSObject_iterator = $B.$iterator_class('JS object iterator')
 $JSObjectDict.__iter__ = function(self){
     return $B.$iterator(self.js,$JSObject_iterator)
 }

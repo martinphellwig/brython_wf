@@ -77,7 +77,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
             res.__name__ = attr
             // __new__ is a static method
             if(attr=='__new__'){res.$type='staticmethod'}
-            res1 = res.__get__.apply(null,[res,obj,obj.__class__])
+            var res1 = res.__get__.apply(null,[res,obj,obj.__class__])
             if(typeof res1=='function'){
                 // if attribute is a class then return it as is
                 // example :
