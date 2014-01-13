@@ -218,7 +218,7 @@ var int = function(value){
         res = Number(parseInt(value))
     }else if(isinstance(value,__builtins__.float)){
         res = Number(parseInt(value.value))
-    }else{ throw ValueError(
+    }else{ throw __builtins__.ValueError(
         "Invalid literal for int() with base 10: '"+__builtins__.str(value)+"'")
     }
     return res

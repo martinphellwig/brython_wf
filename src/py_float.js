@@ -33,7 +33,7 @@ $FloatDict.__floordiv__ = function(self,other){
 
 $FloatDict.__getformat__ = function(self,arg){
     if(['double','float'].indexOf(arg)){return 'IEEE, little-endian'}
-    throw ValueError("__getformat__() argument 1 must be 'double' or 'float'")
+    throw __builtins__.ValueError("__getformat__() argument 1 must be 'double' or 'float'")
 }
 
 $FloatDict.__hash__ = function() {
@@ -181,7 +181,7 @@ var float = function (value){
     if (value == '-inf') return new $FloatClass(-Infinity);
     if (typeof value == 'string' && value.toLowerCase() == 'nan') return new $FloatClass(Number.NaN)
     
-    throw ValueError("Could not convert to float(): '"+__builtins__.str(value)+"'")
+    throw __builtins__.ValueError("Could not convert to float(): '"+__builtins__.str(value)+"'")
 }
 float.__class__ = $B.$factory
 float.$dict = $FloatDict

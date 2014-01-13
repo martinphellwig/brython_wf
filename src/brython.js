@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 2.0.rc2.20140112-222956
+// version 2.0.rc2.20140113-081242
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[2, '0.rc2', '20140112-222956', 'alpha', 0]
+__BRYTHON__.version_info=[2, '0.rc2', '20140113-081242', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -5009,7 +5009,7 @@ return((typeof obj)=="number"||obj.constructor===Number)&&(obj.valueOf()%1===0)
 }
 if(arg===__builtins__.float){
 return((typeof obj=="number" && obj.valueOf()%1!==0))||
-(obj.__class__===__builtins__.__builtins__.float.$dict)
+(obj.__class__===__builtins__.float.$dict)
 }
 if(arg===__builtins__.str){return(typeof obj=="string"||obj.__class__===__builtins__.str)}
 if(arg===__builtins__.list){return(obj.constructor===Array)}
@@ -5320,7 +5320,7 @@ start=args[0]
 stop=args[1]
 }
 if(args.length>=3){step=args[2]}
-if(step==0){throw ValueError("range() arg 3 must not be zero")}
+if(step==0){throw __builtins__.ValueError("range() arg 3 must not be zero")}
 var res={
 __class__ : $RangeDict,
 start:start,
@@ -5376,7 +5376,7 @@ if(n===undefined){n=0}
 if(!isinstance(n,__builtins__.int)){throw __builtins__.TypeError(
 "'"+n.__class__+"' object cannot be interpreted as an integer")}
 var mult=Math.pow(10,n)
-var res=__builtins__.__builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
+var res=__builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
 if(n==0){return __builtins__.int(res)}else{return __builtins__.float(res)}
 }
 function setattr(obj,attr,value){
@@ -5420,7 +5420,7 @@ start=args[0]
 stop=args[1]
 }
 if(args.length>=3){step=args[2]}
-if(step==0){throw ValueError("slice step must not be zero")}
+if(step==0){throw __builtins__.ValueError("slice step must not be zero")}
 var res={
 __class__ : $SliceDict,
 start:start,
@@ -5533,9 +5533,9 @@ var req=new ActiveXObject("Microsoft.XMLHTTP")
 req.onreadystatechange=function(){
 var status=req.status
 if(status===404){
-$res=IOError('File not found')
+$res=__builtins__.IOError('File not found')
 }else if(status!==200){
-$res=IOError('Could not open file '+file+' : status '+status)
+$res=__builtins__.IOError('Could not open file '+file+' : status '+status)
 }else{
 $res=req.responseText
 }
@@ -5554,7 +5554,7 @@ res.__iter__=function(){return iter(lines)}
 res.__len__=function(){return lines.length}
 res.close=function(){res.closed=true}
 res.read=function(nb){
-if(res.closed){throw ValueError('I/O operation on closed file')}
+if(res.closed){throw __builtins__.ValueError('I/O operation on closed file')}
 if(nb===undefined){return $res}
 else{
 counter+=nb
@@ -5563,7 +5563,7 @@ return $res.substr(counter-nb,nb)
 }
 res.readable=function(){return true}
 res.readline=function(limit){
-if(res.closed){throw ValueError('I/O operation on closed file')}
+if(res.closed){throw __builtins__.ValueError('I/O operation on closed file')}
 var line=''
 if(limit===undefined||limit===-1){limit=null}
 while(true){
@@ -5580,7 +5580,7 @@ counter++
 }
 }
 res.readlines=function(hint){
-if(res.closed){throw ValueError('I/O operation on closed file')}
+if(res.closed){throw __builtins__.ValueError('I/O operation on closed file')}
 var x=$res.substr(counter).split('\n')
 if(hint && hint!==-1){
 var y=[],size=0
@@ -5593,7 +5593,7 @@ if(size>hint || x.length==0){return y}
 }else{return x}
 }
 res.seek=function(offset,whence){
-if(res.closed){throw ValueError('I/O operation on closed file')}
+if(res.closed){throw __builtins__.ValueError('I/O operation on closed file')}
 if(whence===undefined){whence=0}
 if(whence===0){counter=offset}
 else if(whence===1){counter +=offset}
@@ -5662,10 +5662,10 @@ $BoolDict.__eq__=function(self,other){
 if(self.valueOf()){return !!other}else{return !other}
 }
 $BoolDict.__ge__=function(self,other){
-return __builtins__.__builtins__.int.$dict.__ge__($BoolDict.__hash__(self),other)
+return __builtins__.int.$dict.__ge__($BoolDict.__hash__(self),other)
 }
 $BoolDict.__gt__=function(self,other){
-return __builtins__.__builtins__.int.$dict.__gt__($BoolDict.__hash__(self),other)
+return __builtins__.int.$dict.__gt__($BoolDict.__hash__(self),other)
 }
 $BoolDict.__hash__=function(self){
 if(self.valueOf())return 1
@@ -6450,7 +6450,7 @@ else{return float(Math.floor(self.value/other.value))}
 }
 $FloatDict.__getformat__=function(self,arg){
 if(['double','float'].indexOf(arg)){return 'IEEE, little-endian'}
-throw ValueError("__getformat__() argument 1 must be 'double' or 'float'")
+throw __builtins__.ValueError("__getformat__() argument 1 must be 'double' or 'float'")
 }
 $FloatDict.__hash__=function(){
 frexp=function(re){
@@ -6571,7 +6571,7 @@ if(isinstance(value,float))return value
 if(value=='inf')return new $FloatClass(Infinity)
 if(value=='-inf')return new $FloatClass(-Infinity)
 if(typeof value=='string' && value.toLowerCase()=='nan')return new $FloatClass(Number.NaN)
-throw ValueError("Could not convert to float(): '"+__builtins__.str(value)+"'")
+throw __builtins__.ValueError("Could not convert to float(): '"+__builtins__.str(value)+"'")
 }
 float.__class__=$B.$factory
 float.$dict=$FloatDict
@@ -6756,7 +6756,7 @@ else if(typeof value=="string" &&(new RegExp(/^[]*[+-]?\d+[]*$/)).test(value)){
 res=Number(parseInt(value))
 }else if(isinstance(value,__builtins__.float)){
 res=Number(parseInt(value.value))
-}else{throw ValueError(
+}else{throw __builtins__.ValueError(
 "Invalid literal for int() with base 10: '"+__builtins__.str(value)+"'")
 }
 return res
@@ -7268,7 +7268,7 @@ $ListDict.index=function(self,elt){
 for(var i=0;i<self.length;i++){
 if(getattr(self[i],'__eq__')(elt)){return i}
 }
-throw ValueError(__builtins__.str(elt)+" is not in list")
+throw __builtins__.ValueError(__builtins__.str(elt)+" is not in list")
 }
 $ListDict.insert=function(self,i,item){self.splice(i,0,item)}
 $ListDict.remove=function(self,elt){
@@ -7278,7 +7278,7 @@ self.splice(i,1)
 return
 }
 }
-throw ValueError(__builtins__.str(elt)+" is not in list")
+throw __builtins__.ValueError(__builtins__.str(elt)+" is not in list")
 }
 $ListDict.pop=function(self,pos){
 if(pos===undefined){
@@ -7563,7 +7563,7 @@ var res=ascii(src)
 if(this.precision){res=res.substr(0,parseInt(this.precision.substr(1)))}
 return res
 }else if(this.type=="g" || this.type=="G"){
-if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
+if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var prec=-4
 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -7588,7 +7588,8 @@ this.type="f"
 return this.format(src)
 }
 }else if(this.type=="e" || this.type=="E"){
-if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
+if(!isinstance(src,[__builtins__.int,__builtins__.float])){
+throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var prec=6
 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -7598,7 +7599,7 @@ var res=elts[0]+this.type+elts[1].charAt(0)
 if(elts[1].length===2){res +='0'}
 return res+elts[1].substr(1)
 }else if(this.type=="x" || this.type=="X"){
-if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
+if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=src
 res=src.toString(16)
@@ -7615,7 +7616,7 @@ while(res.length<parseInt(this.min_width)){res=pad+res}
 }
 return res
 }else if(this.type=="i" || this.type=="d"){
-if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
+if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=parseInt(src)
 if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
@@ -7629,7 +7630,7 @@ while(res.length<parseInt(this.min_width)){res=pad+res}
 }
 return res
 }else if(this.type=="f" || this.type=="F"){
-if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
+if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=parseFloat(src)
 if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
@@ -7836,20 +7837,20 @@ var _literal=_out[0]
 var _sep=_out[1]
 var _conversion=_out[2]
 if(_sep && ! _conversion){
-throw ValueError("end of format while looking for conversion specifier")
+throw __builtins__.ValueError("end of format while looking for conversion specifier")
 }
 if(_conversion.length > 1){
-throw ValueError("expected ':' after format specifier")
+throw __builtins__.ValueError("expected ':' after format specifier")
 }
 if('rsa'.indexOf(_conversion)==-1){
-throw ValueError("Unknown conversation specifier " + _conversion)
+throw __builtins__.ValueError("Unknown conversation specifier " + _conversion)
 }
 _name_parts=this.field_part(_literal)
 var _start=_literal.substring(0,1)
 var _name=''
 if(_start=='' || '.['.indexOf(_start)!=-1){
 if(this._index===undefined){
-throw ValueError("cannot switch from manual field specification to automatic field numbering")
+throw __builtins__.ValueError("cannot switch from manual field specification to automatic field numbering")
 }
 _name=self._index.toString()
 this._index=1
@@ -7860,7 +7861,7 @@ _name_parts.shift()
 _name=_name_parts.shift()[1]
 if(this._index !==undefined && !isNaN(_name)){
 if(this._index){
-throw ValueError("cannot switch from automatic field " +
+throw __builtins__.ValueError("cannot switch from automatic field " +
 "numbering to manual field specification")
 this._index=undefined
 }
@@ -7874,16 +7875,16 @@ var _v=_name_parts[i][1]
 var _tail=_name_parts[i][2]
 if(_v==''){_empty_attribute=true}
 if(_tail !==undefined){
-throw ValueError("Only '.' or '[' may follow ']' " +
+throw __builtins__.ValueError("Only '.' or '[' may follow ']' " +
 "in format field specifier")
 }
 }
 if(_name_parts && _k=='[' && ! 
 _literal.substring(_literal.length)==']'){
-throw ValueError("Missing ']' in format string")
+throw __builtins__.ValueError("Missing ']' in format string")
 }
 if(_empty_attribute){
-throw ValueError("Empty attribute in format string")
+throw __builtins__.ValueError("Empty attribute in format string")
 }
 var _rv=''
 if(_format_spec.indexOf('{')!=-1){
@@ -7982,7 +7983,7 @@ this.strformat=function(value, format_spec){
 if(format_spec===undefined)format_spec=''
 var _m=this.format_spec_re.test(format_spec)
 if(!_m){
-throw ValueError('Invalid conversion specification')
+throw __builtins__.ValueError('Invalid conversion specification')
 }
 var _match=this.format_spec_re.exec(format_spec)
 var _align=_match[0]
@@ -7992,13 +7993,13 @@ var _width=_match[3]
 var _comma=_match[4]
 var _precision=_match[5]
 var _conversion=_match[6]
-var _is_numeric=isinstance(value, float)
+var _is_numeric=isinstance(value, __builtins__.float)
 var _is_integer=isinstance(value, __builtins__.int)
 if(_prefix && ! _is_numeric){
 if(_is_numeric){
-throw ValueError('Alternate form (#) not allowed in float format specifier')
+throw __builtins__.ValueError('Alternate form (#) not allowed in float format specifier')
 }else{
-throw ValueError('Alternate form (#) not allowed in string format specification')
+throw __builtins__.ValueError('Alternate form (#) not allowed in string format specification')
 }
 }
 if(_is_numeric && _conversion=='n'){
@@ -8006,7 +8007,7 @@ _conversion=_is_integer && 'd' || 'g'
 }else{
 if(_sign){
 if(! _is_numeric){
-throw ValueError('Sign not allowd in string format specifification')
+throw __builtins__.ValueError('Sign not allowd in string format specifification')
 }
 if(_conversation=='c'){
 throw("Sign not allowd with integer format specifier 'c'")
@@ -8018,7 +8019,7 @@ if(_comma){
 var _rv
 if(_conversion !='' &&((_is_numeric && _conversion=='s')|| 
 (! _is_integer && 'cdoxX'.indexOf(_conversion)!=-1))){
-throw ValueError('Fix me')
+throw __builtins__.ValueError('Fix me')
 }
 if(_conversion=='c'){
 _conversion='s'
@@ -8037,7 +8038,7 @@ _width=0
 }
 if(_width <=_rv.length){
 if(! _is_numeric &&(_align=='=' ||(_zero && ! _align))){
-throw ValueError("'=' alignment not allowd in string format specifier")
+throw __builtins__.ValueError("'=' alignment not allowd in string format specifier")
 }
 return _rv
 }
@@ -8051,7 +8052,7 @@ _rv=getattr(_rv, 'center')(_width, _fill)
 }
 }else if(_align=='=' ||(_zero && ! _align)){
 if(! _is_numeric){
-throw ValueError("'=' alignment not allowd in string format specifier")
+throw __builtins__.ValueError("'=' alignment not allowd in string format specifier")
 }
 if(_value < 0 || _sign !='-'){
 _rv=_rv.substring(0,1)+ getattr(_rv.substring(1),'rjust')(_width - 1, _fill)
@@ -8128,7 +8129,7 @@ throw NotImplementedError("function format_map not implemented yet")
 }
 $StringDict.index=function(self){
 var res=$StringDict.find.apply(self,arguments)
-if(res===-1){throw ValueError("substring not found")}
+if(res===-1){throw __builtins__.ValueError("substring not found")}
 else{return res}
 }
 $StringDict.isalnum=function(self){
@@ -8237,7 +8238,7 @@ return str
 }
 $StringDict.replace=function(self,old,_new,count){
 if(count!==undefined){
-if(!isinstance(count,[__builtins__.int,float])){throw __builtins__.TypeError(
+if(!isinstance(count,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
 "'"+str(count.__class__)+"' object cannot be interpreted as an integer")}
 var re=new RegExp($re_escape(old),'g')
 var res=self.valueOf()
@@ -8270,7 +8271,7 @@ else{return start+s.length-1-res-sub.length+1}
 }
 $StringDict.rindex=function(){
 var res=$StringDict.rfind.apply(this,arguments)
-if(res==-1){throw ValueError("substring not found")}
+if(res==-1){throw __builtins__.ValueError("substring not found")}
 else{return res}
 }
 $StringDict.rjust=function(self){
@@ -9019,7 +9020,9 @@ var res=$TagSum()
 res.children=[self]
 if(isinstance(other,$TagSum)){
 for(var $i=0;$i<other.children.length;$i++){res.children.push(other.children[$i])}
-}else if(isinstance(other,[__builtins__.str,__builtins__.__builtins__.int,__builtins__.float,__builtins__.list,__builtins__.dict,__builtins__.set,__builtins__.tuple])){
+}else if(isinstance(other,[__builtins__.str,
+__builtins__.int,__builtins__.float,__builtins__.list,
+__builtins__.dict,__builtins__.set,__builtins__.tuple])){
 res.children.push($DOMNode(document.createTextNode(__builtins__.str(other))))
 }else{res.children.push(other)}
 return res
@@ -9032,7 +9035,7 @@ catch(err){return False}
 }
 DOMNode.__del__=function(self){
 if(!self.elt.parentNode){
-throw ValueError("can't delete "+str(elt))
+throw __builtins__.ValueError("can't delete "+str(elt))
 }
 self.elt.parentNode.removeChild(self.elt)
 }
@@ -9160,7 +9163,7 @@ res.children.push(clone)
 }
 return res
 }else{
-throw ValueError("can't multiply "+self.__class__+"by "+other)
+throw __builtins__.ValueError("can't multiply "+self.__class__+"by "+other)
 }
 }
 DOMNode.__ne__=function(self,other){return !DOMNode.__eq__(self,other)}
@@ -9393,7 +9396,7 @@ flag=true
 break
 }else{ch_elt=ch_elt.parentElement}
 }
-if(!flag){throw ValueError('element '+child+' is not inside '+self)}
+if(!flag){throw __builtins__.ValueError('element '+child+' is not inside '+self)}
 }
 DOMNode.top=function(self){
 return __builtins__.int($getPosition(self.elt)["top"])
@@ -9569,7 +9572,8 @@ self.children.push(child)
 $TagSumDict.__add__=function(self,other){
 if(other.__class__===$TagSumDict){
 self.children=self.children.concat(other.children)
-}else if(isinstance(other,[str,__builtins__.int,float,dict,set,list])){
+}else if(isinstance(other,[str,__builtins__.int,__builtins__.float,
+__builtins__.dict,__builtins__.set,__builtins__.list])){
 self.children=self.children.concat($DOMNode(document.createTextNode(other)))
 }else{self.children.push(other)}
 return self

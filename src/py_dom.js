@@ -353,7 +353,9 @@ DOMNode.__add__ = function(self,other){
     res.children = [self]
     if(isinstance(other,$TagSum)){
         for(var $i=0;$i<other.children.length;$i++){res.children.push(other.children[$i])}
-    } else if(isinstance(other,[__builtins__.str,__builtins__.__builtins__.int,__builtins__.float,__builtins__.list,__builtins__.dict,__builtins__.set,__builtins__.tuple])){
+    } else if(isinstance(other,[__builtins__.str,
+        __builtins__.int,__builtins__.float,__builtins__.list,
+        __builtins__.dict,__builtins__.set,__builtins__.tuple])){
         res.children.push($DOMNode(document.createTextNode(__builtins__.str(other))))
     }else{res.children.push(other)}
     return res
@@ -372,7 +374,7 @@ DOMNode.__del__ = function(self){
     // if element has a parent, calling __del__ removes object
     // from the parent's children
     if(!self.elt.parentNode){
-        throw ValueError("can't delete "+str(elt))
+        throw __builtins__.ValueError("can't delete "+str(elt))
     }
     self.elt.parentNode.removeChild(self.elt)
 }
@@ -515,7 +517,7 @@ DOMNode.__mul__ = function(self,other){
         }
         return res
     }else{
-        throw ValueError("can't multiply "+self.__class__+"by "+other)
+        throw __builtins__.ValueError("can't multiply "+self.__class__+"by "+other)
     }
 }
 
@@ -783,7 +785,7 @@ DOMNode.remove = function(self,child){
             break
         }else{ch_elt = ch_elt.parentElement}
     }
-    if(!flag){throw ValueError('element '+child+' is not inside '+self)}
+    if(!flag){throw __builtins__.ValueError('element '+child+' is not inside '+self)}
 }
 
 DOMNode.top = function(self){
@@ -1000,7 +1002,8 @@ $TagSumDict.appendChild = function(self,child){
 $TagSumDict.__add__ = function(self,other){
     if(other.__class__===$TagSumDict){
         self.children = self.children.concat(other.children)
-    }else if(isinstance(other,[str,__builtins__.int,float,dict,set,list])){
+    }else if(isinstance(other,[str,__builtins__.int,__builtins__.float,
+        __builtins__.dict,__builtins__.set,__builtins__.list])){
         self.children = self.children.concat($DOMNode(document.createTextNode(other)))
     }else{self.children.push(other)}
     return self

@@ -526,7 +526,7 @@ function isinstance(obj,arg){
         }
         if(arg===__builtins__.float){
             return ((typeof obj=="number" && obj.valueOf()%1!==0))||
-                (obj.__class__===__builtins__.__builtins__.float.$dict)
+                (obj.__class__===__builtins__.float.$dict)
         }
         if(arg===__builtins__.str){return (typeof obj=="string"||obj.__class__===__builtins__.str)}
         if(arg===__builtins__.list){return (obj.constructor===Array)}
@@ -883,7 +883,7 @@ function range(){
         stop = args[1]
     }
     if(args.length>=3){step=args[2]}
-    if(step==0){throw ValueError("range() arg 3 must not be zero")}
+    if(step==0){throw __builtins__.ValueError("range() arg 3 must not be zero")}
     var res = {
         __class__ : $RangeDict,
         start:start,
@@ -949,7 +949,7 @@ function round(arg,n){
     if(!isinstance(n,__builtins__.int)){throw __builtins__.TypeError(
         "'"+n.__class__+"' object cannot be interpreted as an integer")}
     var mult = Math.pow(10,n)
-    var res = __builtins__.__builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
+    var res =__builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
     if(n==0){return __builtins__.int(res)}else{return __builtins__.float(res)}
 }
 
@@ -1001,7 +1001,7 @@ function slice(){
         stop = args[1]
     }
     if(args.length>=3){step=args[2]}
-    if(step==0){throw ValueError("slice step must not be zero")}
+    if(step==0){throw __builtins__.ValueError("slice step must not be zero")}
     var res = {
         __class__ : $SliceDict,
         start:start,
@@ -1136,9 +1136,9 @@ function $url_open(){
         req.onreadystatechange = function(){
             var status = req.status
             if(status===404){
-                $res = IOError('File not found')
+                $res = __builtins__.IOError('File not found')
             }else if(status!==200){
-                $res = IOError('Could not open file '+file+' : status '+status) 
+                $res = __builtins__.IOError('Could not open file '+file+' : status '+status) 
             }else{
                 $res = req.responseText
             }
@@ -1160,7 +1160,7 @@ function $url_open(){
         res.__len__ = function(){return lines.length}
         res.close = function(){res.closed = true}
         res.read = function(nb){
-            if(res.closed){throw ValueError('I/O operation on closed file')}
+            if(res.closed){throw __builtins__.ValueError('I/O operation on closed file')}
             if(nb===undefined){return $res}
             else{
                 counter+=nb
@@ -1169,7 +1169,7 @@ function $url_open(){
         }
         res.readable = function(){return true}
         res.readline = function(limit){
-            if(res.closed){throw ValueError('I/O operation on closed file')}
+            if(res.closed){throw __builtins__.ValueError('I/O operation on closed file')}
             var line = ''
             if(limit===undefined||limit===-1){limit=null}
             while(true){
@@ -1186,7 +1186,7 @@ function $url_open(){
             }
         }
         res.readlines = function(hint){
-            if(res.closed){throw ValueError('I/O operation on closed file')}
+            if(res.closed){throw __builtins__.ValueError('I/O operation on closed file')}
             var x = $res.substr(counter).split('\n')
             if(hint && hint!==-1){
                 var y=[],size=0
@@ -1199,7 +1199,7 @@ function $url_open(){
             }else{return x}
         }
         res.seek = function(offset,whence){
-            if(res.closed){throw ValueError('I/O operation on closed file')}
+            if(res.closed){throw __builtins__.ValueError('I/O operation on closed file')}
             if(whence===undefined){whence=0}
             if(whence===0){counter = offset}
             else if(whence===1){counter += offset}
@@ -1281,11 +1281,11 @@ $BoolDict.__eq__ = function(self,other){
 }
 
 $BoolDict.__ge__ = function(self,other){
-    return __builtins__.__builtins__.int.$dict.__ge__($BoolDict.__hash__(self),other)
+    return __builtins__.int.$dict.__ge__($BoolDict.__hash__(self),other)
 }
 
 $BoolDict.__gt__ = function(self,other){
-    return __builtins__.__builtins__.int.$dict.__gt__($BoolDict.__hash__(self),other)
+    return __builtins__.int.$dict.__gt__($BoolDict.__hash__(self),other)
 }
 
 $BoolDict.__hash__ = function(self) {
