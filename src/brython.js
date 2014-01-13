@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 2.0.rc2.20140113-112925
+// version 2.0.rc2.20140113-170705
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[2, '0.rc2', '20140113-112925', 'alpha', 0]
+__BRYTHON__.version_info=[2, '0.rc2', '20140113-170705', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -72,20 +72,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_timer",
 "_websocket",
 "__random",
-"_codecs",
-"_collections",
-"_dummy_thread",
-"_functools",
-"_imp",
-"_markupbase",
-"_random",
-"_socket",
-"_string",
-"_struct",
-"_testcapi",
-"_thread",
-"_warnings",
-"_weakref"]
+]
 
 ;(function(){
 var js,$pos,res,$op
@@ -3865,7 +3852,7 @@ var factory=(function(_class){
 return function(){
 return $instance_creator(_class).apply(null,arguments)
 }
-})(class_dict)
+})($B.class_dict)
 var new_func=$B.builtins.getattr(metaclass,'__new__')
 var factory=$B.builtins.getattr(metaclass,'__new__').apply(null,[factory,class_name,bases,cl_dict])
 $B.builtins.getattr(metaclass,'__init__').apply(null,[factory,class_name,bases,cl_dict])
@@ -3886,7 +3873,7 @@ return factory
 }
 $B.builtins.type=function(name,bases,cl_dict){
 if(arguments.length==1){return name.__class__.$factory}
-var class_dict=new Object()
+var class_dict=$B.class_dict=new Object()
 class_dict.__class__=$B.$type
 class_dict.__name__=name
 class_dict.__bases__=bases
@@ -6203,15 +6190,16 @@ $xmlhttp.send()
 if(res.constructor===Error){throw res}
 return res
 }
-function $import_js(module){
+$B.$import_js=function(module){
+console.log('import js '+module.name)
 var filepath=__BRYTHON__.brython_path+'libs/' + module.name
-return $import_js_generic(module,filepath)
+return $B.$import_js_generic(module,filepath)
 }
-function $import_js_generic(module,filepath){
+$B.$import_js_generic=function(module,filepath){
 var module_contents=$download_module(module.name, filepath+'.js')
-return $import_js_module(module, filepath+'.js', module_contents)
+return $B.$import_js_module(module, filepath+'.js', module_contents)
 }
-function $import_js_module(module,filepath,module_contents){
+$B.$import_js_module=function(module,filepath,module_contents){
 eval(module_contents)
 if(eval('$module')===undefined){
 throw __builtins__.ImportError("name '$module' is not defined in module")
@@ -6224,11 +6212,11 @@ $module.__str__=function(){return "<module '"+module.name+"' from "+filepath+" >
 $module.__file__=filepath
 return $module
 }
-function $import_module_search_path(module,origin){
+$B.$import_module_search_path=function(module,origin){
 var path_list=__BRYTHON__.path.slice()
-return $import_module_search_path_list(module,__BRYTHON__.path,origin)
+return $B.$import_module_search_path_list(module,__BRYTHON__.path,origin)
 }
-function $import_module_search_path_list(module,path_list,origin){
+$B.$import_module_search_path_list=function(module,path_list,origin){
 var search=[]
 if(origin!==undefined){
 var origin_path=__BRYTHON__.$py_module_path[origin]
@@ -6251,7 +6239,7 @@ var modpath=search[j]
 for(var i=0;i<path_list.length;i++){
 var path=path_list[i]+ "/" + modpath
 try{
-mod=$import_py(module,path)
+mod=$B.$import_py(module,path)
 flag=true
 if(j==search.length-1){mod.$package=true}
 }catch(err){if(err.__name__!=="FileNotFoundError"){throw err}}
@@ -6264,11 +6252,11 @@ throw __builtins__.ImportError("module "+module.name+" not found")
 }
 return mod
 }
-function $import_py(module,path){
+$B.$import_py=function(module,path){
 var module_contents=$download_module(module.name, path+'.py')
-return $import_py_module(module,path+'.py',module_contents)
+return $B.$import_py_module(module,path+'.py',module_contents)
 }
-function $import_py_module(module,path,module_contents){
+$B.$import_py_module=function(module,path,module_contents){
 var $Node=__BRYTHON__.$Node,$NodeJSCtx=__BRYTHON__.$NodeJSCtx
 __BRYTHON__.$py_module_path[module.name]=path 
 var root=__BRYTHON__.py2js(module_contents,module.name)
@@ -6319,9 +6307,9 @@ if(__BRYTHON__.debug>0){console.log('line info '+__BRYTHON__.line_info)}
 throw err
 }
 }
-function $import_single(module,origin){
-var import_funcs=[$import_js, $import_module_search_path]
-if(module.name.search(/\./)>-1){import_funcs=[$import_module_search_path]}
+$B.$import_single=function(module,origin){
+var import_funcs=[$B.$import_js, $B.$import_module_search_path]
+if(module.name.search(/\./)>-1){import_funcs=[$B.$import_module_search_path]}
 for(var j=0;j<import_funcs.length;j++){
 try{
 return import_funcs[j](module,origin)
@@ -6342,7 +6330,7 @@ throw err
 }
 }
 }
-function $import(mod_name,origin){
+$B.$import=function(mod_name,origin){
 var res=[]
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod
@@ -6357,7 +6345,7 @@ if(__BRYTHON__.modules[module.name]===undefined){
 __BRYTHON__.modules[module.name]={__class__:$B.$ModuleDict}
 __BRYTHON__.imported[module.name]={__class__:$B.$ModuleDict}
 if(i<parts.length-1){module.package_only=true}
-__BRYTHON__.modules[module.name]=$import_single(module,origin)
+__BRYTHON__.modules[module.name]=$B.$import_single(module,origin)
 __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
 }
 }
@@ -6367,16 +6355,16 @@ mod=stored
 res.push(mod)
 return res
 }
-function $import_from(mod_name,names,origin){
+$B.$import_from=function(mod_name,names,origin){
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod=__BRYTHON__.imported[mod_name]
-if(mod===undefined){$import(mod_name);mod=__BRYTHON__.modules[mod_name]}
+if(mod===undefined){$B.$import(mod_name);mod=__BRYTHON__.modules[mod_name]}
 var mod_ns=mod
 for(var i=0;i<names.length;i++){
 if(mod_ns[names[i]]===undefined){
 if(mod.$package){
 var sub_mod=mod_name+'.'+names[i]
-$import(sub_mod,origin)
+$B.$import(sub_mod,origin)
 mod[names[i]]=__BRYTHON__.modules[sub_mod]
 }else{
 throw __builtins__.ImportError("cannot import name "+names[i])
@@ -6385,7 +6373,7 @@ throw __builtins__.ImportError("cannot import name "+names[i])
 }
 return mod
 }
-function $import_list_intra(src,current_url,names){
+$B.$import_list_intra=function(src,current_url,names){
 var mod
 var elts=current_url.split('/')
 var nbpts=0 
@@ -6397,7 +6385,7 @@ if(pymod_name){
 var stored=__BRYTHON__.imported[pymod_name]
 if(stored!==undefined){return stored}
 var pymod={'name':pymod_name}
-mod=$import_module_search_path_list(pymod,[pymod_path])
+mod=$B.$import_module_search_path_list(pymod,[pymod_path])
 if(mod!=undefined){
 __BRYTHON__.modules[pymod_name]=mod
 __BRYTHON__.imported[pymod_name]=mod
@@ -6409,7 +6397,7 @@ for(var i=0;i<names.length;i++){
 var stored=__BRYTHON__.imported[names[i]]
 if(stored!==undefined){mod[names[i]]=stored}
 else{
-mod[names[i]]=$import_module_search_path_list({'name':names[i]},[pymod_path])
+mod[names[i]]=$B.$import_module_search_path_list({'name':names[i]},[pymod_path])
 __BRYTHON__.modules[names[i]]=mod[names[i]]
 __BRYTHON__.imported[names[i]]=mod[names[i]]
 }
@@ -6417,9 +6405,6 @@ __BRYTHON__.imported[names[i]]=mod[names[i]]
 }
 return mod
 }
-$B.$import=$import
-$B.$import_from=$import_from
-$B.$import_list_intra=$import_list_intra
 })(__BRYTHON__)
 ;(function($B){
 var __builtins__=$B.builtins
