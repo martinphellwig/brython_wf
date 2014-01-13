@@ -104,7 +104,7 @@ $B.$isEvent = function(obj){
 }
 
 // DOM node types
-$NodeTypes = {1:"ELEMENT",
+var $NodeTypes = {1:"ELEMENT",
     2:"ATTRIBUTE",
     3:"TEXT",
     4:"CDATA_SECTION",
@@ -118,7 +118,7 @@ $NodeTypes = {1:"ELEMENT",
     12:"NOTATION"
 }
 
-$DOMEventDict = {__class__:__BRYTHON__.$type,
+var $DOMEventDict = {__class__:__BRYTHON__.$type,
     __name__:'DOMEvent'
 }
 
@@ -156,7 +156,7 @@ __BRYTHON__.$DOMEvent = $DOMEvent = function(ev){
 $DOMEvent.__class__ = __BRYTHON__.$factory
 $DOMEvent.$dict = $DOMEventDict
 
-$ClipboardDict = {
+var $ClipboardDict = {
     __class__:__BRYTHON__.$type,
     __name__:'Clipboard'
 }
@@ -244,7 +244,7 @@ function $Options(parent){
         parent:parent
     }
 }
-$OptionsDict = {
+var $OptionsDict = {
     __class__:__BRYTHON__.$type,
     __name__:'Options'
 }
@@ -294,7 +294,7 @@ $OptionsDict.remove = function(self,arg){self.parent.options.remove(arg.elt)}
     
 //$OptionsDict.toString = $OptionsDict.__str__
     
-$StyleDict = {__class__:__BRYTHON__.$type,__name__:'CSSProperty'}
+var $StyleDict = {__class__:__BRYTHON__.$type,__name__:'CSSProperty'}
 
 $StyleDict.__mro__ = [$StyleDict,$ObjectDict]
 
@@ -917,7 +917,7 @@ DOMNode.unbind = function(self,event){
 
 // return query string as an object with methods to access keys and values
 // same interface as cgi.FieldStorage, with getvalue / getlist / getfirst
-$QueryDict = {__class__:__BRYTHON__.$type,__name__:'query'}
+var $QueryDict = {__class__:__BRYTHON__.$type,__name__:'query'}
 
 $QueryDict.__contains__ = function(self,key){
     return self._keys.indexOf(key)>-1
@@ -990,7 +990,7 @@ DOMNode.query = function(self){
 }
 
 // class used for tag sums
-$TagSumDict = {
+var $TagSumDict = {
     __class__ : __BRYTHON__.$type,
     __name__:'TagSum'
 }
@@ -1044,6 +1044,7 @@ function $TagSum(){
 }
 $TagSum.__class__=__BRYTHON__.$factory
 $TagSum.$dict = $TagSumDict
+__BRYTHON__.$TagSum = $TagSum // used in _html.js and _svg.js
 
 //creation of jquery like helper functions..
 

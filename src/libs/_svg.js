@@ -1,6 +1,7 @@
 $module = (function($B){
 
 var __builtins__ = $B.builtins
+var $TagSumDict = $B.$TagSum.$dict
 
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 
