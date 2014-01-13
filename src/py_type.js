@@ -43,7 +43,7 @@ $B.$class_constructor = function(class_name,class_obj,parents,parents_names,kwar
                 return function(){
                     return $instance_creator(_class).apply(null,arguments)
                 }
-            })(class_dict)
+            })($B.class_dict)
         var new_func = $B.builtins.getattr(metaclass,'__new__')
         var factory = $B.builtins.getattr(metaclass,'__new__').apply(null,[factory,class_name,bases,cl_dict])
         $B.builtins.getattr(metaclass,'__init__').apply(null,[factory,class_name,bases,cl_dict])
@@ -83,7 +83,7 @@ $B.builtins.type = function(name,bases,cl_dict){
     // type() returns the factory function
     
     // Create the class dictionary    
-    var class_dict = new Object()
+    var class_dict = $B.class_dict = new Object()
         
     // class attributes
     class_dict.__class__ = $B.$type
