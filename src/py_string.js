@@ -150,7 +150,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
                 return res
             }else if(this.type=="g" || this.type=="G"){
-                if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
+                if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var prec = -4
                 if(this.precision){prec=parseInt(this.precision.substr(1))}
@@ -177,8 +177,9 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                     return this.format(src)
                 }
             }else if(this.type=="e" || this.type=="E"){
-                if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
-                    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
+                if(!isinstance(src,[__builtins__.int,__builtins__.float])){
+                    throw __builtins__.TypeError(
+                        "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var prec = 6
                 if(this.precision){prec=parseInt(this.precision.substr(1))}
                 var res = parseFloat(src).toExponential(prec)
@@ -187,7 +188,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 if(elts[1].length===2){res += '0'}
                 return res+elts[1].substr(1)
             }else if(this.type=="x" || this.type=="X"){
-                if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
+                if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = src
                 res = src.toString(16)
@@ -204,7 +205,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 }
                 return res
             }else if(this.type=="i" || this.type=="d"){
-                if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
+                if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseInt(src)
                 if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
@@ -218,7 +219,7 @@ $legacy_format=$StringDict.__mod__ = function(self,args){
                 }
                 return res
             }else if(this.type=="f" || this.type=="F"){
-                if(!isinstance(src,[__builtins__.int,float])){throw __builtins__.TypeError(
+                if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseFloat(src)
                 if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
@@ -473,15 +474,15 @@ var $FormattableString=function(format_string) {
        var _conversion=_out[2]
 
        if (_sep && ! _conversion) {
-          throw ValueError("end of format while looking for conversion specifier")
+          throw __builtins__.ValueError("end of format while looking for conversion specifier")
        }
 
        if (_conversion.length > 1) {
-          throw ValueError("expected ':' after format specifier")
+          throw __builtins__.ValueError("expected ':' after format specifier")
        }
 
        if ('rsa'.indexOf(_conversion) == -1) {
-          throw ValueError("Unknown conversation specifier " + _conversion)
+          throw __builtins__.ValueError("Unknown conversation specifier " + _conversion)
        }
 
        //fix me
@@ -492,7 +493,7 @@ var $FormattableString=function(format_string) {
        if (_start == '' || '.['.indexOf(_start) != -1) {
           // auto-numbering
           if (this._index === undefined) {
-             throw ValueError("cannot switch from manual field specification to automatic field numbering")
+             throw __builtins__.ValueError("cannot switch from manual field specification to automatic field numbering")
           }
 
           _name = self._index.toString()
@@ -506,7 +507,7 @@ var $FormattableString=function(format_string) {
          if (this._index !== undefined && !isNaN(_name)) {
             // manual specification
             if (this._index) {
-               throw ValueError("cannot switch from automatic field " +
+               throw __builtins__.ValueError("cannot switch from automatic field " +
                                 "numbering to manual field specification")
                this._index=undefined
             }
@@ -523,18 +524,18 @@ var $FormattableString=function(format_string) {
 
            if (_v == '') {_empty_attribute = true}
            if (_tail !== undefined) {
-              throw ValueError("Only '.' or '[' may follow ']' " +
+              throw __builtins__.ValueError("Only '.' or '[' may follow ']' " +
                                "in format field specifier")
            }
        }
 
        if (_name_parts && _k == '[' && ! 
           _literal.substring(_literal.length) == ']') {
-          throw ValueError("Missing ']' in format string")
+          throw __builtins__.ValueError("Missing ']' in format string")
        }
 
        if (_empty_attribute) {
-          throw ValueError("Empty attribute in format string")
+          throw __builtins__.ValueError("Empty attribute in format string")
        }
 
        var _rv=''
@@ -663,7 +664,7 @@ var $FormattableString=function(format_string) {
        var _m = this.format_spec_re.test(format_spec)
 
        if (!_m) {
-          throw ValueError('Invalid conversion specification') 
+          throw __builtins__.ValueError('Invalid conversion specification') 
        }
 
        var _match=this.format_spec_re.exec(format_spec)
@@ -675,14 +676,14 @@ var $FormattableString=function(format_string) {
        var _precision=_match[5]
        var _conversion=_match[6]
 
-       var _is_numeric = isinstance(value, float)
+       var _is_numeric = isinstance(value, __builtins__.float)
        var _is_integer = isinstance(value, __builtins__.int)
 
        if (_prefix && ! _is_numeric) {
           if (_is_numeric) {
-             throw ValueError('Alternate form (#) not allowed in float format specifier')
+             throw __builtins__.ValueError('Alternate form (#) not allowed in float format specifier')
           } else {
-             throw ValueError('Alternate form (#) not allowed in string format specification')
+             throw __builtins__.ValueError('Alternate form (#) not allowed in string format specification')
           } 
        }
 
@@ -691,7 +692,7 @@ var $FormattableString=function(format_string) {
        } else {
           if (_sign) {
              if (! _is_numeric) {
-                throw ValueError('Sign not allowd in string format specifification');
+                throw __builtins__.ValueError('Sign not allowd in string format specifification');
              }
              if (_conversation == 'c') {
                 throw("Sign not allowd with integer format specifier 'c'")
@@ -706,7 +707,7 @@ var $FormattableString=function(format_string) {
        var _rv
        if (_conversion != '' && ((_is_numeric && _conversion == 's') || 
           (! _is_integer && 'cdoxX'.indexOf(_conversion) != -1))) {
-          throw ValueError('Fix me')
+          throw __builtins__.ValueError('Fix me')
        }
 
        if (_conversion == 'c') {
@@ -734,7 +735,7 @@ var $FormattableString=function(format_string) {
 
        if (_width <= _rv.length) {
           if (! _is_numeric && (_align == '=' || (_zero && ! _align))) {
-             throw ValueError("'=' alignment not allowd in string format specifier")
+             throw __builtins__.ValueError("'=' alignment not allowd in string format specifier")
           }
           return _rv
        }
@@ -752,7 +753,7 @@ var $FormattableString=function(format_string) {
           }
        } else if (_align == '=' || (_zero && ! _align)) {
           if (! _is_numeric) {
-             throw ValueError("'=' alignment not allowd in string format specifier")
+             throw __builtins__.ValueError("'=' alignment not allowd in string format specifier")
           }
           if (_value < 0 || _sign != '-') {
              _rv = _rv.substring(0,1) + getattr(_rv.substring(1),'rjust')(_width - 1, _fill)
@@ -850,7 +851,7 @@ $StringDict.format_map = function(self) {
 $StringDict.index = function(self){
     // Like find(), but raise ValueError when the substring is not found.
     var res = $StringDict.find.apply(self,arguments)
-    if(res===-1){throw ValueError("substring not found")}
+    if(res===-1){throw __builtins__.ValueError("substring not found")}
     else{return res}
 }
 
@@ -984,7 +985,7 @@ function $re_escape(str)
 
 $StringDict.replace = function(self,old,_new,count){
     if(count!==undefined){
-        if(!isinstance(count,[__builtins__.int,float])){throw __builtins__.TypeError(
+        if(!isinstance(count,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
             "'"+str(count.__class__)+"' object cannot be interpreted as an integer")}
         var re = new RegExp($re_escape(old),'g')
         
@@ -1024,7 +1025,7 @@ $StringDict.rfind = function(self){
 $StringDict.rindex = function(){
     // Like rfind() but raises ValueError when the substring sub is not found
     var res = $StringDict.rfind.apply(this,arguments)
-    if(res==-1){throw ValueError("substring not found")}
+    if(res==-1){throw __builtins__.ValueError("substring not found")}
     else{return res}
 }
 

@@ -290,7 +290,7 @@ $ListDict.index = function(self,elt){
     for(var i=0;i<self.length;i++){
         if(getattr(self[i],'__eq__')(elt)){return i}
     }
-    throw ValueError(__builtins__.str(elt)+" is not in list")
+    throw __builtins__.ValueError(__builtins__.str(elt)+" is not in list")
 }
 
 $ListDict.insert = function(self,i,item){self.splice(i,0,item)}
@@ -302,7 +302,7 @@ $ListDict.remove = function(self,elt){
             return
         }
     }
-    throw ValueError(__builtins__.str(elt)+" is not in list")
+    throw __builtins__.ValueError(__builtins__.str(elt)+" is not in list")
 }
 
 $ListDict.pop = function(self,pos){
