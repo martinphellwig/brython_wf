@@ -1,23 +1,17 @@
 # strings
-log('spam eggs')
-log('doesn\'t')
-log("doesn't")
-log('"Yes," he said.')
-log("\"Yes,\" he said.")
-log('"Isn\'t," she said.')
+
 hello = "This is a rather long string containing\n\
 several lines of text just as you would do in C.\n\
     Note that whitespace at the beginning of the line is\
  significant."
-log(hello)
-log("""\
+
+hello = """\
 Usage: thingy [OPTIONS]
      -h                        Display this usage message
      -H hostname               Hostname to connect to
-""")
+"""
 hello = r"This is a rather long string containing\n\
 several lines of text much as you would do in C."
-log(hello)
 
 word = 'Help' + 'A'
 assert word=='HelpA'
@@ -29,22 +23,22 @@ assert 'str'.strip() + 'ing'=='string'
 
 # string methods
 x='fooss'
-log(x.replace('o','X',20))
-log('GhFF'.lower())
-log(x.lstrip('of'))
+assert x.replace('o','X',20) == 'fXXss'
+assert 'GhFF'.lower() == 'ghff'
+assert x.lstrip('of') == 'ss'
 x='aZjhkhZyuy'
-log(x.find('Z'))
-log(x.rfind('Z'))
-log(x.rindex('Z'))
+assert x.find('Z')==1
+assert x.rfind('Z')==6
+assert x.rindex('Z')==6
 try:
-    log(x.rindex('K'))
+    print(x.rindex('K'))
 except ValueError:
-    log('erreur')
-log(x.split('h'))
-#log(x.split('h',1))
-log(x.startswith('aZ'))
-log(x.strip('auy'))
-log(x.upper())
+    pass
+assert x.split('h') == ['aZj', 'k', 'Zyuy']
+#print(x.split('h',1))
+assert x.startswith('aZ')
+assert x.strip('auy') == 'ZjhkhZ'
+assert x.upper()=='AZJHKHZYUY'
 
 x = "zer"
 assert x.capitalize() == "Zer"
