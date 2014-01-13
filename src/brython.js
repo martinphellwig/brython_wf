@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 2.0.rc2.20140113-081242
+// version 2.0.rc2.20140113-082533
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[2, '0.rc2', '20140113-081242', 'alpha', 0]
+__BRYTHON__.version_info=[2, '0.rc2', '20140113-082533', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -8818,7 +8818,7 @@ if(obj[$DOMEventAttrs_IE[i]]===undefined){return false}
 }
 return true
 }
-$NodeTypes={1:"ELEMENT",
+var $NodeTypes={1:"ELEMENT",
 2:"ATTRIBUTE",
 3:"TEXT",
 4:"CDATA_SECTION",
@@ -8831,7 +8831,7 @@ $NodeTypes={1:"ELEMENT",
 11:"DOCUMENT_FRAGMENT",
 12:"NOTATION"
 }
-$DOMEventDict={__class__:__BRYTHON__.$type,
+var $DOMEventDict={__class__:__BRYTHON__.$type,
 __name__:'DOMEvent'
 }
 $DOMEventDict.__mro__=[$DOMEventDict,$ObjectDict]
@@ -8865,7 +8865,7 @@ return ev
 }
 $DOMEvent.__class__=__BRYTHON__.$factory
 $DOMEvent.$dict=$DOMEventDict
-$ClipboardDict={
+var $ClipboardDict={
 __class__:__BRYTHON__.$type,
 __name__:'Clipboard'
 }
@@ -8939,7 +8939,7 @@ __class__:$OptionsDict,
 parent:parent
 }
 }
-$OptionsDict={
+var $OptionsDict={
 __class__:__BRYTHON__.$type,
 __name__:'Options'
 }
@@ -8974,7 +8974,7 @@ $OptionsDict.namedItem=function(self,name){
 return self.parent.options.namedItem(name)
 }
 $OptionsDict.remove=function(self,arg){self.parent.options.remove(arg.elt)}
-$StyleDict={__class__:__BRYTHON__.$type,__name__:'CSSProperty'}
+var $StyleDict={__class__:__BRYTHON__.$type,__name__:'CSSProperty'}
 $StyleDict.__mro__=[$StyleDict,$ObjectDict]
 $StyleDict.__getattr__=function(self,attr){
 return $ObjectDict.__getattribute__(self.js,attr)
@@ -9506,7 +9506,7 @@ __BRYTHON__.events.$values[ix_elt][ix_event]=events
 }
 }
 }
-$QueryDict={__class__:__BRYTHON__.$type,__name__:'query'}
+var $QueryDict={__class__:__BRYTHON__.$type,__name__:'query'}
 $QueryDict.__contains__=function(self,key){
 return self._keys.indexOf(key)>-1
 }
@@ -9562,7 +9562,7 @@ res._values[key]=[value]
 }
 return res
 }
-$TagSumDict={
+var $TagSumDict={
 __class__ : __BRYTHON__.$type,
 __name__:'TagSum'
 }
@@ -9608,6 +9608,7 @@ toString:function(){return '(TagSum)'}
 }
 $TagSum.__class__=__BRYTHON__.$factory
 $TagSum.$dict=$TagSumDict
+__BRYTHON__.$TagSum=$TagSum 
 var $toDOM=function(content){
 if(isinstance(content,DOMNode)){return content}
 if(isinstance(content,str)){
