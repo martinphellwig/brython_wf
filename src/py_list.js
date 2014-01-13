@@ -80,7 +80,7 @@ $ListDict.__eq__ = function(self,other){
             }
             return True
         }
-    }else{console.log('not the same class '+self.__class__+' '+other.__class__)}
+    }
     return False
 }
 

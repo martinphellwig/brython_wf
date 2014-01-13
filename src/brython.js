@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 2.0.rc2.20140113-111904
+// version 2.0.rc2.20140113-112925
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -39,12 +39,12 @@ res.__item__=function(rank){return localStorage.key(rank)}
 return res
 }
 }
-window.indexedDB=window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB
-window.IDBTransaction=window.IDBTransaction || window.webkitIDBTransaction
-window.IDBKeyRange=window.IDBKeyRange || window.webkitIDBKeyRange
-__BRYTHON__.has_indexedDB=typeof(window.indexedDB)!=="undefined"
+__BRYTHON__._indexedDB=window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB
+__BRYTHON__.IDBTransaction=window.IDBTransaction || window.webkitIDBTransaction
+__BRYTHON__.IDBKeyRange=window.IDBKeyRange || window.webkitIDBKeyRange
+__BRYTHON__.has_indexedDB=typeof(__BRYTHON__._indexedDB)!=="undefined"
 if(__BRYTHON__.has_indexedDB){
-__BRYTHON__.indexedDB=function(){return __BRYTHON__.JSObject(window.indexedDB)}
+__BRYTHON__.indexedDB=function(){return __BRYTHON__.JSObject(__BRYTHON__._indexedDB)}
 }
 __BRYTHON__.re=function(pattern,flags){return__BRYTHON__. JSObject(new RegExp(pattern,flags))}
 __BRYTHON__.has_json=typeof(JSON)!=="undefined"
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[2, '0.rc2', '20140113-111904', 'alpha', 0]
+__BRYTHON__.version_info=[2, '0.rc2', '20140113-112925', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -7085,7 +7085,7 @@ if(!getattr(self[i],'__eq__')(other[i])){return False}
 }
 return True
 }
-}else{console.log('not the same class '+self.__class__+' '+other.__class__)}
+}
 return False
 }
 $ListDict.__getitem__=function(self,arg){

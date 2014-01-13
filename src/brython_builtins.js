@@ -47,13 +47,13 @@ if(__BRYTHON__.has_local_storage){
     }
 }
 
-window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB
-window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction
-window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange
+__BRYTHON__._indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB
+__BRYTHON__.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction
+__BRYTHON__.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange
 
-__BRYTHON__.has_indexedDB = typeof(window.indexedDB) !== "undefined"
+__BRYTHON__.has_indexedDB = typeof(__BRYTHON__._indexedDB) !== "undefined"
 if (__BRYTHON__.has_indexedDB) {
-   __BRYTHON__.indexedDB = function() {return __BRYTHON__.JSObject(window.indexedDB)}
+   __BRYTHON__.indexedDB = function() {return __BRYTHON__.JSObject(__BRYTHON__._indexedDB)}
 }
 
 __BRYTHON__.re = function(pattern,flags){return__BRYTHON__. JSObject(new RegExp(pattern,flags))}
