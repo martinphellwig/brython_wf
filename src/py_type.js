@@ -83,7 +83,7 @@ $B.builtins.type = function(name,bases,cl_dict){
     // type() returns the factory function
     
     // Create the class dictionary    
-    class_dict = new Object()
+    var class_dict = new Object()
         
     // class attributes
     class_dict.__class__ = $B.$type
@@ -126,9 +126,7 @@ $B.builtins.type = function(name,bases,cl_dict){
         }
         if (non_empty.length==0){break}
         for(var i=0;i<non_empty.length;i++){
-            var seq = non_empty[i]
-            var candidate = seq[0]
-            not_head = []
+            var seq = non_empty[i],candidate = seq[0],not_head = []
             for(var j=0;j<non_empty.length;j++){
                 var s = non_empty[j]
                 if(s.slice(1).indexOf(candidate)>-1){not_head.push(s)}
@@ -253,7 +251,7 @@ $B.$type.__getattribute__=function(klass,attr){
             if(res.__get__!==undefined){ // descriptor
             // __new__ is a static method
             if(attr=='__new__'){res.$type='staticmethod'}
-            res1 = res.__get__.apply(null,[res,$B.builtins.None,klass])
+            var res1 = res.__get__.apply(null,[res,$B.builtins.None,klass])
             var args
             if(typeof res1=='function'){
                 res.__name__ = attr

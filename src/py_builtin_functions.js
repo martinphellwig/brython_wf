@@ -588,7 +588,7 @@ function locals(obj_id,module){
     if($B.scope[obj_id]===undefined){
         return globals(module)
     }
-    var res = $dict()
+    var res = __builtins__.dict()
     var scope = $B.scope[obj_id].__dict__
     for(var name in scope){__builtins__.dict.$dict.__setitem__(res,name,scope[name])}
     return res
@@ -1042,7 +1042,7 @@ function sorted () {
 }
 
 // staticmethod() built in function
-$StaticmethodDict = {__class__:$B.$type,__name__:'staticmethod'}
+var $StaticmethodDict = {__class__:$B.$type,__name__:'staticmethod'}
 $StaticmethodDict.__mro__ = [$StaticmethodDict,$ObjectDict]
 
 function staticmethod(func) {
@@ -1215,7 +1215,7 @@ function $url_open(){
 
 var $ZipDict = {__class__:$B.$type,__name__:'zip'}
 
-$zip_iterator = $B.$iterator_class('zip_iterator')
+var $zip_iterator = $B.$iterator_class('zip_iterator')
 $ZipDict.__iter__ = function(self){
     return $B.$iterator(self.items,$zip_iterator)
 }

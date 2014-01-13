@@ -1,16 +1,16 @@
 // import modules
 
-var $ModuleDict = {
-    __class__ : __BRYTHON__.$type,
-    __name__ : 'module',
-}
-$ModuleDict.__repr__ = function(self){return '<module '+self.__name__+'>'}
-$ModuleDict.__str__ = function(self){return '<module '+self.__name__+'>'}
-$ModuleDict.__mro__ = [$ModuleDict,__BRYTHON__.builtins.object.$dict]
-
 ;(function($B){
 
 var __builtins__ = $B.builtins
+
+$B.$ModuleDict = {
+    __class__ : $B.$type,
+    __name__ : 'module',
+}
+$B.$ModuleDict.__repr__ = function(self){return '<module '+self.__name__+'>'}
+$B.$ModuleDict.__str__ = function(self){return '<module '+self.__name__+'>'}
+$B.$ModuleDict.__mro__ = [$B.$ModuleDict,$B.builtins.object.$dict]
 
 function $importer(){
     // returns the XMLHTTP object to handle imports
@@ -93,7 +93,7 @@ function $import_js_module(module,filepath,module_contents){
     }
     // add class and __str__
     __BRYTHON__.scope[module.name] = {__dict__:$module}
-    $module.__class__ = $ModuleDict
+    $module.__class__ = $B.$ModuleDict
     $module.__name__ = module.name
     $module.__repr__ = function(){return "<module '"+module.name+"' from "+filepath+" >"}
     $module.__str__ = function(){return "<module '"+module.name+"' from "+filepath+" >"}
@@ -200,7 +200,7 @@ function $import_py_module(module,path,module_contents) {
             $module[attr] = __BRYTHON__.scope[module.name].__dict__[attr]
         }
         // add class and __str__
-        $module.__class__ = $ModuleDict
+        $module.__class__ = $B.$ModuleDict
         $module.__repr__ = function(){return "<module '"+module.name+"' from "+path+" >"}
         $module.__str__ = function(){return "<module '"+module.name+"' from "+path+" >"}
         $module.toString = function(){return "module "+module.name}
@@ -260,8 +260,8 @@ function $import(mod_name,origin){
             module.name = parts.slice(0,i+1).join('.')
             if(__BRYTHON__.modules[module.name]===undefined){
                 // this could be a recursive import, so lets set modules={}
-                __BRYTHON__.modules[module.name]={__class__:$ModuleDict}
-                __BRYTHON__.imported[module.name]={__class__:$ModuleDict}
+                __BRYTHON__.modules[module.name]={__class__:$B.$ModuleDict}
+                __BRYTHON__.imported[module.name]={__class__:$B.$ModuleDict}
                 // indicate if package only, or package or file
                 if(i<parts.length-1){module.package_only = true}
                 __BRYTHON__.modules[module.name] = $import_single(module,origin)

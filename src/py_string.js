@@ -99,7 +99,7 @@ $StringDict.__init__ = function(self,arg){
     self.toString = function(){return arg}
 }
 
-$str_iterator = $B.$iterator_class('str_iterator')
+var $str_iterator = $B.$iterator_class('str_iterator')
 $StringDict.__iter__ = function(self){
     var items = self.split('') // list of all characters in string
     return $B.$iterator(items,$str_iterator)
@@ -107,7 +107,7 @@ $StringDict.__iter__ = function(self){
 
 $StringDict.__len__ = function(self){return self.length}
 
-$legacy_format=$StringDict.__mod__ = function(self,args){
+var $legacy_format=$StringDict.__mod__ = function(self,args){
     // string formatting (old style with %)
     var ph = [] // placeholders for replacements
 
@@ -339,7 +339,7 @@ var $comp_func = function(self,other){
 }
 $comp_func += '' // source code
 var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
-for($op in $comps){
+for(var $op in $comps){
     eval("$StringDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 
@@ -348,7 +348,7 @@ var $notimplemented = function(self,other){
     throw NotImplementedError("OPERATOR not implemented for class str")
 }
 $notimplemented += '' // coerce to string
-for($op in $B.$operators){
+for(var $op in $B.$operators){
     var $opfunc = '__'+$B.$operators[$op]+'__'
     if(!($opfunc in str)){
         //eval('$StringDict.'+$opfunc+"="+$notimplemented.replace(/OPERATOR/gm,$op))
@@ -1253,7 +1253,7 @@ $StringDict.__new__ = function(cls){
 }
 
 // dictionary and factory for subclasses of string
-$StringSubclassDict = {
+var $StringSubclassDict = {
     __class__:$B.$type,
     __name__:'str'
 }
@@ -1279,7 +1279,7 @@ for(var $attr in $StringDict){
 $StringSubclassDict.__mro__ = [$StringSubclassDict,$ObjectDict]
 
 // factory for str subclasses
-$StringSubclassFactory = {
+var $StringSubclassFactory = {
     __class__:$B.$factory,
     $dict:$StringSubclassDict
 }

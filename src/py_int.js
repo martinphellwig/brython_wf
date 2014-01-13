@@ -187,7 +187,7 @@ var $op_func = function(self,other){
 }
 $op_func += '' // source code
 var $ops = {'+':'add','-':'sub'}
-for($op in $ops){
+for(var $op in $ops){
     eval('$IntDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 }
 
@@ -200,7 +200,7 @@ var $comp_func = function(self,other){
         "unorderable types: "+self.__class__.__name__+'() > '+other.__class__.__name__+"()")}
 }
 $comp_func += '' // source codevar $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
-for($op in $B.$comps){
+for(var $op in $B.$comps){
     eval("$IntDict.__"+$B.$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 

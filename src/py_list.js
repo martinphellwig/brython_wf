@@ -175,7 +175,7 @@ $ListDict.__init__ = function(self,arg){
     }
 }
 
-$list_iterator = $B.$iterator_class('list_iterator')
+var $list_iterator = $B.$iterator_class('list_iterator')
 $ListDict.__iter__ = function(self){
     return $B.$iterator(self,$list_iterator)
 }

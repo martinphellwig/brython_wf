@@ -212,7 +212,7 @@ $DictDict.get = function(self,key,_default){
     }
 }
 
-$dict_itemsDict = $B.$iterator_class('dict_itemiterator')
+var $dict_itemsDict = $B.$iterator_class('dict_itemiterator')
 
 $DictDict.items = function(self){
     var items = []
@@ -222,7 +222,7 @@ $DictDict.items = function(self){
     return $B.$iterator(items,$dict_itemsDict)
 }
 
-$dict_keysDict = $B.$iterator_class('dict_keys')
+var $dict_keysDict = $B.$iterator_class('dict_keys')
 
 $DictDict.keys = function(self){
     return $B.$iterator(self.$keys,$dict_keysDict)
@@ -274,7 +274,7 @@ $DictDict.update = function(self){
     }
 }
 
-$dict_valuesDict = $B.$iterator_class('dict_values')
+var $dict_valuesDict = $B.$iterator_class('dict_values')
 
 $DictDict.values = function(self){
     return $B.$iterator(self.$values,$dict_valuesDict)
@@ -288,7 +288,7 @@ function dict(){
     $DictDict.__init__.apply(null,args)
     return res
 }
-$dict = dict // used for dict literals : "x={}" is translated to "x=$dict()",
+$B.$dict = dict // used for dict literals : "x={}" is translated to "x=__BRYTHON__.$dict()",
              // not to "x=dict()"
              // otherwise this would fail :
              // def foo(dict=None):

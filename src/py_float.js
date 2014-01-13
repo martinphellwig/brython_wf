@@ -121,7 +121,7 @@ var $op_func = function(self,other){
 }
 $op_func += '' // source code
 var $ops = {'+':'add','-':'sub','*':'mul'}
-for($op in $ops){
+for(var $op in $ops){
     eval('$FloatDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
 }
 
@@ -143,7 +143,7 @@ var $comp_func = function(self,other){
 }
 $comp_func += '' // source code
 var $comps = {'>':'gt','>=':'ge','<':'lt','<=':'le'}
-for($op in $comps){
+for(var $op in $comps){
     eval("$FloatDict.__"+$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 
@@ -153,7 +153,7 @@ var $notimplemented = function(self,other){
         "unsupported operand types for OPERATOR: '"+self.__class__+"' and '"+other.__class__+"'")
 }
 $notimplemented += '' // coerce to string
-for($op in $B.$operators){
+for(var $op in $B.$operators){
     // use __add__ for __iadd__ etc, so don't define __iadd__ below
     if(['+=','-=','*=','/=','%='].indexOf($op)>-1) continue
     var $opfunc = '__'+$B.$operators[$op]+'__'
