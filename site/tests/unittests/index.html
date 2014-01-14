@@ -24,8 +24,7 @@
 <script type="text/javascript" src="../../../src/py_VFS.json"></script>
 
 <script type="text/python">
-from browser import doc
-from javascript import expose
+from browser import doc, window
 import sys
 
 info = sys.version_info
@@ -67,7 +66,6 @@ def run_all():
 
 #the code below works, but doesn't direct the output to the textarea
 # the exec function is probably causing problems..
-@expose
 def choose_test(event):
     doc["console"].text=''
     module=event.target.value
@@ -81,6 +79,8 @@ def choose_test(event):
       _suite=unittest.TestLoader().loadTestsFromModule(%s)
       unittest.TextTestRunner(sys.stdout, verbosity=2).run(_suite)
 """ % (module, module))
+
+window.choose_test=choose_test
 </script>
 
 </head>
