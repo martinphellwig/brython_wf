@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 2.0.rc2.20140113-170705
+// version 2.0.rc2.20140115-183021
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[2, '0.rc2', '20140113-170705', 'alpha', 0]
+__BRYTHON__.version_info=[2, '0.rc2', '20140115-183021', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -658,7 +658,9 @@ this.transform=function(node,rank){
 if(this.transformed){return}
 this.doc_string=$get_docstring(node)
 var instance_decl=new $Node('expression')
-new $NodeJSCtx(instance_decl,'var $class = {$def_line:__BRYTHON__.line_info}')
+var js='var $class={}'
+if(__BRYTHON__.debug>0){js='var $class = {$def_line:__BRYTHON__.line_info}'}
+new $NodeJSCtx(instance_decl,js)
 node.insert(0,instance_decl)
 var ret_obj=new $Node('expression')
 new $NodeJSCtx(ret_obj,'return $class')
@@ -4093,7 +4095,6 @@ $MethodFactory.$dict=$B.$MethodDict
 })(__BRYTHON__)
 ;(function($B){
 $B.$MakeArgs=function($fname,$args,$required,$defaults,$other_args,$other_kw,$after_star){
-if($after_star !==undefined && $after_star.length>0){console.log('in '+$fname+' after star ['+$after_star+']')}
 var i=null,$set_vars=[],$ns={}
 if($other_args !=null){$ns[$other_args]=[]}
 if($other_kw !=null){$dict_keys=[];$dict_values=[]}
@@ -6191,7 +6192,6 @@ if(res.constructor===Error){throw res}
 return res
 }
 $B.$import_js=function(module){
-console.log('import js '+module.name)
 var filepath=__BRYTHON__.brython_path+'libs/' + module.name
 return $B.$import_js_generic(module,filepath)
 }

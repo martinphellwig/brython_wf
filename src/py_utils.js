@@ -8,7 +8,6 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$
     // $other_args = 'args'
     // $other_kw = 'kw'
     // $after_star = ['u','v']
-    if($after_star !== undefined && $after_star.length>0){console.log('in '+$fname+' after star ['+$after_star+']')}
     var i=null,$set_vars = [],$ns = {}
     if($other_args != null){$ns[$other_args]=[]}
     if($other_kw != null){$dict_keys=[];$dict_values=[]}
