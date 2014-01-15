@@ -188,7 +188,6 @@ var _mod = {
     sin : function(x){return float(Math.sin(float_check(x)))},
     sqrt : function(x){return float(Math.sqrt(float_check(x)))},
     trunc: function(x) {
-        console.log('trunc')
        try{return getattr(x,'__trunc__')()}catch(err){$B.$pop_exc()}
        var x1=float_check(x);
        if (!isNaN(parseFloat(x1)) && isFinite(x1)) return int(Math.floor(x1));
