@@ -2,7 +2,11 @@ import os
 import json
 import sys
 import re
-import cStringIO as StringIO
+
+if sys.version_info[0] >= 3:
+  import io as StringIO
+else:
+  import cStringIO as StringIO
 
 #check to see if slimit or some other minification library is installed
 #set minify equal to slimit's minify function
@@ -11,13 +15,9 @@ import cStringIO as StringIO
 # Therefore other minification libraries could be used.
 try:
   import slimit
-  minify=slimit.minify
+  js_minify=slimit.minify
 except ImportError:
-  minify=None  
-
-if sys.version_info[0] >= 3:
-   print("For the time being, because of byte issues in Bryton, please use python 2.x")
-   sys.exit()
+  js_minify=None  
 
 def filter_module(code):
     """ remove empty lines from modules so that py_VFS will be a little
@@ -40,12 +40,30 @@ def filter_module(code):
         _filtered.append(_line)
 
     if _total > 0:
-       print "removed: %s empty lines (%d%%)" % (_total - _count, 100.0*_count/_total)
+       print("removed: %s empty lines (%d%%)" % (_total - _count, 100.0*_count/_total))
     return ''.join(_filtered)
   
 
+try:
+  import mnfy
+
+  def py_minify(source):
+      import ast
+      source_ast = ast.parse(source)
+
+      for transform in mnfy.safe_transforms:
+          transformer = transform()
+          source_ast = transformer.visit(source_ast)
+
+      minifier = mnfy.SourceCode()
+      minifier.visit(source_ast)
+      return str(minifier)
+
+except ImportError:
+  py_minify=filter_module
+
 def process(filename):
-  print "generating %s" % filename
+  print("generating %s" % filename)
   _main_root=os.path.dirname(filename)
 
   _VFS={}
@@ -62,13 +80,17 @@ def process(filename):
             _data=_fp.read()
             _fp.close()
 
-            if _ext in ('.js') and minify is not None:
-               try: 
-                 _data=minify(_data)
+            if _ext in ('.js'):
+               if js_minify is not None:
+                  try: 
+                    _data=js_minify(_data)
+                  except:
+                    pass
+            elif _ext == '.py':
+               try:
+                 _data=py_minify(_data)
                except:
                  pass
-            elif _ext == '.py':
-               _data=filter_module(_data)
 
             _vfs_filename=os.path.join(_root, _file).replace(_main_root, '')
             _vfs_filename=_vfs_filename.replace("\\", "/")
