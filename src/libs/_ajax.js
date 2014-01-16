@@ -10,14 +10,16 @@ $XMLHttpDict = {
     __name__:'XMLHttp'
 }
 
+/*
 $XMLHttpDict.__getattribute__ = function(self,attr){
     if(['headers','text','xml'].indexOf(attr)>-1){
         return $XMLHttpDict[attr](self)
     }
-    return $ObjectDict.__getattribute__(self,attr)
+    return $AjaxDict.__getattribute__(self,attr)
 }
+*/
 
-$XMLHttpDict.__mro__ = [$XMLHttpDict,$ObjectDict]
+$XMLHttpDict.__mro__ = [$XMLHttpDict, __builtins__.object.$dict]
 
 $XMLHttpDict.__repr__ = function(self){return '<object XMLHttp>'}
 
@@ -26,7 +28,7 @@ $XMLHttpDict.__str__ = $XMLHttpDict.toString = $XMLHttpDict.__repr__
 $XMLHttpDict.text = function(self){return self.responseText}
     
 $XMLHttpDict.xml = function(self){return $DomObject(self.responseXML)}
-    
+
 $XMLHttpDict.headers = function(self){
     return list(self.getAllResponseHeaders().split('\n'))
 }
@@ -41,7 +43,7 @@ $AjaxDict = {
     __name__:'ajax'
 }
 
-$AjaxDict.__mro__ = [$AjaxDict,$ObjectDict]
+$AjaxDict.__mro__ = [$AjaxDict, __builtins__.object.$dict]
 
 $AjaxDict.__repr__ = function(self){
     return '<object Ajax>'
