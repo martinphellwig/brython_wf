@@ -694,7 +694,9 @@ function $ClassCtx(context){
 
         // insert "$class = new Object"
         var instance_decl = new $Node('expression')
-        new $NodeJSCtx(instance_decl,'var $class = {$def_line:__BRYTHON__.line_info}')
+        var js = 'var $class={}'
+        if(__BRYTHON__.debug>0){js = 'var $class = {$def_line:__BRYTHON__.line_info}'}
+        new $NodeJSCtx(instance_decl,js)
         node.insert(0,instance_decl)
 
         // return $class at the end of class definition
