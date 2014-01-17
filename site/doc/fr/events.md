@@ -1,7 +1,7 @@
 Evénements
 ----------
 
-Les éléments d'une page peuvent réagir à des événements, par exemple le déplacement de la souris au-dessus de l'élément, une frappe au clavier dans un champ de saisie, l'appui sur un bouton, etc. On peut en trouver une liste complète sur Internet ; en voici quelques exemples :
+Les éléments d'une page peuvent réagir à des événements, par exemple le déplacement de la souris au-dessus de l'élément, une frappe au clavier dans un champ de saisie, l'appui sur un bouton, etc. On peut en trouver une [liste complète](http://www.w3.org/TR/DOM-Level-3-Events/#event-types-list) sur le site du W3C ; en voici quelques exemples :
 
 <table cellpadding=3 border=1>
 <tr><td>*mouseover*</td><td>la souris arrive au-dessus de l'élément</td></tr>
