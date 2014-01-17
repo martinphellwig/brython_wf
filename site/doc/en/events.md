@@ -1,6 +1,14 @@
 ## Events
 
-The elements in the web page can react to events such as a mouse click, the mouse moving over it or leaving it, a key pressed or released, etc
+The elements in the web page can react to events such as a mouse click, the mouse moving over it or leaving it, a key pressed or released, etc. The [complete list](http://www.w3.org/TR/DOM-Level-3-Events/#event-types-list) can be found on the W3C site ; here are a few examples
+
+<table cellpadding=3 border=1>
+<tr><td>*mouseover*</td><td>the mouse arrives over the element</td></tr>
+<tr><td>*mousemove*</td><td>the mouse moves on the element</td></tr>
+<tr><td>*click*</td><td>mouse click</td></tr>
+<tr><td>*keypress*</td><td>press on a keyboard key</td></tr>
+</table>
+
 
 ### Binding and unbinding functions to an event
 
