@@ -324,6 +324,9 @@ function filter(){
     if(arguments.length!=2){throw __builtins__.TypeError(
             "filter expected 2 arguments, got "+arguments.length)}
     var func=arguments[0],iterable=iter(arguments[1])
+    if(func === __builtins__.None) {
+        func = __builtins__.bool
+    }
     var __next__ = function() {
         while(true){
             try {
