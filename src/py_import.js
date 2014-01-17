@@ -76,7 +76,9 @@ function $download_module(module,url){
 }
 
 $B.$import_js = function(module){
-   var filepath=__BRYTHON__.brython_path+'libs/' + module.name
+    var name = module.name
+    if(name.substr(0,2)=='$$'){name = name.substr(2)}
+   var filepath=__BRYTHON__.brython_path+'libs/' + name
    return $B.$import_js_generic(module,filepath)
 }
 
@@ -119,8 +121,8 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
             path_list.splice(0,0,origin_path)
         }
     }
-    if(module.name.substr(0,2)=='$$'){module.name=module.name.substr(2)}
-    mod_path = module.name.replace(/\./g,'/')
+    var mod_path = module.name.replace(/\./g,'/')
+    if(mod_path.substr(0,2)=='$$'){mod_path=mod_path.substr(2)}
     if(!module.package_only){
         search.push(mod_path)
     }
@@ -246,7 +248,7 @@ $B.$import_single = function(module,origin){
 
 $B.$import = function(mod_name,origin){
     var res = []
-    if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
+    //if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
     var mod;
     var stored = __BRYTHON__.imported[mod_name]
     if(stored===undefined){
