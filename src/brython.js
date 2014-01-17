@@ -1,5 +1,5 @@
 // brython.js www.brython.info
-// version 2.0.rc2.20140115-183021
+// version 2.0.rc2.20140117-221208
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -52,7 +52,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.version_info=[2, '0.rc2', '20140115-183021', 'alpha', 0]
+__BRYTHON__.version_info=[2, '0.rc2', '20140117-221208', 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
 "hashlib",
@@ -6192,7 +6192,9 @@ if(res.constructor===Error){throw res}
 return res
 }
 $B.$import_js=function(module){
-var filepath=__BRYTHON__.brython_path+'libs/' + module.name
+var name=module.name
+if(name.substr(0,2)=='$$'){name=name.substr(2)}
+var filepath=__BRYTHON__.brython_path+'libs/' + name
 return $B.$import_js_generic(module,filepath)
 }
 $B.$import_js_generic=function(module,filepath){
@@ -6227,8 +6229,8 @@ if(path_list.indexOf(origin_path)==-1){
 path_list.splice(0,0,origin_path)
 }
 }
-if(module.name.substr(0,2)=='$$'){module.name=module.name.substr(2)}
-mod_path=module.name.replace(/\./g,'/')
+var mod_path=module.name.replace(/\./g,'/')
+if(mod_path.substr(0,2)=='$$'){mod_path=mod_path.substr(2)}
 if(!module.package_only){
 search.push(mod_path)
 }
@@ -6332,7 +6334,6 @@ throw err
 }
 $B.$import=function(mod_name,origin){
 var res=[]
-if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod
 var stored=__BRYTHON__.imported[mod_name]
 if(stored===undefined){
@@ -6667,7 +6668,9 @@ return !res
 }
 $IntDict.__or__=function(self,other){return self | other}
 $IntDict.__pow__=function(self,other){
-if(isinstance(other, int)){return int(Math.pow(self.valueOf(),other.valueOf()))}
+if(isinstance(other, int)){
+if(other.valueOf()>=0){return int(Math.pow(self.valueOf(),other.valueOf()))}
+else{return Math.pow(self.valueOf(),other.valueOf())}}
 else if(isinstance(other, __builtins__.float)){return __builtins__.float(Math.pow(self.valueOf(), other.valueOf()))}
 else{$UnsupportedOpType("**",int,other.__class__)}
 }
