@@ -1,7 +1,6 @@
 # hack to return special attributes
 from _sys import *
 from javascript import JSObject
-from browser import doc
 
 has_local_storage=__BRYTHON__.has_local_storage
 has_json=__BRYTHON__.has_json
