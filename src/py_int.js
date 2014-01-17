@@ -130,7 +130,9 @@ $IntDict.__not_in__ = function(self,item){
 $IntDict.__or__ = function(self,other){return self | other} // bitwise OR
 
 $IntDict.__pow__ = function(self,other){
-    if(isinstance(other, int)) {return int(Math.pow(self.valueOf(),other.valueOf()))}
+    if(isinstance(other, int)) {
+      if (other.valueOf() >= 0) {return int(Math.pow(self.valueOf(),other.valueOf()))}
+      else {return Math.pow(self.valueOf(),other.valueOf())} }
     else if (isinstance(other, __builtins__.float)) { return __builtins__.float(Math.pow(self.valueOf(), other.valueOf()))}
     else{$UnsupportedOpType("**",int,other.__class__)}
 }
