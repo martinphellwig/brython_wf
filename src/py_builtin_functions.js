@@ -334,27 +334,32 @@ $EnumerateDict.$factory = enumerate
 //exec() (built in function)
 
 var $FilterDict = {__class__:$B.$type,__name__:'filter'}
-var $filter_iterator = $B.$iterator_class('filter iterator')
-$FilterDict.__iter__ = function(self){
-    return $B.$iterator(self.$items,$filter_iterator)
-}
+$FilterDict.__iter__ = function(self){return self}
+$FilterDict.__repr__ = $FilterDict.__str__ = function(){return "<filter object>"},
 $FilterDict.__mro__ = [$FilterDict,$ObjectDict]
 
 function filter(){
     if(arguments.length!=2){throw __builtins__.TypeError(
             "filter expected 2 arguments, got "+arguments.length)}
     var func=arguments[0],iterable=iter(arguments[1])
-    var res=[]
-    while(true){
-        try{
-            var _item = next(iterable)
-            if(func(_item)){res.push(_item)}
-        }catch(err){
-            if(err.__name__==='StopIteration'){$B.$pop_exc();break}
-            else{throw err}
+    if(func === __builtins__.None) {
+        func = __builtins__.bool
+    }
+    var __next__ = function() {
+        while(true){
+            try {
+                var _item = next(iterable)
+                if (func(_item)){return _item}
+            }catch(err){
+                if(err.__name__==='StopIteration'){$B.$pop_exc();throw __builtins__.StopIteration('')}
+                else{throw err}
+            }
         }
     }
-    return {__class__:$FilterDict,$items:res}
+    return {
+        __class__: $FilterDict,
+        __next__: __next__
+    }
 }
 
 
