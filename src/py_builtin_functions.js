@@ -218,9 +218,27 @@ function compile(source, filename, mode) {
 var $ComplexDict = {__class__:$B.$type,__name__:'complex'}
 $ComplexDict.__mro__ = [$ComplexDict,$ObjectDict]
 
-function complex(real,imag){
-    return {__class__:$ComplexDict,real:real,imag:imag}
+$ComplexDict.__repr__ = $ComplexDict.__str__ = function(self){
+    if (self.real == 0){return self.imag + 'j'}
+    return '('+self.real + '+' + self.imag + 'j)'
 }
+
+function complex(real,imag){
+    var res = {
+        __class__:$ComplexDict,
+        real:real,
+        imag:imag
+    }
+
+    res.__repr__ = res.__str__ = function() {
+        if (imag === undefined) imag = 0
+        if (real == 0){return imag + 'j'}
+        return '('+real + '+' + imag + 'j)'
+    }
+
+    return res
+}
+
 complex.$dict = $ComplexDict
 $ComplexDict.$factory = complex
 
