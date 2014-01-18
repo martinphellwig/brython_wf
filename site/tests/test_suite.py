@@ -199,3 +199,11 @@ assert enum_first[0] == 0
 enum_obj = enumerate(['first', 'second'], start=1)
 enum_first = next(enum_obj)
 assert enum_first[0] ==  1
+
+
+# filter
+test_list = [0, -1, 1, 2, -2]
+true_values = list(filter(None, test_list))
+assert true_values == [-1, 1, 2, -2]
+negative_values = list(filter(lambda x: x<0, test_list))
+assert negative_values == [-1, -2]
