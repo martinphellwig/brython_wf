@@ -10,6 +10,7 @@ pdir = os.path.dirname(os.getcwd())
 
 # version info
 version = [2,'0.rc2',None,"alpha",0]
+implementation = [2, 0, 0, 'alpha', 0]
 
 try:
   import slimit 
@@ -73,6 +74,7 @@ now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 # update version number
 out = open(abs_path('version_info.js'),'w')
 version[2] = now
+out.write('__BRYTHON__.implementation = %s\n' % implementation)
 out.write('__BRYTHON__.version_info = %s\n' %str(version))
 # builtin module names = list of scripts in src/libs
 out.write('__BRYTHON__.builtin_module_names = ["posix",')

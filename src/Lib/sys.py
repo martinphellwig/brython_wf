@@ -63,7 +63,8 @@ platform="brython"
 
 prefix = __BRYTHON__.brython_path
 
-version = '.'.join(str(x) for x in __BRYTHON__.version_info)
+#version = '.'.join(str(x) for x in __BRYTHON__.version_info)
+version = '3.0.0'
 hexversion = 0x03000000   # python 3.0
 
 class __version_info(object):
@@ -78,10 +79,30 @@ class __version_info(object):
     def __getitem__(self, index):
         return self.version_info[index]
 
+    def hexversion(self):
+        try:
+          return '0%d0%d0%d' % (self.major, self.minor, self.micro)
+        finally:  #probably some invalid char in minor (rc, etc)
+          return '0%d0000' % (self.major)
+
     def __str__(self):
         return str(self.version_info)
-     
+
+#eventually this needs to be the real python version such as 3.0, 3.1, etc
 version_info=__version_info(__BRYTHON__.version_info)
 
-warnoptions=[]
+class _implementation:
+  def __init__(self):
+      self.name='brython'
+      self.version = __version_info(__BRYTHON__.implementation)
+      self.hexversion = self.version.hexversion()
 
+  def __repr__(self):
+      return "namespace(name='%s' version=%s hexversion='%s')" % (self.name, self.version, self.hexversion)
+
+  def __str__(self):
+      return "namespace(name='%s' version=%s hexversion='%s')" % (self.name, self.version, self.hexversion)
+
+implementation=_implementation()
+
+warnoptions=[]
