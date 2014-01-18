@@ -62,6 +62,10 @@ try:
 except ImportError:
   py_minify=filter_module
 
+#brython has issues parsing code created by mnfy so for now use
+#the filter_module version
+py_minify=filter_module
+
 if sys.version_info[0] < 3:  #python 2
    # we should only use mnfy for python > = 3 since ast is used, 
    # so let us use our basic minifier, since this script is being executed
