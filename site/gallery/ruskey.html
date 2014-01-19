@@ -52,7 +52,6 @@ def keydown(e):
     offset = 65 if e.shiftKey else 32
     e.preventDefault()
     e.stopPropagation()
-    log(key)
     if key == 8: 
         deletekey()
     elif key == 32:
@@ -87,8 +86,8 @@ def drawkeyboard():
 # Draw keyboard and set key events
 
 drawkeyboard()
-doc.onkeydown = keydown
-doc.onkeyup = keyup
+doc.bind('keydown',keydown)
+doc.bind('keyup',keyup)
 
 </script>
 <br />
