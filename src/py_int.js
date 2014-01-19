@@ -104,7 +104,7 @@ $IntDict.__mul__ = function(self,other){
          if (other.valueOf()) bool_value=1
          return self*bool_value}
     else if(isinstance(other,__builtins__.complex)){
-        return __builtins__.complex(self.valueOf() * other.real, self.valueOf() * self.imag)}
+        return __builtins__.complex(self.valueOf() * other.real, self.valueOf() * other.imag)}
     else if(typeof other==="string") {
         var res = ''
         for(var i=0;i<val;i++){res+=other}
