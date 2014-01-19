@@ -215,6 +215,7 @@ function compile(source, filename, mode) {
     return $B.py2js(source, filename).to_js()
 }
 
+/*
 var $ComplexDict = {__class__:$B.$type,__name__:'complex'}
 $ComplexDict.__mro__ = [$ComplexDict,$ObjectDict]
 
@@ -222,7 +223,9 @@ $ComplexDict.__repr__ = $ComplexDict.__str__ = function(self){
     if (self.real == 0){return self.imag + 'j'}
     return '('+self.real + '+' + self.imag + 'j)'
 }
-
+*/
+//function complex is located in py_complex.js
+/*
 function complex(real,imag){
     var res = {
         __class__:$ComplexDict,
@@ -241,6 +244,7 @@ function complex(real,imag){
 
 complex.$dict = $ComplexDict
 $ComplexDict.$factory = complex
+*/
 
 function $confirm(src){return confirm(src)}
 
