@@ -10,9 +10,22 @@ $module = (function($B){
         __str__: function(){return "<module 're'>"}
     }
     obj.A = obj.ASCII = 256
-    obj.I = obj.IGNORECASE = 'i'
-    obj.M = obj.MULTILINE = 'm'
-    obj.VERBOSE = 64
+    obj.I = obj.IGNORECASE = 2 // 'i'
+    obj.L = obj.LOCALE = 4
+    obj.M = obj.MULTILINE = 8 // 'm'
+    obj.S = obj.DOTALL = 16
+    obj.U = obj.UNICODE = 32
+    obj.X = obj.VERBOSE = 64
+    obj._is_valid = function(pattern) {
+        // FIXME: Improve
+        var is_valid = false;
+        try {
+            new RegExp(pattern);
+            is_valid = true;
+        }
+        catch(e) {}
+        return is_valid;
+    }
     $SRE_PatternDict = {
         __class__:$B.$type,
         __name__:'SRE_Pattern'
@@ -24,11 +37,14 @@ $module = (function($B){
     $SRE_PatternDict.search = function(self,string){
         return obj.obj(self.pattern,string,self.flags)
     }
+    function normflags(flags) {
+       return ((flags & obj.I)? 'i' : '') + ((flags & obj.M)? 'm' : '');
+    }
     obj.compile = function(pattern,flags){
         return {
             __class__:$SRE_PatternDict,
             pattern:pattern,
-            flags:flags
+            flags:normflags(flags)
         }
     }
     obj.escape = function(string){
@@ -43,13 +59,16 @@ $module = (function($B){
         return res
     }
     obj.findall = function(pattern,string,flags){
-        var $ns=$B.$MakeArgs('re.search',arguments,['pattern','string'],[],'args','kw')
-        var args = $ns['args']
+        var $ns=$B.$MakeArgs('re.search',arguments,['pattern','string'],[],'args','kw') ,
+            args = $ns['args'] ,
+            _flags = 0;
         if(args.length>0){var flags=args[0]}
-        else{var flags = getattr($ns['kw'], 'get')('flags','')}
+        else{var _flags = getattr($ns['kw'], 'get')('flags',0)}
+        
+        var flags = normaiize_flags();
         flags += 'gm'
-        var jsp = new RegExp(pattern,flags)
-        var jsmatch = string.match(jsp)
+        var jsp = new RegExp(pattern,flags) ,
+            jsmatch = string.match(jsp);
         if(jsmatch===null){return []}
         return jsmatch
     }
@@ -58,6 +77,7 @@ $module = (function($B){
         var args = $ns['args']
         if(args.length>0){var flags=args[0]}
         else{var flags = getattr($ns['kw'],'get')('flags','')}
+        flags = normflags(flags);
         var jsp = new RegExp(pattern,flags)
         var jsmatch = string.match(jsp)
         if(jsmatch===null){return None}
@@ -92,6 +112,7 @@ $module = (function($B){
         var flags = __builtins__.dict.$dict.get($ns['kw'],'flags','')
         if(args.length>0){var count=args[0]}
         if(args.length>1){var flags=args[1]}
+        flags = normflags(flags);
         if(typeof repl==="string"){
             // backreferences are \1, \2... in Python but $1,$2... in Javascript
             repl = repl.replace(/\\(\d+)/g,'$$$1')
