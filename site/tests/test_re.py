@@ -38,5 +38,9 @@ m = re.match(r"(..)+", "a1b2c3")
 assert m.group(0) == 'a1b2c3'
 assert m.group(1) == 'c3'
 
+# Up to this point _re has not been loaded
+
+assert re._pymdl[0] is None
+
 print('all tests ok..')
 
