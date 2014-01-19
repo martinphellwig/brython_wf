@@ -1,6 +1,6 @@
 // brython.js www.brython.info
 // version [3, 3, 0, 'alpha', 0]
-// implementation [2, 0, '20140119-163312', 'alpha,rc', 0]
+// implementation [2, 0, 0, 'rc', 2]
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -53,7 +53,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.implementation=[2, 0, '20140119-163312', 'alpha,rc', 0]
+__BRYTHON__.implementation=[2, 0, 0, 'rc', 2]
 __BRYTHON__.version_info=[3, 3, 0, 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
