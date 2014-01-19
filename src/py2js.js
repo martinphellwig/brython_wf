@@ -3328,7 +3328,7 @@ function $transition(context,token){
 
     }else if(context.type==='kwarg'){
 
-        if(token===','){return new $CallArgCtx(context.parent)}
+        if(token===','){return new $CallArgCtx(context.parent.parent)}
         else{return $transition(context.parent,token)}
 
     }else if(context.type==="lambda"){

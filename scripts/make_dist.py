@@ -10,7 +10,7 @@ pdir = os.path.dirname(os.getcwd())
 
 # version info
 #version = [2,'0.rc2',None,"alpha",0]
-version = [3,0,0,"alpha",0]
+version = [3,3,0,"alpha",0]
 implementation = [2, 0, 0, 'alpha,rc', 0]
 
 try:
