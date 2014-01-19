@@ -11,7 +11,7 @@ pdir = os.path.dirname(os.getcwd())
 # version info
 #version = [2,'0.rc2',None,"alpha",0]
 version = [3,3,0,"alpha",0]
-implementation = [2, 0, 0, 'alpha,rc', 0]
+implementation = [2, 0, 0, 'rc', 2]
 
 try:
   import slimit 
@@ -74,7 +74,7 @@ now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
 # update version number
 out = open(abs_path('version_info.js'),'w')
-implementation[2] = now
+#implementation[2] = now
 out.write('__BRYTHON__.implementation = %s\n' % implementation)
 out.write('__BRYTHON__.version_info = %s\n' %str(version))
 # builtin module names = list of scripts in src/libs
@@ -127,6 +127,11 @@ out.close()
 
 print('size : originals %s compact %s gain %.2f' %(src_size,len(res),100*(src_size-len(res))/src_size))
 
+# version name
+vname = '.'.join(str(x) for x in implementation[:3])
+if implementation[3]=='rc':
+    vname += 'rc%s' %implementation[4]
+
 # zip files
 import os
 import tarfile
@@ -135,7 +140,7 @@ import zipfile
 dest_dir = os.path.join(pdir,'dist')
 if not os.path.exists(dest_dir):
     os.mkdir(dest_dir)
-name = 'Brython%s.%s_site_mirror-%s' %(implementation[0],implementation[1],now)
+name = 'Brython%s_site_mirror-%s' %(vname,now)
 dest_path = os.path.join(dest_dir,name)
 
 def is_valid(filename):
@@ -184,7 +189,7 @@ dist_zip.close()
 print('end of mirror')
 
 # minimum package
-name = 'Brython%s.%s-%s' %(implementation[0],implementation[1],now)
+name = 'Brython%s-%s' %(vname,now)
 dest_path = os.path.join(dest_dir,name)
 dist1 = tarfile.open(dest_path+'.gz',mode='w:gz')
 dist2 = tarfile.open(dest_path+'.bz2',mode='w:bz2')
