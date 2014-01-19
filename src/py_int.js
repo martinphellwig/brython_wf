@@ -26,7 +26,7 @@ $IntDict.from_bytes = function(x, byteorder) {
   return num;
 }
 
-$IntDict.__and__ = function(self,other){return self & other} // bitwise AND
+//$IntDict.__and__ = function(self,other){return self & other} // bitwise AND
 
 $IntDict.__bool__ = function(self){return new Boolean(self.valueOf())}
 
@@ -38,6 +38,9 @@ $IntDict.__eq__ = function(self,other){
     }
     if(isinstance(other,int)){return self.valueOf()==other.valueOf()}
     else if(isinstance(other,__builtins__.float)){return self.valueOf()==other.value}
+    else if(isinstance(other,__builtins__.complex)){
+      if (other.imag != 0) return False
+      return self.valueOf() == other.real}
     else{return self.valueOf()===other}
 }
 
@@ -57,7 +60,7 @@ $IntDict.__in__ = function(self,item){
     return getattr(item,'__contains__')(self)
 }
 
-$IntDict.__ior__ = function(self,other){return self | other} // bitwise OR
+//$IntDict.__ior__ = function(self,other){return self | other} // bitwise OR
 
 $IntDict.__init__ = function(self,value){
     self.toString = function(){return value}
@@ -68,7 +71,10 @@ $IntDict.__int__ = function(self){return self}
 
 $IntDict.__invert__ = function(self){return ~self}
 
-$IntDict.__lshift__ = function(self,other){return self << other} // bitwise left shift
+//$IntDict.__lshift__ = function(self,other){// bitwise left shift
+//    if(isinstance(other,int)){return self << other}
+//    $UnsupportedOpType("<<","int",other.__class__)
+//}
 
 $IntDict.__mod__ = function(self,other) {
     // can't use Javascript % because it works differently for negative numbers
@@ -97,6 +103,8 @@ $IntDict.__mul__ = function(self,other){
          var bool_value=0
          if (other.valueOf()) bool_value=1
          return self*bool_value}
+    else if(isinstance(other,__builtins__.complex)){
+        return __builtins__.complex(self.valueOf() * other.real, self.valueOf() * self.imag)}
     else if(typeof other==="string") {
         var res = ''
         for(var i=0;i<val;i++){res+=other}
@@ -127,7 +135,7 @@ $IntDict.__not_in__ = function(self,item){
     return !res
 }
 
-$IntDict.__or__ = function(self,other){return self | other} // bitwise OR
+//$IntDict.__or__ = function(self,other){return self | other} // bitwise OR
 
 $IntDict.__pow__ = function(self,other){
     if(isinstance(other, int)) {
@@ -142,7 +150,7 @@ $IntDict.__repr__ = function(self){
     return self.toString()
 }
 
-$IntDict.__rshift__ = function(self,other){return self >> other} // bitwise right shift
+//$IntDict.__rshift__ = function(self,other){return self >> other} // bitwise right shift
 
 $IntDict.__setattr__ = function(self,attr,value){
     if(self.__class__===$IntDict){throw __builtins__.AttributeError("'int' object has no attribute "+attr+"'")}
@@ -162,13 +170,27 @@ $IntDict.__truediv__ = function(self,other){
     }else{$UnsupportedOpType("//","int",other.__class__)}
 }
 
-$IntDict.__xor__ = function(self,other){return self ^ other} // bitwise XOR
+//$IntDict.__xor__ = function(self,other){return self ^ other} // bitwise XOR
 
 $IntDict.bit_length = function(self){
     s = bin(self)
     s = getattr(s,'lstrip')('-0b') // remove leading zeros and minus sign
     return s.length       // len('100101') --> 6
 }
+
+var $op_func = function(self,other){
+    if(isinstance(other,int)){return self-other}
+    else if(isinstance(other,__builtins__.bool)){return self-other}
+    $UnsupportedOpType("-","int",other.__class__)
+}
+
+$op_func += '' // source code
+var $ops = {'&':'and','|':'ior','<<':'lshift','>>':'rshift','^':'xor'}
+for(var $op in $ops){
+    eval('$IntDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
+}
+
+$IntDict.__or__ = $IntDict.__ior__
 
 // operations
 var $op_func = function(self,other){
@@ -183,6 +205,8 @@ var $op_func = function(self,other){
          var bool_value=0;
          if(other.valueOf()) bool_value=1;
          return self.valueOf()-bool_value}
+    else if(isinstance(other,__builtins__.complex)){
+        return __builtins__.complex(self.valueOf() - other.real, other.imag)}
     else{throw __builtins__.TypeError(
         "unsupported GG operand type(s) for -: "+self.valueOf()+" and '"+__builtins__.str(other.__class__)+"'")
     }

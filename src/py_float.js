@@ -16,7 +16,10 @@ $FloatDict.__eq__ = function(self,other){
     }
     if(isinstance(other,__builtins__.int)){return self.value==other}
     else if(isinstance(other,float)){return self.value==other.value}
-    else{return self.valueOf()===other}
+    else if(isinstance(other,__builtins__.complex)){
+      if (other.imag != 0) return False
+      return self.value==other.value}
+    else{return self.value===other}
 }
 
 $FloatDict.__floordiv__ = function(self,other){
@@ -112,11 +115,13 @@ var $op_func = function(self,other){
     if(isinstance(other,__builtins__.int)){return float(self.value-other)}
     else if(isinstance(other,float)){return float(self.value-other.value)}
     else if(isinstance(other,bool)){ 
-         var bool_value=0; 
-         if (other.valueOf()) bool_value=1;
-         return float(self.value-bool_value)}
+      var bool_value=0; 
+      if (other.valueOf()) bool_value=1;
+      return float(self.value-bool_value)}
+    else if(isinstance(other,__builtins__.complex)){
+      return complex(self.value - other.real, other.imag)}
     else{throw __builtins__.TypeError(
-        "unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
+      "unsupported operand type(s) for -: "+self.value+" (float) and '"+other.__class__+"'")
     }
 }
 $op_func += '' // source code
