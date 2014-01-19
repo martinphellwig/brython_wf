@@ -13,18 +13,22 @@ var $ComplexDict = {__class__:$B.$type,
     $native:true
 }
 
-$ComplexDict.__abs__ = function(self,other){return Math.sqrt(self.real*self.real + self.imag*self.imag)}
+$ComplexDict.__abs__ = function(self,other){return complex(abs(self.real),abs(self.imag))}
 
 $ComplexDict.__and__ = function(self,other){$UnsupportedOpType("&","complex",other.__class__)}
 
-$ComplexDict.__bool__ = function(self){return new Boolean(self.real & self.imag)}
+$ComplexDict.__bool__ = function(self){return new Boolean(self.real || self.imag)}
 
 $ComplexDict.__class__ = $B.$type
 
 $ComplexDict.__eq__ = function(self,other){
     if(isinstance(other,complex)){return self.real==other.real && self.imag==other.imag}
-    else if(isinstance(other,__builtins__.int)){return self.__eq__(complex(other.valueOf()))}
-    else if(isinstance(other,__builtins__.float)){return self.__eq__(complex(other.value))}
+    else if(isinstance(other,__builtins__.int)){
+      if (self.imag != 0) return False
+      return self.real == other.valueOf()}
+    else if(isinstance(other,__builtins__.float)){
+      if (self.imag != 0) return False
+      return self.real == other.value}
     else{$UnsupportedOpType("==","complex",other.__class__)}
 }
 
@@ -65,12 +69,13 @@ $ComplexDict.__mro__ = [$ComplexDict,$ObjectDict]
 $ComplexDict.__mul__ = function(self,other){
     if(isinstance(other,complex)){
       return complex(self.real*other.real-self.imag*other.imag, self.imag*other.real + self.real*other.imag) }
-    else if(isinstance(other,__builtins__.int)){return self.__mul__(complex(other.valueOf(), 0))}
-    else if(isinstance(other,__builtins__.float)){return self.__mul__(complex(other.value,0))}
+    else if(isinstance(other,__builtins__.int)){
+      return complex(self.real*other.valueOf(), self.imag*other.valueOf()) }
+    else if(isinstance(other,__builtins__.float)){
+      return complex(self.real*other.value, self.imag*other.value)}
     else if(isinstance(other,bool)){
-         var bool_value=0
-         if (other.valueOf()) bool_value=1
-         return self.__mul__(complex(bool_value,0))}
+      if (other.valueOf()) return self
+      return complex(0)}
     else{$UnsupportedOpType("*",complex,other)}
 }
 
@@ -184,8 +189,8 @@ for(var $op in $B.$comps){
 var complex=function(real,imag){
     var res = {
         __class__:$ComplexDict,
-        real:real | 0,
-        imag:imag | 0
+        real:real || 0,
+        imag:imag || 0
     }
 
     res.__repr__ = res.__str__ = function() {
