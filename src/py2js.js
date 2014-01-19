@@ -2774,7 +2774,7 @@ function $transition(context,token){
         }else if(token=='='){
             $_SyntaxError(context,token)
         }else if([')',','].indexOf(token)>-1 && 
-            ['list_or_tuple','call_arg'].indexOf(context.parent.type)==-1){
+            ['list_or_tuple','call_arg','op'].indexOf(context.parent.type)==-1){
             console.log('err token '+token+' type '+context.parent.type)
             $_SyntaxError(context,token)
         }else{return $transition(context.parent,token,arguments[2])}
