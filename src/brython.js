@@ -1,6 +1,6 @@
 // brython.js www.brython.info
 // version [3, 3, 0, 'alpha', 0]
-// implementation [2, 0, '20140119-162601', 'alpha,rc', 0]
+// implementation [2, 0, '20140119-162914', 'alpha,rc', 0]
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -53,7 +53,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.implementation=[2, 0, '20140119-162601', 'alpha,rc', 0]
+__BRYTHON__.implementation=[2, 0, '20140119-162914', 'alpha,rc', 0]
 __BRYTHON__.version_info=[3, 3, 0, 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
@@ -2398,7 +2398,7 @@ return new $UnaryCtx(new $ExprCtx(C,'unary',false),arguments[2])
 }else if(token=='='){
 $_SyntaxError(C,token)
 }else if([')',','].indexOf(token)>-1 && 
-['list_or_tuple','call_arg'].indexOf(C.parent.type)==-1){
+['list_or_tuple','call_arg','op'].indexOf(C.parent.type)==-1){
 console.log('err token '+token+' type '+C.parent.type)
 $_SyntaxError(C,token)
 }else{return $transition(C.parent,token,arguments[2])}
