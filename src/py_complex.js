@@ -15,7 +15,7 @@ var $ComplexDict = {__class__:$B.$type,
 
 $ComplexDict.__abs__ = function(self,other){return complex(abs(self.real),abs(self.imag))}
 
-$ComplexDict.__and__ = function(self,other){$UnsupportedOpType("&","complex",other.__class__)}
+//$ComplexDict.__and__ = function(self,other){$UnsupportedOpType("&","complex",other.__class__)}
 
 $ComplexDict.__bool__ = function(self){return new Boolean(self.real || self.imag)}
 
@@ -32,17 +32,9 @@ $ComplexDict.__eq__ = function(self,other){
     else{$UnsupportedOpType("==","complex",other.__class__)}
 }
 
-/*
 $ComplexDict.__floordiv__ = function(self,other){
-    if(isinstance(other,complex)){
-        if(other==0){throw ZeroDivisionError('division by zero')}
-        else{return Math.floor(self/other)}
-    }else if(isinstance(other,__builtins__.float)){
-        if(!other.value){throw ZeroDivisionError('division by zero')}
-        else{return __builtins__.float(Math.floor(self/other.value))}
-    }else{$UnsupportedOpType("//","complex",other.__class__)}
+    $UnsupportedOpType("//","complex",other.__class__)
 }
-*/
 
 $ComplexDict.__hash__ = function(self){return hash(self)}
 
@@ -50,7 +42,7 @@ $ComplexDict.__in__ = function(self,item){
     throw __builtins__.TypeError("TypeError: argument of type 'complex' is not iterable")
 }
 
-$ComplexDict.__ior__ = function(self,other){$UnsupportedOpType("|","complex",other.__class__)} // bitwise OR
+//$ComplexDict.__ior__ = function(self,other){$UnsupportedOpType("|","complex",other.__class__)} // bitwise OR
 
 $ComplexDict.__init__ = function(self,real,imag){
     self.toString = function(){return '('+real+'+'+imag+'j)'}
@@ -58,7 +50,7 @@ $ComplexDict.__init__ = function(self,real,imag){
 
 $ComplexDict.__invert__ = function(self){return ~self}
 
-$ComplexDict.__lshift__ = function(self,other){$UnsupportedOpType("<<","complex",other.__class__)} // bitwise left shift
+//$ComplexDict.__lshift__ = function(self,other){$UnsupportedOpType("<<","complex",other.__class__)} // bitwise left shift
 
 $ComplexDict.__mod__ = function(self,other) {
     throw __builtins__.TypeError("TypeError: can't mod complex numbers.")
@@ -94,24 +86,18 @@ $ComplexDict.__not_in__ = function(self,item){
     throw __builtins__.TypeError("TypeError: argument of type 'complex' is not iterable")
 }
 
-$ComplexDict.__or__ = function(self,other){return self}
+//$ComplexDict.__or__ = function(self,other){return self}
 
-/*
 $ComplexDict.__pow__ = function(self,other){
-    if(isinstance(other, complex)) {
-      if (other.valueOf() >= 0) {return complex(Math.pow(self.valueOf(),other.valueOf()))}
-      else {return Math.pow(self.valueOf(),other.valueOf())} }
-    else if (isinstance(other, __builtins__.float)) { return __builtins__.float(Math.pow(self.valueOf(), other.valueOf()))}
-    else{$UnsupportedOpType("**",complex,other.__class__)}
+    $UnsupportedOpType("**",complex,other.__class__)
 }
-*/
 
 $ComplexDict.__str__ = $ComplexDict.__repr__ = function(self){
     if (self.real == 0) { return self.imag+'j'}
     return '('+self.real+'+'+self.imag+'j)'
 }
 
-$ComplexDict.__rshift__ = function(self,other){$UnsupportedOpType(">>","complex",other.__class__)} // bitwise left shift
+//$ComplexDict.__rshift__ = function(self,other){$UnsupportedOpType(">>","complex",other.__class__)} // bitwise left shift
 
 $ComplexDict.__sqrt__= function(self) {
   if (self.imag == 0) {return complex(Math.sqrt(self.real))}
@@ -120,14 +106,6 @@ $ComplexDict.__sqrt__= function(self) {
 
   return complex(_a, _b)
 }
-
-/*
-$ComplexDict.__setattr__ = function(self,attr,value){
-    if(self.__class__===$ComplexDict){throw __builtins__.AttributeError("'complex' object has no attribute "+attr+"'")}
-    // subclasses of complex can have attributes set
-    self[attr] = value
-}
-*/
 
 $ComplexDict.__truediv__ = function(self,other){
     if(isinstance(other,complex)){
@@ -142,17 +120,28 @@ $ComplexDict.__truediv__ = function(self,other){
       return complex(_num/_div, _num2/_div)
     }else if(isinstance(other,__builtins__.int)){
         if(!other.valueOf()){throw ZeroDivisionError('division by zero')}
-        return self.__truediv__(complex(other.valueOf()))
+        return $ComplexDict.__truediv__(self, complex(other.valueOf()))
     }else if(isinstance(other,__builtins__.float)){
         if(!other.value){throw ZeroDivisionError('division by zero')}
-        return self.__truediv__(complex(other.value))
+        return $ComplexDict.__truediv__(self, complex(other.value))
     }else{$UnsupportedOpType("//","complex",other.__class__)}
 }
 
+//$ComplexDict.__xor__ = function(self,other){
+//    throw __builtins__.TypeError("TypeError: unsupported operand type(s) for ^: 'complex' and '" + other.__class__+"'")
+//} // bitwise XOR
 
-$ComplexDict.__xor__ = function(self,other){
-    throw __builtins__.TypeError("TypeError: unsupported operand type(s) for ^: 'complex' and '" + other.__class__+"'")
-} // bitwise XOR
+// operators
+var $op_func = function(self,other){
+    throw __builtins__.TypeError("TypeError: unsupported operand type(s) for -: 'complex' and '" + other.__class__+"'")
+}
+$op_func += '' // source code
+var $ops = {'&':'and','|':'ior','<<':'lshift','>>':'rshift','^':'xor'}
+for(var $op in $ops){
+    eval('$ComplexDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
+}
+
+$ComplexDict.__ior__=$ComplexDict.__or__
 
 // operations
 var $op_func = function(self,other){
