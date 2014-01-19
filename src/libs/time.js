@@ -20,8 +20,9 @@ return  {
     },
     gmtime: function(){
        var d=new Date();
-       return [d.getFullYear(), d.getMonth()+1, d.getDate(), d.getHours(),
-                    d.getMinutes(), d.getSeconds(), d.getDay(), 0, 0]
+       return [d.getUTCFullYear(), d.getUTCMonth()+1, d.getUTCDate(), 
+               d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds(), 
+               d.getUTCDay(), 0, 0]
     },
     perf_counter: function() {
         return float((new Date()).getTime()/1000.0);
