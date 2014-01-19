@@ -1,6 +1,6 @@
 // brython.js www.brython.info
 // version [3, 3, 0, 'alpha', 0]
-// implementation [2, 0, '20140119-162914', 'alpha,rc', 0]
+// implementation [2, 0, '20140119-163312', 'alpha,rc', 0]
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__={}
@@ -53,7 +53,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.implementation=[2, 0, '20140119-162914', 'alpha,rc', 0]
+__BRYTHON__.implementation=[2, 0, '20140119-163312', 'alpha,rc', 0]
 __BRYTHON__.version_info=[3, 3, 0, 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
@@ -2392,7 +2392,9 @@ return new $NotCtx(new $ExprCtx(C,'not',commas))
 }
 }else if(token==='lambda'){return new $LambdaCtx(new $ExprCtx(C,'lambda',commas))}
 else if(token==='op'){
-if('+-~'.search(arguments[2])>-1){
+var tg=arguments[2]
+if(tg=='+'){tg='\\+'}
+if('+-~'.search(tg)>-1){
 return new $UnaryCtx(new $ExprCtx(C,'unary',false),arguments[2])
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(token=='='){

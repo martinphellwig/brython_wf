@@ -2768,7 +2768,9 @@ function $transition(context,token){
             }
         }else if(token==='lambda'){return new $LambdaCtx(new $ExprCtx(context,'lambda',commas))}
         else if(token==='op'){
-            if('+-~'.search(arguments[2])>-1){ // unary + or -, bitwise ~
+            var tg = arguments[2]
+            if(tg=='+'){tg='\\+'} // must escape + in regular expression passed to search() next line
+            if('+-~'.search(tg)>-1){ // unary + or -, bitwise ~
                 return new $UnaryCtx(new $ExprCtx(context,'unary',false),arguments[2])
             }else{$_SyntaxError(context,'token '+token+' after '+context)}
         }else if(token=='='){
