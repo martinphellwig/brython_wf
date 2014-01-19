@@ -9,7 +9,8 @@ import sys
 pdir = os.path.dirname(os.getcwd())
 
 # version info
-version = [2,'0.rc2',None,"alpha",0]
+#version = [2,'0.rc2',None,"alpha",0]
+version = [3,0,0,"alpha",0]
 implementation = [2, 0, 0, 'alpha', 0]
 
 try:
@@ -99,13 +100,14 @@ sources = ['brython_builtins','version_info','py2js','py_object','py_type',
 loader_src = open(abs_path('py_loader.js')).read()
 
 loader_src = re.sub('version_info = \[1,2,".*?"\,"alpha",0]',
-    'version_info = [1,2,"%s","alpha",0]' %now,loader_src)
+    'version_info = %s' % version, loader_src)
 out = open(abs_path('py_loader.js'),'w')
 out.write(loader_src)
 out.close()
 
 res = '// brython.js www.brython.info\n'
-res += '// version %s.%s.%s\n' %(version[0],version[1],now)
+res += '// version %s\n' % version
+res += '// implementation %s\n' % implementation
 res += '// version compiled from commented, indented source files '
 res += 'at https://bitbucket.org/olemis/brython/src\n'
 src_size = 0
@@ -133,7 +135,7 @@ import zipfile
 dest_dir = os.path.join(pdir,'dist')
 if not os.path.exists(dest_dir):
     os.mkdir(dest_dir)
-name = 'Brython%s.%s_site_mirror-%s' %(version[0],version[1],now)
+name = 'Brython%s.%s_site_mirror-%s' %(implementation[0],implementation[1],now)
 dest_path = os.path.join(dest_dir,name)
 
 def is_valid(filename):
@@ -182,7 +184,7 @@ dist_zip.close()
 print('end of mirror')
 
 # minimum package
-name = 'Brython%s.%s-%s' %(version[0],version[1],now)
+name = 'Brython%s.%s-%s' %(implementation[0],implementation[1],now)
 dest_path = os.path.join(dest_dir,name)
 dist1 = tarfile.open(dest_path+'.gz',mode='w:gz')
 dist2 = tarfile.open(dest_path+'.bz2',mode='w:bz2')
@@ -234,7 +236,7 @@ make_VFS.process(os.path.join(pdir,'src','py_VFS.js'))
 try:
     _in = open(os.path.join(pdir,'dist','changelog.txt')).read()
     out = open(os.path.join(pdir,'dist','changelog_%s.txt' %now),'w')
-    first = 'Changes in Brython version %s.%s-%s' %(version[0],version[1],now)
+    first = 'Changes in Brython version %s.%s-%s' %(implementation[0],implementation[1],now)
     out.write('%s\n' %first)
     out.write('%s\n\n' %('='*len(first)))
     out.write(_in)
