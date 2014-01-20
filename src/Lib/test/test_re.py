@@ -1,13 +1,21 @@
-from test.support import verbose, run_unittest, gc_collect, bigmemtest, _2G, \
-        cpython_only
-import io
+# FIXME: brython: implement test.support
+#from test.support import verbose, run_unittest, gc_collect, bigmemtest, _2G, \
+#        cpython_only
+
+verbose = True
+
+# FIXME: brython: Not used in this module ?
+#import io
 import re
-from re import Scanner
+
+# FIXME: brython: implement re.Scanner
+#from re import Scanner
 import sre_constants
 import sys
 import string
 import traceback
-from weakref import proxy
+# FIXME: brython: implement _weakref
+#from weakref import proxy
 
 # Misc tests from Tim Peters' re.doc
 
@@ -19,22 +27,24 @@ import unittest
 
 class ReTests(unittest.TestCase):
 
-    def test_keep_buffer(self):
-        # See bug 14212
-        b = bytearray(b'x')
-        it = re.finditer(b'a', b)
-        with self.assertRaises(BufferError):
-            b.extend(b'x'*400)
-        list(it)
-        del it
-        gc_collect()
-        b.extend(b'x'*400)
+    # FIXME: brython: implement test.support
+#    def test_keep_buffer(self):
+#        # See bug 14212
+#        b = bytearray(b'x')
+#        it = re.finditer(b'a', b)
+#        with self.assertRaises(BufferError):
+#            b.extend(b'x'*400)
+#        list(it)
+#        del it
+#        gc_collect()
+#        b.extend(b'x'*400)
 
-    def test_weakref(self):
-        s = 'QabbbcR'
-        x = re.compile('ab+c')
-        y = proxy(x)
-        self.assertEqual(x.findall('QabbbcR'), y.findall('QabbbcR'))
+    # FIXME: brython: implement _weakref
+#    def test_weakref(self):
+#        s = 'QabbbcR'
+#        x = re.compile('ab+c')
+#        y = proxy(x)
+#        self.assertEqual(x.findall('QabbbcR'), y.findall('QabbbcR'))
 
     def test_search_star_plus(self):
         self.assertEqual(re.search('x*', 'axx').span(0), (0, 0))
@@ -700,25 +710,25 @@ class ReTests(unittest.TestCase):
         self.assertIsNone(re.match(r'(?:a?)+?y', 'z'))
         self.assertIsNone(re.match(r'(?:a?){2,}?y', 'z'))
 
-    def test_scanner(self):
-        def s_ident(scanner, token): return token
-        def s_operator(scanner, token): return "op%s" % token
-        def s_float(scanner, token): return float(token)
-        def s_int(scanner, token): return int(token)
-
-        scanner = Scanner([
-            (r"[a-zA-Z_]\w*", s_ident),
-            (r"\d+\.\d*", s_float),
-            (r"\d+", s_int),
-            (r"=|\+|-|\*|/", s_operator),
-            (r"\s+", None),
-            ])
-
-        self.assertNotEqual(scanner.scanner.scanner("").pattern, None)
-
-        self.assertEqual(scanner.scan("sum = 3*foo + 312.50 + bar"),
-                         (['sum', 'op=', 3, 'op*', 'foo', 'op+', 312.5,
-                           'op+', 'bar'], ''))
+#    def test_scanner(self):
+#        def s_ident(scanner, token): return token
+#        def s_operator(scanner, token): return "op%s" % token
+#        def s_float(scanner, token): return float(token)
+#        def s_int(scanner, token): return int(token)
+#
+#        scanner = Scanner([
+#            (r"[a-zA-Z_]\w*", s_ident),
+#            (r"\d+\.\d*", s_float),
+#            (r"\d+", s_int),
+#            (r"=|\+|-|\*|/", s_operator),
+#            (r"\s+", None),
+#            ])
+#
+#        self.assertNotEqual(scanner.scanner.scanner("").pattern, None)
+#
+#        self.assertEqual(scanner.scan("sum = 3*foo + 312.50 + bar"),
+#                         (['sum', 'op=', 3, 'op*', 'foo', 'op+', 312.5,
+#                           'op+', 'bar'], ''))
 
     def test_bug_448951(self):
         # bug 448951 (similar to 429357, but with single char match)
@@ -975,24 +985,26 @@ class ReTests(unittest.TestCase):
         self.assertEqual(re.findall(r'[\A\B\b\C\Z]', 'AB\bCZ'),
                          ['A', 'B', '\b', 'C', 'Z'])
 
-    @bigmemtest(size=_2G, memuse=1)
-    def test_large_search(self, size):
-        # Issue #10182: indices were 32-bit-truncated.
-        s = 'a' * size
-        m = re.search('$', s)
-        self.assertIsNotNone(m)
-        self.assertEqual(m.start(), size)
-        self.assertEqual(m.end(), size)
+    # FIXME: brython: implement test.support
+#    @bigmemtest(size=_2G, memuse=1)
+#    def test_large_search(self, size):
+#        # Issue #10182: indices were 32-bit-truncated.
+#        s = 'a' * size
+#        m = re.search('$', s)
+#        self.assertIsNotNone(m)
+#        self.assertEqual(m.start(), size)
+#        self.assertEqual(m.end(), size)
 
+    # FIXME: brython: implement test.support
     # The huge memuse is because of re.sub() using a list and a join()
     # to create the replacement result.
-    @bigmemtest(size=_2G, memuse=16 + 2)
-    def test_large_subn(self, size):
-        # Issue #10182: indices were 32-bit-truncated.
-        s = 'a' * size
-        r, n = re.subn('', '', s)
-        self.assertEqual(r, s)
-        self.assertEqual(n, size + 1)
+#    @bigmemtest(size=_2G, memuse=16 + 2)
+#    def test_large_subn(self, size):
+#        # Issue #10182: indices were 32-bit-truncated.
+#        s = 'a' * size
+#        r, n = re.subn('', '', s)
+#        self.assertEqual(r, s)
+#        self.assertEqual(n, size + 1)
 
     def test_bug_16688(self):
         # Issue 16688: Backreferences make case-insensitive regex fail on
@@ -1015,20 +1027,21 @@ class ReTests(unittest.TestCase):
         self.assertRaises(OverflowError, re.compile, r".{%d,}?" % 2**128)
         self.assertRaises(OverflowError, re.compile, r".{%d,%d}" % (2**129, 2**128))
 
-    @cpython_only
-    def test_repeat_minmax_overflow_maxrepeat(self):
-        try:
-            from _sre import MAXREPEAT
-        except ImportError:
-            self.skipTest('requires _sre.MAXREPEAT constant')
-        string = "x" * 100000
-        self.assertIsNone(re.match(r".{%d}" % (MAXREPEAT - 1), string))
-        self.assertEqual(re.match(r".{,%d}" % (MAXREPEAT - 1), string).span(),
-                         (0, 100000))
-        self.assertIsNone(re.match(r".{%d,}?" % (MAXREPEAT - 1), string))
-        self.assertRaises(OverflowError, re.compile, r".{%d}" % MAXREPEAT)
-        self.assertRaises(OverflowError, re.compile, r".{,%d}" % MAXREPEAT)
-        self.assertRaises(OverflowError, re.compile, r".{%d,}?" % MAXREPEAT)
+    # FIXME: brython: implement test.support
+#    @cpython_only
+#    def test_repeat_minmax_overflow_maxrepeat(self):
+#        try:
+#            from _sre import MAXREPEAT
+#        except ImportError:
+#            self.skipTest('requires _sre.MAXREPEAT constant')
+#        string = "x" * 100000
+#        self.assertIsNone(re.match(r".{%d}" % (MAXREPEAT - 1), string))
+#        self.assertEqual(re.match(r".{,%d}" % (MAXREPEAT - 1), string).span(),
+#                         (0, 100000))
+#        self.assertIsNone(re.match(r".{%d,}?" % (MAXREPEAT - 1), string))
+#        self.assertRaises(OverflowError, re.compile, r".{%d}" % MAXREPEAT)
+#        self.assertRaises(OverflowError, re.compile, r".{,%d}" % MAXREPEAT)
+#        self.assertRaises(OverflowError, re.compile, r".{%d,}?" % MAXREPEAT)
 
     def test_backref_group_name_in_exception(self):
         # Issue 17341: Poor error message when compiling invalid regex
@@ -1170,7 +1183,8 @@ def run_re_tests():
 
 
 def test_main():
-    run_unittest(ReTests)
+    # FIXME: brython: implement test.support
+#    run_unittest(ReTests)
     run_re_tests()
 
 if __name__ == "__main__":
