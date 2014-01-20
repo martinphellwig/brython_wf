@@ -435,6 +435,54 @@ $B.$test_expr = function(){
     return $B.$test_result
 }
 
+$B.$is_member = function(item,_set){
+    // used for "item in _set"
+    var f,_iter
+    var getattr = $B.builtins.getattr
+    // use __contains__ if defined
+    try{f = getattr(_set,"__contains__")}
+    catch(err){$B.$pop_exc()}
+    if(f){return f(item)}
+
+    // use __iter__ if defined
+    try{_iter = $B.builtins.iter(_set)}
+    catch(err){$B.$pop_exc()}
+    if(_iter){
+        while(true){
+            try{
+                var elt = $B.builtins.next(_iter)
+                if(getattr(elt,"__eq__")(item)){return true}
+            }catch(err){
+                if(err.__name__=="StopIteration"){
+                    $B.$pop_exc()
+                    return false
+                }
+                throw err
+            }
+        }
+    }
+
+    // use __getitem__ if defined
+    try{f = getattr(_set,"__getitem__")}
+    catch(err){
+        $B.$pop_exc()
+        throw TypeError("argument of type '"+_set.__class__.__name__+"' is not iterable")
+    }
+    if(f){
+        var i = -1
+        while(true){
+            i++
+            try{
+                var elt = f(i)
+                if(getattr(elt,"__eq__")(item)){return true}
+            }catch(err){
+                if(err.__name__=='IndexError'){return false}
+                else{throw err}
+            }
+        }
+    }
+}
+
 // default standard output and error
 // can be reset by sys.stdout or sys.stderr
 $B.stderr = {

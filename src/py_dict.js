@@ -75,8 +75,6 @@ $DictDict.__getitem__ = function(self,arg){
 
 $DictDict.__hash__ = function(self) {throw __builtins__.TypeError("unhashable type: 'dict'");}
 
-$DictDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
-
 $DictDict.__init__ = function(self){
     args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
@@ -151,8 +149,6 @@ $DictDict.__next__ = function(self){
         throw __builtins__.StopIteration()
     }
 }
-
-$DictDict.__not_in__ = function(self,item){return !$DictDict.__in__(self,item)}
 
 $DictDict.__repr__ = function(self){
     if(self===undefined){return "<class 'dict'>"}

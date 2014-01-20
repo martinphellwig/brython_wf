@@ -161,8 +161,6 @@ $ListDict.__gt__ = function(self,other){
 
 $ListDict.__hash__ = function(){throw __builtins__.TypeError("unhashable type: 'list'")}
 
-$ListDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
-
 $ListDict.__init__ = function(self,arg){
     var len_func = getattr(self,'__len__'),pop_func=getattr(self,'pop')
     while(len_func()){pop_func()}
@@ -202,8 +200,6 @@ $ListDict.__mul__ = function(self,other){
 $ListDict.__ne__ = function(self,other){return !$ListDict.__eq__(self,other)}
 
 $ListDict.__new__ = $B.$__new__(list)
-
-$ListDict.__not_in__ = function(self,item){return !$ListDict.__in__(self,item)}
 
 $ListDict.__repr__ = function(self){
     if(self===undefined){return "<class 'list'>"}

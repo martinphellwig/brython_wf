@@ -92,8 +92,6 @@ $StringDict.__hash__ = function(self) {
   return hash;
 }
 
-$StringDict.__in__ = function(self,item){return getattr(item,'__contains__')(self.valueOf())}
-
 $StringDict.__init__ = function(self,arg){
     self.valueOf = function(){return arg}
     self.toString = function(){return arg}
@@ -306,8 +304,6 @@ $StringDict.__mul__ = function(self,other){
 }
 
 $StringDict.__ne__ = function(self,other){return other!==self.valueOf()}
-
-$StringDict.__not_in__ = function(self,item){return !$StringDict.__in__(self,item)}
 
 $StringDict.__or__ = $ObjectDict.__or__
 

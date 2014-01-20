@@ -482,8 +482,6 @@ DOMNode.__getitem__ = function(self,key){
     }
 }
 
-DOMNode.__in__ = function(self,other){return other.__contains__(self)}
-
 DOMNode.__iter__ = function(self){ // for iteration
     self.$counter = -1
     return self
@@ -530,8 +528,6 @@ DOMNode.__next__ = function(self){
    }
    throw __builtins__.StopIteration('StopIteration')
 }
-
-DOMNode.__not_in__ = function(self,other){return !getattr(other,"__contains__")(self)}
 
 DOMNode.__radd__ = function(self,other){ // add to a string
     var res = $TagSum()

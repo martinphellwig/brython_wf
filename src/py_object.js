@@ -181,10 +181,6 @@ $ObjectDict.__hash__ = function (self) {
     return $B.$py_next_hash;
 }
 
-$ObjectDict.__in__ = function(self,other){
-    return $B.builtins.getattr(other,'__contains__')(self)
-}
-
 $ObjectDict.__le__ = $ObjectNI('__le__','<=')
 
 $ObjectDict.__lt__ = $ObjectNI('__lt__','<')
