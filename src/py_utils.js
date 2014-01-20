@@ -10,7 +10,7 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$
     // $after_star = ['u','v']
     var i=null,$set_vars = [],$ns = {}
     if($other_args != null){$ns[$other_args]=[]}
-    if($other_kw != null){$dict_keys=[];$dict_values=[]}
+    if($other_kw != null){var $dict_keys=[];var $dict_values=[]}
     // create new list of arguments in case some are packed
     var upargs = []
     for(var i=0;i<$args.length;i++){
