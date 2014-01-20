@@ -2198,6 +2198,7 @@ function $StringCtx(context,value){
     this.toString = function(){return 'string '+(this.tree||'')}
     this.parent = context
     this.tree = [value] // may be extended if consecutive strings eg 'a' 'b'
+    this.raw = false
     context.tree.push(this)
     this.to_js = function(){
         var res = ''
@@ -3743,9 +3744,9 @@ function $tokenize(src,module,parent){
         }
         // string
         if(car=='"' || car=="'"){
-            var raw = false
-            var bytes = false
-            var end = null
+            var raw = context.type == 'str' && context.raw,
+                bytes = false ,
+                end = null;
             if(name.length>0){
                 if(name.toLowerCase()=="r"){ // raw string
                     raw = true;name=''
@@ -3813,6 +3814,7 @@ function $tokenize(src,module,parent){
                         }else{
                             context = $transition(context,'str',car+string+car)
                         }
+                        context.raw = raw;
                         pos = end+1
                         if(_type=="triple_string"){pos = end+3}
                         break
