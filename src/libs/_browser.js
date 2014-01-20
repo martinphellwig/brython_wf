@@ -1,4 +1,4 @@
-$module = {
+var $module = {
     $$alert:__BRYTHON__._alert,
     confirm: function(message){return __BRYTHON__.JSObject(window.confirm(message))},
     $$document:__BRYTHON__.$DOMNode(document),
@@ -10,5 +10,3 @@ $module = {
     win: __BRYTHON__.win,     //want to use window instead of win
     $$window: __BRYTHON__.win
 }
-$module.__class__ = $module // defined in $py_utils
-$module.__str__ = function(){return "<module 'browser'>"}

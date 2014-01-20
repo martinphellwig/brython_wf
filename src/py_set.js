@@ -61,7 +61,7 @@ $SetDict.__gt__ = function(self,other){
 $SetDict.__hash__ = function(self) {throw __builtins__.TypeError("unhashable type: 'set'");}
 
 $SetDict.__init__ = function(self){
-    args = []
+    var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
     self.$items = []
     if(args.length==0){return}

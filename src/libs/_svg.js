@@ -1,12 +1,12 @@
-$module = (function($B){
+var $module = (function($B){
 
 var __builtins__ = $B.builtins
 var $TagSumDict = $B.$TagSum.$dict
 
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 
-$svgNS = "http://www.w3.org/2000/svg"
-$xlinkNS = "http://www.w3.org/1999/xlink"
+var $svgNS = "http://www.w3.org/2000/svg"
+var $xlinkNS = "http://www.w3.org/1999/xlink"
 
 function $SVGTag(tag_name,args){
     // represents an SVG tag
@@ -90,7 +90,7 @@ var $svg_tags = ['a',
 'tspan',
 'use']
 
-$svg = function(){return $SVGTag('X',arguments)}
+var $svg = function(){return $SVGTag('X',arguments)}
 $svg += '' // source code
 
 var obj = new Object()

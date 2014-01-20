@@ -568,7 +568,7 @@ function $CallCtx(context){
             var ctx_node = this
             while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
             var module = ctx_node.node.module
-            arg = this.tree[0].to_js()
+            var arg = this.tree[0].to_js()
             var ns = ''
             var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
             if(this.tree.length>1){
@@ -1835,7 +1835,7 @@ function $ImportCtx(context){
             // $import returns an object
             // for "import a.b.c" this object has attributes
             // "a", "a.b" and "a.b.c", values are the matching modules
-            for(j=0;j<parts.length;j++){
+            for(var j=0;j<parts.length;j++){
                 if(j==0 && 
                     ['def','class'].indexOf(scope.ntype)>-1){
                     res += 'var '
@@ -2353,7 +2353,7 @@ function $TryCtx(context){
             }else if(ctx.type==='single_kw' && ctx.token==='else'){
                 if(has_else){$_SyntaxError(context,"more than one 'else'")}
                 has_else = true
-                else_body = node.parent.children[pos]
+                var else_body = node.parent.children[pos]
                 node.parent.children.splice(pos,1)
             }else{break}
         }
@@ -2824,7 +2824,7 @@ function $transition(context,token){
             if(op==='-'||op==='~'){return new $UnaryCtx(new $ExprCtx(context,'unary',false),op)}
             else if(op==='+'){return context}
             else if(op==='*'){context.has_star = true;return new $StarArgCtx(context)}
-            else if(op==='**'){context_has_dstar = true;return new $DoubleStarArgCtx(context)}
+            else if(op==='**'){context.has_dstar = true;return new $DoubleStarArgCtx(context)}
             else{throw Error('SyntaxError')}
         }else{return $transition(context.parent,token,arguments[2])}
 
@@ -4025,7 +4025,7 @@ function $tokenize(src,module,parent){
         if($first_op_letter.indexOf(car)>-1){
             // find longest match
             var op_match = ""
-            for(op_sign in $operators){
+            for(var op_sign in $operators){
                 if(op_sign==src.substr(pos,op_sign.length) 
                     && op_sign.length>op_match.length){
                     op_match=op_sign

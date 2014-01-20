@@ -87,10 +87,17 @@ $B.$import_js_generic = function(module,filepath) {
    return $B.$import_js_module(module, filepath+'.js', module_contents)
 }
 
+function show_ns(){
+    var kk = Object.keys(window)
+    for (var i=0; i < kk.length; i++){console.log(kk[i])}
+    console.log('---')
+}
+
 $B.$import_js_module = function(module,filepath,module_contents){
     eval(module_contents)
     // check that module name is in namespace
-    if(eval('$module')===undefined){
+    try{$module}
+    catch(err){
         throw __builtins__.ImportError("name '$module' is not defined in module")
     }
     // add class and __str__
@@ -134,7 +141,7 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
         for(var i=0;i<path_list.length;i++){
            var path = path_list[i] + "/" + modpath;
            try {
-               mod = $B.$import_py(module,path)
+               var mod = $B.$import_py(module,path)
                flag = true
                if(j==search.length-1){mod.$package=true}
            }catch(err){if(err.__name__!=="FileNotFoundError"){throw err}}
@@ -164,7 +171,7 @@ $B.$import_py_module = function(module,path,module_contents) {
     root.children = []
     // use the module pattern : module name returns the results of an anonymous function
     var mod_node = new $Node('expression')
-    new $NodeJSCtx(mod_node,'$module=(function()')
+    new $NodeJSCtx(mod_node,'var $module=(function()')
     root.insert(0,mod_node)
     mod_node.children = body
 
@@ -247,6 +254,7 @@ $B.$import_single = function(module,origin){
 }
 
 $B.$import = function(mod_name,origin){
+    console.log('$import '+mod_name);show_ns()
     var res = []
     //if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
     var mod;
@@ -255,7 +263,7 @@ $B.$import = function(mod_name,origin){
         // if module is in a package (eg "import X.Y") then we must first import X
         // by searching for the file X/__init__.py, then import X.Y searching either
         // X/Y.py or X/Y/__init__.py
-        var mod = {}
+        mod = {}
         var parts = mod_name.split('.')
         for(var i=0;i<parts.length;i++){
             var module = new Object()
@@ -285,6 +293,7 @@ $B.$import_from = function(mod_name,names,origin){
     // if mod_name matches a module, the names are searched in the module
     // if mod_name matches a package (file mod_name/__init__.py) the names
     // are searched in __init__.py, or as module names in the package
+    console.log('import from '+mod_name);show_ns()
     if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
     var mod = __BRYTHON__.imported[mod_name]
     if(mod===undefined){$B.$import(mod_name);mod=__BRYTHON__.modules[mod_name]}
@@ -329,7 +338,7 @@ $B.$import_list_intra = function(src,current_url,names){
             return mod
         }
     }else{ // form 'from . import X' : X is a module name
-        var mod = {}
+        mod = {}
         for(var i=0;i<names.length;i++){
             var stored = __BRYTHON__.imported[names[i]]
             if(stored!==undefined){mod[names[i]]=stored}
