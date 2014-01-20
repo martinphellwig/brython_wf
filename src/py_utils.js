@@ -219,7 +219,7 @@ $B.$generator = function(func){
     // calls to stdout.write() are captured and indexed by the iteration
     // counter
 
-    $GeneratorDict = {__class__:__BRYTHON__.$type,
+    var $GeneratorDict = {__class__:__BRYTHON__.$type,
         __name__:'generator'
     }
     $GeneratorDict.__iter__ = function(self){return self}
