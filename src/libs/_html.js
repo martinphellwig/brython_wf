@@ -69,7 +69,7 @@ A.__name__='html.A'
 
 var $src = A+'' // source of function A
 // HTML4 tags
-$tags = ['A', 'ABBR', 'ACRONYM', 'ADDRESS', 'APPLET',
+var $tags = ['A', 'ABBR', 'ACRONYM', 'ADDRESS', 'APPLET',
             'B', 'BDO', 'BIG', 'BLOCKQUOTE', 'BUTTON',
             'CAPTION', 'CENTER', 'CITE', 'CODE',
             'DEL', 'DFN', 'DIR', 'DIV', 'DL',
@@ -98,8 +98,8 @@ $tags = $tags.concat(['ARTICLE','ASIDE','AUDIO','BDI',
 
 // create classes
 var obj = new Object()
-for($i=0;$i<$tags.length;$i++){
-    $code = $src.replace(/A/gm,$tags[$i])
+for(var $i=0;$i<$tags.length;$i++){
+    var $code = $src.replace(/A/gm,$tags[$i])
     eval("obj."+$tags[$i]+"="+$code)
     eval("obj."+$tags[$i]+'.__name__="html.'+$tags[$i]+'"')
 }
