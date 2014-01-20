@@ -21,7 +21,7 @@
 
             function disclaimer() {
                 var copyright =
-                        'Copyright (c) 2013, Pedro Rodriguez pedro.rodriguez.web@gmail.com\n' +
+                        'Copyright (c) 2013-2014, Pedro Rodriguez pedro.rodriguez.web@gmail.com\n' +
                         'All rights reserved.\n' +
                         '\n' +
                         'Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\n' +
@@ -140,14 +140,14 @@
         </style>
     </head>
 
-    <body onLoad="disclaimer(); brython(2)">
+    <body onLoad="disclaimer(); brython(1)">
 
         <script type="text/python" src='kanban.py'></script>
 
         <div id="board" class="board"></div>
-        <button onclick="dump()">Dump</button>
-        <button onclick="save_kanban()">Save</button>
-        <button onclick="load_kanban()">Load</button>
+        <button id="dump">Dump</button>
+        <button id="save_kanban">Save</button>
+        <button id="load_kanban">Load</button>
         <p><b>Mini help for a pseudo Kanban simulator</b></p>
         <table>
             <tr>

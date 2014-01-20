@@ -1,229 +1,296 @@
 # ----------------------------------------------------------
 import time
 
-from browser import doc
+from browser import doc, confirm, prompt, alert
+from browser.local_storage import storage
 import browser.html as html
 
-DB = {
-    "REVISION" : 0
-    , "STEPS" : {}
-    , "STEPS_ORDERED" : []
-    , "STEPS_COLORS" : []
-    , "TASKS" : {}
-    , "TASKS_COLORS" : []
-    }
+# ----------------------------------------------------------
+SCHEMA_REVISION = "1.0"
 
-# tasks indexed by the DOM element id
-tasks = {}
+STEPS = [
+    "TODO" , "SPECIFICATION" , "DESIGN" , "DEVELOPMENT" , "VALIDATION" , "READY"
+    ]
 
-class Step:
-    def __init__(self, desc, color):
-        self.id = DB["REVISION"]
-        DB["REVISION"] += 1
-        self.desc = desc
-        self.color = color
-        self.tasks = []
-        
-    def add_task(self,desc,color,progress):
-        self.tasks.append(Task(self.id,desc,color,progress))
+STEPS_COLORS = [
+    "#777777" , "#888888" , "#999999" , "#AAAAAA" , "#BBBBBB" , "#CCCCCC"
+    ]
 
-    def draw(self,board,width):
-        self.node = html.DIV(id=self.id, Class="step")
-        self.node.style.width = percent(width)
-        self.node.style.backgroundColor = self.color
-        board <= self.node
-    
-        self.header = html.DIV(Class="step_header")
-        self.node <= self.header
-    
-        self.title = html.PRE(self.desc, Class="step_title")
-        self.header <= self.title
-    
-        self.count = html.PRE(0, id="step count %s" % self.id, Class="step_count")
-        self.header <= self.count
-    
-        self.node.drop_id = self.id
-        self.node.bind('drop',self.drag_drop)
-        self.node.bind('dragover',self.drag_over)
-        self.title.step = self
-        self.title.step_node = self.node
-        self.title.bind('click',self.task_create)
-        
-        for task in self.tasks:
-            task.draw(self.node)
+TASKS_COLORS = [
+    "#EE0000" , "#00CC00" , "#0088EE" , "#EEEE00" , "#EEA500"
+    ]
 
-    def drag_over(self,ev):
-        ev.preventDefault()
-        ev.data.dropEffect = 'move'
-    
-    def drag_drop(self,ev):
-        ev.preventDefault()
-    
-        src_id = ev.data['text']
-        
-        # move at DOM level
-        src_node = doc[src_id]
-        self.node <= src_node
-    
-    def task_create(self,ev):
-        ev.stopPropagation()
-        desc = prompt("New task", "%s %s" % (self.desc, time.strftime("%Y/%m/%d %H:%M:%S")))
-        if desc:
-            new_task = Task(self.id, desc, 0)
-            new_task.draw(self.node)
-    
+TIME_FMT = "%Y/%m/%d %H:%M:%S"
+
+# ----------------------------------------------------------
+class KanbanException(Exception):
+    def __init__(self, msg):
+        Exception.__init__(self, "Kanban Error: %s" % msg)
+
+# ----------------------------------------------------------
+class KanbanModel:
+    def __init__(self, counter=1, schema_revision=None, steps_colors=None, tasks_colors=None, tasks=None):
+        self.schema_revision = schema_revision
+        self.counter = int(counter)
+        self.steps_colors = list(steps_colors)
+        self.tasks_colors = list(tasks_colors)
+
+        if tasks is None:
+            root = Task("root", "", "ROOT", 0, 0, [])
+            self.tasks = { "root" : root }
+        else:
+            self.tasks = tasks
+
+    def add_step(self, desc, color_id):
+        return self.add_task("root", desc, color_id, 0, prefix="step%d")
+
+    def add_task(self, parent_id, desc, color_id, progress, prefix="task%d"):
+        task_id = self.get_next_id(prefix)
+        task = Task(task_id, 0, desc, color_id, progress, [])
+        self.tasks[task.id] = task
+
+        parent_task = self.tasks[parent_id]
+        parent_task.add_task(task)
+
+        return task
+
+    def remove_task(self, task_id):
+        task = self.tasks[task_id]
+        for sub_task_id in list(task.task_ids):
+            self.remove_task(sub_task_id)
+
+        parent_task = self.tasks[task.parent_id]
+        del self.tasks[task_id]
+        parent_task.remove_task(task)
+
+    def move_task(self, task_id, dst_task_id):
+        task = self.tasks[task_id]
+
+        parent_task = self.tasks[task.parent_id]
+        parent_task.remove_task(task)
+
+        dst_task = self.tasks[dst_task_id]
+        dst_task.add_task(task)
+
+    def get_next_id(self, prefix):
+        next_id = prefix % self.counter
+        self.counter += 1
+        return next_id
+
+# ----------------------------------------------------------
 class Task:
-
-    def __init__(self,parent_id, desc, color, progress=0):
-        
-        self.id='task%s '%DB["REVISION"]
-        tasks[self.id] = self
-        DB['REVISION'] += 1
+    def __init__(self, id=None, parent_id=None, desc=None, color_id=None, progress=None, task_ids=None):
+        self.id = id
         self.parent_id = parent_id
-        self.desc=desc
-        self.color=color
-        self.progress=progress
-        self.tasks = []
+        self.desc = desc
+        self.color_id = int(color_id)
+        self.progress = int(progress)
+        self.task_ids = list(task_ids)
 
-    def add_task(self,desc,color,progress):
-        self.tasks.append(Task(self.id,desc,color,progress))
+    def add_task(self, task):
+        self.task_ids.append(task.id)
+        task.parent_id = self.id
 
-    def get_parent(self):
-        return self.parent_id
+    def remove_task(self, task):
+        self.task_ids.remove(task.id)
+        task.parent_id = None
 
-    def draw(self,parent_node):
-        self.node = html.DIV(Class="task", Id=self.id, draggable=True)
-        self.node.style.backgroundColor = DB["TASKS_COLORS"][self.color]
-        parent_node <= self.node
-    
-        self.zprogress = html.DIV(Class="task_progress")
-    
-        self.progress_text = html.P("%d" % self.progress + "%", Class="task_progress_text")
-        self.zprogress <= self.progress_text
-    
-        self.progress_bar = html.DIV(Class="task_progress_bar")
-        self.progress_bar.style.width = percent(self.progress)
-        self.zprogress <= self.progress_bar
-    
-        self.command_delete = html.DIV("X", Class="task_command_delete")
-    
-        self.command = html.TABLE(
-            html.TR( html.TD(self.zprogress, Class="task_command") + html.TD(self.command_delete) )
-            , Class="task_command"
-            )
-        self.node <= self.command
-    
-        self.zdesc = html.P(Class="task_desc")
-        self.node <= self.zdesc
-    
-        self.node.drop_id = self.id
-        self.node.task = self
-        self.node.bind('dragstart',self.drag_start)
-        self.node.bind('dragover',self.drag_over)
-        self.node.bind('drop',self.drag_drop)
-        self.node.bind('click',self.color_change)
-        
-        self.zprogress.task = self
-        self.zprogress.bind('click',self.make_progress)
-        
-        self.command_delete.task = self
-        self.command_delete.bind('click',self.task_delete)
-        
-        self.zdesc.task = self
-        self.zdesc.desc = self.desc
-        self.zdesc.bind('click',self.task_edit)
-    
-        self.set_text()
-        
-        for task in self.tasks:
-            task.draw(self.node)
+# ----------------------------------------------------------
+class KanbanView:
+    def __init__(self, kanban):
+        self.kanban = kanban
+        doc['load_kanban'].bind('click', self.load)
+        doc['save_kanban'].bind('click', self.save)
+        doc['dump'].bind('click', self.dump)
 
-    def set_text(self):
-        task_desc = self.zdesc
-        clear_node(self.zdesc)
-        self.zdesc.html = self.desc
-        
-    def color_change(self,ev):
-        self.color = ( self.color + 1 ) % len(DB["TASKS_COLORS"])
-        self.node.style.backgroundColor = DB["TASKS_COLORS"][self.color]
-        ev.stopPropagation()
+    def draw(self):
+        step_ids = self.kanban.tasks["root"].task_ids
+        width = 100 / len(step_ids)
 
-    def make_progress(self,ev):
-        self.progress = ( self.progress + 25 ) % 125
-        self.progress_bar.style.width = percent(self.progress)
-        self.progress_text.text = percent(self.progress)
-        ev.stopPropagation()
-    
-    def task_edit(self,ev):
-        ev.stopPropagation()
-        ret = prompt("Task", self.desc)
-        if ret:
-            self.desc = ret
-            self.set_text()
+        board = doc["board"]
+        clear_node(board)
+        for step_id in step_ids:
+            step = self.kanban.tasks[step_id]
+            self.draw_step(step, width, board)
 
-    def drag_start(self,ev):
-        ev.data['text'] = self.id
+    def draw_step(self, step, width, board):
+        node = html.DIV(id=step.id, Class="step")
+        node.style.width = percent(width)
+        node.style.backgroundColor = self.kanban.steps_colors[step.color_id]
+        board <= node
+
+        header = html.DIV(Class="step_header")
+        node <= header
+
+        title = html.PRE(step.desc, Class="step_title")
+        header <= title
+
+        count = html.PRE(0, id="% count" % step.id, Class="step_count")
+        count.text = len(step.task_ids)
+        header <= count
+
+        node.bind('dragover', self.drag_over)
+        node.bind('drop', ev_callback(self.drag_drop, step))
+
+        title.bind('click', ev_callback(self.add_task, step, node))
+
+        self.draw_tasks(step, node)
+
+    def draw_tasks(self, parent_task, parent_node):
+        for task_id in parent_task.task_ids:
+            task = self.kanban.tasks[task_id]
+            self.draw_task(task, parent_node)
+
+    def draw_task(self, task, parent_node):
+        node = html.DIV(Class="task", Id=task.id, draggable=True)
+        node.style.backgroundColor = self.kanban.tasks_colors[task.color_id]
+        parent_node <= node
+
+        progress = html.DIV(Class="task_progress")
+
+        progress_text = html.P("%d%%" % task.progress, Class="task_progress_text")
+        progress <= progress_text
+
+        progress_bar = html.DIV(Class="task_progress_bar")
+        progress_bar.style.width = percent(task.progress)
+        progress <= progress_bar
+
+        command_delete = html.DIV("X", Class="task_command_delete")
+        command = html.TABLE( html.TR( html.TD(progress, Class="task_command") + html.TD(command_delete) )
+                                , Class="task_command" )
+        node <= command
+
+        desc = html.P(Id="desc %s" % task.id, Class="task_desc")
+        desc.html = task.desc
+        node <= desc
+
+        node.bind('dragstart', ev_callback(self.drag_start, task))
+        node.bind('dragover', self.drag_over)
+        node.bind('drop', ev_callback(self.drag_drop, task))
+        node.bind('click', ev_callback(self.change_task_color, task, node))
+
+        progress.progress_bar = progress_bar
+        progress.progress_text = progress_text
+        progress.bind('click', ev_callback(self.make_task_progress, task, progress))
+
+        command_delete.bind('click', ev_callback(self.remove_task, task))
+
+        desc.bind('click', ev_callback(self.edit_task, task))
+
+        self.draw_tasks(task, node)
+
+    def set_text(self, task):
+        desc = doc["desc %s" % task.id]
+        clear_node(desc)
+        desc.html = task.desc
+
+    def drag_start(self, ev, task):
+        ev.data['text'] = task.id
         ev.data.effectAllowed = 'move'
+
         ev.stopPropagation()
 
-    def drag_over(self,ev):
+    def drag_over(self, ev):
         ev.preventDefault()
+
         ev.data.dropEffect = 'move'
-    
-    def drag_drop(self,ev):
+
+    def drag_drop(self, ev, dst_task):
         ev.preventDefault()
-    
-        src_id = ev.data['text']
-        
-        # move at DOM level
-        self.node <= doc[src_id]
-        
         ev.stopPropagation()
 
-    def task_delete(self,ev):
-        text = "Confirm deletion of: "+self.desc
+        src_task_id = ev.data['text']
+        src_task_node = doc[src_task_id]
+
+        dst_task_id = dst_task.id
+        dst_task_node = doc[dst_task_id]
+
+        dst_task_node <= src_task_node
+        self.kanban.move_task(src_task_id, dst_task_id)
+
+    def add_task(self, ev, step, node):
+        ev.stopPropagation()
+
+        t = time.strftime(TIME_FMT)
+        desc = prompt("New task", "%s %s" % (step.desc, t))
+        if desc:
+            task = self.kanban.add_task(step.id, desc, 0, 0)
+            self.draw_task(task, node)
+
+    def remove_task(self, ev, task):
+        ev.stopPropagation()
+
+        text = "Confirm deletion of: " + task.desc
         ret = confirm(text)
         if ret:
-            del doc[self.id]
+            del doc[task.id]
+            self.kanban.remove_task(task.id)
 
-def dump():
-    code = "DB = " + instance_repr(DB)
-    popup_dump(code)
+    def change_task_color(self, ev, task, node):
+        ev.stopPropagation()
+
+        task.color_id = ( task.color_id + 1 ) % len(self.kanban.tasks_colors)
+        node.style.backgroundColor = self.kanban.tasks_colors[task.color_id]
+
+    def make_task_progress(self, ev, task, node):
+        ev.stopPropagation()
+
+        task.progress = ( task.progress + 25 ) % 125
+
+        node.progress_bar.style.width = percent(task.progress)
+        node.progress_text.text = percent(task.progress)
+
+    def edit_task(self, ev, task):
+        ev.stopPropagation()
+
+        ret = prompt("Task", task.desc)
+        if ret:
+            task.desc = ret
+            self.set_text(task)
+
+    def load(self, *args):
+        if "kanban" in storage:
+            txt = storage["kanban"]
+            try:
+                eval("kanban = " + txt)
+            except BaseException as e:
+                kanban = None
+
+            try:
+                if kanban is None:
+                    raise KanbanException("could not load data from storage (use 'Save' to initialize it).")
+
+                if kanban.schema_revision != self.kanban.schema_revision:
+                    raise KanbanException("storage schema does not match application schema (use 'Save' to re-initialize it)")
+
+                self.kanban = kanban
+
+            except KanbanException as e:
+                alert(e.msg)
+            
+            except:
+                del storage["kanban"]
+
+        self.draw()
+
+    def save(self, *args):
+        txt = instance_repr(self.kanban)
+        storage["kanban"] = txt
+
+    def dump(self, *args):
+        code = "storage['kanban'] = " + instance_repr(self.kanban)
+        popup_dump(code)
 
 # ----------------------------------------------------------
 def clear_node(node):
     for child in list(node):
         node.remove(child)
 
-def draw_board(board):
-    clear_node(board)
-
-    width = 100 / len(steps)
-
-    for step in steps:
-        step.draw(board, width)
-
-    for task in DB["TASKS"].values():
-        tparent = task.get_parent()
-        parent_node = doc[tparent.id]
-        draw_task(task, parent_node)
-    
-    update_step_counters()
-
-def update_step_counters():
-    for step_id in DB["STEPS_ORDERED"]:
-        step = DB["STEPS"][step_id]
-        count = 0
-        for task in DB["TASKS"].values():
-            if task.parent_id == step.id:
-                count += 1
-        doc["step count %s" % step.id].text = count
-
-
 # ----------------------------------------------------------
 def percent(p):
     return ( "%d" % p ) + "%"
 
+# ----------------------------------------------------------
 def instance_repr(o):
     if isinstance(o, dict):
         l = []
@@ -264,87 +331,55 @@ def instance_repr(o):
                 repr_key = escape_string(n)
                 repr_value = instance_repr( getattr(o, n) )
                 l.append( "%s = %s" % (repr_key, repr_value) )
-        s = "instance( %s )" % ", ".join(l)
+        s = "%s( %s )" % (o.__class__.__name__, ", ".join(l))
 
     return s
 
+# ----------------------------------------------------------
 def quoted_escape_string(s):
     s = "'%s'" % escape_string(s)
     return s
 
+# ----------------------------------------------------------
 def escape_string(s):
     # TODO other control characters
     s = s.replace("'", "\\'")
     return s
 
 # ----------------------------------------------------------
-def nop(ev):
-    return false
-
-
-
-
+def ev_callback(method, *args):
+    def cb(ev):
+        return method(ev, *args)
+    return cb
 
 # ----------------------------------------------------------
-def save_kanban():
-    global DB
-    local_storage["kanban"] = instance_repr(DB)
+def init_demo(kanban):
+    for color_id, desc in enumerate(STEPS):
+        kanban.add_step(desc, color_id)
 
-def load_kanban():
-    global DB
-    s = local_storage["kanban"]
-    l = "DB = " + s
-    eval(l)
+    kanban.add_task("step1", 'Project A<br>Add new Feature <b>A3</b>', 0, 0)
+    kanban.add_task("step1", 'Project B<br>Add new Feature <b>B2</b>', 0, 0)
 
-    draw_board( doc["board"] )
+    task = kanban.add_task("step2", 'Project B<br>Feature <b>B1</b>', 3, 50)
+    kanban.add_task(task.id, 'Check B1.1 with XXX', 4, 75)
+    kanban.add_task(task.id, 'Wait for YYY to clarify B1.2', 4, 25)
+    kanban.add_task(task.id, 'Started B1.3', 2, 25)
 
-# ----------------------------------------------------------
-DB["STEPS_COLORS"] = [
-    "#777777"
-    , "#888888"
-    , "#999999"
-    , "#AAAAAA"
-    , "#BBBBBB"
-    , "#CCCCCC"
-    ]
+    task = kanban.add_task("step3", 'A1', 3, 75)
+    kanban.add_task(task.id, 'Dynamic design', 2, 75)
+    kanban.add_task(task.id, 'Static design', 1, 100)
 
-steps = []
-for i,label in enumerate([
-    "TODO",
-    "SPECIFICATION",
-    "DESIGN",
-    "DEVELOPMENT",
-    "VALIDATION",
-    "READY"]):
-    steps.append(Step(label,DB["STEPS_COLORS"][i]))
+    kanban.add_task("step4", 'A2 Coding', 0, 0)
 
-DB["TASKS_COLORS"] = [
-    "#EE0000"
-    , "#00CC00"
-    , "#0088EE"
-    , "#EEEE00"
-    , "#EEA500"
-   ]
+    task = kanban.add_task("step5", 'Project C', 3, 0)
+    kanban.add_task(task.id, 'Waiting QA', 4, 0)
 
-steps[0].add_task('Project A<br>Add new Feature <b>A3</b>',0,0)
-steps[0].add_task('Project B<br>Add new Feature <b>B2</b>',0,0)
-
-steps[1].add_task('Project B<br>Feature <b>B1</b>',3,50)
-steps[1].tasks[0].add_task('Check B1.1 with XXX',4,75)
-steps[1].tasks[0].add_task('Wait for YYY to clarify B1.2',4,25)
-steps[1].tasks[0].add_task('Started B1.3',2,25)
-
-steps[2].add_task('A1',3,75)
-steps[2].tasks[0].add_task('Dynamic design',2,75)
-steps[2].tasks[0].add_task('Static design',1,100)
-
-steps[3].add_task('A2 Coding',0,0)
-
-steps[4].add_task('Project C',3,0)
-steps[4].tasks[0].add_task('Waiting QA',4,0)
-
-steps[5].add_task('Project D',1,100)
+    kanban.add_task("step6", 'Project D', 1, 100)
 
 # ----------------------------------------------------------
-draw_board( doc["board"] )
+kanban = KanbanModel(counter=1, schema_revision=SCHEMA_REVISION, steps_colors=STEPS_COLORS, tasks_colors=TASKS_COLORS)
+init_demo(kanban)
+
+kanban_view = KanbanView(kanban)
+kanban_view.load()
 
