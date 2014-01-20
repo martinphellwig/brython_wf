@@ -62,8 +62,6 @@ $FloatDict.__hash__ = function() {
     return x & 0xFFFFFFFF;
 }
 
-$FloatDict.__in__ = function(self,item){return item.__contains__(self)}
-
 $FloatDict.__init__ = function(self,value){self.value=value}
 
 $FloatDict.__mod__ = function(self,other) {
@@ -87,9 +85,6 @@ $FloatDict.__mro__ = [$FloatDict,$ObjectDict]
 $FloatDict.__ne__ = function(self,other){return !$FloatDict.__eq__(self,other)}
 
 $FloatDict.__neg__ = function(self,other){return float(-self.value)}
-
-
-$FloatDict.__not_in__ = function(self,item){return !(getattr(item,'__contains__')(self))}
 
 $FloatDict.__repr__ = $FloatDict.__str__ = function(self){
     if(self===float){return "<class 'float'>"}

@@ -60,8 +60,6 @@ $SetDict.__gt__ = function(self,other){
 
 $SetDict.__hash__ = function(self) {throw __builtins__.TypeError("unhashable type: 'set'");}
 
-$SetDict.__in__ = function(self,item){return getattr(item,'__contains__')(self)}
-
 $SetDict.__init__ = function(self){
     args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
@@ -114,8 +112,6 @@ $SetDict.__lt__ = function(self,other){
 $SetDict.__mro__ = [$SetDict,__builtins__.object.$dict]
 
 $SetDict.__ne__ = function(self,other){return !$SetDict.__eq__(self,other)}
-
-$SetDict.__not_in__ = function(self,item){return !$SetDict.__in__(self,item)}
 
 $SetDict.__or__ = function(self,other){
     var res = $SetDict.copy(self)

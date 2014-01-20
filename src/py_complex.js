@@ -38,10 +38,6 @@ $ComplexDict.__floordiv__ = function(self,other){
 
 $ComplexDict.__hash__ = function(self){return hash(self)}
 
-$ComplexDict.__in__ = function(self,item){
-    throw __builtins__.TypeError("TypeError: argument of type 'complex' is not iterable")
-}
-
 //$ComplexDict.__ior__ = function(self,other){$UnsupportedOpType("|","complex",other.__class__)} // bitwise OR
 
 $ComplexDict.__init__ = function(self,real,imag){
@@ -80,10 +76,6 @@ $ComplexDict.__neg__ = function(self){return complex(-self.real,-self.imag)}
 $ComplexDict.__new__ = function(cls){
     if(cls===undefined){throw __builtins__.TypeError('complex.__new__(): not enough arguments')}
     return {__class__:cls.$dict}
-}
-
-$ComplexDict.__not_in__ = function(self,item){
-    throw __builtins__.TypeError("TypeError: argument of type 'complex' is not iterable")
 }
 
 //$ComplexDict.__or__ = function(self,other){return self}

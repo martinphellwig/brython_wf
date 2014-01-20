@@ -2080,16 +2080,21 @@ function $OpCtx(context,op){ // context is the left operand
     context.parent.tree.pop()
     context.parent.tree.push(this)
     this.to_js = function(){
+        var res
         if(this.op==='and'){
-            var res ='__BRYTHON__.$test_expr(__BRYTHON__.$test_item('+this.tree[0].to_js()+')&&'
+            res ='__BRYTHON__.$test_expr(__BRYTHON__.$test_item('+this.tree[0].to_js()+')&&'
             res += '__BRYTHON__.$test_item('+this.tree[1].to_js()+'))'
             return res
         }else if(this.op==='or'){
-            var res ='__BRYTHON__.$test_expr(__BRYTHON__.$test_item('+this.tree[0].to_js()+')||'
+            res ='__BRYTHON__.$test_expr(__BRYTHON__.$test_item('+this.tree[0].to_js()+')||'
             res += '__BRYTHON__.$test_item('+this.tree[1].to_js()+'))'
             return res
+        }else if(this.op=='in'){ // membership
+            return '__BRYTHON__.$is_member('+$to_js(this.tree)+')'
+        }else if(this.op=='not_in'){ // membership
+            return '!__BRYTHON__.$is_member('+$to_js(this.tree)+')'
         }else{
-            var res = this.tree[0].to_js()
+            res = this.tree[0].to_js()
             if(this.op==="is"){
                 res += '==='+this.tree[1].to_js()
             }else if(this.op==="is_not"){
@@ -3850,7 +3855,19 @@ function $tokenize(src,module,parent){
                     if(unsupported.indexOf(name)>-1){
                         $_SyntaxError(context,"Unsupported Python keyword '"+name+"'")                    
                     }
-                    context = $transition(context,name)
+                    // if keyword is "not", see if it is followed by "in"
+                    if(name=='not'){
+                        var re = /^\s+in\s+/
+                        var res = re.exec(src.substr(pos))
+                        if(res!==null){
+                            pos += res[0].length
+                            context = $transition(context,'op','not_in')
+                        }else{
+                            context = $transition(context,name)                      
+                        }
+                    }else{
+                        context = $transition(context,name)
+                    }
                 } else if($oplist.indexOf(name)>-1) { // and, or
                     $pos = pos-name.length
                     context = $transition(context,'op',name)
