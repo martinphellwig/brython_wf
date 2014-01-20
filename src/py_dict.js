@@ -52,7 +52,7 @@ $DictDict.__eq__ = function(self,other){
     if(other.$keys.length!==self.$keys.length){return False}
     for(var i=0;i<self.$keys.length;i++){
         var key = self.$keys[i]
-        for(j=0;j<other.$keys.length;j++){
+        for(var j=0;j<other.$keys.length;j++){
             try{
                 if(getattr(other.$keys[j],'__eq__')(key)){
                     if(!getattr(other.$values[j],'__eq__')(self.$values[i])){
@@ -76,7 +76,7 @@ $DictDict.__getitem__ = function(self,arg){
 $DictDict.__hash__ = function(self) {throw __builtins__.TypeError("unhashable type: 'dict'");}
 
 $DictDict.__init__ = function(self){
-    args = []
+    var args = []
     for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
     self.$keys = []
     self.$values = []

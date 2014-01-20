@@ -1,5 +1,5 @@
 // ajax
-$module = (function($B){
+var $module = (function($B){
 
 var __builtins__ = $B.builtins
 
@@ -9,15 +9,6 @@ var $XMLHttpDict = {
     __class__:$B.$type,
     __name__:'XMLHttp'
 }
-
-/*
-$XMLHttpDict.__getattribute__ = function(self,attr){
-    if(['headers','text','xml'].indexOf(attr)>-1){
-        return $XMLHttpDict[attr](self)
-    }
-    return $AjaxDict.__getattribute__(self,attr)
-}
-*/
 
 $XMLHttpDict.__mro__ = [$XMLHttpDict, __builtins__.object.$dict]
 

@@ -1,5 +1,5 @@
 // creation of an HTML element
-$module = (function($B){
+var $module = (function($B){
 
 var __builtins__ = $B.builtins
 var $TagSumDict = $B.$TagSum.$dict

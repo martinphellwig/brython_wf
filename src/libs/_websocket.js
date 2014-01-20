@@ -1,5 +1,5 @@
 // websocket
-$module = (function($B){
+var $module = (function($B){
 
     var __builtins__ = $B.builtins
     
@@ -37,4 +37,4 @@ $module = (function($B){
     return {websocket:websocket}
 
 })(__BRYTHON__)
-	
+    

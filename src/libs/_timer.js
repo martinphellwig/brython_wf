@@ -1,4 +1,4 @@
-$module = (function($B){
+var $module = (function($B){
 
     var __builtins__ = $B.builtins
     return {
