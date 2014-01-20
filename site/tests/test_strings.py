@@ -104,5 +104,9 @@ assert "bghggbazertyhbg".strip("bhg") == "azerty"
 
 assert "zer".upper() == "ZER"
 
+assert  r'(?:([\w ]+) ([\w.]+) .*\[.* ([\d.]+)\])' == (r'(?:([\w ]+) ([\w.]+) '
+        '.*'
+        '\[.* ([\d.]+)\])'), 'raw string continuation'
+
 print("passed all tests...")
 
