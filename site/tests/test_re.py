@@ -42,5 +42,10 @@ assert m.group(1) == 'c3'
 
 assert re._pymdl[0] is None
 
+# CPython test suite
+
+from test import test_re
+test_re.test_main()
+
 print('all tests ok..')
 
