@@ -4128,12 +4128,13 @@ function brython(options){
     //__BRYTHON__.$py_modules = {}
     __BRYTHON__.modules = {}
     __BRYTHON__.imported = {}
+    __BRYTHON__.$options= {}
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
 
     // debug level
     if(options===undefined){options={'debug':0}}
     if(typeof options==='number'){options={'debug':options}}
-    __BRYTHON__.debug = options.debug
+    __BRYTHON__.$options.debug = options.debug
 
     if (options.open !== undefined) {__BRYTHON__.builtins.$open = options.open}
     __BRYTHON__.builtins.$CORS=false        // Cross-origin resource sharing
@@ -4152,6 +4153,16 @@ function brython(options){
     __BRYTHON__.path = []
     if (options.pythonpath!==undefined) {
        __BRYTHON__.path = options.pythonpath
+    }
+    // allow user to specify the re module they want to use as a default
+    // valid values are 'pyre' for pythons re module and 
+    // 'jsre' for brythons customized re module
+    // default is for brython to guess which to use by looking at 
+    // complexity of the re pattern
+    if (options.re_module !==undefined) {
+       if (options.re_module == 'pyre' || options.re_module='jsre') {
+          __BRYTHON__.$options.re=options.re
+       }
     }
     if (!(__BRYTHON__.path.indexOf($script_path) > -1)) {
        __BRYTHON__.path.push($script_path)
@@ -4257,4 +4268,3 @@ __BRYTHON__.brython = brython
                               
 })()
 var brython = __BRYTHON__.brython
-
