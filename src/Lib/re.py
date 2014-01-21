@@ -108,7 +108,7 @@ Some of the functions in this module takes flags as optional parameters:
 This module also defines an exception 'error'.
 
 """
-
+from _re import Scanner
 import _jsre
 _pymdl = [None]
 
