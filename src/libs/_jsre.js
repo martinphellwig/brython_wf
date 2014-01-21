@@ -17,6 +17,8 @@ var $module = (function($B){
     obj.U = obj.UNICODE = 32
     obj.X = obj.VERBOSE = 64
     obj._is_valid = function(pattern) {
+        if (__BRYTHON__.$options.re=='pyre') return false  //force use of python's re module
+        if (__BRYTHON__.$options.re=='jsre') return true   //force use of brythons re module
         // FIXME: Improve
         var is_valid = false;
         try {
