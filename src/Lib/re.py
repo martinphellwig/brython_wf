@@ -108,7 +108,7 @@ Some of the functions in this module takes flags as optional parameters:
 This module also defines an exception 'error'.
 
 """
-
+import sys
 import _jsre
 _pymdl = [None]
 

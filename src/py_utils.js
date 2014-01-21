@@ -8,7 +8,7 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$
     // $other_args = 'args'
     // $other_kw = 'kw'
     // $after_star = ['u','v']
-    var i=null,$set_vars = [],$ns = {}
+    var i=null,$set_vars = [],$ns = {},$arg
     if($other_args != null){$ns[$other_args]=[]}
     if($other_kw != null){var $dict_keys=[];var $dict_values=[]}
     // create new list of arguments in case some are packed
@@ -67,7 +67,7 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$
             } else if($other_args!==null){
                 eval('$ns["'+$other_args+'"].push($PyVar)')
             } else if($i<$required.length+$defaults.length) {
-                $var_name = $defaults[$i-$required.length]
+                var $var_name = $defaults[$i-$required.length]
                 $ns[$var_name]=$PyVar
                 $set_vars.push($var_name)
             } else {

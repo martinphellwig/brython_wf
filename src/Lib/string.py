@@ -59,6 +59,8 @@ class _TemplateMetaclass(type):
     """
 
     def __init__(cls, name, bases, dct):
+        print('string62',cls,name,bases,dct)
+        print('super',super(_TemplateMetaclass,cls).__init__)
         super(_TemplateMetaclass, cls).__init__(name, bases, dct)
         if 'pattern' in dct:
             pattern = cls.pattern

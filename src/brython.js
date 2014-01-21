@@ -62,12 +62,12 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "json",
 "marshal",
 "math",
-"re",
 "time",
 "_ajax",
 "_browser",
 "_html",
 "_io",
+"_jsre",
 "_os",
 "_svg",
 "_sys",
@@ -562,7 +562,7 @@ if(this.func!==undefined &&
 var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
-arg=this.tree[0].to_js()
+var arg=this.tree[0].to_js()
 var ns=''
 var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
 if(this.tree.length>1){
@@ -836,7 +836,7 @@ this.decorators=decorators
 this.to_js=function(){
 var res=''
 for(var i=0;i<this.decorators.length;i++){
-res +=this.dec_ids[i]+'='+$to_js(this.decorators[i])+';'
+res +='var '+this.dec_ids[i]+'='+$to_js(this.decorators[i])+';'
 }
 return res
 }
@@ -1284,7 +1284,7 @@ if(mod){
 search_path_parts.push(mod)
 }
 var search_path=search_path_parts.join('/')
-res +="$mod=__BRYTHON__.$import_list_intra('"+this.module+"','"
+res +="var $mod=__BRYTHON__.$import_list_intra('"+this.module+"','"
 res +=__BRYTHON__.$py_module_path[parent_module]
 res +="',["
 for(var i=0;i<this.names.length;i++){
@@ -1585,13 +1585,8 @@ var res=''
 for(var i=0;i<this.tree.length;i++){
 res +='__BRYTHON__.$import('+this.tree[i].to_js()+');'
 var parts=this.tree[i].name.split('.')
-for(j=0;j<parts.length;j++){
-if(j==0 && 
-['def','class'].indexOf(scope.ntype)>-1){
+for(var j=0;j<parts.length;j++){
 res +='var '
-}else if(j==0 && scope.ntype==="module" && scope.module !=="__main__"){
-res +='var '
-}
 var key=parts.slice(0,j+1).join('.')
 var alias=key
 if(j==parts.length-1){alias=this.tree[i].alias}
@@ -1907,6 +1902,7 @@ this.type='str'
 this.toString=function(){return 'string '+(this.tree||'')}
 this.parent=C
 this.tree=[value]
+this.raw=false
 C.tree.push(this)
 this.to_js=function(){
 var res=''
@@ -2040,7 +2036,7 @@ pos++
 }else if(ctx.type==='single_kw' && ctx.token==='else'){
 if(has_else){$_SyntaxError(C,"more than one 'else'")}
 has_else=true
-else_body=node.parent.children[pos]
+var else_body=node.parent.children[pos]
 node.parent.children.splice(pos,1)
 }else{break}
 }
@@ -2437,7 +2433,7 @@ var op=arguments[2]
 if(op==='-'||op==='~'){return new $UnaryCtx(new $ExprCtx(C,'unary',false),op)}
 else if(op==='+'){return C}
 else if(op==='*'){C.has_star=true;return new $StarArgCtx(C)}
-else if(op==='**'){C_has_dstar=true;return new $DoubleStarArgCtx(C)}
+else if(op==='**'){C.has_dstar=true;return new $DoubleStarArgCtx(C)}
 else{throw Error('SyntaxError')}
 }else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='call_arg'){
@@ -3216,9 +3212,9 @@ if(end==-1){end=src.length-1}
 pos +=end+1;continue
 }
 if(car=='"' || car=="'"){
-var raw=false
-var bytes=false
-var end=null
+var raw=C.type=='str' && C.raw,
+bytes=false ,
+end=null
 if(name.length>0){
 if(name.toLowerCase()=="r"){
 raw=true;name=''
@@ -3280,6 +3276,7 @@ C=$transition(C,'str','b'+car+string+car)
 }else{
 C=$transition(C,'str',car+string+car)
 }
+C.raw=raw
 pos=end+1
 if(_type=="triple_string"){pos=end+3}
 break
@@ -3469,7 +3466,7 @@ pos++;continue
 }
 if($first_op_letter.indexOf(car)>-1){
 var op_match=""
-for(op_sign in $operators){
+for(var op_sign in $operators){
 if(op_sign==src.substr(pos,op_sign.length)
 && op_sign.length>op_match.length){
 op_match=op_sign
@@ -4086,6 +4083,7 @@ if(new_func!==null){
 var args=[klass.$factory]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 obj=new_func.apply(null,args)
+console.log('after new, obj '+obj+' '+$B.builtins.dir(obj))
 }
 if(!obj.__initialized__){
 try{init_func=getattr(klass,'__init__')}
@@ -4096,6 +4094,7 @@ for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 init_func.apply(null,args)
 }
 }
+console.log('from instance creator return '+obj+' klass '+klass.__name__)
 return obj
 }
 }
@@ -4112,9 +4111,9 @@ $MethodFactory.$dict=$B.$MethodDict
 })(__BRYTHON__)
 ;(function($B){
 $B.$MakeArgs=function($fname,$args,$required,$defaults,$other_args,$other_kw,$after_star){
-var i=null,$set_vars=[],$ns={}
+var i=null,$set_vars=[],$ns={},$arg
 if($other_args !=null){$ns[$other_args]=[]}
-if($other_kw !=null){$dict_keys=[];$dict_values=[]}
+if($other_kw !=null){var $dict_keys=[];var $dict_values=[]}
 var upargs=[]
 for(var i=0;i<$args.length;i++){
 $arg=$args[i]
@@ -4170,7 +4169,7 @@ $set_vars.push($required[$i])
 }else if($other_args!==null){
 eval('$ns["'+$other_args+'"].push($PyVar)')
 }else if($i<$required.length+$defaults.length){
-$var_name=$defaults[$i-$required.length]
+var $var_name=$defaults[$i-$required.length]
 $ns[$var_name]=$PyVar
 $set_vars.push($var_name)
 }else{
@@ -4308,7 +4307,7 @@ eval($js)
 return eval($res)
 }
 $B.$generator=function(func){
-$GeneratorDict={__class__:__BRYTHON__.$type,
+var $GeneratorDict={__class__:__BRYTHON__.$type,
 __name__:'generator'
 }
 $GeneratorDict.__iter__=function(self){return self}
@@ -6257,9 +6256,18 @@ $B.$import_js_generic=function(module,filepath){
 var module_contents=$download_module(module.name, filepath+'.js')
 return $B.$import_js_module(module, filepath+'.js', module_contents)
 }
+function show_ns(){
+var kk=Object.keys(window)
+for(var i=0;i < kk.length;i++){
+console.log(kk[i])
+if(kk[i].charAt(0)=='$'){console.log(eval(kk[i]))}
+}
+console.log('---')
+}
 $B.$import_js_module=function(module,filepath,module_contents){
 eval(module_contents)
-if(eval('$module')===undefined){
+try{$module}
+catch(err){
 throw __builtins__.ImportError("name '$module' is not defined in module")
 }
 __BRYTHON__.scope[module.name]={__dict__:$module}
@@ -6297,7 +6305,7 @@ var modpath=search[j]
 for(var i=0;i<path_list.length;i++){
 var path=path_list[i]+ "/" + modpath
 try{
-mod=$B.$import_py(module,path)
+var mod=$B.$import_py(module,path)
 flag=true
 if(j==search.length-1){mod.$package=true}
 }catch(err){if(err.__name__!=="FileNotFoundError"){throw err}}
@@ -6321,7 +6329,7 @@ var root=__BRYTHON__.py2js(module_contents,module.name)
 var body=root.children
 root.children=[]
 var mod_node=new $Node('expression')
-new $NodeJSCtx(mod_node,'$module=(function()')
+new $NodeJSCtx(mod_node,'var $module=(function()')
 root.insert(0,mod_node)
 mod_node.children=body
 var ret_node=new $Node('expression')
@@ -6389,11 +6397,12 @@ throw err
 }
 }
 $B.$import=function(mod_name,origin){
+console.log('$import '+mod_name);show_ns()
 var res=[]
 var mod
 var stored=__BRYTHON__.imported[mod_name]
 if(stored===undefined){
-var mod={}
+mod={}
 var parts=mod_name.split('.')
 for(var i=0;i<parts.length;i++){
 var module=new Object()
@@ -6413,6 +6422,7 @@ res.push(mod)
 return res
 }
 $B.$import_from=function(mod_name,names,origin){
+console.log('import from '+mod_name);show_ns()
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod=__BRYTHON__.imported[mod_name]
 if(mod===undefined){$B.$import(mod_name);mod=__BRYTHON__.modules[mod_name]}
@@ -6449,7 +6459,7 @@ __BRYTHON__.imported[pymod_name]=mod
 return mod
 }
 }else{
-var mod={}
+mod={}
 for(var i=0;i<names.length;i++){
 var stored=__BRYTHON__.imported[names[i]]
 if(stored!==undefined){mod[names[i]]=stored}
@@ -6866,7 +6876,7 @@ if(!isinstance(other,dict)){console.log('other is not dict');return False}
 if(other.$keys.length!==self.$keys.length){return False}
 for(var i=0;i<self.$keys.length;i++){
 var key=self.$keys[i]
-for(j=0;j<other.$keys.length;j++){
+for(var j=0;j<other.$keys.length;j++){
 try{
 if(getattr(other.$keys[j],'__eq__')(key)){
 if(!getattr(other.$values[j],'__eq__')(self.$values[i])){
@@ -6886,7 +6896,7 @@ throw KeyError(__builtins__.str(arg))
 }
 $DictDict.__hash__=function(self){throw __builtins__.TypeError("unhashable type: 'dict'");}
 $DictDict.__init__=function(self){
-args=[]
+var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
 self.$keys=[]
 self.$values=[]
@@ -8374,8 +8384,8 @@ j+=1
 return __builtins__.tuple(s)
 }
 $StringDict.rstrip=function(self,x){
-if(x==undefined){pattern="\\s*"}
-else{pattern="["+x+"]*"}
+if(x==undefined){var pattern="\\s*"}
+else{var pattern="["+x+"]*"}
 sp=new RegExp(pattern+'$')
 return str(self.replace(sp,""))
 }
@@ -8438,7 +8448,7 @@ $StringDict.splitlines=function(self){
 return $StringDict.split(self,'\n')
 }
 $StringDict.startswith=function(self){
-$ns=$B.$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
+var $ns=$B.$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
 ['start','end'],null,null)
 var prefixes=$ns['prefix']
 if(!isinstance(prefixes,__builtins__.tuple)){prefixes=[prefixes]}
@@ -8446,7 +8456,7 @@ var start=$ns['start']|| 0
 var end=$ns['end']|| self.length-1
 var s=self.substr(start,end+1)
 for(var i=0;i<prefixes.length;i++){
-prefix=prefixes[i]
+var prefix=prefixes[i]
 if(prefix.length<=s.length &&
 s.substr(0,prefix.length)==prefix){return True}
 }
@@ -8454,7 +8464,6 @@ return False
 }
 $StringDict.strip=function(self,x){
 if(x==undefined){x="\\s"}
-pattern="["+x+"]"
 return $StringDict.rstrip($StringDict.lstrip(self,x),x)
 }
 $StringDict.swapcase=function(self){
@@ -8594,7 +8603,7 @@ return !$SetDict.__le__(self,other)
 }
 $SetDict.__hash__=function(self){throw __builtins__.TypeError("unhashable type: 'set'");}
 $SetDict.__init__=function(self){
-args=[]
+var args=[]
 for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
 self.$items=[]
 if(args.length==0){return}

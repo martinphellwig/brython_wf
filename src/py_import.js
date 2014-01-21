@@ -89,7 +89,10 @@ $B.$import_js_generic = function(module,filepath) {
 
 function show_ns(){
     var kk = Object.keys(window)
-    for (var i=0; i < kk.length; i++){console.log(kk[i])}
+    for (var i=0; i < kk.length; i++){
+        console.log(kk[i])
+        if(kk[i].charAt(0)=='$'){console.log(eval(kk[i]))}
+    }
     console.log('---')
 }
 

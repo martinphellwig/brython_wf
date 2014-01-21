@@ -6,7 +6,7 @@ var $module = (function($B){
     var $JSObject = $B.$JSObject
     var JSObject = $B.JSObject
 
-    obj = {__class__:$module,
+    var obj = {__class__:$module,
         __str__: function(){return "<module 're'>"}
     }
     obj.A = obj.ASCII = 256
@@ -26,7 +26,7 @@ var $module = (function($B){
         catch(e) {}
         return is_valid;
     }
-    $SRE_PatternDict = {
+    var $SRE_PatternDict = {
         __class__:$B.$type,
         __name__:'SRE_Pattern'
     }
@@ -152,7 +152,7 @@ var $module = (function($B){
     obj.match = (function(search_func){
         return function(){
             // match is like search but pattern must start with ^
-            pattern = arguments[0]
+            var pattern = arguments[0]
             if(pattern.charAt(0)!=='^'){pattern = '^'+pattern}
             var args = [pattern]
             for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
