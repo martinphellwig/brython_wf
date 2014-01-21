@@ -30,7 +30,7 @@
 from browser import doc, window
 import sys
 
-info = sys.version_info
+info = sys.implementation.version
 doc['version'].text = '%s.%s.%s' % (info.major,info.minor,info.micro)
 
 _height=doc.documentElement.clientHeight
@@ -39,7 +39,6 @@ doc['container'].style.height='%dpx' % (_height-_top-10)
 </script>
 
 <script type="text/python">
-import _weakref
 sys.path.append("test")
 
 def write(data):

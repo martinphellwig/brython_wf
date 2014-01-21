@@ -254,7 +254,9 @@ $B.$import_single = function(module,origin){
 }
 
 $B.$import = function(mod_name,origin){
-    console.log('$import '+mod_name);show_ns()
+    if (__BRYTHON__.$options.debug == 10) {
+       console.log('$import '+mod_name);show_ns()
+    }
     var res = []
     //if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
     var mod;

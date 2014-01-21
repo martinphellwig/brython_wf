@@ -40,7 +40,6 @@ copyright = "_sre.py 2.4c Copyright 2005 by Nik Haldimann"
 def getcodesize():
     return CODESIZE
 
-
 def compile(pattern, flags, code, groups=0, groupindex={}, indexgroup=[None]):
     """Compiles (or rather just converts) a pattern descriptor to a SRE_Pattern
     object. Actual compilation to opcodes happens in sre_compile."""
@@ -49,12 +48,12 @@ def compile(pattern, flags, code, groups=0, groupindex={}, indexgroup=[None]):
 def getlower(char_ord, flags):
     if (char_ord < 128) or (flags & SRE_FLAG_UNICODE) \
                               or (flags & SRE_FLAG_LOCALE and char_ord < 256):
-        return ord(unichr(char_ord).lower())
+        #return ord(unichr(char_ord).lower())
+        return ord(chr(char_ord).lower())
     else:
         return char_ord
 
 
-#class SRE_Pattern(object):
 class SRE_Pattern:
 
     def __init__(self, pattern, flags, code, groups=0, groupindex={}, indexgroup=[None]):
@@ -197,8 +196,6 @@ class SRE_Pattern:
     def __deepcopy__(self):
         raise TypeError("cannot copy this pattern object")
 
-
-#class SRE_Scanner(object):
 class SRE_Scanner:
     """Undocumented scanner interface of sre."""
     
@@ -225,8 +222,6 @@ class SRE_Scanner:
     def search(self):
         return self._match_search(self._state.search)
 
-
-#class SRE_Match(object):
 class SRE_Match:
 
     def __init__(self, pattern, state):
@@ -343,7 +338,6 @@ class SRE_Match:
         raise TypeError("cannot copy this pattern object")
 
 
-#class _State(object):  #object not needed in python3
 class _State:
 
     def __init__(self, string, start, end, flags):
