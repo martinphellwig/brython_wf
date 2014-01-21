@@ -42,8 +42,8 @@ errorcode= {1: 'EPERM', 2: 'ENOENT', 3: 'ESRCH', 4: 'EINTR', 5: 'EIO',
 130: 'EOWNERDEAD', 131: 'ENOTRECOVERABLE', 132: 'ERFKILL'}
 
 # now put the attributes of the errorcode dict into this modules namespace
-_code=[]
+_codes=[]
 for _num, _code in errorcode.items():
-    _code.append('%s=%s' % (_code, _num))
+    _codes.append('%s=%s' % (_code, _num))
 
-eval(';'.join(_code))
+eval(';'.join(_codes))

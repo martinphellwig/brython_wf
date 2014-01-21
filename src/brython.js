@@ -68,6 +68,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_html",
 "_io",
 "_jsre",
+"_jsre",
 "_os",
 "_svg",
 "_sys",
@@ -1586,10 +1587,10 @@ for(var i=0;i<this.tree.length;i++){
 res +='__BRYTHON__.$import('+this.tree[i].to_js()+');'
 var parts=this.tree[i].name.split('.')
 for(var j=0;j<parts.length;j++){
-res +='var '
 var key=parts.slice(0,j+1).join('.')
 var alias=key
 if(j==parts.length-1){alias=this.tree[i].alias}
+if(alias.search(/\./)==-1){res +='var '}
 res +=alias
 if(scope.ntype=='def' || scope.ntype==="generator"){
 res +='=$locals["'+alias+'"]'
@@ -3551,10 +3552,11 @@ __BRYTHON__.$py_module_alias={}
 __BRYTHON__.path_hooks=[]
 __BRYTHON__.modules={}
 __BRYTHON__.imported={}
+__BRYTHON__.$options={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
 if(options===undefined){options={'debug':0}}
 if(typeof options==='number'){options={'debug':options}}
-__BRYTHON__.debug=options.debug
+__BRYTHON__.$options.debug=options.debug
 if(options.open !==undefined){__BRYTHON__.builtins.$open=options.open}
 __BRYTHON__.builtins.$CORS=false 
 if(options.CORS !==undefined){__BRYTHON__.builtins.$CORS=options.CORS}
@@ -3571,6 +3573,11 @@ var $script_path=$href_elts.join('/')
 __BRYTHON__.path=[]
 if(options.pythonpath!==undefined){
 __BRYTHON__.path=options.pythonpath
+}
+if(options.re_module !==undefined){
+if(options.re_module=='pyre' || options.re_module=='jsre'){
+__BRYTHON__.$options.re=options.re
+}
 }
 if(!(__BRYTHON__.path.indexOf($script_path)> -1)){
 __BRYTHON__.path.push($script_path)
@@ -4083,7 +4090,6 @@ if(new_func!==null){
 var args=[klass.$factory]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 obj=new_func.apply(null,args)
-console.log('after new, obj '+obj+' '+$B.builtins.dir(obj))
 }
 if(!obj.__initialized__){
 try{init_func=getattr(klass,'__init__')}
@@ -4094,7 +4100,6 @@ for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 init_func.apply(null,args)
 }
 }
-console.log('from instance creator return '+obj+' klass '+klass.__name__)
 return obj
 }
 }
@@ -6397,7 +6402,9 @@ throw err
 }
 }
 $B.$import=function(mod_name,origin){
+if(__BRYTHON__.$options.debug==10){
 console.log('$import '+mod_name);show_ns()
+}
 var res=[]
 var mod
 var stored=__BRYTHON__.imported[mod_name]
@@ -6422,7 +6429,9 @@ res.push(mod)
 return res
 }
 $B.$import_from=function(mod_name,names,origin){
+if(__BRYTHON__.$options.debug==10){
 console.log('import from '+mod_name);show_ns()
+}
 if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
 var mod=__BRYTHON__.imported[mod_name]
 if(mod===undefined){$B.$import(mod_name);mod=__BRYTHON__.modules[mod_name]}
