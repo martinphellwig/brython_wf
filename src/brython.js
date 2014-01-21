@@ -3556,7 +3556,7 @@ __BRYTHON__.$options={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
 if(options===undefined){options={'debug':0}}
 if(typeof options==='number'){options={'debug':options}}
-__BRYTHON__.$options.debug=options.debug
+__BRYTHON__.$options.debug=__BRYTHON__.debug=options.debug
 if(options.open !==undefined){__BRYTHON__.builtins.$open=options.open}
 __BRYTHON__.builtins.$CORS=false 
 if(options.CORS !==undefined){__BRYTHON__.builtins.$CORS=options.CORS}
