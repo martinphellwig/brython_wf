@@ -21,3 +21,11 @@ Enfin, tous les éléments de la page possèdent une méthode `get()` qui permet
  - `elt.get(name=N)` retourne une liste avec tous les éléments descendant de `elt` dont l'attribut `name` est égal à `N`
  - `elt.get(selector=S)` retourne une liste avec tous les élements descendant de `elt` dont le sélecteur CSS correspond à `S`
 
+Quelques exemples :
+
+    doc.get(selector='.foo')       # éléments avec la classe "foo"
+    doc.get(selector='form')       # liste des balises "<form>"
+    doc.get(selector='H1.bar')     # balises H1 avec la classe "bar"
+    doc.get(selector='#container") # liste avec l'élément dont l'id vaut "container", similaire à [doc["container"]]
+    doc.get(selector='a[title]')   # balises A avec un attribut "title"
+    
