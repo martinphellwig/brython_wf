@@ -7516,7 +7516,7 @@ $StringDict.__add__=function(self,other){
 if(!(typeof other==="string")){
 try{return getattr(other,'__radd__')(self)}
 catch(err){throw __builtins__.TypeError(
-"Can't convert "+other.__class__+" to str implicitely")}
+"Can't convert "+other.__class__.__name__+" to str implicitely")}
 }else{
 return self+other
 }
@@ -7835,7 +7835,7 @@ return res
 }
 $StringDict.count=function(self,elt){
 if(!(typeof elt==="string")){throw __builtins__.TypeError(
-"Can't convert '"+str(elt.__class__)+"' object to str implicitly")}
+"Can't convert '"+elt.__class__.__name__+"' object to str implicitly")}
 var n=0, pos=0
 while(true){
 pos=self.indexOf(elt,pos)
@@ -7873,7 +7873,7 @@ var $ns=$B.$MakeArgs("$StringDict.find",arguments,['self','sub'],
 ['start','end'],null,null)
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 if(!isinstance(sub,str)){throw __builtins__.TypeError(
-"Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
+"Can't convert '"+sub.__class__.__name__+"' object to str implicitly")}
 if(!isinstance(start,__builtins__.int)||!isinstance(end,__builtins__.int)){throw __builtins__.TypeError(
 "slice indices must be integers or None or have an __index__ method")}
 var s=self.substring(start,end)
@@ -8330,7 +8330,7 @@ var $ns=$B.$MakeArgs("$StringDict.find",arguments,['self','sub'],
 ['start','end'],null,null)
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 if(!isinstance(sub,str)){throw __builtins__.TypeError(
-"Can't convert '"+str(sub.__class__)+"' object to str implicitly")}
+"Can't convert '"+sub.__class__.__name__+"' object to str implicitly")}
 if(!isinstance(start,__builtins__.int)||!isinstance(end,__builtins__.int)){throw __builtins__.TypeError(
 "slice indices must be integers or None or have an __index__ method")}
 var s=self.substring(start,end)

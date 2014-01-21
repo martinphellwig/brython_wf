@@ -11,7 +11,7 @@ class LocalStorage:
         self.store.removeItem(key)
 
     def __getitem__(self,key):
-        res=self.store.getItem(key)
+        res = self.store.getItem(key)
         if res:
            return res
         raise KeyError(key)
