@@ -85,10 +85,12 @@ out.write(',\n    '.join(['"%s"' %fname.split('.')[0]
 #using sys.executable to find stdlib dir doesn't work under linux..
 stdlib_path = os.path.dirname(os.__file__)
 #stdlib_path = os.path.join(os.path.dirname(sys.executable),'Lib')
-stdlib_mods = [f for f in os.listdir(stdlib_path) if f.startswith('_')]
-brython_mods = [f for f in abs_path('Lib')
+#stdlib_mods = [f for f in os.listdir(stdlib_path) if f.startswith('_')]
+brython_mods = [f for f in os.listdir(abs_path('Lib'))
     if f.startswith('_') and f!='__pycache__']
-brython_py_builtins = [os.path.splitext(x)[0] for x in brython_mods if not x in stdlib_mods]
+
+#brython_py_builtins = [os.path.splitext(x)[0] for x in brython_mods if not x in stdlib_mods]
+brython_py_builtins = [os.path.splitext(x)[0] for x in brython_mods]
 out.write(',\n    '+',\n    '.join(['"%s"' %f for f in brython_py_builtins]))
 out.write(']\n')
 out.close()

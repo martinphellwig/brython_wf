@@ -257,7 +257,9 @@ $B.$import_single = function(module,origin){
 }
 
 $B.$import = function(mod_name,origin){
-    console.log('$import '+mod_name);show_ns()
+    if (__BRYTHON__.$options.debug == 10) {
+       console.log('$import '+mod_name);show_ns()
+    }
     var res = []
     //if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
     var mod;
@@ -296,7 +298,9 @@ $B.$import_from = function(mod_name,names,origin){
     // if mod_name matches a module, the names are searched in the module
     // if mod_name matches a package (file mod_name/__init__.py) the names
     // are searched in __init__.py, or as module names in the package
-    console.log('import from '+mod_name);show_ns()
+    if (__BRYTHON__.$options.debug == 10) {
+      console.log('import from '+mod_name);show_ns()
+    }
     if(mod_name.substr(0,2)=='$$'){mod_name=mod_name.substr(2)}
     var mod = __BRYTHON__.imported[mod_name]
     if(mod===undefined){$B.$import(mod_name);mod=__BRYTHON__.modules[mod_name]}
