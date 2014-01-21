@@ -11,14 +11,12 @@ function $Tag(tagName,args){
     // obj.elt is the DOM element
     obj.parent = this
     if(args!=undefined && args.length>0){
-        $start = 0
-        $first = args[0]
+        var $start=0,$first=args[0]
         // if first argument is not a keyword, it's the tag content
         if($first.__class__!==$B.$KwDict){
             $start = 1
             if(isinstance($first,[str,int,float])){
-                txt = document.createTextNode(str($first))
-                obj.elt.appendChild(txt)
+                obj.elt.appendChild(document.createTextNode(str($first)))
             } else if($first.__class__===$TagSumDict){
                 for($i=0;$i<$first.children.length;$i++){
                     obj.elt.appendChild($first.children[$i].elt)
@@ -31,7 +29,7 @@ function $Tag(tagName,args){
         // attributes
         for(var $i=$start;$i<args.length;$i++){
             // keyword arguments
-            $arg = args[$i]
+            var $arg = args[$i]
             if($arg && $arg.__class__===$B.$KwDict){
                 if($arg.name.toLowerCase().substr(0,2)==="on"){ // events
                     eval('$B.DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')

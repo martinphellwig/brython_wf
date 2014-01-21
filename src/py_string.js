@@ -1081,8 +1081,8 @@ $StringDict.rsplit = function(self) {
 }
 
 $StringDict.rstrip = function(self,x){
-    if(x==undefined){pattern="\\s*"}
-    else{pattern = "["+x+"]*"}
+    if(x==undefined){var pattern="\\s*"}
+    else{var pattern = "["+x+"]*"}
     sp = new RegExp(pattern+'$')
     return str(self.replace(sp,""))
 }
@@ -1156,7 +1156,7 @@ $StringDict.startswith = function(self){
     // prefix can also be a tuple of prefixes to look for. With optional 
     // start, test string beginning at that position. With optional end, 
     // stop comparing string at that position.
-    $ns=$B.$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
+    var $ns=$B.$MakeArgs("$StringDict.startswith",arguments,['self','prefix'],
         ['start','end'],null,null)
     var prefixes = $ns['prefix']
     if(!isinstance(prefixes,__builtins__.tuple)){prefixes=[prefixes]}
@@ -1164,7 +1164,7 @@ $StringDict.startswith = function(self){
     var end = $ns['end'] || self.length-1
     var s = self.substr(start,end+1)
     for(var i=0;i<prefixes.length;i++){
-        prefix = prefixes[i]
+        var prefix = prefixes[i]
         if(prefix.length<=s.length &&
             s.substr(0,prefix.length)==prefix){return True}
     }
@@ -1173,7 +1173,6 @@ $StringDict.startswith = function(self){
 
 $StringDict.strip = function(self,x){
     if(x==undefined){x = "\\s"}
-    pattern = "["+x+"]"
     return $StringDict.rstrip($StringDict.lstrip(self,x),x)
 }
 

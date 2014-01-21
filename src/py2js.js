@@ -937,7 +937,7 @@ function $DecoratorCtx(context){
     this.to_js = function(){
         var res = ''
         for(var i=0;i<this.decorators.length;i++){
-            res += this.dec_ids[i]+'='+$to_js(this.decorators[i])+';'
+            res += 'var '+this.dec_ids[i]+'='+$to_js(this.decorators[i])+';'
         }
         return res
     }
@@ -1467,7 +1467,7 @@ function $FromCtx(context){
                search_path_parts.push(mod)
             }
             var search_path = search_path_parts.join('/')
-            res +="$mod=__BRYTHON__.$import_list_intra('"+this.module+"','"
+            res +="var $mod=__BRYTHON__.$import_list_intra('"+this.module+"','"
             res += __BRYTHON__.$py_module_path[parent_module]
             res += "',["
             for(var i=0;i<this.names.length;i++){
@@ -1836,12 +1836,15 @@ function $ImportCtx(context){
             // for "import a.b.c" this object has attributes
             // "a", "a.b" and "a.b.c", values are the matching modules
             for(var j=0;j<parts.length;j++){
+                /*
                 if(j==0 && 
                     ['def','class'].indexOf(scope.ntype)>-1){
                     res += 'var '
                 }else if(j==0 && scope.ntype==="module" && scope.module !=="__main__"){
                     res += 'var '
                 }
+                */
+                res += 'var '
                 var key = parts.slice(0,j+1).join('.')
                 var alias = key
                 if(j==parts.length-1){alias = this.tree[i].alias}

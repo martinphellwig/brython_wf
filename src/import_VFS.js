@@ -114,7 +114,7 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
     }
 
     if(module.name.substr(0,2)=='$$'){module.name=module.name.substr(2)}
-    mod_path = module.name.replace(/\./g,'/')
+    var mod_path = module.name.replace(/\./g,'/')
     if(!module.package_only){
         search.push(mod_path)
     }
