@@ -10,6 +10,13 @@ var $XMLHttpDict = {
     __name__:'XMLHttp'
 }
 
+$XMLHttpDict.__getattribute__ = function(self,attr){
+    if(['headers','text','xml'].indexOf(attr)>-1){
+        return $XMLHttpDict[attr](self)
+    }
+    return __builtins__.object.$dict.__getattribute__(self,attr)
+}
+
 $XMLHttpDict.__mro__ = [$XMLHttpDict, __builtins__.object.$dict]
 
 $XMLHttpDict.__repr__ = function(self){return '<object XMLHttp>'}
