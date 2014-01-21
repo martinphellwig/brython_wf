@@ -1844,10 +1844,10 @@ function $ImportCtx(context){
                     res += 'var '
                 }
                 */
-                res += 'var '
                 var key = parts.slice(0,j+1).join('.')
                 var alias = key
                 if(j==parts.length-1){alias = this.tree[i].alias}
+                if(alias.search(/\./)==-1){res += 'var '}
                 res += alias
                 if(scope.ntype == 'def' || scope.ntype==="generator"){
                     res += '=$locals["'+alias+'"]'
@@ -4160,7 +4160,7 @@ function brython(options){
     // default is for brython to guess which to use by looking at 
     // complexity of the re pattern
     if (options.re_module !==undefined) {
-       if (options.re_module == 'pyre' || options.re_module='jsre') {
+       if (options.re_module == 'pyre' || options.re_module=='jsre') {
           __BRYTHON__.$options.re=options.re
        }
     }
