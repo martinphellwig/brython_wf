@@ -4134,7 +4134,7 @@ function brython(options){
     // debug level
     if(options===undefined){options={'debug':0}}
     if(typeof options==='number'){options={'debug':options}}
-    __BRYTHON__.$options.debug = options.debug
+    __BRYTHON__.$options.debug = __BRYTHON__.debug = options.debug
 
     if (options.open !== undefined) {__BRYTHON__.builtins.$open = options.open}
     __BRYTHON__.builtins.$CORS=false        // Cross-origin resource sharing
