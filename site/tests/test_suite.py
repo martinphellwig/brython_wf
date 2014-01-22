@@ -207,3 +207,16 @@ true_values = list(filter(None, test_list))
 assert true_values == [-1, 1, 2, -2]
 negative_values = list(filter(lambda x: x<0, test_list))
 assert negative_values == [-1, -2]
+
+# dir
+class FooParent():
+    const = 0
+
+class Foo(FooParent):
+    def do_something(self):
+        pass
+
+foo = Foo()
+foo_contents = dir(foo)
+assert 'do_something' in foo_contents
+assert 'const' in foo_contents

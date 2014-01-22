@@ -277,6 +277,15 @@ function dir(obj){
     }
     if(isinstance(obj,$B.JSObject)){obj=obj.js}
     if(obj.__class__.is_class){obj=obj.$dict}
+    else {
+        // We first look if the object has the __dir__ method
+        try {
+            var res = getattr(obj, '__dir__')()
+            res = $B.builtins.list(res)
+            res.sort()
+            return res
+        } catch (err){$B.$pop_exc()}
+    }
     var res = []
     for(var attr in obj){
         if(attr.charAt(0)!=='$' && attr!=='__class__'){
