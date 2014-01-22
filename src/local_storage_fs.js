@@ -1,5 +1,5 @@
 // the function below can be used to create a file like object to read/write
-// data to local storage
+// data to local storage.  This function overrides the builtin open function
 function $local_storage_open( ) {
     // first argument is file : can be a string, or an instance of a DOM File object
     // other arguments : 
