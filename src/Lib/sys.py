@@ -111,3 +111,7 @@ class _implementation:
 implementation=_implementation()
 
 warnoptions=[]
+
+#delete objects not in python sys module namespace
+del JSObject
+del _implementation
