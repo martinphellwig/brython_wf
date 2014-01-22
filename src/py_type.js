@@ -53,7 +53,7 @@ $B.$class_constructor = function(class_name,class_obj,parents,parents_names,kwar
                 metaclass.$dict[member].$type='classmethod'
             }
         }
-        factory.__class__ = {toString:function(){return '<'+metaclass.$dict+'>'},
+        factory.__class__ = {// toString:function(){return '<'+metaclass.$dict+'>'},
             __class__:$B.$type,
             $factory:metaclass,
             is_class:true,
@@ -146,7 +146,7 @@ $B.builtins.type = function(name,bases,cl_dict){
         }
     }
     class_dict.__mro__ = [class_dict].concat(mro)
-    class_dict.toString = function(){return '$'+name+'Dict'}
+    //class_dict.toString = function(){return '$'+name+'Dict'}
     
     // create the factory function
     var factory = (function(_class){
@@ -180,12 +180,12 @@ $B.$type = {
 }
 $B.$type.__class__ = $B.$type
 $B.$type.__mro__ = [$B.$type,$B.builtins.object.$dict]
-$B.$type.toString = $B.$type.__str__
+//$B.$type.toString = $B.$type.__str__
 
 $B.builtins.type.$dict = $B.$type
 
 // class of constructors
-$B.$factory = {toString:function(){return '<factory>'},
+$B.$factory = {//toString:function(){return '<factory>'},
     __class__:$B.$type,
     $factory:$B.builtins.type,
     is_class:true
@@ -347,7 +347,7 @@ function $instance_creator(klass){
 function $MethodFactory(){}
 $MethodFactory.__name__ = 'method'
 $MethodFactory.__class__ = $B.$factory
-$MethodFactory.__repr__ = $MethodFactory.__str__ = $MethodFactory.toString = function(){return 'method'}
+$MethodFactory.__repr__ = $MethodFactory.__str__ = function(){return 'method'}
 
 $B.$MethodDict = {__class__:$B.$type,
     __name__:'method',
