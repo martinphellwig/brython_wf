@@ -87,26 +87,30 @@ Here is a more complete example of how you can use the popular library jQuery :
     </head>
     
     <script type="text/python">
-      def toggle_color(element):
-          _divs=doc.get(tag="div")
+        from browser import doc
+        from javascript import JSObject
+        
+        def change_color(ev):
+          _divs=doc.get(selector='div')
           for _div in _divs:
               if _div.style.color != "blue":
                  _div.style.color = "blue"
               else:
                  _div.style.color = "red"
-    
-      _jQuery=JSObject($("body"))
-      _jQuery.click(toggle_color)
-    
+        
+        # create an alias for "$" in jQuery (would cause a SyntaxError in Python)
+        jq = jQuery.noConflict(true)
+        _jQuery=JSObject(jq("body"))
+        _jQuery.click(change_color)    
     </script>
     
     <body onload="brython()">
+
       <div>Click here</div>
       <div>to iterate through</div>
       <div>these divs.</div>
-    <script>
-    </script>
      
     </body>
     </html>
+
     

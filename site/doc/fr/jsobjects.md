@@ -85,27 +85,30 @@ Voici un exemple plus complet qui montre comment utiliser la populaire librairie
     </head>
     
     <script type="text/python">
-      from browser import doc
-      def change_couleur(element):
-          _divs=doc.get(tag="div")
+        from browser import doc
+        from javascript import JSObject
+        
+        def change_color(ev):
+          _divs=doc.get(selector='div')
           for _div in _divs:
               if _div.style.color != "blue":
                  _div.style.color = "blue"
               else:
                  _div.style.color = "red"
-    
-      _jQuery=JSObject($("body"))
-      _jQuery.click(change_couleur)
-    
+        
+        # créer un alias pour "$" de jQuery (causerait une SyntaxError en Python)
+        jq = jQuery.noConflict(true)
+        _jQuery=JSObject(jq("body"))
+        _jQuery.click(change_color)    
     </script>
     
     <body onload="brython()">
+
       <div>Cliquer ici</div>
       <div>pour parcourir</div>
       <div>ces divs.</div>
-    <script>
-    </script>
      
     </body>
     </html>
     
+
