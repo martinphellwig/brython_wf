@@ -515,7 +515,10 @@ class _ParameterKind(int):
     def __repr__(self):
         return '<_ParameterKind: {!r}>'.format(self._name)
 
-
 _POSITIONAL_ONLY        = _ParameterKind(0, name='POSITIONAL_ONLY')
+
+# issue 198
+assert 2 << 16 != 4
+assert 2 << 16 == 131072
 
 print('passed all tests')
