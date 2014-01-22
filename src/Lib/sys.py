@@ -100,6 +100,7 @@ class _implementation:
       self.name='brython'
       self.version = __version_info(__BRYTHON__.implementation)
       self.hexversion = self.version.hexversion()
+      self.cache_tag=None
 
   def __repr__(self):
       return "namespace(name='%s' version=%s hexversion='%s')" % (self.name, self.version, self.hexversion)
