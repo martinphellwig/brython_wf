@@ -385,6 +385,10 @@ $StringDict.count = function(self,elt){
     return n
 }
 
+$StringDict.decode = function(self) {
+  return self // to fix
+}
+
 $StringDict.encode = function(self) {
   return self // to fix
 }

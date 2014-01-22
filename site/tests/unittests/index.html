@@ -23,6 +23,7 @@
 <script type="text/javascript" src="../../../src/py_dom.js"></script>
 
 <script type="text/javascript" src="../../../src/py_VFS.js"></script>
+<script type="text/javascript" src="../../../src/local_storage_fs.js"></script>
 
 <script type="text/python">
 from browser import doc, window
@@ -84,7 +85,8 @@ window.choose_test=choose_test
 
 </head>
 
-<body onload="brython({debug:1, cache:'none', re:'pyre'})">
+<body onload="brython({debug:1, cache:'none', re:'jsre',
+                       open: $local_storage_open})">
 
 <div style="width:100%">
 <div style="float:left">
