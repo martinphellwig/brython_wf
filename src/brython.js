@@ -3708,6 +3708,26 @@ throw $B.builtins.TypeError('unorderable types: object() '+op+' '+$B.builtins.st
 }
 }
 $ObjectDict.__delattr__=function(self,attr){delete self[attr]}
+$ObjectDict.__dir__=function(self){
+var res=[]
+var objects=[self]
+var mro=self.__class__.__mro__
+for(var i=0;i<mro.length;i++){
+if(mro[i]!==$ObjectDict){
+objects.push(mro[i])
+}
+}
+for(var i=0;i<objects.length;i++){
+for(var attr in objects[i]){
+if(attr.charAt(0)!=='$'){
+res.push(attr)
+}
+}
+}
+res=$B.builtins.list($B.builtins.set(res))
+res.sort()
+return res
+}
 $ObjectDict.__eq__=function(self,other){
 return self===other
 }
@@ -3899,7 +3919,7 @@ if(typeof metaclass.$dict[member]=='function' && member !='__new__'){
 metaclass.$dict[member].$type='classmethod'
 }
 }
-factory.__class__={toString:function(){return '<'+metaclass.$dict+'>'},
+factory.__class__={
 __class__:$B.$type,
 $factory:metaclass,
 is_class:true,
@@ -3960,7 +3980,6 @@ seqs[i].shift()
 }
 }
 class_dict.__mro__=[class_dict].concat(mro)
-class_dict.toString=function(){return '$'+name+'Dict'}
 var factory=(function(_class){
 return function(){
 return $instance_creator(_class).apply(null,arguments)
@@ -3985,9 +4004,8 @@ __str__ : function(){return "<class 'type'>"}
 }
 $B.$type.__class__=$B.$type
 $B.$type.__mro__=[$B.$type,$B.builtins.object.$dict]
-$B.$type.toString=$B.$type.__str__
 $B.builtins.type.$dict=$B.$type
-$B.$factory={toString:function(){return '<factory>'},
+$B.$factory={
 __class__:$B.$type,
 $factory:$B.builtins.type,
 is_class:true
@@ -4121,7 +4139,7 @@ return obj
 function $MethodFactory(){}
 $MethodFactory.__name__='method'
 $MethodFactory.__class__=$B.$factory
-$MethodFactory.__repr__=$MethodFactory.__str__=$MethodFactory.toString=function(){return 'method'}
+$MethodFactory.__repr__=$MethodFactory.__str__=function(){return 'method'}
 $B.$MethodDict={__class__:$B.$type,
 __name__:'method',
 __mro__:[$B.builtins.object.$dict],
@@ -4836,6 +4854,14 @@ return res
 }
 if(isinstance(obj,$B.JSObject)){obj=obj.js}
 if(obj.__class__.is_class){obj=obj.$dict}
+else{
+try{
+var res=getattr(obj, '__dir__')()
+res=$B.builtins.list(res)
+res.sort()
+return res
+}catch(err){$B.$pop_exc()}
+}
 var res=[]
 for(var attr in obj){
 if(attr.charAt(0)!=='$' && attr!=='__class__'){

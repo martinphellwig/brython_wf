@@ -38,6 +38,28 @@ var $ObjectNI = function(name,op){
 
 $ObjectDict.__delattr__ = function(self,attr){delete self[attr]}
 
+$ObjectDict.__dir__ = function(self) {
+    var res = []
+
+    var objects = [self]
+    var mro = self.__class__.__mro__
+    for (var i=0; i<mro.length; i++) {
+        if(mro[i]!==$ObjectDict){
+            objects.push(mro[i])
+        }
+    }
+    for (var i=0; i<objects.length; i++) {
+        for(var attr in objects[i]){
+            if(attr.charAt(0)!=='$'){
+                res.push(attr)
+            }
+        }
+    }
+    res = $B.builtins.list($B.builtins.set(res))
+    res.sort()
+    return res
+}
+
 $ObjectDict.__eq__ = function(self,other){
     // equality test defaults to identity of objects
     return self===other
@@ -225,26 +247,6 @@ $ObjectDict.__setattr__.__str__ = function(){return 'method object.setattr'}
 $ObjectDict.__str__ = $ObjectDict.__repr__
 
 $ObjectDict.toString = $ObjectDict.__repr__ //function(){return '$ObjectDict'}
-
-$ObjectDict.__dir__ = function(self) {
-    var res = []
-
-    var objects = [self]
-    var mro = self.__class__.__mro__
-    for (var i=0; i<mro.length; i++) {
-        objects.push(mro[i])
-    }
-    for (var i=0; i<objects.length; i++) {
-        for(var attr in objects[i]){
-            if(attr.charAt(0)!=='$'){
-                res.push(attr)
-            }
-        }
-    }
-    res = $B.builtins.list($B.builtins.set(res))
-    res.sort()
-    return res
-}
 
 // constructor of the built-in class 'object'
 function object(){
