@@ -3713,9 +3713,7 @@ var res=[]
 var objects=[self]
 var mro=self.__class__.__mro__
 for(var i=0;i<mro.length;i++){
-if(mro[i]!==$ObjectDict){
 objects.push(mro[i])
-}
 }
 for(var i=0;i<objects.length;i++){
 for(var attr in objects[i]){
