@@ -220,7 +220,7 @@ class NodeCollection:
       self._bind('blur', handler)
 
   def change(self, handler=None):
-      """Bind an event handler to the “change” JavaScript event, or trigger 
+      """Bind an event handler to the 'change' JavaScript event, or trigger 
          that event on an element.
       """
 
@@ -420,7 +420,7 @@ class NodeCollection:
       return NodeCollection([self._nodes[0]])
 
   def focus(self, handler=None):
-      """Bind an event handler to the “focus” JavaScript event, or trigger 
+      """Bind an event handler to the 'focus' JavaScript event, or trigger 
          that event on an element.
       """
 
@@ -569,7 +569,7 @@ class NodeCollection:
       return len(self._nodes)
 
   def load(self, handler=None):
-      """Bind an event handler to the “load” JavaScript event."""
+      """Bind an event handler to the 'load' JavaScript event."""
 
       self._bind('load', handler)
 
@@ -646,14 +646,14 @@ class NodeCollection:
 
       raise NotImplementedError("pydom:'nextUtil' not implemented yet")
 
-  def not(self, arg):
+  def _not(self, arg):
       """Remove elements from the set of matched elements."""
 
       if isinstance(arg, str):  # selector
          pass  #to do
-      else if isinstance(arg, list):
+      elif isinstance(arg, list):
          return NodeCollection([_n for _n in self._nodes if _n not in arg])
-      else if hasattr(arg, '__call__'):  # this is a function
+      elif hasattr(arg, '__call__'):  # this is a function
          return NodeCollection([_n for _n in self._nodes if arg(_n)])
 
       raise NotImplementedError("pydom:'not' not implemented yet")
@@ -698,7 +698,7 @@ class NodeCollection:
   def outerHeight(self):
       """Get the current computed height for the first element in the set of 
          matched elements, including padding, border, and optionally margin. 
-         Returns an integer (without “px”) representation of the value or null
+         Returns an integer (without 'px') representation of the value or null
          if called on an empty set of elements.
       """
 
@@ -861,12 +861,12 @@ class NodeCollection:
           _node.get_parent().replaceWith(content, _node)
 
   def resize(self, handler=None):
-      """Bind an event handler to the “resize” JavaScript event, or trigger that event on an element."""
+      """Bind an event handler to the 'resize' JavaScript event, or trigger that event on an element."""
       
       self._bind('resize', handler)
 
   def scroll(self, handler=None):
-      """Bind an event handler to the “scroll” JavaScript event, or trigger 
+      """Bind an event handler to the 'scroll' JavaScript event, or trigger 
          that event on an element.
       """
 
@@ -1033,7 +1033,7 @@ class NodeCollection:
       raise NotImplementedError("pydom:'undelegate' not implemented yet")
 
   def unload(self, handler):
-      "Bind an event handler to the “unload” JavaScript event."
+      "Bind an event handler to the 'unload' JavaScript event."
 
       self._bind('unload', handler)
 

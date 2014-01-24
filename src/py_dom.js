@@ -135,6 +135,7 @@ $DOMEventDict.__getattribute__ = function(self,attr){
         if(self.target===undefined){return $DOMNode(self.srcElement)}
         else{return $DOMNode(self.target)}
     }
+    if(attr=="char"){return String.fromCharCode(self.which)}
     var res =  self[attr]
     if(res!==undefined){
         if(typeof res=='function'){return function(){return res.apply(self,arguments)}}
