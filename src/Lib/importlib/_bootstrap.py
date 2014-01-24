@@ -1684,6 +1684,7 @@ def _setup(sys_module, _imp_module):
     """
     global _imp, sys
     _imp = _imp_module
+    sys = sys_module
 
     for module in (_imp, sys):
         if not hasattr(module, '__loader__'):
