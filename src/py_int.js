@@ -99,7 +99,7 @@ $IntDict.__mul__ = function(self,other){
     var val = self.valueOf(),list=__builtins__.list,tuple=__builtins__.tuple
     if(isinstance(other,int)){return self*other}
     else if(isinstance(other,__builtins__.float)){return __builtins__.float(self*other.value)}
-    else if(isinstance(other,bool)){
+    else if(isinstance(other,__builtins__.bool)){
          var bool_value=0
          if (other.valueOf()) bool_value=1
          return self*bool_value}
