@@ -756,14 +756,6 @@ DOMNode.options = function(self){ // for SELECT tag
     return new $OptionsClass(self.elt)
 }
 
-DOMNode.children = function(self){
-    var res = []
-    for(var i=0;i<self.elt.childNodes.length;i++){
-        res.push($DOMNode(self.elt.childNodes[i]))
-    }
-    return res
-}
-
 DOMNode.parent = function(self){
     if(self.elt.parentElement){return $DOMNode(self.elt.parentElement)}
     else{return None}
