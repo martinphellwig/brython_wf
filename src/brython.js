@@ -4828,7 +4828,6 @@ this.__mro__=[this,$ObjectDict]
 function compile(source, filename, mode){
 return $B.py2js(source, filename).to_js()
 }
-function $confirm(src){return confirm(src)}
 function delattr(obj, attr){
 var res=obj[attr]
 if(res===undefined){
@@ -4997,7 +4996,6 @@ return method
 return klass[attr]
 }
 var is_class=obj.__class__.is_class, mro, attr_func
-if(attr=='__repr__'){console.log('getattr '+attr+' of '+obj+' ('+obj.__class__+') '+' class '+is_class)}
 if(is_class){
 attr_func=$B.$type.__getattribute__
 if(obj.$dict===undefined){console.log('obj '+obj+' $dict undefined')}
@@ -5013,9 +5011,7 @@ console.log('obj class '+dir(obj.__class__)+' str '+obj.__class__)
 }
 for(var i=0;i<mro.length;i++){
 attr_func=mro[i]['__getattribute__']
-if(attr_func!==undefined){
-if(attr=='__repr__'){console.log('__ga__ of '+mro[i].__name__);}
-break}
+if(attr_func!==undefined){break}
 }
 }
 if(typeof attr_func!=='function'){
@@ -5085,7 +5081,6 @@ function input(src){
 return prompt(src)
 }
 function isinstance(obj,arg){
-if(arg===undefined){console.log('isinstance '+obj+' arg '+arg+' info '+__BRYTHON__.line_info)}
 if(obj===null){return arg===None}
 if(obj===undefined){return false}
 if(arg.constructor===Array){
@@ -5601,7 +5596,7 @@ return res
 throw __builtins__.AttributeError("object 'super' has no attribute '"+attr+"'")
 }
 $SuperDict.__mro__=[$SuperDict,$ObjectDict]
-$SuperDict.__repr__=$SuperDict.__str__=$SuperDict.toString=function(self){console.log('super str');return "<object 'super'>"}
+$SuperDict.__repr__=$SuperDict.__str__=function(self){return "<object 'super'>"}
 function $$super(_type1,_type2){
 return{__class__:$SuperDict,
 __thisclass__:_type1,
@@ -6761,7 +6756,6 @@ return(self%bool_value+bool_value)%bool_value
 }
 $IntDict.__mro__=[$IntDict,$ObjectDict]
 $IntDict.__mul__=function(self,other){
-console.log('int mul, other '+other+' class '+other.__class__.__name__)
 var val=self.valueOf(),list=__builtins__.list,tuple=__builtins__.tuple
 if(isinstance(other,int)){return self*other}
 else if(isinstance(other,__builtins__.float)){return __builtins__.float(self*other.value)}
@@ -6776,7 +6770,6 @@ var res=''
 for(var i=0;i<val;i++){res+=other}
 return res
 }else if(isinstance(other,[list,tuple])){
-console.log('int mul by list or tuple')
 var res=[]
 var $temp=other.slice(0,other.length)
 for(var i=0;i<val;i++){res=res.concat($temp)}
@@ -7447,8 +7440,7 @@ return !$ListDict.__ge__(self,other)
 }
 $ListDict.__mro__=[$ListDict,$ObjectDict]
 $ListDict.__mul__=function(self,other){
-console.log('list mul other '+other+' '+__builtins__.int)
-if(isinstance(other,__builtins__.int)){console.log('other is int !');return getattr(other,'__mul__')(self)}
+if(isinstance(other,__builtins__.int)){return getattr(other,'__mul__')(self)}
 else{
 throw __builtins__.TypeError("can't multiply sequence by non-__builtins__.int of type '"+other.__class__.__name__+"'")
 }
@@ -8705,9 +8697,6 @@ var f=getattr(arg,'__str__')
 return f()
 }
 catch(err){
-console.log('in str, err with __str__ '+err)
-console.log('arg '+arg+' '+$B.builtins.dir(arg))
-console.log('class '+arg.__class__)
 $B.$pop_exc()
 try{
 var f=getattr(arg,'__repr__')
