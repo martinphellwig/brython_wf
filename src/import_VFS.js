@@ -48,7 +48,7 @@ $B.$import_via_VFS=function(module,origin){
   __BRYTHON__.imported[module.name] = undefined
   __BRYTHON__.modules[module.name] = undefined
 
-  throw ImportError("module " + module.name + " not found")
+  throw $B.builtins.ImportError("module " + module.name + " not found")
 }
 
 // since $import_funcs is now a local variable (import_funcs), we have
@@ -64,36 +64,20 @@ $B.$import_single=function (module,origin){
 
     for(var j=0;j<import_funcs.length;j++){
         try{
-            //console.log(j)
-            //console.log(import_funcs[j])
             var mod=import_funcs[j](module,origin)
-            //console.log(mod)
             return mod
         } catch(err){
-            //console.log(err)
-            //console.log(err.name)
-            if(err.name==="FileNotFoundError" || err.name==='ImportError'){
-                if(j==import_funcs.length-1){
-                    // all possible locations failed : throw error
-                    // remove module name from __BRYTHON__.imported and .modules
-                    //__BRYTHON__.imported[module.name] = undefined
-                    //__BRYTHON__.modules[module.name] = undefined
-                    //throw err
-                }
-            }else{
-              //  __BRYTHON__.imported[module.name] = undefined
-              //  __BRYTHON__.modules[module.name] = undefined
-              //  throw err
+            console.log('err in vfs import single')
+            if(err.name!=="FileNotFoundError" && err.name!=='ImportError'){
+                __BRYTHON__.imported[module.name] = undefined
+                __BRYTHON__.modules[module.name] = undefined
+                throw err
             }
         }
     }
-    
-    //__BRYTHON__.imported[module.name] = undefined
-    //__BRYTHON__.modules[module.name] = undefined
-
+    __BRYTHON__.imported[module.name] = undefined
+    __BRYTHON__.modules[module.name] = undefined
     throw $B.builtins.ImportError("module " + module.name + " not found")
-
-    return undefined
 }
 
 
@@ -152,16 +136,16 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
                     if(j==search.length-1){
                       // all possible locations failed : throw error
                       // remove module name from __BRYTHON__.imported and .modules
-                     // __BRYTHON__.imported[module.name] = undefined
-                     // __BRYTHON__.modules[module.name] = undefined
+                      __BRYTHON__.imported[module.name] = undefined
+                      __BRYTHON__.modules[module.name] = undefined
                       throw err
                     }else{
                       continue
                     }
                   }else{
-                  //  __BRYTHON__.imported[module.name] = undefined
-                  //  __BRYTHON__.modules[module.name] = undefined
-                    //throw err
+                      __BRYTHON__.imported[module.name] = undefined
+                      __BRYTHON__.modules[module.name] = undefined
+                      throw err
                   }
                }
               // if(flag){break}
@@ -180,15 +164,13 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
                     if(j==search.length-1){
                       // all possible locations failed : throw error
                       // remove module name from __BRYTHON__.imported and .modules
-                     // __BRYTHON__.imported[module.name] = undefined
-                     // __BRYTHON__.modules[module.name] = undefined
+                      __BRYTHON__.imported[module.name] = undefined
+                      __BRYTHON__.modules[module.name] = undefined
                       throw err
                     }else{
                       continue
                     }
                  }else{
-                   // __BRYTHON__.imported[module.name] = undefined
-                   // __BRYTHON__.modules[module.name] = undefined
                    // throw err
                  }
              }
@@ -199,6 +181,8 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
        //if(flag){break}
     }
     //if(!flag){
+    __BRYTHON__.imported[module.name] = undefined
+    __BRYTHON__.modules[module.name] = undefined
     throw $B.builtins.ImportError("module "+module.name+" not found")
     //}
     return undefined

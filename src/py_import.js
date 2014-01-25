@@ -147,7 +147,7 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
                var mod = $B.$import_py(module,path)
                flag = true
                if(j==search.length-1){mod.$package=true}
-           }catch(err){if(err.__name__!=="FileNotFoundError"){throw err}}
+           }catch(err){if(err.__name__!=="FileNotFoundError"){flag=true;throw err}}
            if(flag){break}
         }
         if(flag){break}
