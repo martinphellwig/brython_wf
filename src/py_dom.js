@@ -292,7 +292,7 @@ $OptionsDict.namedItem = function(self,name){
 }
     
 $OptionsDict.remove = function(self,arg){self.parent.options.remove(arg.elt)}
-    
+
 //$OptionsDict.toString = $OptionsDict.__str__
     
 var $StyleDict = {__class__:__BRYTHON__.$type,__name__:'CSSProperty'}
@@ -1041,7 +1041,8 @@ var $toDOM = function (content) {
    if (isinstance(content,DOMNode)) {return content}
 
    if (isinstance(content,str)) {
-      var _dom = document.createElement('html')
+      //var _dom = document.createElement('html')
+      var _dom = document.createElement('div')
       _dom.innerHTML = content
       return _dom
    }
@@ -1076,6 +1077,12 @@ DOMNode.prototype.append = function(content){
    var _content=$toDOM(content);
    this.appendChild(_content);
    return this
+}
+
+DOMNode.append = function(self,content){
+  var _content=$toDOM(content)
+  self.elt.appendChild(_content.childNodes[0])
+  return self
 }
 
 DOMNode.prototype.before = function(content){
