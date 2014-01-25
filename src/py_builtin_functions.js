@@ -215,38 +215,7 @@ function compile(source, filename, mode) {
     return $B.py2js(source, filename).to_js()
 }
 
-/*
-var $ComplexDict = {__class__:$B.$type,__name__:'complex'}
-$ComplexDict.__mro__ = [$ComplexDict,$ObjectDict]
-
-$ComplexDict.__repr__ = $ComplexDict.__str__ = function(self){
-    if (self.real == 0){return self.imag + 'j'}
-    return '('+self.real + '+' + self.imag + 'j)'
-}
-*/
 //function complex is located in py_complex.js
-/*
-function complex(real,imag){
-    var res = {
-        __class__:$ComplexDict,
-        real:real,
-        imag:imag
-    }
-
-    res.__repr__ = res.__str__ = function() {
-        if (imag === undefined) imag = 0
-        if (real == 0){return imag + 'j'}
-        return '('+real + '+' + imag + 'j)'
-    }
-
-    return res
-}
-
-complex.$dict = $ComplexDict
-$ComplexDict.$factory = complex
-*/
-
-function $confirm(src){return confirm(src)}
 
 //delattr() (built in function)
 function delattr(obj, attr) {
@@ -424,7 +393,7 @@ function getattr(obj,attr,_default){
             if(res===undefined){return __builtins__.None}else{return res}
         }
     }
-    //if(attr=='__eq__'){console.log('attr '+attr+' klass '+klass)}
+    //if(attr=='__str__'){console.log('attr '+attr+' klass '+klass)}
     
     if(klass.$native){
     
@@ -450,7 +419,7 @@ function getattr(obj,attr,_default){
     }
 
     var is_class = obj.__class__.is_class, mro, attr_func
-    //if(attr=='register'){console.log('getattr '+attr+' of '+obj+' ('+obj.__class__+') '+' class '+is_class)}
+    //if(attr=='__repr__'){console.log('getattr '+attr+' of '+obj+' ('+obj.__class__+') '+' class '+is_class)}
     if(is_class){
         attr_func=$B.$type.__getattribute__
         if(obj.$dict===undefined){console.log('obj '+obj+' $dict undefined')}
@@ -1124,7 +1093,7 @@ $SuperDict.__getattribute__ = function(self,attr){
                         for(var i=0;i<arguments.length;i++){
                             local_args.push(arguments[i])
                         }
-                        var x = res.apply(obj,local_args)
+                        var x = res.apply(null,local_args)
                         if(x===undefined){return None}else{return x}
                     }})([self.__self_class__])
                 method.__class__ = {
@@ -1144,12 +1113,17 @@ $SuperDict.__getattribute__ = function(self,attr){
 
 $SuperDict.__mro__ = [$SuperDict,$ObjectDict]
 
+$SuperDict.__repr__ = $SuperDict.__str__ = function(self){return "<object 'super'>"}
+
 function $$super(_type1,_type2){
     return {__class__:$SuperDict,
         __thisclass__:_type1,
-        __self_class__:_type2 || None
+        __self_class__:(_type2 || None)
     }
 }
+$$super.$dict = $SuperDict
+$$super.__class__ = $B.$factory
+$SuperDict.$factory = $$super
 
 function $url_open(){
     // first argument is file : can be a string, or an instance of a DOM File object
