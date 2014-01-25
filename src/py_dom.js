@@ -1080,8 +1080,12 @@ DOMNode.prototype.append = function(content){
 }
 
 DOMNode.append = function(self,content){
-  var _content=$toDOM(content)
-  self.elt.appendChild(_content.childNodes[0])
+ if (isinstance(content,DOMNode)) {
+    self.elt.appendChild(content.elt)
+ } else {
+    var _content=$toDOM(content)
+    self.elt.appendChild(_content.childNodes[0])
+ }
   return self
 }
 

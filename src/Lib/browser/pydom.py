@@ -166,6 +166,15 @@ class NodeCollection:
          element in the set of matched elements.
       """
 
+      if isinstance(content, NodeCollection):
+         #is this correct?  A DOM element cannot exist in 2 places
+         #without being a clone. (the docs says this cannot be a clone)
+         for _node in self._nodes:
+             for _cnode in content._nodes:
+                 _node.append(_cnode)
+
+         return
+
       for _node in self._nodes:
           _node.append(content)
 
