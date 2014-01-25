@@ -141,7 +141,17 @@ class NodeCollection:
       "Adds the specified class(es) to each of the set of matched elements."
 
       for _node in self._nodes:
-          _node.addClass(classname)
+          if hasattr(_node, 'addClass'):
+             _node.addClass(classname)
+          elif hasattr(_node, 'set_class'):
+             _c=getattr(_node, 'class')
+             if _c is not None:
+                _node.set_class('%s %s' % (_c, classname))
+             else:
+                _node.set_class(classname)
+          else:
+             print(dir(_node))
+
 
   def after(self, content):
       """Insert content, specified by the parameter, after each element 

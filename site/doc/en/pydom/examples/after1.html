@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>after demo</title>
+<style>
+p {
+background: yellow;
+}
+</style>
+<script src="/src/brython.js"></script>
+
+<script type="text/python">
+from browser.pydom import get
+
+get("p").after("<b>Hello</b>")
+</script>
+
+</head>
+<body onload="brython()">
+<p>I would like to say: </p>
+</body>
+</html>
