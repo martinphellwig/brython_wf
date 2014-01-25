@@ -116,7 +116,7 @@ class NodeCollection:
 
       return '<br>'.join(_str)
 
-  def append(self, node):
+  def append_node(self, node):
       self._nodes.append(node)
 
   def next(self):
@@ -161,7 +161,7 @@ class NodeCollection:
       for _node in self._nodes:
           _node.after(content)
 
-  def append_content(self, content):
+  def append(self, content):
       """Insert content, specified by the parameter, to the end of each 
          element in the set of matched elements.
       """
