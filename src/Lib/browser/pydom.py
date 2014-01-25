@@ -1,7 +1,6 @@
 from browser import doc
 
-class Selector:
-  tags=['A','ABBR','ACRONYM','ADDRESS','APPLET','B','BDO','BIG','BLOCKQUOTE',
+tags=['A','ABBR','ACRONYM','ADDRESS','APPLET','B','BDO','BIG','BLOCKQUOTE',
         'BUTTON','CAPTION','CENTER','CITE','CODE','DEL','DFN','DIR','DIV','DL',
         'EM','FIELDSET','FONT','FORM','FRAMESET','H1','H2','H3','H4','H5','H6',
         'I','IFRAME','INS','KBD','LABEL','LEGEND','MAP','MENU','NOFRAMES', 
@@ -15,6 +14,8 @@ class Selector:
         'DETAILS','DIALOG','EMBED','FIGCAPTION','FIGURE','FOOTER','HEADER',
         'KEYGEN','MARK','METER','NAV','OUTPUT','PROGRESS','RP','RT',
         'RUBY','SECTION','SOURCE','SUMMARY','TIME','TRACK','VIDEO','WBR']
+
+class Selector:
 
   def __init__(self, selector, start_node=doc):
       self._doc=start_node
@@ -87,16 +88,14 @@ class NodeCollectionSelector(Selector):
       return self._selector in node.classname
 
   def get(self):
-      _c1=NodeCollection()
-      for _node in self._collection:
-          if self._match(_node):
-             _c1.append(_node)
-
-      return _c1
+      return NodeCollection([_n for _n in self._collection if self._match(_n)])
 
 class NodeCollection:
   def __init__(self, nodes=[]):
-      self._nodes=nodes
+      if isinstance(nodes, NodeCollection):
+         self._nodes=nodes._nodes
+      else:
+         self._nodes=nodes
 
   def __len__(self):
       return len(self._nodes)
@@ -117,18 +116,19 @@ class NodeCollection:
 
       return '<br>'.join(_str)
 
-  def append(self, node):        
+  def append(self, node):
       self._nodes.append(node)
 
   def next(self):
       for _node in self._nodes:
           yield _node
 
-  def add(self, selector, context):
+  def add(self, selector, context=None):
       "Add elements to the set of matched elements."
 
-      _ns=NodeCollectionSelector(selector, self)
-      self._nodes+=_ns.get()
+      _ns=Selector(selector)
+      _nc=_ns.get()
+      return NodeCollection(self._nodes + [_n for _n in _nc._nodes])
 
   def addBack(self):
       """Add the previous set of elements on the stack to the current 
@@ -289,10 +289,12 @@ class NodeCollection:
 
       if isinstance(property, dict):
          for _node in self._nodes:
-             _node.css(property)
+             _node.set_style(property)
       else:
          for _node in self._nodes:
-             _node.css(property, value)
+             _node.set_style({property: value})
+
+      return self
 
   def data(self):
       """Store arbitrary data associated with the matched elements or return 
@@ -1096,6 +1098,9 @@ def byId(id):
 
     _result=doc.get(id=id)
     return _result[0]
+
+def get(selector):
+    return Selector(selector).get()
 
 def createCSSClass(csstext):
     """ Create style element and attach css text """

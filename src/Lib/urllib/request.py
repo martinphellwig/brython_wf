@@ -26,4 +26,7 @@ def urlopen(url, data=None, timeout=None):
     else:
        _ajax.send(data)
 
+    if isinstance(result.text, str):
+       return FileIO(result.text), url, result.headers
+
     return FileIO(result.text()), url, result.headers
