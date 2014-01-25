@@ -1143,9 +1143,12 @@ this.appendChild(_content)
 return this
 }
 DOMNode.append=function(self,content){
+if(isinstance(content,DOMNode)){
+self.elt.appendChild(content.elt)
+}else{
 var _content=$toDOM(content)
-console.log(_content)
 self.elt.appendChild(_content.childNodes[0])
+}
 return self
 }
 DOMNode.prototype.before=function(content){
