@@ -67,7 +67,6 @@ $B.$import_single=function (module,origin){
             var mod=import_funcs[j](module,origin)
             return mod
         } catch(err){
-            console.log('err in vfs import single')
             if(err.name!=="FileNotFoundError" && err.name!=='ImportError'){
                 __BRYTHON__.imported[module.name] = undefined
                 __BRYTHON__.modules[module.name] = undefined
