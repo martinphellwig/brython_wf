@@ -8,7 +8,7 @@ Taken from the jquery, api documentation:
 
 Given a NodeCollection object that represents a set of DOM elements, the .add() method constructs a new NodeCollection object from the union of those elements and the ones passed into the method. The argument to .add() can be pretty much anything that the function 'get' accepts, including a jQuery selector expression, references to DOM elements, or an HTML snippet.
 
-Do not assume that this method appends the elements to the existing collection in the order they are passed to the .add() method. When all elements are members of the same document, the resulting collection from .add() will be sorted in document order; that is, in order of each element's appearance in the document. If the collection consists of elements from different documents or ones not in any document, the sort order is undefined. To create a jQuery object with elements in a well-defined order, use the $(array_of_DOM_elements) signature.
+Do not assume that this method appends the elements to the existing collection in the order they are passed to the .add() method. When all elements are members of the same document, the resulting collection from .add() will be sorted in document order; that is, in order of each element's appearance in the document. If the collection consists of elements from different documents or ones not in any document, the sort order is undefined. 
 
 <script type="text/python">
 import helper
