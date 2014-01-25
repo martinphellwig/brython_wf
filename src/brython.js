@@ -4997,6 +4997,7 @@ return method
 return klass[attr]
 }
 var is_class=obj.__class__.is_class, mro, attr_func
+if(attr=='__repr__'){console.log('getattr '+attr+' of '+obj+' ('+obj.__class__+') '+' class '+is_class)}
 if(is_class){
 attr_func=$B.$type.__getattribute__
 if(obj.$dict===undefined){console.log('obj '+obj+' $dict undefined')}
@@ -5012,7 +5013,9 @@ console.log('obj class '+dir(obj.__class__)+' str '+obj.__class__)
 }
 for(var i=0;i<mro.length;i++){
 attr_func=mro[i]['__getattribute__']
-if(attr_func!==undefined){break}
+if(attr_func!==undefined){
+if(attr=='__repr__'){console.log('__ga__ of '+mro[i].__name__);}
+break}
 }
 }
 if(typeof attr_func!=='function'){
@@ -5082,6 +5085,7 @@ function input(src){
 return prompt(src)
 }
 function isinstance(obj,arg){
+if(arg===undefined){console.log('isinstance '+obj+' arg '+arg+' info '+__BRYTHON__.line_info)}
 if(obj===null){return arg===None}
 if(obj===undefined){return false}
 if(arg.constructor===Array){
@@ -5579,7 +5583,7 @@ var local_args=initial_args.slice()
 for(var i=0;i<arguments.length;i++){
 local_args.push(arguments[i])
 }
-var x=res.apply(obj,local_args)
+var x=res.apply(null,local_args)
 if(x===undefined){return None}else{return x}
 }})([self.__self_class__])
 method.__class__={
@@ -5597,12 +5601,16 @@ return res
 throw __builtins__.AttributeError("object 'super' has no attribute '"+attr+"'")
 }
 $SuperDict.__mro__=[$SuperDict,$ObjectDict]
+$SuperDict.__repr__=$SuperDict.__str__=$SuperDict.toString=function(self){console.log('super str');return "<object 'super'>"}
 function $$super(_type1,_type2){
 return{__class__:$SuperDict,
 __thisclass__:_type1,
-__self_class__:_type2 || None
+__self_class__:(_type2 || None)
 }
 }
+$$super.$dict=$SuperDict
+$$super.__class__=$B.$factory
+$SuperDict.$factory=$$super
 function $url_open(){
 var mode='r',encoding='utf-8'
 var $ns=$B.$MakeArgs('open',arguments,['file'],['mode','encoding'],'args','kw')
@@ -6753,10 +6761,11 @@ return(self%bool_value+bool_value)%bool_value
 }
 $IntDict.__mro__=[$IntDict,$ObjectDict]
 $IntDict.__mul__=function(self,other){
+console.log('int mul, other '+other+' class '+other.__class__.__name__)
 var val=self.valueOf(),list=__builtins__.list,tuple=__builtins__.tuple
 if(isinstance(other,int)){return self*other}
 else if(isinstance(other,__builtins__.float)){return __builtins__.float(self*other.value)}
-else if(isinstance(other,bool)){
+else if(isinstance(other,__builtins__.bool)){
 var bool_value=0
 if(other.valueOf())bool_value=1
 return self*bool_value}
@@ -6767,6 +6776,7 @@ var res=''
 for(var i=0;i<val;i++){res+=other}
 return res
 }else if(isinstance(other,[list,tuple])){
+console.log('int mul by list or tuple')
 var res=[]
 var $temp=other.slice(0,other.length)
 for(var i=0;i<val;i++){res=res.concat($temp)}
@@ -6881,6 +6891,145 @@ int.$dict=$IntDict
 int.__class__=$B.$factory
 $IntDict.$factory=int
 $B.builtins.int=int
+})(__BRYTHON__)
+;(function($B){
+var __builtins__=$B.builtins
+for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+var $ObjectDict=object.$dict
+function $UnsupportedOpType(op,class1,class2){
+throw __builtins__.TypeError("unsupported operand type(s) for "+op+": '"+class1+"' and '"+class2+"'")
+}
+var $ComplexDict={__class__:$B.$type,
+__name__:'complex',
+toString:function(){return '$ComplexDict'},
+$native:true
+}
+$ComplexDict.__abs__=function(self,other){return complex(abs(self.real),abs(self.imag))}
+$ComplexDict.__bool__=function(self){return new Boolean(self.real || self.imag)}
+$ComplexDict.__class__=$B.$type
+$ComplexDict.__eq__=function(self,other){
+if(isinstance(other,complex)){return self.real==other.real && self.imag==other.imag}
+else if(isinstance(other,__builtins__.int)){
+if(self.imag !=0)return False
+return self.real==other.valueOf()}
+else if(isinstance(other,__builtins__.float)){
+if(self.imag !=0)return False
+return self.real==other.value}
+else{$UnsupportedOpType("==","complex",other.__class__)}
+}
+$ComplexDict.__floordiv__=function(self,other){
+$UnsupportedOpType("//","complex",other.__class__)
+}
+$ComplexDict.__hash__=function(self){return hash(self)}
+$ComplexDict.__init__=function(self,real,imag){
+self.toString=function(){return '('+real+'+'+imag+'j)'}
+}
+$ComplexDict.__invert__=function(self){return ~self}
+$ComplexDict.__mod__=function(self,other){
+throw __builtins__.TypeError("TypeError: can't mod complex numbers.")
+}
+$ComplexDict.__mro__=[$ComplexDict,$ObjectDict]
+$ComplexDict.__mul__=function(self,other){
+if(isinstance(other,complex)){
+return complex(self.real*other.real-self.imag*other.imag, self.imag*other.real + self.real*other.imag)}
+else if(isinstance(other,__builtins__.int)){
+return complex(self.real*other.valueOf(), self.imag*other.valueOf())}
+else if(isinstance(other,__builtins__.float)){
+return complex(self.real*other.value, self.imag*other.value)}
+else if(isinstance(other,bool)){
+if(other.valueOf())return self
+return complex(0)}
+else{$UnsupportedOpType("*",complex,other)}
+}
+$ComplexDict.__name__='complex'
+$ComplexDict.__ne__=function(self,other){return !$ComplexDict.__eq__(self,other)}
+$ComplexDict.__neg__=function(self){return complex(-self.real,-self.imag)}
+$ComplexDict.__new__=function(cls){
+if(cls===undefined){throw __builtins__.TypeError('complex.__new__(): not enough arguments')}
+return{__class__:cls.$dict}
+}
+$ComplexDict.__pow__=function(self,other){
+$UnsupportedOpType("**",complex,other.__class__)
+}
+$ComplexDict.__str__=$ComplexDict.__repr__=function(self){
+if(self.real==0){return self.imag+'j'}
+return '('+self.real+'+'+self.imag+'j)'
+}
+$ComplexDict.__sqrt__=function(self){
+if(self.imag==0){return complex(Math.sqrt(self.real))}
+var _a=Math.sqrt((self.real + Math.sqrt(self.real*self.real + self.imag*self.imag))/2)
+var _b=Number.sign(self.imag)* Math.sqrt((-self.real + Math.sqrt(self.real*self.real + self.imag*self.imag))/2)
+return complex(_a, _b)
+}
+$ComplexDict.__truediv__=function(self,other){
+if(isinstance(other,complex)){
+if(other.real==0 && other.imag==0){
+throw ZeroDivisionError('division by zero')
+}
+var _num=self.real*other.real + self.imag*other.imag
+var _div=other.real*other.real + other.imag*other.imag
+var _num2=self.imag*other.real - self.real*other.imag
+return complex(_num/_div, _num2/_div)
+}else if(isinstance(other,__builtins__.int)){
+if(!other.valueOf()){throw ZeroDivisionError('division by zero')}
+return $ComplexDict.__truediv__(self, complex(other.valueOf()))
+}else if(isinstance(other,__builtins__.float)){
+if(!other.value){throw ZeroDivisionError('division by zero')}
+return $ComplexDict.__truediv__(self, complex(other.value))
+}else{$UnsupportedOpType("//","complex",other.__class__)}
+}
+var $op_func=function(self,other){
+throw __builtins__.TypeError("TypeError: unsupported operand type(s) for -: 'complex' and '" + other.__class__+"'")
+}
+$op_func +='' 
+var $ops={'&':'and','|':'ior','<<':'lshift','>>':'rshift','^':'xor'}
+for(var $op in $ops){
+eval('$ComplexDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
+}
+$ComplexDict.__ior__=$ComplexDict.__or__
+var $op_func=function(self,other){
+if(isinstance(other,complex)){
+return complex(self.real - other.real, self.imag-other.imag)
+}else if(isinstance(other,__builtins__.int)){
+return complex(self.real - other.valueOf(), self.imag)
+}else if(isinstance(other,__builtins__.float)){
+return complex(self.real - other.value, self.imag)
+}else if(isinstance(other,bool)){
+var bool_value=0
+if(other.valueOf())bool_value=1
+return complex(self.real - bool_value, self.imag)
+}else{throw __builtins__.TypeError(
+"unsupported GG operand type(s) for -: "+self.__repr__()+" and '"+__builtins__.str(other.__class__)+"'")
+}
+}
+$op_func +='' 
+var $ops={'+':'add','-':'sub'}
+for(var $op in $ops){
+eval('$ComplexDict.__'+$ops[$op]+'__ = '+$op_func.replace(/-/gm,$op))
+}
+var $comp_func=function(self,other){
+throw __builtins__.TypeError("TypeError: unorderable types: complex() > " + other.__class__ + "()")
+}
+$comp_func +='' 
+for(var $op in $B.$comps){
+eval("$ComplexDict.__"+$B.$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
+}
+var complex=function(real,imag){
+var res={
+__class__:$ComplexDict,
+real:real || 0,
+imag:imag || 0
+}
+res.__repr__=res.__str__=function(){
+if(real==0){return imag + 'j'}
+return '('+real+'+'+imag+'j)'
+}
+return res
+}
+complex.$dict=$ComplexDict
+complex.__class__=$B.$factory
+$ComplexDict.$factory=complex
+$B.builtins.complex=complex
 })(__BRYTHON__)
 ;(function($B){
 var __builtins__=$B.builtins
@@ -7298,7 +7447,8 @@ return !$ListDict.__ge__(self,other)
 }
 $ListDict.__mro__=[$ListDict,$ObjectDict]
 $ListDict.__mul__=function(self,other){
-if(isinstance(other,__builtins__.int)){return getattr(other,'__mul__')(self)}
+console.log('list mul other '+other+' '+__builtins__.int)
+if(isinstance(other,__builtins__.int)){console.log('other is int !');return getattr(other,'__mul__')(self)}
 else{
 throw __builtins__.TypeError("can't multiply sequence by non-__builtins__.int of type '"+other.__class__.__name__+"'")
 }
@@ -8555,6 +8705,9 @@ var f=getattr(arg,'__str__')
 return f()
 }
 catch(err){
+console.log('in str, err with __str__ '+err)
+console.log('arg '+arg+' '+$B.builtins.dir(arg))
+console.log('class '+arg.__class__)
 $B.$pop_exc()
 try{
 var f=getattr(arg,'__repr__')
