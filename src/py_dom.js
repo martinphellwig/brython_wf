@@ -1114,6 +1114,22 @@ DOMNode.prototype.before = function(content){
    return this
 }
 
+DOMNode.before = function(self,content){
+   var _con
+
+   if (isinstance(content,DOMNode)) {
+     _con=content.elt
+   } else {
+     _con=$toDOM(content)
+     _con=_con.childNodes[0]
+   }
+
+   self.elt.parentElement.insertBefore(_con, self.elt)
+
+   return self
+}
+
+
 // closest will return the first ancestor that it comes across
 // while traversing up the tree.
 // note that selector parameter in regular jquery will be implemented

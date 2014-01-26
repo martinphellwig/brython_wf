@@ -52,7 +52,7 @@ You can also select an element on the page and insert it into another:
 
 <pre>
     #todo check if this works..
-    get(".container").append(Selector('h2'))
+    get(".container").append(get('h2'))
 </pre>
 
 
@@ -61,7 +61,6 @@ You can also select an element on the page and insert it into another:
 import helper
 helper.populate_example(1, "examples/append1.html")
 helper.populate_example(2, "examples/append2.html")
-helper.populate_example(3, "examples/append3.html")
 </script>
 
 <h3>Examples:</h3>
@@ -75,23 +74,10 @@ helper.populate_example(3, "examples/append3.html")
 <iframe src="examples/append1.html" width="100%" height="150"></iframe>
 
 
-<h4>Example: Appends an Element to all paragraphs.</h4>
+<h4>Example: Appends an element to all paragraphs.</h4>
 
 <pre id="source2"></pre>
 
 <h3>Demo:</h3>
 
 <iframe src="examples/append2.html" width="100%" height="150"></iframe>
-
-
-<h4>
-Example: Add the class 'selected' to the matched elements.
-</h4>
-
-<pre id="source3"></pre>
-
-<h3>Demo:</h3>
-
-<iframe src="examples/append3.html" width="100%" height="150"></iframe>
-
-

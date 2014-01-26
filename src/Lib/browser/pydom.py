@@ -210,6 +210,11 @@ class NodeCollection:
          in the set of matched elements.
       """
 
+      if isinstance(content, NodeCollection):
+         for _node in self._nodes:
+             for _cnode in content._nodes:
+                 _node.before(_cnode)
+
       for _node in self._nodes:
           _node.before(content)
 
@@ -249,6 +254,8 @@ class NodeCollection:
       """
 
       self._bind('change', handler)
+
+      return self
 
   def children(self, selector=None):
       """Get the children of each element in the set of matched elements, 
@@ -648,6 +655,7 @@ class NodeCollection:
          or trigger that handler on an element"""
 
       self._bind('mouseup', handler)
+      return self
 
   def next(self, selector=None):
       """Get the immediately following sibling of each element in the set of 
