@@ -1073,6 +1073,25 @@ DOMNode.prototype.after = function(content){
    return this
 }
 
+DOMNode.after = function(self,content){
+   var _con
+
+   if (isinstance(content,DOMNode)) {
+     _con=content.elt
+   } else {
+     _con=$toDOM(content)
+     _con=_con.childNodes[0]
+   }
+
+   if (self.elt.nextSibling !== null) {
+     self.elt.parentElement.insertBefore(_con, self.elt.nextSibling);
+   } else {
+     self.elt.parentElement.appendChild(_con)
+   }
+
+   return self
+}
+
 DOMNode.prototype.append = function(content){
    var _content=$toDOM(content);
    this.appendChild(_content);
