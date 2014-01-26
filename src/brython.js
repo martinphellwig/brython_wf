@@ -1143,6 +1143,7 @@ if(isinstance(content,DOMNode)){
 _con=content.elt
 }else{
 _con=$toDOM(content)
+_con=_con.childNodes[0]
 }
 if(self.elt.nextSibling !==null){
 self.elt.parentElement.insertBefore(_con, self.elt.nextSibling)
@@ -1169,6 +1170,17 @@ DOMNode.prototype.before=function(content){
 var _content=$toDOM(content)
 this.parentElement.insertBefore(_content, this)
 return this
+}
+DOMNode.before=function(self,content){
+var _con
+if(isinstance(content,DOMNode)){
+_con=content.elt
+}else{
+_con=$toDOM(content)
+_con=_con.childNodes[0]
+}
+self.elt.parentElement.insertBefore(_con, self.elt)
+return self
 }
 DOMNode.prototype.closest=function(selector){
 var traverse=function(node, ancestors){

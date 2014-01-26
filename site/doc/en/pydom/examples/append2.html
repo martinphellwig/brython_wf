@@ -4,21 +4,22 @@
 <meta charset="utf-8">
 <title>append demo</title>
 <style>
-p {
-background: yellow;
-}
+p {background: yellow;}
 </style>
 <script src="/src/brython.js"></script>
+
 <script type="text/python">
   from browser.pydom import get
 
   def execute(event):
-      get("p").append("Hello")
+      get('p').append(get('strong'))
 
   get('#doit').click(execute)
 </script>
+
 </head>
 <body onload="brython()">
+<strong>Hello world!!!</strong>
 <p>I would like to say: </p>
 
 <button id="doit">Execute</button>

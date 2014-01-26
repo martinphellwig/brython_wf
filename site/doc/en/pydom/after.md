@@ -41,7 +41,7 @@ Each inner &lt;div&gt; element gets this new content:
     </div>
 </pre>
 
-An element in the DOM can also be selected and inserted after another elment:
+An element in the DOM can also be selected and inserted after another element:
 
 <pre>
     get('.container').after('h2')
@@ -52,7 +52,6 @@ An element in the DOM can also be selected and inserted after another elment:
 import helper
 helper.populate_example(1, "examples/after1.html")
 helper.populate_example(2, "examples/after2.html")
-helper.populate_example(3, "examples/after3.html")
 </script>
 
 <h3>Examples:</h3>
@@ -66,21 +65,12 @@ helper.populate_example(3, "examples/after3.html")
 <iframe src="examples/after1.html" width="100%" height="150"></iframe>
 
 
-<h4>Example: Inserts a DOM element after all paragraphs.</h4>
+<h4>
+Example: Inserts a pydom object (similar to an Array of DOM Elements) after all paragraphs.
+</h4>
 
 <pre id="source2"></pre>
 
 <h3>Demo:</h3>
 
 <iframe src="examples/after2.html" width="100%" height="150"></iframe>
-
-
-<h4>
-Example: Inserts a pydom object (similar to an Array of DOM Elements) after all paragraphs.
-</h4>
-
-<pre id="source3"></pre>
-
-<h3>Demo:</h3>
-
-<iframe src="examples/after3.html" width="100%" height="150"></iframe>
