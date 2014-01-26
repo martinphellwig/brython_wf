@@ -57,9 +57,7 @@ helper.populate_example(3, "examples/after3.html")
 
 <h3>Examples:</h3>
 
-<h4>
-Example: Add the class 'selected' to the matched elements.
-</h4>
+<h4>Example: Inserts some HTML after all paragraphs.</h4>
 
 <pre id="source1"></pre>
 
@@ -68,9 +66,7 @@ Example: Add the class 'selected' to the matched elements.
 <iframe src="examples/after1.html" width="100%" height="150"></iframe>
 
 
-<h4>
-Example: Add the class 'selected' to the matched elements.
-</h4>
+<h4>Example: Inserts a DOM element after all paragraphs.</h4>
 
 <pre id="source2"></pre>
 
@@ -80,7 +76,7 @@ Example: Add the class 'selected' to the matched elements.
 
 
 <h4>
-Example: Add the class 'selected' to the matched elements.
+Example: Inserts a pydom object (similar to an Array of DOM Elements) after all paragraphs.
 </h4>
 
 <pre id="source3"></pre>
@@ -88,14 +84,3 @@ Example: Add the class 'selected' to the matched elements.
 <h3>Demo:</h3>
 
 <iframe src="examples/after3.html" width="100%" height="150"></iframe>
-
-
-<h4>
-Example: Add the class 'selected' to the matched elements.
-</h4>
-
-<pre id="source4"></pre>
-
-<h3>Demo:</h3>
-
-<iframe src="examples/after4.html" width="100%" height="150"></iframe>

@@ -158,6 +158,11 @@ class NodeCollection:
          in the set of matched elements.
       """
 
+      if isinstance(content, NodeCollection):
+         for _node in self._nodes:
+             for _cnode in content._nodes:
+                 _node.after(_cnode)
+
       for _node in self._nodes:
           _node.after(content)
 

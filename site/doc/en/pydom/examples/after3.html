@@ -4,9 +4,7 @@
 <meta charset="utf-8">
 <title>after demo</title>
 <style>
-p {
-background: yellow;
-}
+p {background: yellow;}
 </style>
 <script src="/src/brython.js"></script>
 
@@ -14,15 +12,18 @@ background: yellow;
 from browser.pydom import get
 
 def execute(event):
-    get("p").after("<b>Hello</b>")
+    get('p').after(get('b'))
 
 get('#doit').click(execute)
 </script>
 
 </head>
+
 <body onload="brython()">
+<b>Hello</b>
 <p>I would like to say: </p>
 
+<br>
 <button id="doit">Execute</button>
 </body>
 </html>
