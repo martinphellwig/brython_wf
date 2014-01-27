@@ -1,19 +1,135 @@
 from browser import doc
 
 tags=['A','ABBR','ACRONYM','ADDRESS','APPLET','B','BDO','BIG','BLOCKQUOTE',
-        'BUTTON','CAPTION','CENTER','CITE','CODE','DEL','DFN','DIR','DIV','DL',
-        'EM','FIELDSET','FONT','FORM','FRAMESET','H1','H2','H3','H4','H5','H6',
-        'I','IFRAME','INS','KBD','LABEL','LEGEND','MAP','MENU','NOFRAMES', 
-        'NOSCRIPT','OBJECT','OL','OPTGROUP','PRE','Q','S','SAMP','SCRIPT', 
-        'SELECT','SMALL','SPAN','STRIKE','STRONG','STYLE','SUB','SUP','TABLE',
-        'TEXTAREA','TITLE','TT','U','UL','VAR','BODY','COLGROUP','DD','DT',
-        'HEAD','HTML','LI','P','TBODY','OPTION','TD','TFOOT','TH','THEAD','TR',
-        'AREA','BASE','BASEFONT','BR','COL','FRAME','HR','IMG','INPUT',
-        'ISINDEX','LINK','META','PARAM',  #HTML 5 elements...
-        'ARTICLE','ASIDE','AUDIO','BDI','CANVAS','COMMAND','DATALIST',
-        'DETAILS','DIALOG','EMBED','FIGCAPTION','FIGURE','FOOTER','HEADER',
-        'KEYGEN','MARK','METER','NAV','OUTPUT','PROGRESS','RP','RT',
-        'RUBY','SECTION','SOURCE','SUMMARY','TIME','TRACK','VIDEO','WBR']
+      'BUTTON','CAPTION','CENTER','CITE','CODE','DEL','DFN','DIR','DIV','DL',
+      'EM','FIELDSET','FONT','FORM','FRAMESET','H1','H2','H3','H4','H5','H6',
+      'I','IFRAME','INS','KBD','LABEL','LEGEND','MAP','MENU','NOFRAMES', 
+      'NOSCRIPT','OBJECT','OL','OPTGROUP','PRE','Q','S','SAMP','SCRIPT', 
+      'SELECT','SMALL','SPAN','STRIKE','STRONG','STYLE','SUB','SUP','TABLE',
+      'TEXTAREA','TITLE','TT','U','UL','VAR','BODY','COLGROUP','DD','DT',
+      'HEAD','HTML','LI','P','TBODY','OPTION','TD','TFOOT','TH','THEAD','TR',
+      'AREA','BASE','BASEFONT','BR','COL','FRAME','HR','IMG','INPUT',
+      'ISINDEX','LINK','META','PARAM',  #HTML 5 elements...
+      'ARTICLE','ASIDE','AUDIO','BDI','CANVAS','COMMAND','DATALIST',
+      'DETAILS','DIALOG','EMBED','FIGCAPTION','FIGURE','FOOTER','HEADER',
+      'KEYGEN','MARK','METER','NAV','OUTPUT','PROGRESS','RP','RT',
+      'RUBY','SECTION','SOURCE','SUMMARY','TIME','TRACK','VIDEO','WBR']
+
+class Node:
+  def __init__(self, content):
+
+      #print(content)
+      #convert content to a DOMNode
+      if isinstance(content, str):
+         self._node=self._toDOM(content)
+      elif isinstance(content, Node):
+         self._node=content._node      
+      elif isinstance(content, __BRYTHON__.DOMNode):
+         self._node=content
+      else:
+         print("content isn't str, or Node")
+         print(content)
+         print(dir(content))
+         self._node=content
+
+  def __repr__(self):
+      return '%s' % self._node
+
+  def __str__(self):
+      return '%s' % self._node
+
+  def _toDOM(self, s):
+      "takes an HTML string and returns a DOM representation"
+
+      if isinstance(s,Node):
+         return s
+
+      #assert isinstance(s, str), "pydom.py:_toDOM s should be a string"
+
+      #print("in _toDOM")
+      #print(s)
+      _dom=doc.createElement('div')
+      _dom.innerHTML=s
+      #return JSObject({'elt':_dom.elt.firstChild})
+      return _dom.elt.firstChild
+
+  @property
+  def parent(self):
+      return self._node.parent
+
+  @property
+  def nextSibling(self):
+      #print("nextSibling")
+      return self._node.nextSibling 
+
+  def addClass(self, classname):
+      assert isinstance(classname, str), "pydom.py:addClass:classname should be a string"
+
+      _class = getattr(self._node, 'class')
+
+      if _class is None:
+         setattr(self._node, 'class', classname)
+      else:
+         setattr(self._node, 'class', '%s %s' % (_class, classname))
+
+
+  def after(self, node):
+      assert isinstance(node, Node), "pydom.py:after node isn't of type Node"
+
+      #print("after")
+      if self.nextSibling is not None:
+         self.parent.insertBefore(node._node, self.nextSibling)
+      else:
+         self.parent.append(node._node)
+
+      #print("leaving after")
+
+  def append(self, node):
+      #print("in append")
+      if isinstance(node, str):
+         _n=Node(node)
+         self._node.appendChild(_n._node)
+      elif isinstance(node, Node):
+         self._node.appendChild(node._node)
+           
+  def before(self, node):
+      if isinstance(node, str):
+         _n=Node(node)
+         self.parent.insertBefore(_n._node, self._node)
+         return
+
+      assert isinstance(node, Node), "pydom.py:before node isn't of type Node"
+
+      self.parent.insertBefore(node._node, self._node)
+
+
+  def bind(self, event, handler):
+      assert isinstance(event, str), "pydom.py:bind, event should be a string"
+      self._node.bind(event, handler)
+
+  def insertBefore(self, node, child):
+      #print("in insertBefore")
+      assert isinstance(node, Node)
+      assert isinstance(child, Node)
+
+      self._node.insertBefore(node._node, child._node)
+      #print("leaving insertBefore")
+
+
+  def set_text(self, text):
+      assert isinstance(text, str)
+
+      self._node.set_text(text)
+
+  def set_style(self, property, value):
+      assert isinstance(property, str)
+      assert isinstance(value, str)
+
+      self._node.set_style({property: value})
+
+  @property
+  def DOM(self):
+      return self._node
 
 class Selector:
 
@@ -49,8 +165,7 @@ class Selector:
 
           return _list
 
-      _matched_nodes=recurse(self._doc)
-      return NodeCollection(_matched_nodes)
+      return NodeCollection([Node(_n) for _n in recurse(self._doc)])
 
   def get(self):
       if self._selector_type=="id":
@@ -63,7 +178,8 @@ class Selector:
          _matched_nodes=self._doc.get(selector=self._selector)
       else:
          _matched_nodes=[]
-      return NodeCollection(_matched_nodes)
+
+      return NodeCollection([Node(_n) for _n in _matched_nodes])
 
 class NodeCollectionSelector(Selector):
   def __init__(self, selector, collection):
@@ -159,12 +275,14 @@ class NodeCollection:
       """
 
       if isinstance(content, NodeCollection):
-         for _node in self._nodes:
-             for _cnode in content._nodes:
+         for _cnode in content._nodes:
+             for _node in self._nodes:
                  _node.after(_cnode)
 
+         return
+      
       for _node in self._nodes:
-          _node.after(content)
+          _node.after(Node(content))
 
   def append(self, content):
       """Insert content, specified by the parameter, to the end of each 
@@ -214,6 +332,7 @@ class NodeCollection:
          for _node in self._nodes:
              for _cnode in content._nodes:
                  _node.before(_cnode)
+         return
 
       for _node in self._nodes:
           _node.before(content)
@@ -323,7 +442,7 @@ class NodeCollection:
              _node.set_style(property)
       else:
          for _node in self._nodes:
-             _node.set_style({property: value})
+             _node.set_style(property, value)
 
       return self
 
