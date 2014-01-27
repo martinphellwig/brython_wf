@@ -133,7 +133,6 @@ class ABCMeta(type):
                      for name, value in namespace.items()
                      if getattr(value, "__isabstractmethod__", False)}
         for base in bases:
-            _names = getattr(base,"__abstractmethods__",set())
             for name in getattr(base, "__abstractmethods__", set()):
                 value = getattr(cls, name, None)
                 if getattr(value, "__isabstractmethod__", False):

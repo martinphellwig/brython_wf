@@ -268,8 +268,10 @@ def _get_module_lock(name):
 
     Should only be called with the import lock taken."""
     lock = None
-    if name in _module_locks:
+    try:
         lock = _module_locks[name]()
+    except KeyError:
+        pass
     if lock is None:
         if _thread is None:
             lock = _DummyModuleLock(name)
@@ -409,25 +411,21 @@ SOURCE_SUFFIXES = ['.py']  # _setup() adds .pyw as needed.
 
 DEBUG_BYTECODE_SUFFIXES = ['.pyc']
 OPTIMIZED_BYTECODE_SUFFIXES = ['.pyo']
-if __debug__:
-    BYTECODE_SUFFIXES = DEBUG_BYTECODE_SUFFIXES
-else:
-    BYTECODE_SUFFIXES = OPTIMIZED_BYTECODE_SUFFIXES
 
 def cache_from_source(path, debug_override=None):
     """Given the path to a .py file, return the path to its .pyc/.pyo file.
 
     The .py file does not need to exist; this simply returns the path to the
     .pyc/.pyo file calculated as if the .py file were imported.  The extension
-    will be .pyc unless __debug__ is not defined, then it will be .pyo.
+    will be .pyc unless sys.flags.optimize is non-zero, then it will be .pyo.
 
-    If debug_override is not None, then it must be a boolean and is taken as
-    the value of __debug__ instead.
+    If debug_override is not None, then it must be a boolean and is used in
+    place of sys.flags.optimize.
 
     If sys.implementation.cache_tag is None then NotImplementedError is raised.
 
     """
-    debug = __debug__ if debug_override is None else debug_override
+    debug = not sys.flags.optimize if debug_override is None else debug_override
     if debug:
         suffixes = DEBUG_BYTECODE_SUFFIXES
     else:
@@ -473,21 +471,19 @@ def _get_sourcefile(bytecode_path):
     """
     if len(bytecode_path) == 0:
         return None
-    rest, _, extension = bytecode_path.rparition('.')
-    if not rest or extension.lower()[-3:-1] != '.py':
+    rest, _, extension = bytecode_path.rpartition('.')
+    if not rest or extension.lower()[-3:-1] != 'py':
         return bytecode_path
-
     try:
         source_path = source_from_cache(bytecode_path)
     except (NotImplementedError, ValueError):
-        source_path = bytcode_path[-1:]
+        source_path = bytecode_path[:-1]
+    return source_path if _path_isfile(source_path) else bytecode_path
 
-    return source_path if _path_isfile(source_stats) else bytecode_path
 
-
-def _verbose_message(message, *args):
+def _verbose_message(message, *args, verbosity=1):
     """Print the message to stderr if -v/PYTHONVERBOSE is turned on."""
-    if sys.flags.verbose:
+    if sys.flags.verbose >= verbosity:
         if not message.startswith(('#', 'import ')):
             message = '# ' + message
         print(message.format(*args), file=sys.stderr)
@@ -543,6 +539,9 @@ def module_for_loader(fxn):
             # implicitly imports 'locale' and would otherwise trigger an
             # infinite loop.
             module = new_module(fullname)
+            # This must be done before putting the module in sys.modules
+            # (otherwise an optimization shortcut in import.c becomes wrong)
+            module.__initializing__ = True
             sys.modules[fullname] = module
             module.__loader__ = self
             try:
@@ -554,8 +553,9 @@ def module_for_loader(fxn):
                     module.__package__ = fullname
                 else:
                     module.__package__ = fullname.rpartition('.')[0]
-        try:
+        else:
             module.__initializing__ = True
+        try:
             # If __package__ was not set above, __import__() will do it later.
             return fxn(self, module, *args, **kwargs)
         except:
@@ -781,7 +781,7 @@ class WindowsRegistryFinder:
             _os.stat(filepath)
         except OSError:
             return None
-        for loader, suffixes, _ in _get_supported_file_loaders():
+        for loader, suffixes in _get_supported_file_loaders():
             if filepath.endswith(tuple(suffixes)):
                 return loader(fullname, filepath)
 
@@ -811,6 +811,7 @@ class _LoaderBasics:
         raw_size = data[8:12]
         if magic != _MAGIC_BYTES:
             msg = 'bad magic number in {!r}: {!r}'.format(fullname, magic)
+            _verbose_message(msg)
             raise ImportError(msg, name=fullname, path=bytecode_path)
         elif len(raw_timestamp) != 4:
             message = 'bad timestamp in {}'.format(fullname)
@@ -1046,6 +1047,9 @@ class SourceFileLoader(FileLoader, SourceLoader):
             mode = _os.stat(source_path).st_mode
         except OSError:
             mode = 0o666
+        # We always ensure write access so we can update cached files
+        # later even when the source files are read-only on Windows (#6074)
+        mode |= 0o200
         return self.set_data(bytecode_path, data, _mode=mode)
 
     def set_data(self, path, data, *, _mode=0o666):
@@ -1064,17 +1068,17 @@ class SourceFileLoader(FileLoader, SourceLoader):
             except FileExistsError:
                 # Probably another Python process already created the dir.
                 continue
-            except PermissionError:
-                # If can't get proper access, then just forget about writing
-                # the data.
+            except OSError as exc:
+                # Could be a permission error, read-only filesystem: just forget
+                # about writing the data.
+                _verbose_message('could not create {!r}: {!r}', parent, exc)
                 return
         try:
             _write_atomic(path, data, _mode)
             _verbose_message('created {!r}', path)
-        except (PermissionError, FileExistsError):
-            # Don't worry if you can't write bytecode or someone is writing
-            # it at the same time.
-            pass
+        except OSError as exc:
+            # Same as above: just don't write the bytecode.
+            _verbose_message('could not create {!r}: {!r}', path, exc)
 
 
 class SourcelessFileLoader(FileLoader, _LoaderBasics):
@@ -1154,7 +1158,7 @@ class _NamespacePath:
     """Represents a namespace package's path.  It uses the module name
     to find its parent module, and from there it looks up the parent's
     __path__.  When this changes, the module's own path is recomputed,
-    using path_finder.  For top-leve modules, the parent module's path
+    using path_finder.  For top-level modules, the parent module's path
     is sys.path."""
 
     def __init__(self, name, path, path_finder):
@@ -1276,6 +1280,8 @@ class PathFinder:
         #  the list of paths that will become its __path__
         namespace_path = []
         for entry in path:
+            if not isinstance(entry, (str, bytes)):
+                continue
             finder = cls._path_importer_cache(entry)
             if finder is not None:
                 if hasattr(finder, 'find_loader'):
@@ -1321,12 +1327,12 @@ class FileFinder:
 
     """
 
-    def __init__(self, path, *details):
+    def __init__(self, path, *loader_details):
         """Initialize with the path to search on and a variable number of
-        3-tuples containing the loader, file suffixes the loader recognizes,
-        and a boolean of whether the loader handles packages."""
+        2-tuples containing the loader and the file suffixes the loader
+        recognizes."""
         loaders = []
-        for loader, suffixes in details:
+        for loader, suffixes in loader_details:
             loaders.extend((suffix, loader) for suffix in suffixes)
         self._loaders = loaders
         # Base (directory) path
@@ -1375,11 +1381,13 @@ class FileFinder:
                     is_namespace = True
         # Check for a file w/ a proper suffix exists.
         for suffix, loader in self._loaders:
+            full_path = _path_join(self.path, tail_module + suffix)
+            _verbose_message('trying {}'.format(full_path), verbosity=2)
             if cache_module + suffix in cache:
-                full_path = _path_join(self.path, tail_module + suffix)
                 if _path_isfile(full_path):
                     return (loader(fullname, full_path), [])
         if is_namespace:
+            _verbose_message('possible namespace for {}'.format(base_path))
             return (None, [base_path])
         return (None, [])
 
@@ -1388,8 +1396,9 @@ class FileFinder:
         path = self.path
         try:
             contents = _os.listdir(path)
-        except FileNotFoundError:
-            # Directory has been removed since last import
+        except (FileNotFoundError, PermissionError, NotADirectoryError):
+            # Directory has either been removed, turned into a file, or made
+            # unreadable.
             contents = []
         # We store two cached versions, to handle runtime changes of the
         # PYTHONCASEOK environment variable.
@@ -1600,19 +1609,19 @@ def _handle_fromlist(module, fromlist, import_):
                 fromlist.extend(module.__all__)
         for x in fromlist:
             if not hasattr(module, x):
+                from_name = '{}.{}'.format(module.__name__, x)
                 try:
-                    _call_with_frames_removed(import_,
-                                      '{}.{}'.format(module.__name__, x))
+                    _call_with_frames_removed(import_, from_name)
                 except ImportError as exc:
                     # Backwards-compatibility dictates we ignore failed
                     # imports triggered by fromlist for modules that don't
                     # exist.
                     # TODO(brett): In Python 3.4, have import raise
                     #   ModuleNotFound and catch that.
-                    if hasattr(exc, '_not_found') and exc._not_found:
-                        pass
-                    else:
-                        raise
+                    if getattr(exc, '_not_found', False):
+                        if exc.name == from_name:
+                            continue
+                    raise
     return module
 
 
@@ -1634,7 +1643,7 @@ def _calc___package__(globals):
 def _get_supported_file_loaders():
     """Returns a list of file-based module loaders.
 
-    Each item is a tuple (loader, suffixes, allow_packages).
+    Each item is a tuple (loader, suffixes).
     """
     extensions = ExtensionFileLoader, _imp.extension_suffixes()
     source = SourceFileLoader, SOURCE_SUFFIXES
@@ -1667,7 +1676,11 @@ def __import__(name, globals=None, locals=None, fromlist=(), level=0):
         elif not name:
             return module
         else:
+            # Figure out where to slice the module's name up to the first dot
+            # in 'name'.
             cut_off = len(name) - len(name.partition('.')[0])
+            # Slice end needs to be positive to alleviate need to special-case
+            # when ``'.' not in name``.
             return sys.modules[module.__name__[:len(module.__name__)-cut_off]]
     else:
         return _handle_fromlist(module, fromlist, _gcd_import)
@@ -1682,13 +1695,23 @@ def _setup(sys_module, _imp_module):
     modules, those two modules must be explicitly passed in.
 
     """
-    global _imp, sys
+    global _imp, sys, BYTECODE_SUFFIXES
     _imp = _imp_module
     sys = sys_module
 
-    for module in (_imp, sys):
-        if not hasattr(module, '__loader__'):
-            module.__loader__ = BuiltinImporter
+    if sys.flags.optimize:
+        BYTECODE_SUFFIXES = OPTIMIZED_BYTECODE_SUFFIXES
+    else:
+        BYTECODE_SUFFIXES = DEBUG_BYTECODE_SUFFIXES
+
+    module_type = type(sys)
+    for name, module in sys.modules.items():
+        if isinstance(module, module_type):
+            if not hasattr(module, '__loader__'):
+                if name in sys.builtin_module_names:
+                    module.__loader__ = BuiltinImporter
+                elif _imp.is_frozen(name):
+                    module.__loader__ = FrozenImporter
 
     self_module = sys.modules[__name__]
     for builtin_name in ('_io', '_warnings', 'builtins', 'marshal'):

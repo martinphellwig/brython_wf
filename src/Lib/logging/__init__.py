@@ -1,4 +1,4 @@
-# Copyright 2001-2012 by Vinay Sajip. All Rights Reserved.
+# Copyright 2001-2013 by Vinay Sajip. All Rights Reserved.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose and without fee is hereby granted,
@@ -18,7 +18,7 @@
 Logging package for Python. Based on PEP 282 and comments thereto in
 comp.lang.python.
 
-Copyright (C) 2001-2012 Vinay Sajip. All Rights Reserved.
+Copyright (C) 2001-2013 Vinay Sajip. All Rights Reserved.
 
 To use, simply 'import logging' and log away!
 """
@@ -708,7 +708,8 @@ def _removeHandlerRef(wr):
     # This function can be called during module teardown, when globals are
     # set to None. If _acquireLock is None, assume this is the case and do
     # nothing.
-    if _acquireLock is not None:
+    if (_acquireLock is not None and _handlerList is not None and
+        _releaseLock is not None):
         _acquireLock()
         try:
             if wr in _handlerList:
@@ -956,6 +957,7 @@ class FileHandler(StreamHandler):
         self.baseFilename = os.path.abspath(filename)
         self.mode = mode
         self.encoding = encoding
+        self.delay = delay
         if delay:
             #We don't open the stream, but we still need to call the
             #Handler constructor to set level, formatter, lock etc.
@@ -1349,7 +1351,7 @@ class Logger(Filterer):
         """
         sinfo = None
         if _srcfile:
-            #IronPython doesn't track Python frames, so findCaller throws an
+            #IronPython doesn't track Python frames, so findCaller raises an
             #exception on some versions of IronPython. We trap it here so that
             #IronPython can use logging.
             try:

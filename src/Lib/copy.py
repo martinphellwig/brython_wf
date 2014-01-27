@@ -50,20 +50,17 @@ __getstate__() and __setstate__().  See the documentation for module
 
 import types
 import weakref
-# BE, copyreg is for C classes, etc, so maybe not need it for brython
-#from copyreg import dispatch_table
-dispatch_table={}
+from copyreg import dispatch_table
 import builtins
 
 class Error(Exception):
     pass
 error = Error   # backward compatibility
 
-#try:
-#    from org.python.core import PyStringMap
-#except ImportError:
-#    PyStringMap = None
-PyStringMap = None
+try:
+    from org.python.core import PyStringMap
+except ImportError:
+    PyStringMap = None
 
 __all__ = ["Error", "copy", "deepcopy"]
 
