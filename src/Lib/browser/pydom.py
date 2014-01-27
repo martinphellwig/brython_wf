@@ -69,9 +69,12 @@ class Node:
 
       #print("after")
       if self.nextSibling is not None:
+         #print('next sibling exists')
          self.parent.insertBefore(node._node, self.nextSibling)
       else:
-         self.parent.append(node._node)
+         #print('next sibling doest exist')
+         _parent=Node(self.parent)
+         _parent.append(node._node)
 
       #print("leaving after")
 
@@ -105,8 +108,8 @@ class Node:
       self.set_style(property, value)
 
   def empty(self):
-      pass
-      #self._node.children
+      for _child in self._node.children():
+          self._node.removeChild(_child)
 
   def hasClass(self, className):
       _class = getattr(self._node, 'class')
@@ -322,7 +325,7 @@ class NodeCollection:
       if isinstance(content, NodeCollection):
          for _cnode in content._nodes:
              for _node in self._nodes:
-                 _node.after(_cnode)
+                 _node.after(Node(_cnode))
 
          return
       
@@ -339,12 +342,12 @@ class NodeCollection:
          #without being a clone. (the docs says this cannot be a clone)
          for _node in self._nodes:
              for _cnode in content._nodes:
-                 _node.append(_cnode)
+                 _node.append(Node(_cnode))
 
          return
 
       for _node in self._nodes:
-          _node.append(content)
+          _node.append(Node(content))
 
   def appendTo(self, selector):
       """Insert every element in the set of matched elements to the end 
@@ -354,7 +357,7 @@ class NodeCollection:
       _s=Selector(selector)
 
       for _node in _s.get():
-          _node.append(self._node[0].clone())
+          _node.append(Node(self._node[0].clone()))
 
   def attr(self, property, value=None):
       """Get the value of an attribute for the first element in the set 
@@ -376,11 +379,11 @@ class NodeCollection:
       if isinstance(content, NodeCollection):
          for _node in self._nodes:
              for _cnode in content._nodes:
-                 _node.before(_cnode)
+                 _node.before(Node(_cnode))
          return
 
       for _node in self._nodes:
-          _node.before(content)
+          _node.before(Node(content))
 
   def bind(self, eventType, handler):
       "Attach a handler to an event for the elements."
