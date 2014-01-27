@@ -1212,20 +1212,29 @@ function $DelCtx(context){
         }else{
             var expr = this.tree[0].tree[0]
             var scope = $get_scope(this)
-            if(expr.type==='id'){
-                var js = 'delete '+expr.to_js()+';'
+            
+            function del_name(scope,name){
+                var js = 'delete '+name+';'
                 // remove name from dictionaries
                 if(scope.ntype==='module'){
-                    js+='delete $globals["'+expr.to_js()+'"]'
+                    js+='delete $globals["'+name+'"]'
                 }else if(scope.ntype==="def"||scope.ntype==="generator"){
-                    if(scope.globals && scope.globals.indexOf(expr.to_js())>-1){
+                    if(scope.globals && scope.globals.indexOf(name)>-1){
                         // global variable
-                        js+='delete $globals["'+expr.to_js()+'"]'
+                        js+='delete $globals["'+name+'"]'
                     }else{ // local variable
-                        js+='delete $locals["'+expr.to_js()+'"]'
+                        js+='delete $locals["'+name+'"]'
                     }
                 }
-                return js
+                return js+';'         
+            }
+            if(expr.type==='id'){return del_name(scope,expr.to_js())}
+            else if(expr.type=='list_or_tuple'){
+                var res = ''
+                for(var i=0;i<expr.tree.length;i++){
+                    res += del_name(expr.tree[i].to_js())
+                }
+                return res
             }else if(expr.type==='sub'){
                 expr.func = 'delitem'
                 js = expr.to_js()
