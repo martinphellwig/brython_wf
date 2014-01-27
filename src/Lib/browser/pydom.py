@@ -53,15 +53,6 @@ class Node:
       #return JSObject({'elt':_dom.elt.firstChild})
       return _dom.elt.firstChild
 
-  @property
-  def parent(self):
-      return self._node.parent
-
-  @property
-  def nextSibling(self):
-      #print("nextSibling")
-      return self._node.nextSibling 
-
   def addClass(self, classname):
       assert isinstance(classname, str), "pydom.py:addClass:classname should be a string"
 
@@ -107,6 +98,24 @@ class Node:
       assert isinstance(event, str), "pydom.py:bind, event should be a string"
       self._node.bind(event, handler)
 
+  def closest(self, selector):
+      pass
+
+  def css(self, property, value):
+      self.set_style(property, value)
+
+  def empty(self):
+      pass
+      #self._node.children
+
+  def hasClass(self, className):
+      _class = getattr(self._node, 'class')
+
+      if _class is None:
+         return False
+
+      return className in _class
+
   def insertBefore(self, node, child):
       #print("in insertBefore")
       assert isinstance(node, Node)
@@ -115,17 +124,53 @@ class Node:
       self._node.insertBefore(node._node, child._node)
       #print("leaving insertBefore")
 
+  @property
+  def nextSibling(self):
+      #print("nextSibling")
+      return self._node.nextSibling 
 
-  def set_text(self, text):
-      assert isinstance(text, str)
+  @property
+  def parent(self):
+      return self._node.parent
 
-      self._node.set_text(text)
+  def prepend(self, content):
+      if isinstance(content, str):
+         _n=Node(content)
+
+         self.insertBefore(_n._node, self._node.firstChild)
+         return
+
+      assert isinstance(content, Node)
+
+      self.insertBefore(content._node, self._node.firstChild)
+
+  def removeAttr(self, name):
+      setattr(self._node, name, None)
+
+  def removeClass(self, className):
+      _class = getattr(self._node, 'class')
+
+      if _class is None:
+         return
+
+      _list=' '.split(_class)
+      if _className in _list:
+         _list.remove(className)
+         if len(_list) == 0:
+            setattr(self._node, 'class', None) 
+         else:
+            setattr(self._node, 'class', ' '.join(_list)) 
 
   def set_style(self, property, value):
       assert isinstance(property, str)
       assert isinstance(value, str)
 
       self._node.set_style({property: value})
+
+  def set_text(self, text):
+      assert isinstance(text, str)
+
+      self._node.set_text(text)
 
   @property
   def DOM(self):
