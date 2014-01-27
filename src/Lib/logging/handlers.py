@@ -1,4 +1,4 @@
-# Copyright 2001-2012 by Vinay Sajip. All Rights Reserved.
+# Copyright 2001-2013 by Vinay Sajip. All Rights Reserved.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose and without fee is hereby granted,
@@ -18,7 +18,7 @@
 Additional handlers for the logging package for Python. The core package is
 based on PEP 282 and comments thereto in comp.lang.python.
 
-Copyright (C) 2001-2012 Vinay Sajip. All Rights Reserved.
+Copyright (C) 2001-2013 Vinay Sajip. All Rights Reserved.
 
 To use, simply 'import logging.handlers' and log away!
 """
@@ -111,7 +111,9 @@ class BaseRotatingHandler(logging.FileHandler):
                        what the source is rotated to, e.g. 'test.log.1'.
         """
         if not callable(self.rotator):
-            os.rename(source, dest)
+            # Issue 18940: A file may not have been created if delay is True.
+            if os.path.exists(source):
+                os.rename(source, dest)
         else:
             self.rotator(source, dest)
 
@@ -172,8 +174,8 @@ class RotatingFileHandler(BaseRotatingHandler):
             if os.path.exists(dfn):
                 os.remove(dfn)
             self.rotate(self.baseFilename, dfn)
-        self.mode = 'w'
-        self.stream = self._open()
+        if not self.delay:
+            self.stream = self._open()
 
     def shouldRollover(self, record):
         """
@@ -381,8 +383,8 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         if self.backupCount > 0:
             for s in self.getFilesToDelete():
                 os.remove(s)
-        self.mode = 'w'
-        self.stream = self._open()
+        if not self.delay:
+            self.stream = self._open()
         newRolloverAt = self.computeRollover(currentTime)
         while newRolloverAt <= currentTime:
             newRolloverAt = newRolloverAt + self.interval
@@ -769,7 +771,7 @@ class SysLogHandler(logging.Handler):
     }
 
     def __init__(self, address=('localhost', SYSLOG_UDP_PORT),
-                 facility=LOG_USER, socktype=socket.SOCK_DGRAM):
+                 facility=LOG_USER, socktype=None):
         """
         Initialize a handler.
 
@@ -788,21 +790,34 @@ class SysLogHandler(logging.Handler):
             self._connect_unixsocket(address)
         else:
             self.unixsocket = False
+            if socktype is None:
+                socktype = socket.SOCK_DGRAM
             self.socket = socket.socket(socket.AF_INET, socktype)
             if socktype == socket.SOCK_STREAM:
                 self.socket.connect(address)
+            self.socktype = socktype
         self.formatter = None
 
     def _connect_unixsocket(self, address):
-        self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-        # syslog may require either DGRAM or STREAM sockets
+        use_socktype = self.socktype
+        if use_socktype is None:
+            use_socktype = socket.SOCK_DGRAM
+        self.socket = socket.socket(socket.AF_UNIX, use_socktype)
         try:
             self.socket.connect(address)
+            # it worked, so set self.socktype to the used type
+            self.socktype = use_socktype
         except socket.error:
             self.socket.close()
-            self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            if self.socktype is not None:
+                # user didn't specify falling back, so fail
+                raise
+            use_socktype = socket.SOCK_STREAM
+            self.socket = socket.socket(socket.AF_UNIX, use_socktype)
             try:
                 self.socket.connect(address)
+                # it worked, so set self.socktype to the used type
+                self.socktype = use_socktype
             except socket.error:
                 self.socket.close()
                 raise
@@ -871,6 +886,7 @@ class SysLogHandler(logging.Handler):
                 try:
                     self.socket.send(msg)
                 except socket.error:
+                    self.socket.close()
                     self._connect_unixsocket(self.address)
                     self.socket.send(msg)
             elif self.socktype == socket.SOCK_DGRAM:

@@ -15,11 +15,9 @@ class _IterationGuard:
 
     def __init__(self, weakcontainer):
         # Don't create cycles
-        print('create iteration guard', weakcontainer)
         self.weakcontainer = ref(weakcontainer)
 
     def __enter__(self):
-        print('enter iteration guard')
         w = self.weakcontainer()
         if w is not None:
             w._iterating.add(self)

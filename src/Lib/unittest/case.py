@@ -22,7 +22,7 @@ class SkipTest(Exception):
     """
     Raise this exception in a test to skip it.
 
-    Usually you can use TestResult.skip() or one of the skipping decorators
+    Usually you can use TestCase.skipTest() or one of the skipping decorators
     instead of raising this directly.
     """
 
@@ -237,23 +237,22 @@ class TestCase(object):
     should not change the signature of their __init__ method, since instances
     of the classes are instantiated automatically by parts of the framework
     in order to be run.
-    """
 
-    # This attribute determines which exception will be raised when
-    # the instance's assertion methods fail; test methods raising this
-    # exception will be deemed to have 'failed' rather than 'errored'
+    When subclassing TestCase, you can set these attributes:
+    * failureException: determines which exception will be raised when
+        the instance's assertion methods fail; test methods raising this
+        exception will be deemed to have 'failed' rather than 'errored'.
+    * longMessage: determines whether long messages (including repr of
+        objects used in assert methods) will be printed on failure in *addition*
+        to any explicit message passed.
+    * maxDiff: sets the maximum length of a diff in failure messages
+        by assert methods using difflib. It is looked up as an instance
+        attribute so can be configured by individual tests if required.
+    """
 
     failureException = AssertionError
 
-    # This attribute determines whether long messages (including repr of
-    # objects used in assert methods) will be printed on failure in *addition*
-    # to any explicit message passed.
-
     longMessage = True
-
-    # This attribute sets the maximum length of a diff in failure messages
-    # by assert methods using difflib. It is looked up as an instance attribute
-    # so can be configured by individual tests if required.
 
     maxDiff = 80*8
 
@@ -542,10 +541,10 @@ class TestCase(object):
             return  '%s : %s' % (safe_repr(standardMsg), safe_repr(msg))
 
     def assertRaises(self, excClass, callableObj=None, *args, **kwargs):
-        """Fail unless an exception of class excClass is thrown
+        """Fail unless an exception of class excClass is raised
            by callableObj when invoked with arguments args and keyword
            arguments kwargs. If a different type of exception is
-           thrown, it will not be caught, and the test case will be
+           raised, it will not be caught, and the test case will be
            deemed to have suffered an error, exactly as for an
            unexpected exception.
 
@@ -642,7 +641,7 @@ class TestCase(object):
         assertion_func(first, second, msg=msg)
 
     def assertNotEqual(self, first, second, msg=None):
-        """Fail if the two objects are equal as determined by the '=='
+        """Fail if the two objects are equal as determined by the '!='
            operator.
         """
         if not first != second:
@@ -736,7 +735,7 @@ class TestCase(object):
             msg: Optional message to use on failure instead of a list of
                     differences.
         """
-        if seq_type != None:
+        if seq_type is not None:
             seq_type_name = seq_type.__name__
             if not isinstance(seq1, seq_type):
                 raise self.failureException('First sequence is not a %s: %s'
