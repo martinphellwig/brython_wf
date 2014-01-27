@@ -3,14 +3,12 @@ import time
 import dis
 import traceback
 
-#doctype html 5 causes issues with setting height of the container
-#so python to the rescue! :)
-from browser import doc, pydom
+from browser import doc
 
-_height=doc.documentElement.clientHeight
-_s=pydom.Selector('#container')
-#set height of container to 66% of screen
-_s.get().height('%spx' % int(_height*0.66))
+# set height of container to 66% of screen
+_height = doc.documentElement.clientHeight
+_s = doc['container']
+_s.style.height = '%spx' % int(_height*0.66)
 
 has_ace = True
 try:
