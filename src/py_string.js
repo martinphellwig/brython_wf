@@ -882,7 +882,7 @@ $StringDict.isidentifier = function(self) {
      'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal',
      'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield'];
 
-  if (keywords.contain(self)) return True
+  if (keywords.indexOf(self)>-1) return True
 
   // fixme..  this isn't complete but should be a good start
   var pat=/^[a-z][0-9a-z_]+$/i;
