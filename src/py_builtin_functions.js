@@ -267,14 +267,8 @@ function dir(obj){
 
 //divmod() (built in function)
 function divmod(x,y) {
-    if (x < 0) {
-       var x2=(Number(y)+Number(x))%y;
-       if (abs(x) <= y) {
-          return [__builtins__.int(Math.floor(x/y)), x2]
-       } 
-       return [__builtins__.int(Math.ceil(x/y)), x2]
-    } 
-    return [__builtins__.int(Math.floor(x/y)), x.__class__.__mod__(x,y)]
+    return [x.__class__.__floordiv__(x,y),
+        x.__class__.__mod__(x,y)]
 }
 
 var $EnumerateDict = {__class__:$B.$type,__name__:'enumerate'}
@@ -950,12 +944,14 @@ function round(arg,n){
     if(!isinstance(arg,[__builtins__.int,__builtins__.float])){
         throw __builtins__.TypeError("type "+arg.__class__+" doesn't define __round__ method")
     }
-    if(n===undefined){n=0}
+    if(n===undefined){
+        return __builtins__.int(arg)
+    }
     if(!isinstance(n,__builtins__.int)){throw __builtins__.TypeError(
         "'"+n.__class__+"' object cannot be interpreted as an integer")}
     var mult = Math.pow(10,n)
     var res =__builtins__.int.$dict.__truediv__(Number(Math.round(arg.valueOf()*mult)),mult)
-    if(n==0){return __builtins__.int(res)}else{return __builtins__.float(res)}
+    return res
 }
 
 
