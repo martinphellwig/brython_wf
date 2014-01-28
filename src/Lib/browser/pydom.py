@@ -102,7 +102,19 @@ class Node:
       self._node.bind(event, handler)
 
   def closest(self, selector):
-      pass
+      def traverse(node, ancestors):
+          if node == doc: return None
+          for _a in ancestors._nodes:
+              if node == _a:
+                 return _a
+
+          return traverse(self.parent, ancestors)
+      
+      if isinstance(selector, str):
+         _elements=Selector(selector).get()
+         return traverse(self, _elements)
+
+      return traverse(self, selector)
 
   def css(self, property, value):
       self.set_style(property, value)
