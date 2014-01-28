@@ -139,7 +139,7 @@ $DOMEventDict.__getattribute__ = function(self,attr){
     var res =  self[attr]
     if(res!==undefined){
         if(typeof res=='function'){return function(){return res.apply(self,arguments)}}
-        return res
+        return $B.$JS2Py(res)
     }else{
         throw __builtins__.AttributeError("object DOMEvent has no attribute '"+attr+"'")
     }
