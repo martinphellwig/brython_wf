@@ -11,11 +11,13 @@ By default, Brython only exposes two names in the global Javascript namespace :
 
 > `__BRYTHON__` : an object use internally par Brython to store the objects needed for scripts execution
 
-Consequently, by default, a Javascript program can't access Brython objects. For instance, to use a function `echo()` defined in a Brython script to react to an event on an element in the page, instead of the syntax
+Consequently, by default, a Javascript program can not access Brython objects.
+ For instance, for a function `echo()` defined in a Brython script 
+to react to an event on an element in the page, instead of using the regular javascript syntax:
 
     <button onclick="echo()">
 
-that doesn't work since the name _echo_ is not accessible from Javascript, the solution is to set an id to the element :
+(because the brython function _echo_ is not accessible from Javascript), the solution is to set an id to the element:
 
     <button id="mybutton">
 
@@ -28,7 +30,8 @@ Another option is to force the introduction of the name _echo_ in the Javascript
     from browser import window
     window.echo = echo
 
-This method is not recommended, because it introduces a risk of conflict with names defined in a Javascript program or library used in the page
+<strong>NOTE: This method is not recommended, because it introduces a risk of conflict with names defined in a Javascript program or library used in the page.
+</strong>
 
 ### Objects in Javascript programs
 
@@ -77,7 +80,7 @@ For instance :
 
 ### jQuery example
 
-Here is a more complete example of how you can use the popular library jQuery :
+Here is a more complete example of how you can use the popular library jQuery:
 
     <html>
     <head>
@@ -98,7 +101,9 @@ Here is a more complete example of how you can use the popular library jQuery :
               else:
                  _div.style.color = "red"
         
-        # create an alias for "$" in jQuery (would cause a SyntaxError in Python)
+        # creating an alias for "$" in jQuery would cause a SyntaxError in Python
+        # so we assign jQuery to a variable named jq
+
         jq = jQuery.noConflict(true)
         _jQuery=JSObject(jq("body"))
         _jQuery.click(change_color)    
@@ -112,5 +117,3 @@ Here is a more complete example of how you can use the popular library jQuery :
      
     </body>
     </html>
-
-    
