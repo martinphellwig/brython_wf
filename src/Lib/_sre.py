@@ -488,7 +488,6 @@ class _State:
         return getlower(char_ord, self.flags)
 
 
-#class _MatchContext(object):
 class _MatchContext:
 
     def __init__(self, state, pattern_codes):
@@ -552,7 +551,6 @@ class _RepeatContext(_MatchContext):
         self.last_position = None
 
 
-#class _Dispatcher(object):
 class _Dispatcher:
 
     DISPATCH_TABLE = None
@@ -1159,9 +1157,10 @@ class _CharsetDispatcher(_Dispatcher):
     def set_negate(self, ctx):
         self.ok = not self.ok
         ctx.skip_code(1)
-    """
+    
     #fixme brython.   array module doesn't exist
     def set_bigcharset(self, ctx):
+        raise NotImplementationError("_sre.py: set_bigcharset, array not implemented")
         # <BIGCHARSET> <blockcount> <256 blockindices> <blocks>
         char_code = self.char
         count = ctx.peek_code(1)
@@ -1181,10 +1180,10 @@ class _CharsetDispatcher(_Dispatcher):
         else:
             ctx.skip_code(256 / CODESIZE) # skip block indices
         ctx.skip_code(count * (32 / CODESIZE)) # skip blocks
-    """
+    
     def unknown(self, ctx):
         return False
-#fixme brython
+
 _CharsetDispatcher.build_dispatch_table(OPCODES, "set_")
 
 
@@ -1216,7 +1215,6 @@ class _AtcodeDispatcher(_Dispatcher):
     def unknown(self, ctx):
         return False
 
-#fixme brython
 _AtcodeDispatcher.build_dispatch_table(ATCODES, "")
 
 
@@ -1261,7 +1259,6 @@ class _ChcodeDispatcher(_Dispatcher):
     def unknown(self, ctx):
         return False
 
-#fixme brython
 _ChcodeDispatcher.build_dispatch_table(CHCODES, "")
 
 

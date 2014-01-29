@@ -108,7 +108,7 @@ class Node:
               if node == _a:
                  return _a
 
-          return traverse(self.parent, ancestors)
+          return traverse(Node(self.parent), ancestors)
       
       if isinstance(selector, str):
          _elements=Selector(selector).get()

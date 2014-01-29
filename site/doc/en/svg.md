@@ -55,3 +55,172 @@ def run_svg():
 </tr>
 
 </table>
+
+In the above example, we created a text element and a circle element.
+For a list of color keywords reference this [link](http://www.w3.org/TR/SVG/types.html#ColorKeywords)
+<p>
+Below we create a blue rectangle, width and height of 40 px.
+</p>
+
+<table>
+<tr>
+<td>
+    from browser import doc, svg
+    rect = svg.rect(x="40",y="100", width="40", height="40",
+        stroke_width="2",fill="blue")
+    
+    panel = doc['panel1']
+    panel <= rect
+</td>
+<td>
+<button onclick="run_svg1()">click !</button>
+</td>
+
+<td>
+<script type="text/python">
+from browser import doc, svg
+def run_svg1():
+    rect = svg.rect(x="40",y="100", width="40", height="40",
+        stroke_width="2",fill="blue")
+    
+    panel = doc['panel1']
+    panel <= rect
+
+</script>
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+  width="140" height="200" style="border-style:solid;border-width:1;border-color:#000;">
+  <g id="panel1">
+  </g>
+</svg>
+</td>
+
+</tr>
+
+</table>
+
+Below is an example of a green ellipse:
+
+<table>
+<tr>
+<td>
+    from browser import doc, svg
+    ellipse = svg.ellipse(cx="70",cy="100", rx="40", ry="80",
+        stroke="black",stroke_width="2",fill="green")
+    
+    panel = doc['panel2']
+    panel <= ellipse
+</td>
+<td>
+<button onclick="run_svg2()">click !</button>
+</td>
+
+<td>
+<script type="text/python">
+from browser import doc, svg
+def run_svg2():
+    ellipse = svg.ellipse(cx="70",cy="100", rx="40", ry="80",
+        stroke="black",stroke_width="2",fill="green")
+    
+    panel = doc['panel2']
+    panel <= ellipse
+
+</script>
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+  width="140" height="200" style="border-style:solid;border-width:1;border-color:#000;">
+  <g id="panel2">
+  </g>
+</svg>
+</td>
+
+</tr>
+
+</table>
+
+
+Here's an example of a brown line line of length 100 pixels.
+
+<table>
+<tr>
+<td>
+    from browser import doc, svg
+    line = svg.line(x1="40",y1="50", x2="40", y2="150",
+                    stroke="brown",stroke_width="2")
+    
+    panel = doc['panel3']
+    panel <= line
+</td>
+<td>
+<button onclick="run_svg3()">click !</button>
+</td>
+
+<td>
+<script type="text/python">
+from browser import doc, svg
+def run_svg3():
+    line = svg.line(x1="40",y1="50", x2="40", y2="150",
+                    stroke="brown",stroke_width="2")
+    
+    panel = doc['panel3']
+    panel <= line
+
+</script>
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+  width="140" height="200" style="border-style:solid;border-width:1;border-color:#000;">
+  <g id="panel3">
+  </g>
+</svg>
+</td>
+
+</tr>
+
+</table>
+
+
+
+Here's an example of a polygon (a red star with a blue outline)
+
+<table>
+<tr>
+<td>
+    from browser import doc, svg
+    star = svg.polygon(fill="red", stroke="blue", stroke_width="10",
+                       points=""" 75,38  90,80  135,80  98,107
+                                 111,150 75,125  38,150 51,107
+                                  15,80  60,80""")
+    
+    panel = doc['panel4']
+    panel <= star
+</td>
+<td>
+<button onclick="run_svg4()">click !</button>
+</td>
+
+<td>
+<script type="text/python">
+from browser import doc, svg
+def run_svg4():
+    star = svg.polygon(fill="red", stroke="blue", stroke_width="2",
+                       points=""" 75,38  90,80  135,80  98,107
+                                 111,150 75,125  38,150 51,107
+                                  15,80  60,80""")
+    
+    panel = doc['panel4']
+    panel <= star
+</script>
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+  width="140" height="200" style="border-style:solid;border-width:1;border-color:#000;">
+  <g id="panel4">
+  </g>
+</svg>
+</td>
+
+</tr>
+
+</table>
+
+For more detailed information about SVG shapes, their attributes, etc see the
+[SVG Shape Documentation](http://www.w3.org/TR/SVG/shapes.html)
