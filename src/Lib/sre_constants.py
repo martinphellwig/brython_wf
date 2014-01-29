@@ -9,14 +9,13 @@
 # See the sre.py file for information on usage and redistribution.
 #
 
-MAXREPEAT = 2147483648
-
 """Internal support module for sre"""
 
 # update when constants are added or removed
 
 MAGIC = 20031017
 
+MAXREPEAT = 2147483648
 #from _sre import MAXREPEAT
 
 # SRE standard exception (access as sre.error)
