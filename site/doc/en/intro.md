@@ -17,9 +17,9 @@ A simple example :
     def echo(ev):
         alert(doc["zone"].value)
     
-    doc['echo'].bind('click',echo)
+    doc['mybutton'].bind('click',echo)
     </script>
-    <input id="zone"><button id="echo">click !</button>
+    <input id="zone"><button id="mybutton">click !</button>
     </body>
     </html>
 
@@ -34,10 +34,10 @@ from browser import doc, alert
 def echo(ev):
     alert(doc["zone"].value)
 
-doc['echo'].bind('click',echo)
+doc['mybutton'].bind('click',echo)
 </script>
 
-<input id="zone"><button id="echo">click !</button>
+<input id="zone"><button id="mybutton">click!</button>
 
 </td>
 </tr>
@@ -53,7 +53,7 @@ If the Python program is large, another option is to write it in a separate file
     </head>
     <body onload="brython()">
     <script type="text/python" src="test.py"></script>
-    <input id="zone"><button onclick="echo()">clic !</button>
+    <input id="zone"><button id="mybutton">click!</button>
     </body>
     </html>
 
