@@ -17,11 +17,11 @@ Consequently, by default, a Javascript program can't access Brython objects. For
 
 that doesn't work since the name _echo_ is not accessible from Javascript, the solution is to set an id to the element :
 
-    <button id="echo">
+    <button id="mybutton">
 
 and to define the link between this element and the event _click_ by :
 
-    doc['echo'].bind('click',echo)
+    doc['mybutton'].bind('click',echo)
 
 Another option is to force the introduction of the name _echo_ in the Javascript namespace, by defining it as an attribute of the object `window` in module **browser** :
 
