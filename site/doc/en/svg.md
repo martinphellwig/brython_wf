@@ -159,7 +159,7 @@ Here's an example of a brown line line of length 100 pixels.
 <script type="text/python">
 from browser import doc, svg
 def run_svg3():
-    line = svg.line(x1="40",y1="50", x2="40", y2="150",
+    line = svg.line(x1="20",y1="100", x2="100", y2="20",
                     stroke="brown",stroke_width="2")
     
     panel = doc['panel3']
@@ -221,6 +221,49 @@ def run_svg4():
 </tr>
 
 </table>
+
+
+Here's an example of animating a rectangle:
+
+<table>
+<tr>
+<td>
+    from browser import doc, svg
+    rect = svg.rect(x=0, y=10, width=100, height=100)
+    rect <= svg.animate(attributeName="x", From=-100, to=120,
+                        dur="10s", repeatCount="indefinite")
+    
+    panel = doc['panel5']
+    panel <= rect
+</td>
+<td>
+<button onclick="run_svg5()">click !</button>
+</td>
+
+<td>
+<script type="text/python">
+from browser import doc, svg
+def run_svg5():
+    rect = svg.rect(x=10, y=10, width=100, height=100)
+    rect <= svg.animate(attributeName="x", From=-100, to=120, attributeType="XML",
+                        dur="10s", repeatCount="indefinite")
+    
+    panel = doc['panel5']
+    panel <= rect
+</script>
+
+<svg id="panel5" xmlns="http://www.w3.org/2000/svg" 
+  viewPort="0 0 120 120"
+  width="120" height="200" 
+  style="border-style:solid;border-width:1;border-color:#000;">
+</svg>
+</td>
+
+</tr>
+
+</table>
+
+
 
 For more detailed information about SVG shapes, their attributes, etc see the
 [SVG Shape Documentation](http://www.w3.org/TR/SVG/shapes.html)
