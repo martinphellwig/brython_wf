@@ -27,7 +27,7 @@ Il définit deux classes :
 
 > Le résultat est converti en effectuant les opérations inverses
 
-**browser**.`JSConstructor`
+**javascript**.`JSConstructor`
 > classe dont les instances représentent des constructeurs Javascript, c'est-à-dire des fonctions utilisées avec le mot-clé Javascript `new`
 
 > <code>JSConstructor(_jsconstr_)</code> renvoie l'objet Brython *brconstr*. Cet objet est appelable ; il renvoie une instance de `JSObject` représentant l'objet Javascript obtenu en passant au constructeur *jsconstr* les arguments convertis comme indiqué dans le tableau ci-dessus
@@ -50,3 +50,4 @@ Utilisation de `JSConstructor` avec la librairie Javascript three.js :
 >    
 >    cameraC = JSConstructor( THREE.PerspectiveCamera )
 >    camera = cameraC( 75, 1, 1, 10000 )
+
