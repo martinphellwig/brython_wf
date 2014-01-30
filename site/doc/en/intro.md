@@ -1,3 +1,9 @@
+Quote from the [W3C Document Object Model specification](http://www.w3.org/DOM/) :
+
+> _What is the Document Object Model?_
+
+> _The Document Object Model is a platform- and __language__-neutral interface that will allow programs and scripts to dynamically access and update the content, structure and style of documents_
+
 Brython's goal is to replace Javascript with Python, as the scripting language for web browsers.
 
 A simple example :
