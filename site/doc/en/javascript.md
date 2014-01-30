@@ -27,7 +27,7 @@ It defines two classes :
 
 > The result is converted to a Brython object using the reverse operations
 
-**browser**.`JSConstructor`
+**javascript**.`JSConstructor`
 > is a class whose instances represent Javascript constructors, (ie functions used with the Javascript keyword `new`)
 
 > <code>JSConstructor(_jsconstr_)</code> returns a Brython object. This object is callable ; it returns an instance of `JSObject` representing the Javascript obtained by passing to the constructor *jsconstr* the arguments converted as indicated in the table above
