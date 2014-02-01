@@ -10,6 +10,7 @@ Cet objet possède les attributs et méthodes suivants :
 
 `bind(`_evt,fonction_`)`
 > Attache la _fonction_ à l'événement _evt_. _evt_ est une chaine de caractères correspondent aux différents états de la requête :
+
 - "uninitialized" : non initialisé
 - "loading" : connexion établie
 - "loaded" : requête reçue
@@ -17,6 +18,8 @@ Cet objet possède les attributs et méthodes suivants :
 - "complete" : terminé
 
 > La _fonction_ prend un seul argument, qui est l'objet `ajax`
+
+C'est équivalent à: _req.on_evt = func_
 
 `open(`_methode,url,async_`)`
 > _methode_ est la méthode HTTP utilisée pour la requête (habituellement GET ou POST)
