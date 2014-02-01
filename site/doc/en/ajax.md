@@ -11,13 +11,15 @@ This object has the following attributes and methods :
 `bind(`_evt,function_`)`
 > attaches the _function_ to the event _evt_. _evt_ is a string that matches the different request states :
 
-- "uninitialized"
-- "loading"
-- "loaded"
-- "interactive"
-- "complete"
+- "uninitialized" : not initialized
+- "loading" : established connection
+- "loaded": received request
+- "interactive": response in progress
+- "complete" : finished
 
-The _function_ takes a single argument, the `ajax` object
+> The _function_ takes a single argument, the `ajax` object.
+
+It is equivalent to: _req.on_evt = func_
 
 `open(`_method, url, async_`)`
 > _method_ is the HTTP method used for the request (usually GET or POST), _url_ is the url to call, _async_ is a boolean that indicates whether the call is asynchronous or not
@@ -61,6 +63,7 @@ request state
 
 
 ### Example
+
 We suppose there is a DIV with id _result_ in the HTML page
 
 >    from browser import doc,ajax
@@ -71,8 +74,8 @@ We suppose there is a DIV with id _result_ in the HTML page
 >        else:
 >            doc["result"].html = "error "+req.text
 >    
->    req = ajax()
->    req.on_complete = on_complete
+>    req = ajax.ajax()
+>    req.bind('complete',on_complete)
 >    req.open('POST',url,True)
 >    req.set_header('content-type','application/x-www-form-urlencoded')
 >    req.send(data)

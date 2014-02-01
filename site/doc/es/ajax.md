@@ -1,5 +1,5 @@
-Módulo browser.ajax
--------------------
+Módulo **browser.ajax**
+-----------------------
 
 El módulo permite ejecutar peticiones Ajax. En el módulo se define una única función :
 
@@ -9,18 +9,21 @@ El módulo permite ejecutar peticiones Ajax. En el módulo se define una única 
 
 Este objeto posee los siguientes atributos y métodos:
 
-- `bind(*evt, funcion*)`: adjunta la función al evento *evt*. *evt* es una cadena que define uno de los siguientes estados
+`bind(*evt, funcion*)`:
+> adjunta la función al evento *evt*. *evt* es una cadena que define uno de los siguientes estados
 de la petición
 
-- "uninitialized"
-- "loading"
-- "loaded"
-- "interactive"
-- "complete"
+- "uninitialized" : no inicializado
+- "loading" : conexión establecida
+- "loaded" : solicitud recibida
+- "interactive" : respuesta en curso
+- "complete" : terminado
 
-La *función* toma un único argumento: el objeto `ajax`.
+> La _función_ toma un único argumento: el objeto `ajax`.
 
-- <code>open(_method, url, async_)</code> 
+Es equivalente a: _req.on_evt = func_
+
+`open(`_method, url, async_`)`
 > _method_ es el método HTTP usado para la petición (normalmente GET o POST), _url_ es la url a llamar, _async_ es el booleano que indica si la llamada es asíncrona o no
 
 `readyState`
@@ -41,10 +44,10 @@ estado de la petición
 </table>
 </blockquote>
 
-<code>set\_header(_name, value_)</code>
+`set_header(`_name, value_`)`
 > establece el _valor_ del _nombre_ del cabecero
 
-<code>set\_timeout(_duration, function_)</code>
+`set_timeout(`_duration, function_`)`
 > si la petición no devuelve una respuesta durante la _duración_ en segundos, cancelará; la petición y ejecutará la _función_. Esta función no puede tener argumentos
 
 `send()`
@@ -71,7 +74,7 @@ Supondremos que existe un DIV con id _result_ en la página HTML
 >        else:
 >            doc["result"].html = "error "+req.text
 >    
->    req = ajax()
+>    req = ajax.ajax()
 >    req.on_complete = on_complete
 >    req.open('POST',url,True)
 >    req.set_header('content-type','application/x-www-form-urlencoded')
