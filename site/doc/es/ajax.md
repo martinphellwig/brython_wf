@@ -75,7 +75,7 @@ Supondremos que existe un DIV con id _result_ en la página HTML
 >            doc["result"].html = "error "+req.text
 >    
 >    req = ajax.ajax()
->    req.on_complete = on_complete
+>    req.bind('complete',on_complete)
 >    req.open('POST',url,True)
 >    req.set_header('content-type','application/x-www-form-urlencoded')
 >    req.send(data)
