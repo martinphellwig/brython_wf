@@ -58,13 +58,13 @@ Dans l'exemple, quand l'objet déplaçable a été déposé, on ne peut plus le 
         # la distance par rapport aux bords gauche et supérieur du document
         m0 = [ev.x-ev.target.left,ev.y-ev.target.top]
         # associer une donnée au processus de glissement
-        ev.data['text']=ev.target.id
+        ev.dataTransfer.setData('text',ev.target.id)
         # permet à l'object d'être déplacé dans l'objet destination
-        ev.data.effectAllowed = 'move'
+        ev.dataTransfer.effectAllowed = 'move'
     
     # fonction appelée quand l'objet déplaçable vient au-dessus de la zone de destination
     def drag_over(ev):
-        ev.data.dropEffect = 'move'
+        ev.dataTransfer.dropEffect = 'move'
         # il faut désactiver le comportement par défaut pour ce genre d'événement
         ev.preventDefault()
     
@@ -73,7 +73,7 @@ Dans l'exemple, quand l'objet déplaçable a été déposé, on ne peut plus le 
     # quand l'utilisateur relâche la souris alors que l'objet est au-dessus de la zone
     def drop(ev):
         # récupère les données stockées dans drag_start (l'id de l'objet déplacé)
-        src_id = ev.data['text']
+        src_id = ev.dataTransfer.getData('text')
         elt = doc[src_id]
         # définit les nouvelles coordonnées de l'objet déplacé
         elt.style.left = "%spx" %(ev.x-m0[0])

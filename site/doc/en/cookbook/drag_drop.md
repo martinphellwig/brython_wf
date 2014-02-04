@@ -56,13 +56,13 @@ In the example, when the draggable object has been dropped, it can't be dragged 
         # integers, the distance from the left and top borders of the document
         m0 = [ev.x-ev.target.left,ev.y-ev.target.top]
         # associate data to the dragging process
-        ev.data['text']=ev.target.id
+        ev.dataTransfer.setData('text',ev.target.id)
         # allow dragged object to be moved
-        ev.data.effectAllowed = 'move'
+        ev.dataTransfer.effectAllowed = 'move'
     
     # function called when the draggable object comes over the destination zone
     def drag_over(ev):
-        ev.data.dropEffect = 'move'
+        ev.dataTransfer.dropEffect = 'move'
         # here we must prevent the default behaviour for this kind of event
         ev.preventDefault()
     
@@ -71,7 +71,7 @@ In the example, when the draggable object has been dropped, it can't be dragged 
     # released while the object is over the zone    
     def drop(ev):
         # retrieve data stored in drag_start (the draggable element's id)
-        src_id = ev.data['text']
+        src_id = ev.dataTransfer.getData('text')
         elt = doc[src_id]
         # set the new coordinates of the dragged object
         elt.style.left = "%spx" %(ev.x-m0[0])
