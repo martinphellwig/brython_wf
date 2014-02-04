@@ -13,7 +13,9 @@ var $module = (function($B){
             return __builtins__.int(window.setInterval(func,interval))
         },
     
-        set_timeout : function(func,interval){window.setTimeout(func,interval)},
+        set_timeout : function(func,interval){
+            return __builtins__.int(window.setTimeout(func,interval))
+        },
         
         request_animation_frame: function(func){
             return __builtins__.int(window.requestAnimationFrame(func))},
