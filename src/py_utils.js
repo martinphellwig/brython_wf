@@ -228,7 +228,7 @@ $B.$generator = function(func){
         if(self.$iter<self.func.$iter.length){
             if(self.output[self.$iter]!==undefined){
                 for(var i=0;i<self.output[self.$iter].length;i++){
-                    document.$stdout.write(self.output[self.$iter][i])
+                    $B.stdout.write(self.output[self.$iter][i])
                 }
             }
             return self.func.$iter[self.$iter]
@@ -241,9 +241,9 @@ $B.$generator = function(func){
         func.$iter = []
         
         // cheat ! capture all standard output
-        var save_stdout = document.$stdout
+        var save_stdout = $B.stdout
         var output = {}
-        document.$stdout = $B.JSObject({
+        $B.stdout = $B.JSObject({
             write : function(data){
                 var loop_num = func.$iter.length
                 if(output[loop_num]===undefined){
@@ -254,7 +254,7 @@ $B.$generator = function(func){
             }
         })
         func.apply(this,arguments)
-        document.$stdout = save_stdout
+        $B.stdout = save_stdout
     
         var obj = {
             __class__ : $GeneratorDict,

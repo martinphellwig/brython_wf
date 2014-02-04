@@ -4360,7 +4360,7 @@ self.$iter++
 if(self.$iter<self.func.$iter.length){
 if(self.output[self.$iter]!==undefined){
 for(var i=0;i<self.output[self.$iter].length;i++){
-document.$stdout.write(self.output[self.$iter][i])
+$B.stdout.write(self.output[self.$iter][i])
 }
 }
 return self.func.$iter[self.$iter]
@@ -4370,9 +4370,9 @@ else{throw $B.builtins.StopIteration("")}
 $GeneratorDict.__mro__=[$GeneratorDict,__BRYTHON__.builtins.object.$dict]
 var res=function(){
 func.$iter=[]
-var save_stdout=document.$stdout
+var save_stdout=$B.stdout
 var output={}
-document.$stdout=$B.JSObject({
+$B.stdout=$B.JSObject({
 write : function(data){
 var loop_num=func.$iter.length
 if(output[loop_num]===undefined){
@@ -4383,7 +4383,7 @@ output[loop_num].push(data)
 }
 })
 func.apply(this,arguments)
-document.$stdout=save_stdout
+$B.stdout=save_stdout
 var obj={
 __class__ : $GeneratorDict,
 func:func,
