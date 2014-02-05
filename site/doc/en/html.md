@@ -64,7 +64,7 @@ the link will only show in the second line. One solution is to clone the origina
 >    doc <= 'Official Python Website: ' + link
 >    doc <= html.P() + 'I repeat: the site is ' + link.clone()
 
-As a rule of thumb, instances of HTML classes have the same name as the corresponding DOM objects. For example, it can retrieve the option selected by the `selectedIndex` attribute of the `SELECT` object. Brython adds a few things to make the manipulation a bit more Pythonic
+As a rule of thumb, instances of HTML classes have the same attribute names as the corresponding DOM objects. For example, it can retrieve the option selected by the `selectedIndex` attribute of the `SELECT` object. Brython adds a few things to make the manipulation a bit more Pythonic
 
 Let's see a more complete example. The code below have created the structure in the blue panel. The blue panel is a `div` element with `id="container"` attribute.
 We will use this `div` to create an 'ugly' html structure inside with a div, a table, a form and a HTML5 canvas:
@@ -111,7 +111,7 @@ We will use this `div` to create an 'ugly' html structure inside with a div, a t
     newdiv <= form + html.BR()
     
     # Finally, we will add something more 'HTML5istic', a canvas with
-    # a color gradient in the newdiv previously created and below the table
+    # a color gradient in the newdiv previously created and below the form
     canvas = html.CANVAS(width = 300, height = 300)
     canvas.style = {"width": "100%"}
     ctx = canvas.getContext('2d')
