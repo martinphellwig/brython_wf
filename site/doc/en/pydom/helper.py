@@ -1,7 +1,7 @@
 from browser import doc, html
 import urllib.request
 
-import codeparser
+#import codeparser
 
 def populate_example(num, url):
     _fp, _url, _headers=urllib.request.urlopen(url)
