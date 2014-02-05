@@ -2,6 +2,8 @@ pydom is a module to emulate [jQuery](http://www.jquery.com) functionality in br
 
 Let us start with a simple example:
 
+<link rel="stylesheet" type="text/css" href="codeparser.css"></link>
+
 <script type="text/python">
   import helper
 
