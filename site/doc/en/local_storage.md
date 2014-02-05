@@ -26,4 +26,4 @@ If you want to remove permanently a key-value pair you can use the following:
 
 A more complete example using `local_storage`, a TO-DO list app, can be found in the iframe below.
 
-<iframe src="localstorage_example.html" width=800, height=500></iframe>
+<iframe src="local_storage_example.html" width=800, height=500></iframe>
