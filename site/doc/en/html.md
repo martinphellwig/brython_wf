@@ -13,6 +13,8 @@ The classes defined are :
 
 > In the following [link](http://www.w3.org/TR/html5-author/index.html#elements-1) you can find the index of HTML5 tags with references (DRAFT).
 
+[Note: In the following examples we assume that the **browser.html** module has been imported as follows: `from brower import html`]
+
 The syntax to create an object (e.g. a hyperlink) is :
 
 `A(`*[content,[attributes]]*`)`
@@ -34,33 +36,33 @@ You can also create an object without argument, then build it up:
 - to add a child node, use the **<=** operator
 - to add attributes, use the classic Python syntax : `object.attribute = value`
 Example :    
->    link = A()
->    link <= B('connexion')
+>    link = html.A()
+>    link <= html.B('connexion')
 >    link.href = 'http://example.com'
 
 You can also create multiple elements at the same level by using the plus (+) sign :
 
->    row = TR(TH('LastName') + TH('FirstName'))
+>    row = html.TR(html.TH('LastName') + html.TH('FirstName'))
 
 Here is how to create a selection box from a list (by combining these operators and Python syntax) :
 
 >    items = ['one', 'two', 'three']
->    sel = SELECT()
+>    sel = html.SELECT()
 >    for i, elt in enumerate(items):
->        sel <= OPTION(elt, value = i)
+>        sel <= html.OPTION(elt, value = i)
 >    doc <= sel
 
 It is important to note that the creation of an instance of a class involves creating HTML from a single DOM object. If we assign the instance to a variable, you can not use it in several places. For example, with this code :
 
->    link = A('Python', href='http://www.python.org')
+>    link = html.A('Python', href='http://www.python.org')
 >    doc <= 'Official Python Website: ' + link
->    doc <= P() + 'I repeat: the site is ' + link
+>    doc <= html.P() + 'I repeat: the site is ' + link
 
 the link will only show in the second line. One solution is to clone the original object :
 
->    link = A('Python', href='http://www.python.org')
+>    link = html.A('Python', href='http://www.python.org')
 >    doc <= 'Official Python Website: ' + link
->    doc <= P() + 'I repeat: the site is ' + link.clone()
+>    doc <= html.P() + 'I repeat: the site is ' + link.clone()
 
 As a rule of thumb, instances of HTML classes have the same name as the corresponding DOM objects. For example, it can retrieve the option selected by the `selectedIndex` attribute of the `SELECT` object. Brython adds a few things to make the manipulation a bit more Pythonic
 
