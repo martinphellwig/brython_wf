@@ -70,14 +70,14 @@ variable, on ne peut pas l'utiliser à plusieurs endroits. Par exemple :
 
 >    link = html.A('Python',href='http://www.python.org')
 >    doc <= 'Site officiel de Python : ' + link
->    doc <= html.P() + 'Je répète : le site est ' + link
+>    doc <= html.BR() + 'Je répète : le site est ' + link
 
 le lien ne sera montré que dans la deuxième ligne. Une solution est de cloner
 l'objet initial :
 
 >    link = html.A('Python',href='http://www.python.org')
 >    doc <= 'Site officiel de Python : '+link
->    doc <= html.P()+'Je répète : le site est '+link.clone()
+>    doc <= html.BR() + 'Je répète : le site est ' + link.clone()
 
 En général, les classes relatives au HTML ont des attributs portant le même que
 l’objet DOM correspondant. Par exemple, on a accès à l’option choisie par
