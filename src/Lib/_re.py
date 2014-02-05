@@ -211,6 +211,7 @@ if sys.hexversion >= 0x02020000:
 
 def compile(pattern, flags=0):
     "Compile a regular expression pattern, returning a pattern object."
+    #print("_re.py:214")
     return _compile(pattern, flags)
 
 def purge():
@@ -224,11 +225,8 @@ def template(pattern, flags=0):
 
 _alphanum_str = frozenset(
     "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890")
-#fix me brython
-#_alphanum_bytes = frozenset(
-#    b"_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890")
 _alphanum_bytes = frozenset(
-    "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890")
+    b"_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890")
 
 def escape(pattern):
     """
@@ -270,11 +268,13 @@ _pattern_type = type(sre_compile.compile("", 0))
 _MAXCACHE = 512
 def _compile(pattern, flags):
     # internal: compile pattern
-    #fixme brython
-    #try:
-    #    return _cache[type(pattern), pattern, flags]
-    #except KeyError:
-    #   pass
+    try:
+        #fixme brython
+        #return _cache[type(pattern), pattern, flags]
+        return _cache["%s:%s:%s" % (type(pattern), pattern, flags)]
+    except KeyError:
+       pass
+    #print(pattern)
     if isinstance(pattern, _pattern_type):
         if flags:
             raise ValueError(
@@ -283,20 +283,27 @@ def _compile(pattern, flags):
     if not sre_compile.isstring(pattern):
         raise TypeError("first argument must be string or compiled pattern")
     p = sre_compile.compile(pattern, flags)
+    #print('_compile', p)
     if len(_cache) >= _MAXCACHE:
         _cache.clear()
+    #fix me brython
     #_cache[type(pattern), pattern, flags] = p
+    _cache["%s:%s:%s" % (type(pattern), pattern, flags)]= p
     return p
 
 def _compile_repl(repl, pattern):
     # internal: compile replacement pattern
-    #try:
-    #    return _cache_repl[repl, pattern]
-    #except KeyError:
-    #    pass
+    try:
+        #fix me brython
+        #return _cache_repl[repl, pattern]
+        return _cache_repl["%s:%s" % (repl, pattern)]
+    except KeyError:
+        pass
     p = sre_parse.parse_template(repl, pattern)
     if len(_cache_repl) >= _MAXCACHE:
         _cache_repl.clear()
+    _cache_repl["%s:%s" % (repl, pattern)] = p
+    #fix me brython
     #_cache_repl[repl, pattern] = p
     return p
 

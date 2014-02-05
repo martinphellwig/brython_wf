@@ -49,9 +49,7 @@ def getfilesystemencoding(*args,**kw):
     operating system filenames."""
     return 'utf-8'
     
-maxsize=9007199254740992   #largest integer..
-
-maxint=9007199254740992   #largest integer..
+maxsize=2147483647
 
 maxunicode=1114111
 

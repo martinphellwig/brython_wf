@@ -39,6 +39,8 @@ def _compile(code, pattern, flags):
     SUCCESS_CODES = _SUCCESS_CODES
     ASSERT_CODES = _ASSERT_CODES
     for op, av in pattern:
+        #print('sre_compile.py:_compile:42', op, av)
+        #print('sre_compile.py:_compile:42', code)
         if op in LITERAL_CODES:
             if flags & SRE_FLAG_IGNORECASE:
                 emit(OPCODES[OP_IGNORE[op]])
@@ -367,6 +369,7 @@ def _compile_info(code, pattern, flags):
     # this contains min/max pattern width, and an optional literal
     # prefix or a character map
     lo, hi = pattern.getwidth()
+    #print('sre_compile.py:_compile_info:370', lo, hi)
     if lo == 0:
         return # not worth it
     # look for a literal prefix
@@ -378,6 +381,7 @@ def _compile_info(code, pattern, flags):
     if not (flags & SRE_FLAG_IGNORECASE):
         # look for literal prefix
         for op, av in pattern.data:
+            #print('sre_compile.py:_code:381',op,av)
             if op is LITERAL:
                 if len(prefix) == prefix_skip:
                     prefix_skip = prefix_skip + 1
@@ -425,6 +429,8 @@ def _compile_info(code, pattern, flags):
                     charset = c
             elif op is IN:
                 charset = av
+
+    #print('sre_compile.py:_code:430', code)
 ##     if prefix:
 ##         print "*** PREFIX", prefix, prefix_skip
 ##     if charset:
@@ -453,6 +459,7 @@ def _compile_info(code, pattern, flags):
     else:
         emit(0)
     # add literal prefix
+    #print('sre_compile.py:_code:457', code)
     if prefix:
         emit(len(prefix)) # length
         emit(prefix_skip) # skip
@@ -478,9 +485,11 @@ def _code(p, flags):
 
     # compile info block
     _compile_info(code, p, flags)
+    #print('sre_compile.py:481:code', code)
 
     # compile the pattern
     _compile(code, p.data, flags)
+    #print('sre_compile.py:485:code', code)
 
     code.append(OPCODES[SUCCESS])
 
@@ -489,14 +498,17 @@ def _code(p, flags):
 def compile(p, flags=0):
     # internal: convert pattern list to internal format
 
+    #print("sre_compile.py:compile:492:p", p)
     if isstring(p):
         pattern = p
         p = sre_parse.parse(p, flags)
     else:
         pattern = None
 
+    #print('sre_compile.py:498:p', p)
     code = _code(p, flags)
 
+    #print('sre_compile.py:501:code', code)
     # print code
 
     # XXX: <fl> get rid of this limitation!
