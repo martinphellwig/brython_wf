@@ -64,7 +64,7 @@ the link will only show in the second line. One solution is to clone the origina
 
 As a rule of thumb, instances of HTML classes have the same name as the corresponding DOM objects. For example, it can retrieve the option selected by the `selectedIndex` attribute of the `SELECT` object. Brython adds a few things to make the manipulation a bit more Pythonic
 
-Let's see a more complete example. The code below have created the structure in the blue panel. The right (blue) panel is a `div` element with `id="container"` attribute.
+Let's see a more complete example. The code below have created the structure in the blue panel. The blue panel is a `div` element with `id="container"` attribute.
 We will use this `div` to create an 'ugly' html structure inside with a div, a table, a form and a HTML5 canvas:
 
 <div style="padding-left:50px;">
