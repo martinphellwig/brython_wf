@@ -3605,7 +3605,7 @@ __BRYTHON__.path.push($script_path)
 }
 for(var $i=0;$i<$elts.length;$i++){
 var $elt=$elts[$i]
-var $br_scripts=['brython.js','py2js.js','brython_full.js']
+var $br_scripts=['brython.js','py2js.js','brython_dist.js']
 for(var $j=0;$j<$br_scripts.length;$j++){
 var $bs=$br_scripts[$j]
 if($elt.src.substr($elt.src.length-$bs.length)==$bs){
