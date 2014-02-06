@@ -301,6 +301,7 @@ $B.$type.__getattribute__=function(klass,attr){
                 method.__repr__ = __repr__
                 method.__self__ = __self__
                 method.__str__ = __str__
+                method.__doc__ = res.__doc__ || ''
                 method.im_class = klass
                 return method
             }

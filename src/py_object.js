@@ -166,6 +166,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                 method.__repr__ = __repr__
                 method.__self__ = __self__
                 method.__str__ = __str__
+                method.__doc__ = res.__doc__ || ''
                 return method
             }else{
                 return res1
