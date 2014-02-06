@@ -530,4 +530,10 @@ else:
     spam = 2
 assert spam == 2
 
+# issue 209
+assert ("ko" if None else "ok")=="ok"
+assert ("ko" if [] else "ok")=="ok"
+assert ("ko" if {} else "ok")=="ok"
+assert ("ko" if False else "ok")=="ok"
+
 print('passed all tests')

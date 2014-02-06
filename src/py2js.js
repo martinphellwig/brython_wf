@@ -4105,8 +4105,6 @@ __BRYTHON__.py2js = function(src,module,parent){
     js += 'var __builtins__ = __BRYTHON__.builtins;\n'
     js += 'for(var $py_builtin in __builtins__)'
     js += '{eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
-    js += 'var JSObject = __BRYTHON__.JSObject\n'
-    js += 'var JSConstructor = __BRYTHON__.JSConstructor\n'
     var new_node = new $Node('expression')
     new $NodeJSCtx(new_node,js)
     root.insert(0,new_node)
