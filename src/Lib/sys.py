@@ -76,6 +76,8 @@ class __version_info(object):
         self.serial = version_info[4]
 
     def __getitem__(self, index):
+        if isinstance(self.version_info[index], list):
+           return tuple(self.version_info[index])
         return self.version_info[index]
 
     def hexversion(self):
