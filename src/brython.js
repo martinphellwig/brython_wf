@@ -3548,8 +3548,6 @@ var js='var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $
 js +='var __builtins__ = __BRYTHON__.builtins;\n'
 js +='for(var $py_builtin in __builtins__)'
 js +='{eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
-js +='var JSObject = __BRYTHON__.JSObject\n'
-js +='var JSConstructor = __BRYTHON__.JSConstructor\n'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 root.insert(0,new_node)
@@ -4403,7 +4401,7 @@ $B.$generator.__class__=__BRYTHON__.$type
 $B.$ternary=function(env,cond,expr1,expr2){
 for(var $py_builtin in __BRYTHON__.builtins){eval("var "+$py_builtin+"=__BRYTHON__.builtins[$py_builtin]")}
 for(var attr in env){eval('var '+attr+'=env["'+attr+'"]')}
-var res='if ('+cond+'){\n'
+var res='if (bool('+cond+')){\n'
 res +='    var $res = '+unescape(expr1)+'\n}else{\n'
 res +='    var $res = '+unescape(expr2)+'\n}'
 eval(res)
