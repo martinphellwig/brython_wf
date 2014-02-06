@@ -978,9 +978,9 @@ class _OpcodeDispatcher(_Dispatcher):
         # maximizing repeat
         # <REPEAT> <skip> <1=min> <2=max> item <MAX_UNTIL> tail
         repeat = ctx.state.repeat
-        print("op_max_until") #, id(ctx.state.repeat))
+        #print("op_max_until") #, id(ctx.state.repeat))
         if repeat is None:
-            print(id(ctx), id(ctx.state))
+            #print(id(ctx), id(ctx.state))
             raise RuntimeError("Internal re error: MAX_UNTIL without REPEAT.")
         mincount = repeat.peek_code(2)
         maxcount = repeat.peek_code(3)
