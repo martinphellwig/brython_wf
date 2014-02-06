@@ -521,4 +521,13 @@ _POSITIONAL_ONLY        = _ParameterKind(0, name='POSITIONAL_ONLY')
 assert 2 << 16 != 4
 assert 2 << 16 == 131072
 
+# issue 208
+try:
+    spam = 0
+except:
+    spam = 1
+else:
+    spam = 2
+assert spam == 2
+
 print('passed all tests')
