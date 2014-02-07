@@ -14,18 +14,18 @@ It defines two classes :
 
 > <table border='1'>
 <tr><th>Argument in Brython function call</th><th>Argument passed to Javascript function</th></tr>
-<tr><td>DOM element</td><td>`DOMNode` instance</td></tr>
-<tr><td>DOM event</td><td>`DOMEvent` instance</td></tr>
-<tr><td>DOM nodes list</td><td>list of `DOMNode` instances</td></tr>
-<tr><td>`null, true, false`</td><td>`None, True, False`</td></tr>
-<tr><td>integer</td><td>`int` instance</td></tr>
-<tr><td>float</td><td>`float` instance</td></tr>
-<tr><td>string</td><td>`str` instance</td></tr>
-<tr><td>Javascript array</td><td>`list` instance</td></tr>
-<tr><td>Javascript object</td><td>`JSObject` instance</td></tr>
+<tr><td>`DOMNode` instance</td><td>DOM element</td></tr>
+<tr><td>`DOMEvent` instance</td><td>DOM event</td></tr>
+<tr><td>list of `DOMNode` instances</td><td>DOM nodes list</td></tr>
+<tr><td>`None, True, False`</td><td>`null, true, false`</td></tr>
+<tr><td>`int` instance</td><td>integer</td></tr>
+<tr><td>`float` instance</td><td>float</td></tr>
+<tr><td>`str` instance</td><td>string</td></tr>
+<tr><td>`list` instance</td><td>Javascript array</td></tr>
+<tr><td>`JSObject` instance</td><td>Javascript object</td></tr>
 </table>
 
-> The result is converted to a Brython object using the reverse operations
+> The result is converted to a Brython object using the reverse operations.
 
 **javascript**.`JSConstructor`
 > is a class whose instances represent Javascript constructors, (ie functions used with the Javascript keyword `new`)
