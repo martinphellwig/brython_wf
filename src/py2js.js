@@ -2323,7 +2323,7 @@ function $TryCtx(context){
         // transform node into Javascript 'try' (necessary if
         // "try" inside a "for" loop
         // add a boolean $failed, used to run the 'else' clause
-        new $NodeJSCtx(node,'$failed'+$loop_num+'=false;try')
+        new $NodeJSCtx(node,'__BRYTHON__.$failed'+$loop_num+'=false;try')
         // insert new 'catch' clause
         var catch_node = new $Node('expression')
         new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
@@ -2332,7 +2332,7 @@ function $TryCtx(context){
         // fake line to start the 'else if' clauses
         var new_node = new $Node('expression')
         // set the boolean $failed to true
-        new $NodeJSCtx(new_node,'var $failed'+$loop_num+'=true;if(false){void(0)}')
+        new $NodeJSCtx(new_node,'__BRYTHON__.$failed'+$loop_num+'=true;if(false){void(0)}')
         catch_node.insert(0,new_node)
         
         var pos = rank+2
@@ -2379,11 +2379,11 @@ function $TryCtx(context){
         }
         if(has_else){
             var else_node = new $Node('expression')
-            new $NodeJSCtx(else_node,'if(!$failed'+$loop_num+')')
+            new $NodeJSCtx(else_node,'if(!__BRYTHON__.$failed'+$loop_num+')')
             for(var i=0;i<else_body.children.length;i++){
                 else_node.add(else_body.children[i])
             }
-            catch_node.insert(catch_node.children.length,else_node)
+            node.parent.insert(pos,else_node)
         }
         $loop_num++
     }
@@ -4105,8 +4105,6 @@ __BRYTHON__.py2js = function(src,module,parent){
     js += 'var __builtins__ = __BRYTHON__.builtins;\n'
     js += 'for(var $py_builtin in __builtins__)'
     js += '{eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
-    js += 'var JSObject = __BRYTHON__.JSObject\n'
-    js += 'var JSConstructor = __BRYTHON__.JSConstructor\n'
     var new_node = new $Node('expression')
     new $NodeJSCtx(new_node,js)
     root.insert(0,new_node)
@@ -4183,7 +4181,7 @@ function brython(options){
 
     for(var $i=0;$i<$elts.length;$i++){
         var $elt = $elts[$i]
-        var $br_scripts = ['brython.js','py2js.js','brython_full.js']
+        var $br_scripts = ['brython.js','py2js.js','brython_dist.js']
         for(var $j=0;$j<$br_scripts.length;$j++){
             var $bs = $br_scripts[$j]
             if($elt.src.substr($elt.src.length-$bs.length)==$bs){

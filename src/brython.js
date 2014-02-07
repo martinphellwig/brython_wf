@@ -2024,12 +2024,12 @@ if(['except','finally','single_kw'].indexOf(next_ctx.type)===-1){
 $_SyntaxError(C,"missing clause after 'try' 2")
 }
 }
-new $NodeJSCtx(node,'$failed'+$loop_num+'=false;try')
+new $NodeJSCtx(node,'__BRYTHON__.$failed'+$loop_num+'=false;try')
 var catch_node=new $Node('expression')
 new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
 node.parent.insert(rank+1,catch_node)
 var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,'var $failed'+$loop_num+'=true;if(false){void(0)}')
+new $NodeJSCtx(new_node,'__BRYTHON__.$failed'+$loop_num+'=true;if(false){void(0)}')
 catch_node.insert(0,new_node)
 var pos=rank+2
 var has_default=false 
@@ -2071,11 +2071,11 @@ catch_node.insert(catch_node.children.length,new_node)
 }
 if(has_else){
 var else_node=new $Node('expression')
-new $NodeJSCtx(else_node,'if(!$failed'+$loop_num+')')
+new $NodeJSCtx(else_node,'if(!__BRYTHON__.$failed'+$loop_num+')')
 for(var i=0;i<else_body.children.length;i++){
 else_node.add(else_body.children[i])
 }
-catch_node.insert(catch_node.children.length,else_node)
+node.parent.insert(pos,else_node)
 }
 $loop_num++
 }
@@ -3548,8 +3548,6 @@ var js='var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $
 js +='var __builtins__ = __BRYTHON__.builtins;\n'
 js +='for(var $py_builtin in __builtins__)'
 js +='{eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
-js +='var JSObject = __BRYTHON__.JSObject\n'
-js +='var JSConstructor = __BRYTHON__.JSConstructor\n'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 root.insert(0,new_node)
@@ -3607,7 +3605,7 @@ __BRYTHON__.path.push($script_path)
 }
 for(var $i=0;$i<$elts.length;$i++){
 var $elt=$elts[$i]
-var $br_scripts=['brython.js','py2js.js','brython_full.js']
+var $br_scripts=['brython.js','py2js.js','brython_dist.js']
 for(var $j=0;$j<$br_scripts.length;$j++){
 var $bs=$br_scripts[$j]
 if($elt.src.substr($elt.src.length-$bs.length)==$bs){
@@ -3808,6 +3806,7 @@ method.__func__=__func__
 method.__repr__=__repr__
 method.__self__=__self__
 method.__str__=__str__
+method.__doc__=res.__doc__ || ''
 return method
 }else{
 return res1
@@ -4109,6 +4108,7 @@ method.__func__=__func__
 method.__repr__=__repr__
 method.__self__=__self__
 method.__str__=__str__
+method.__doc__=res.__doc__ || ''
 method.im_class=klass
 return method
 }
@@ -4401,7 +4401,7 @@ $B.$generator.__class__=__BRYTHON__.$type
 $B.$ternary=function(env,cond,expr1,expr2){
 for(var $py_builtin in __BRYTHON__.builtins){eval("var "+$py_builtin+"=__BRYTHON__.builtins[$py_builtin]")}
 for(var attr in env){eval('var '+attr+'=env["'+attr+'"]')}
-var res='if ('+cond+'){\n'
+var res='if (bool('+cond+')){\n'
 res +='    var $res = '+unescape(expr1)+'\n}else{\n'
 res +='    var $res = '+unescape(expr2)+'\n}'
 eval(res)
