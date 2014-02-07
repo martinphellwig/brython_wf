@@ -79,8 +79,8 @@ l'objet initial :
 >    doc <= 'Site officiel de Python : '+link
 >    doc <= html.BR() + 'Je répète : le site est ' + link.clone()
 
-En général, les classes relatives au HTML ont des attributs portant le même que
-l’objet DOM correspondant. Par exemple, on a accès à l’option choisie par
+En général, les classes relatives au HTML ont des attributs portant le même nom
+que l’objet DOM correspondant. Par exemple, on a accès à l’option choisie par
 l’utilisateur au travers de l’attribut `selectedIndex` d’un objet `SELECT`.
 Brython permet une approche encore plus pythonique avec quelques ajouts.
 
@@ -131,7 +131,7 @@ et un `canvas` HTML5 :
     newdiv <= form + html.BR()
     
     # Finalement, quelque chose de plus orienté HTML5, un canvas avec un
-    # gradient de couleurs, inséré dans la div mais juste sous le tableau.
+    # gradient de couleurs.
     canvas = html.CANVAS(width = 300, height = 300)
     canvas.style = {"width": "100%"}
     ctx = canvas.getContext('2d')
