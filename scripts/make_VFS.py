@@ -1,78 +1,24 @@
-import os
-import json
-import sys
-import re
-
-if sys.version_info[0] >= 3:
-  import io as StringIO
-else:
-  import cStringIO as StringIO
-
-#check to see if slimit or some other minification library is installed
-#set minify equal to slimit's minify function
-
-#NOTE: minify could be any function that takes a string and returns a string
-# Therefore other minification libraries could be used.
-try:
-  import slimit
-  js_minify=slimit.minify
-except ImportError:
-  js_minify=None  
-
-def filter_module(code):
-    """ remove empty lines from modules so that py_VFS will be a little
-        smaller
-    """
-
-    _re_whitespace=re.compile('^\s*$')   #line only contains white space
-    _re_comment=re.compile('^\s*\#.*$')  #line only contains a comment
-
-    _filtered=[]
-    _total=0
-    _count=0
-    _fp=StringIO.StringIO(code)
-    for _line in _fp:
-        _total+=1
-        if _re_whitespace.match(_line) or _re_comment.match(_line):
-           continue
-
-        _count+=1
-        _filtered.append(_line)
-
-    if _total > 0:
-       print("removed: %s empty lines (%d%%)" % (_total - _count, 100.0*_count/_total))
-    return ''.join(_filtered)
-  
-
-try:
-  import mnfy
-
-  def py_minify(source):
-      import ast
-      source_ast = ast.parse(source)
-
-      for transform in mnfy.safe_transforms:
-          transformer = transform()
-          source_ast = transformer.visit(source_ast)
-
-      minifier = mnfy.SourceCode()
-      minifier.visit(source_ast)
-      return str(minifier)
-
-except ImportError:
-  py_minify=filter_module
-
-#brython has issues parsing code created by mnfy so for now use
-#the filter_module version
-py_minify=filter_module
-
-if sys.version_info[0] < 3:  #python 2
-   # we should only use mnfy for python > = 3 since ast is used, 
-   # so let us use our basic minifier, since this script is being executed
-   # by python 2.x
-   py_minifer=filter_module
 
 def process(filename):
+  import os
+  import sys
+  import json
+
+  if sys.version_info[0] >= 3:
+    import io as StringIO
+  else:
+    import cStringIO as StringIO
+
+  import pyminifier
+
+  #check to see if slimit or some other minification library is installed
+  #set minify equal to slimit's minify function
+  try:
+    import slimit
+    js_minify=slimit.minify
+  except ImportError:
+    js_minify=None  
+
   print("generating %s" % filename)
   _main_root=os.path.dirname(filename)
 
@@ -98,7 +44,8 @@ def process(filename):
                     pass
             elif _ext == '.py':
                try:
-                 _data=py_minify(_data)
+                 _data = pyminifier.remove_comments_and_docstrings(_data)
+                 _data = pyminifier.dedent(_data)
                except:
                  pass
 

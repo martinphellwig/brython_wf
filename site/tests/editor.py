@@ -4,6 +4,7 @@ import dis
 import traceback
 
 from browser import doc
+from javascript import JSObject
 
 # set height of container to 66% of screen
 _height = doc.documentElement.clientHeight

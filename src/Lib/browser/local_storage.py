@@ -28,13 +28,15 @@ class LocalStorage:
         return False
 
     def keys(self):
-        return list(self.store)
+        return [self.store.key(i) for i in range(self.store.length)]
 
     def values(self):
         return [self.__getitem__(k) for k in self.keys()]
 
     def items(self):
         return zip(self.keys(),self.values())
+        
+    def clear(self):
+		self.store.clear()
 
 storage = LocalStorage()
-
