@@ -8,6 +8,8 @@ if sys.version_info[0] >= 3:
 else:
   import cStringIO as StringIO
 
+import pyminifier
+
 #check to see if slimit or some other minification library is installed
 #set minify equal to slimit's minify function
 
@@ -101,6 +103,8 @@ def process(filename):
                  _data=py_minify(_data)
                except:
                  pass
+               _data = pyminifier.remove_comments_and_docstrings(_data)
+               _data = pyminifier.dedent(_data)
 
             _vfs_filename=os.path.join(_root, _file).replace(_main_root, '')
             _vfs_filename=_vfs_filename.replace("\\", "/")
