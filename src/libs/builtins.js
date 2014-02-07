@@ -29,8 +29,8 @@ var $module = (function(){
     'slice', 'sorted', 'staticmethod', 'str', 'sum', 'super', 'tuple', 'type', 
     'vars', 'zip']
     for(var i=0;i<builtin_names.length;i++){
-        try{obj[builtin_names[i]]=eval(builtin_names[i])}
-        catch(err){}
+        try{eval("obj['"+builtin_names[i]+"']=__BRYTHON__.builtins."+builtin_names[i])}
+        catch(err){if (__BRYTHON__.$debug) {console.log(err)}}
     }
     return obj
 })()
