@@ -239,6 +239,12 @@ except ImportError:
 
 make_VFS.process(os.path.join(pdir,'src','py_VFS.js'))
 
+# make distribution with core + libraries
+out = open(os.path.join(pdir,'src','brython_dist.js'),'w')
+out.write(open(os.path.join(pdir,'src','brython.js')).read())
+out.write(open(os.path.join(pdir,'src','py_VFS.js')).read())
+out.close()
+
 # changelog file
 try:
     _in = open(os.path.join(pdir,'dist','changelog.txt')).read()

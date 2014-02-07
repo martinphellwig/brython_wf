@@ -33,14 +33,20 @@ var $module = (function($B){
         __name__:'SRE_Pattern'
     }
     $SRE_PatternDict.__mro__ = [$SRE_PatternDict,object.$dict]
+    $SRE_PatternDict.findall = function(self,string){
+        return obj.findall(self.pattern,string,self.flags)
+    }
+    $SRE_PatternDict.finditer = function(self,string){
+        return obj.finditer(self.pattern,string,self.flags)
+    }
     $SRE_PatternDict.match = function(self,string){
         return obj.match(self.pattern,string,self.flags)
     }
     $SRE_PatternDict.search = function(self,string){
-        return obj.obj(self.pattern,string,self.flags)
+        return obj.search(self.pattern,string,self.flags)
     }
     function normflags(flags) {
-       return ((flags & obj.I)? 'i' : '') + ((flags & obj.M)? 'm' : '');
+        return ((flags & obj.I)? 'i' : '') + ((flags & obj.M)? 'm' : '');
     }
     obj.compile = function(pattern,flags){
         return {
@@ -61,18 +67,61 @@ var $module = (function($B){
         return res
     }
     obj.findall = function(pattern,string,flags){
-        var $ns=$B.$MakeArgs('re.search',arguments,['pattern','string'],[],'args','kw') ,
+        var $ns=$B.$MakeArgs('re.findall',arguments,['pattern','string'],[],'args','kw') ,
             args = $ns['args'] ,
             _flags = 0;
         if(args.length>0){var flags=args[0]}
         else{var _flags = getattr($ns['kw'], 'get')('flags',0)}
         
-        var flags = normaiize_flags();
+        var flags = normflags();
         flags += 'gm'
         var jsp = new RegExp(pattern,flags) ,
             jsmatch = string.match(jsp);
         if(jsmatch===null){return []}
         return jsmatch
+    }
+    obj.finditer = function(pattern,string,flags){
+        var $ns=$B.$MakeArgs('re.finditer',arguments,['pattern','string'],[],'args','kw') ,
+            args = $ns['args'] ,
+            _flags = 0;
+        if(args.length>0){var flags=args[0]}
+        else{var _flags = getattr($ns['kw'], 'get')('flags',0)}
+        
+        var flags = normflags();
+        flags += 'gm'
+        var jsp = new RegExp(pattern,flags) ,
+            jsmatch = string.match(jsp);
+        if(jsmatch===null){return []}
+        
+        var _list=[]
+        console.log('jsmatch.length', jsmatch.length)
+        for (var j=0; j < jsmatch.length; j++) {
+            var mo = new Object()
+            mo._match=jsmatch[j]
+            mo.group = function(){
+               var res = []
+               for(var i=0;i<arguments.length;i++){
+                   if(jsmatch[arguments[i]]===undefined){res.push(None)}
+                   else{res.push(jsmatch[arguments[i]])}
+               }
+               if(arguments.length===1){return res[0]}
+               return tuple(res)
+            }
+            mo.groups = function(_default){
+               if(_default===undefined){_default=None}
+               var res = []
+               for(var i=1;i<jsmatch.length;i++){
+                  if(jsmatch[i]===undefined){res.push(_default)}
+                  else{res.push(jsmatch[i])}
+               }
+               return tuple(res)
+            }
+            mo.start = function(){return mo._match.index}
+            mo.end = function(){return mo._match.length-mo._match.index}
+            mo.string = string
+            _list.push(JSObject(mo))
+        }
+        return _list
     }
     obj.search = function(pattern,string){
         var $ns=$B.$MakeArgs('re.search',arguments,['pattern','string'],[],'args','kw')
@@ -103,6 +152,7 @@ var $module = (function($B){
             return tuple(res)
         }
         mo.start = function(){return jsmatch.index}
+        mo.end = function(){return jsmatch.length-jsmatch.index}
         mo.string = string
         return JSObject(mo)
     }
