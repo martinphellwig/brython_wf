@@ -111,15 +111,31 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
         return obj['get_'+attr]
     }else if(obj.js[attr] !== undefined){
         if(typeof obj.js[attr]=='function'){
+            // If the attribute of a JSObject is a function F, it is converted to a function G
+            // where the arguments passed to the Python function G are converted to Javascript
+            // objects usable by the underlying function F
             var res = function(){
                 var args = [],arg
                 for(var i=0;i<arguments.length;i++){
                     arg = arguments[i]
                     if(arg && (arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
+                        // instances of JSObject and JSConstructor are transformed into the
+                        // underlying Javascript object
                         args.push(arg.js)
-                    }else if(arg && arg.__class__===__BRYTHON__.DOMNode){
+                    }else if(arg && arg.__class__===$B.DOMNode){
+                        // instances of DOMNode are transformed into the underlying DOM element
                         args.push(arg.elt)
+                    }else if(arg && arg.__class__===$B.builtins.dict.$dict){
+                        // Python dictionaries are transformed into a Javascript object
+                        // whose attributes are the dictionary keys
+                        var jsobj = {}
+                        for(var i=0;i<arg.$keys.length;i++){jsobj[arg.$keys[i]]=arg.$values[i]}
+                        args.push(jsobj)
+                    }else if(arg && arg.__class__===$B.builtins.float.$dict){
+                        // Python floats are converted to the underlying value
+                        args.push(arg.value)
                     }else{
+                        // other types are left unchanged
                         args.push(arg)
                     }
                 }
