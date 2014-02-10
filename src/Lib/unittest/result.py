@@ -53,6 +53,8 @@ class TestResult(object):
 
     def printErrors(self):
         "Called by TestRunner after test run"
+        #fixme brython
+        pass
 
     def startTest(self, test):
         "Called when the given test is about to be run"
