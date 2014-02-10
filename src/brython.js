@@ -63,6 +63,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "marshal",
 "math",
 "time",
+"WS_FTP",
 "_ajax",
 "_browser",
 "_html",
@@ -6147,8 +6148,14 @@ for(var i=0;i<arguments.length;i++){
 arg=arguments[i]
 if(arg &&(arg.__class__===$JSObjectDict || arg.__class__===$JSConstructorDict)){
 args.push(arg.js)
-}else if(arg && arg.__class__===__BRYTHON__.DOMNode){
+}else if(arg && arg.__class__===$B.DOMNode){
 args.push(arg.elt)
+}else if(arg && arg.__class__===$B.builtins.dict.$dict){
+var jsobj={}
+for(var i=0;i<arg.$keys.length;i++){jsobj[arg.$keys[i]]=arg.$values[i]}
+args.push(jsobj)
+}else if(arg && arg.__class__===$B.builtins.float.$dict){
+args.push(arg.value)
 }else{
 args.push(arg)
 }
