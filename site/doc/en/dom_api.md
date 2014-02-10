@@ -3,9 +3,9 @@ Introduction
 
 For the interface with the browser, Brython is compliant with the Document Object Model interface, which is widely documented on the web :
 
-- [référence du W3C](www.w3.org/DOM/)
-- [article Wikipedia](en.wikipedia.org/wiki/Document_Object_Model)
-- [site Mozilla](https://developer.mozilla.org/en-US/docs/DOM)
+- [W3C reference](www.w3.org/DOM/)
+- [Wikipedia page](en.wikipedia.org/wiki/Document_Object_Model)
+- [Mozilla site](https://developer.mozilla.org/en-US/docs/DOM)
 
 This interface is language-independant. With Brython, all the operations described in the DOM API rely on two objects defined in the module **browser** : _document_ and _window_
 
@@ -26,3 +26,4 @@ _document_ implements the interface `Document` defined in the DOM API. For insta
 > add the element _elt_ to the document
 
 Besides this standard interface, Brython propose an alternative interface, more familiar for Brython developers. It is decribed in the following pages
+
