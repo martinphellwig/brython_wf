@@ -3,7 +3,7 @@ Elements attributes and methods
 
 The elements in a page have attributes and methods that depend on the element type ; they can be found on many Internet sites
 
-Since their name may vary depending on the browser, Brython defines additinal attributes that work in all cases :
+Since their name may vary depending on the browser, Brython defines additional attributes that work in all cases :
 
 <table border=1 cellpadding=3>
 <tr>

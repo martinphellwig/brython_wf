@@ -7,7 +7,7 @@ For the interface with the browser, Brython is compliant with the Document Objec
 - [Wikipedia page](en.wikipedia.org/wiki/Document_Object_Model)
 - [Mozilla site](https://developer.mozilla.org/en-US/docs/DOM)
 
-This interface is language-independant. With Brython, all the operations described in the DOM API rely on two objects defined in the module **browser** : _document_ and _window_
+This interface is language-independent. With Brython, all the operations described in the DOM API rely on two objects defined in the module **browser** : _document_ and _window_
 
 _document_ implements the interface `Document` defined in the DOM API. For instance, it supports the following methods :
 
