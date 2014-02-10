@@ -3,7 +3,7 @@
 Brython follows the Python syntax:
 
 - whitespaces are significant and define blocks
-- lists are created with `[]` or `list()`, tuples with `()` or `tuple()`, dictionnaries with `{}` or `dict()` and sets with `set()`
+- lists are created with `[]` or `list()`, tuples with `()` or `tuple()`, dictionaries with `{}` or `dict()` and sets with `set()`
 - list, dict and set comprehensions:
  -`[ expr for item in iterable if condition ]`
  -`dict((i,2*i) for i in range(5))`
