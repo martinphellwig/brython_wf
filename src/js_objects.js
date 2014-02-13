@@ -58,7 +58,7 @@ $JSConstructorDict.__call__ = function(self){
         else if(isinstance(arg,__builtins__.dict)){
             var obj = new Object()
             for(var j=0;j<arg.$keys.length;j++){
-                obj[arg.$keys[j]]=arg.$values[j]
+                obj[arg.$keys[j]]=arg.$values[j].js || arg.$values[j]
             }
             args.push(obj)
         }else{args.push(arg)}
