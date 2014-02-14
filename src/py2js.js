@@ -2000,7 +2000,7 @@ function $ListOrTupleCtx(context,real){
         return document.$py_src[module]
     }
     this.to_js = function(){
-        if(this.real==='list'){return 'list.__call__(['+$to_js(this.tree)+'])'}
+        if(this.real==='list'){return 'list(['+$to_js(this.tree)+'])'}
         else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
             var src = this.get_src()
             var res = '__BRYTHON__.$mkdict($globals,$locals),'
