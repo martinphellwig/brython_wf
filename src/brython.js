@@ -1736,7 +1736,7 @@ var module=ctx_node.node.module
 return document.$py_src[module]
 }
 this.to_js=function(){
-if(this.real==='list'){return 'list.__call__(['+$to_js(this.tree)+'])'}
+if(this.real==='list'){return 'list(['+$to_js(this.tree)+'])'}
 else if(['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1){
 var src=this.get_src()
 var res='__BRYTHON__.$mkdict($globals,$locals),'
@@ -4257,7 +4257,10 @@ return $ns
 }
 $B.get_class=function(obj){
 var klass=obj.__class__
-if(klass===undefined &&(typeof obj=='function')){return $B.$FunctionDict}
+if(klass===undefined){
+if(typeof obj=='function'){return $B.$FunctionDict}
+else if(typeof obj=='number'){return $B.builtins.int.$dict}
+}
 return klass
 }
 $B.$mkdict=function(glob,loc){
@@ -4583,14 +4586,16 @@ else{throw err}
 }
 }
 }
+var $io={__class__:$B.$type,__name__:'io'}
+$io.__mro__=[$io,$B.builtins.object.$dict]
 $B.stderr={
-__getattr__:function(attr){return this[attr]},
+__class__:$io,
 write:function(data){console.log(data)},
 flush:function(){}
 }
 $B.stderr_buff='' 
 $B.stdout={
-__getattr__:function(attr){return this[attr]},
+__class__:$io,
 write: function(data){console.log(data)},
 flush:function(){}
 }
@@ -4958,8 +4963,7 @@ __next__: __next__
 }
 }
 function getattr(obj,attr,_default){
-var klass=obj.__class__
-if(klass===undefined &&(typeof obj=='function')){klass=$FunctionDict}
+var klass=$B.get_class(obj)
 if(klass===undefined){
 if(obj[attr]!==undefined){return obj[attr]}
 else if(_default!==undefined){return _default}
@@ -5844,7 +5848,7 @@ if($comp_ops.indexOf($B.$comps[$key])>-1){
 None['__'+$B.$comps[$key]+'__']=(function(k){
 return function(other){
 throw __builtins__.TypeError("unorderable types: NoneType() "+k+" "+
-other.__class__.__name__)}
+$B.get_class(other).__name__)}
 })($key)
 }
 }
@@ -5860,7 +5864,6 @@ $FunctionDict.__repr__=$FunctionDict.__str__=function(self){return '<function '+
 $FunctionDict.__mro__=[$FunctionDict,$ObjectDict]
 Function.__name__='function'
 Function.__class__=$B.$type
-Function.prototype.__call__=function(){return this.apply(null,arguments)}
 $FunctionDict.$factory=Function
 __builtins__.$BaseExceptionDict={
 __class__:$B.$type,
@@ -6899,7 +6902,6 @@ $comp_func +=''
 for(var $op in $B.$comps){
 eval("$IntDict.__"+$B.$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
-Number.prototype.__class__=$IntDict
 Number.prototype.$fast_augm=true 
 var int=function(value){
 var res

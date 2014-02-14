@@ -105,7 +105,11 @@ $B.get_class = function(obj){
     // generally we get the attribute __class__ of an object by obj.__class__
     // but functions don't have this attribute so we must return it
     var klass = obj.__class__
-    if(klass===undefined && (typeof obj=='function')){return $B.$FunctionDict}
+    //console.log('get class of '+obj+' klass '+klass)
+    if(klass===undefined){
+        if(typeof obj=='function'){return $B.$FunctionDict}
+        else if(typeof obj=='number'){return $B.builtins.int.$dict}
+    }
     return klass
 }
 
@@ -493,15 +497,18 @@ $B.$is_member = function(item,_set){
 
 // default standard output and error
 // can be reset by sys.stdout or sys.stderr
+var $io = {__class__:$B.$type,__name__:'io'}
+$io.__mro__ = [$io,$B.builtins.object.$dict]
+
 $B.stderr = {
-    __getattr__:function(attr){return this[attr]},
+    __class__:$io,
     write:function(data){console.log(data)},
     flush:function(){}
 }
 $B.stderr_buff = '' // buffer for standard output
 
 $B.stdout = {
-    __getattr__:function(attr){return this[attr]},
+    __class__:$io,
     write: function(data){console.log(data)},
     flush:function(){}
 }
