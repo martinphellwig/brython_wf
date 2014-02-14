@@ -109,6 +109,7 @@ $B.get_class = function(obj){
     if(klass===undefined){
         if(typeof obj=='function'){return $B.$FunctionDict}
         else if(typeof obj=='number'){return $B.builtins.int.$dict}
+        else if(typeof obj=='string'){return $B.builtins.str.$dict}
     }
     return klass
 }

@@ -1217,9 +1217,6 @@ $StringDict.zfill = function(self, width) {
   return Array(width - self.length +1).join('0');
 }
 
-// set String.prototype attributes
-String.prototype.__class__ = $StringDict
-
 function str(arg){
     if(arg===undefined){return ''}
     else{

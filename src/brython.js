@@ -4260,6 +4260,7 @@ var klass=obj.__class__
 if(klass===undefined){
 if(typeof obj=='function'){return $B.$FunctionDict}
 else if(typeof obj=='number'){return $B.builtins.int.$dict}
+else if(typeof obj=='string'){return $B.builtins.str.$dict}
 }
 return klass
 }
@@ -8727,7 +8728,6 @@ return self
 }
 return Array(width - self.length +1).join('0')
 }
-String.prototype.__class__=$StringDict
 function str(arg){
 if(arg===undefined){return ''}
 else{
