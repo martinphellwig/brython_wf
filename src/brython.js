@@ -3738,15 +3738,16 @@ return self===other
 }
 $ObjectDict.__ge__=$ObjectNI('__ge__','>=')
 $ObjectDict.__getattribute__=function(obj,attr){
+var klass=$B.get_class(obj)
 if(attr==='__class__'){
-return obj.__class__.$factory
+return klass.$factory
 }
 var res=obj[attr],args=[]
 if(obj.$dict!==undefined && obj.$dict[attr]!==undefined){
 res=obj.$dict[attr]
 }
 if(res===undefined){
-var mro=obj.__class__.__mro__
+var mro=klass.__mro__
 for(var i=0;i<mro.length;i++){
 var v=mro[i][attr]
 if(v!==undefined){
@@ -3767,7 +3768,7 @@ get_func=function(x){return x}
 if(get_func!==undefined){
 res.__name__=attr
 if(attr=='__new__'){res.$type='staticmethod'}
-var res1=get_func.apply(null,[res,obj,obj.__class__])
+var res1=get_func.apply(null,[res,obj,klass])
 if(typeof res1=='function'){
 if(res1.__class__===$B.$factory){return res}
 var __self__,__func__,__repr__,__str__
@@ -3777,24 +3778,24 @@ __self__=obj
 __func__=res1
 __repr__=__str__=function(){
 var x='<bound method '+attr
-x +=" of '"+obj.__class__.__name__+"' object>"
+x +=" of '"+klass.__name__+"' object>"
 return x
 }
 }else if(res.$type==='function'){
 return res
 }else if(res.$type==='classmethod'){
-args=[obj.__class__]
-__self__=obj.__class_
+args=[klass]
+__self__=klass
 __func__=res1
 __repr__=__str__=function(){
 var x='<bound method type'+'.'+attr
-x +=' of '+obj.__class__.__name__+'>'
+x +=' of '+klass.__name__+'>'
 return x
 }
 }else if(res.$type==='staticmethod'){
 args=[]
 __repr__=__str__=function(){
-return '<function '+obj.__class__.__name__+'.'+attr+'>'
+return '<function '+klass.__name__+'.'+attr+'>'
 }
 }
 var method=(function(initial_args){
@@ -3821,7 +3822,7 @@ return res
 }else{
 var _ga=obj['__getattr__']
 if(_ga===undefined){
-var mro=obj.__class__.__mro__
+var mro=klass.__mro__
 if(mro===undefined){console.log('in getattr mro undefined for '+obj)}
 for(var i=0;i<mro.length;i++){
 var v=mro[i]['__getattr__']
@@ -3940,7 +3941,7 @@ return factory
 }
 }
 $B.builtins.type=function(name,bases,cl_dict){
-if(arguments.length==1){return name.__class__.$factory}
+if(arguments.length==1){return $B.get_class(name).$factory}
 var class_dict=$B.class_dict=new Object()
 class_dict.__class__=$B.$type
 class_dict.__name__=name
@@ -4253,6 +4254,11 @@ $ns[$other_kw].$values=$dict_values
 }
 if($other_args!=null){$ns[$other_args]=__BRYTHON__.builtins.tuple($ns[$other_args])}
 return $ns
+}
+$B.get_class=function(obj){
+var klass=obj.__class__
+if(klass===undefined &&(typeof obj=='function')){return $B.$FunctionDict}
+return klass
 }
 $B.$mkdict=function(glob,loc){
 var res={}
@@ -4687,7 +4693,7 @@ function abs(obj){
 if(isinstance(obj,__builtins__.int)){return __builtins__.int(Math.abs(obj))}
 else if(isinstance(obj,__builtins__.float)){return __builtins__.float(Math.abs(obj.value))}
 else if(hasattr(obj,'__abs__')){return getattr(obj,'__abs__')()}
-else{throw __builtins__.TypeError("Bad operand type for abs(): '"+obj.__class__+"'")}
+else{throw __builtins__.TypeError("Bad operand type for abs(): '"+$B.get_class(obj)+"'")}
 }
 function _alert(src){alert(__builtins__.str(src))}
 function all(obj){
@@ -4846,9 +4852,10 @@ function compile(source, filename, mode){
 return $B.py2js(source, filename).to_js()
 }
 function delattr(obj, attr){
+var klass=$B.get_class(obj)
 var res=obj[attr]
 if(res===undefined){
-var mro=obj.__class__.__mro__
+var mro=klass.__mro__
 for(var i=0;i<mro.length;i++){
 var res=mro[i][attr]
 if(res!==undefined){break}
@@ -4867,7 +4874,7 @@ for(var attr in $globals){res.push(attr)}
 return res
 }
 if(isinstance(obj,$B.JSObject)){obj=obj.js}
-if(obj.__class__.is_class){obj=obj.$dict}
+if($B.get_class(obj).is_class){obj=obj.$dict}
 else{
 try{
 var res=getattr(obj, '__dir__')()
@@ -4886,8 +4893,9 @@ res.sort()
 return res
 }
 function divmod(x,y){
-return[x.__class__.__floordiv__(x,y),
-x.__class__.__mod__(x,y)]
+var klass=$B.get_class(x)
+return[klass.__floordiv__(x,y),
+klass.__mod__(x,y)]
 }
 var $EnumerateDict={__class__:$B.$type,__name__:'enumerate'}
 $EnumerateDict.__mro__=[$EnumerateDict,$ObjectDict]
@@ -4951,6 +4959,7 @@ __next__: __next__
 }
 function getattr(obj,attr,_default){
 var klass=obj.__class__
+if(klass===undefined &&(typeof obj=='function')){klass=$FunctionDict}
 if(klass===undefined){
 if(obj[attr]!==undefined){return obj[attr]}
 else if(_default!==undefined){return _default}
@@ -5006,19 +5015,19 @@ return method
 }
 return klass[attr]
 }
-var is_class=obj.__class__.is_class, mro, attr_func
+var is_class=klass.is_class, mro, attr_func
 if(is_class){
 attr_func=$B.$type.__getattribute__
 if(obj.$dict===undefined){console.log('obj '+obj+' $dict undefined')}
 obj=obj.$dict
 }else{
-var mro=obj.__class__.__mro__
+var mro=klass.__mro__
 if(mro===undefined){
 console.log('in getattr '+attr+' mro undefined for '+obj+' dir '+dir(obj)+' class '+obj.__class__)
 for(var _attr in obj){
 console.log('obj attr '+_attr+' : '+obj[_attr])
 }
-console.log('obj class '+dir(obj.__class__)+' str '+obj.__class__)
+console.log('obj class '+dir(klass)+' str '+klass)
 }
 for(var i=0;i<mro.length;i++){
 attr_func=mro[i]['__getattribute__']
@@ -5032,7 +5041,7 @@ var res=attr_func(obj,attr)
 if(res!==undefined){return res}
 if(_default !==undefined){return _default}
 else{
-throw __builtins__.AttributeError("'"+obj.__class__.__name__+"' object has no attribute '"+attr+"'")
+throw __builtins__.AttributeError("'"+klass.__name__+"' object has no attribute '"+attr+"'")
 }
 }
 getattr.__name__='getattr'
@@ -5100,17 +5109,17 @@ if(isinstance(obj,arg[i])){return true}
 }
 return false
 }else{
+var klass=$B.get_class(obj)
 if(arg===__builtins__.int){
 return((typeof obj)=="number"||obj.constructor===Number)&&(obj.valueOf()%1===0)
 }
 if(arg===__builtins__.float){
 return((typeof obj=="number" && obj.valueOf()%1!==0))||
-(obj.__class__===__builtins__.float.$dict)
+(klass===__builtins__.float.$dict)
 }
-if(arg===__builtins__.str){return(typeof obj=="string"||obj.__class__===__builtins__.str)}
+if(arg===__builtins__.str){return(typeof obj=="string"||klass===__builtins__.str)}
 if(arg===__builtins__.list){return(obj.constructor===Array)}
-if(obj.__class__!==undefined){
-var klass=obj.__class__
+if(klass!==undefined){
 if(klass.__mro__===undefined){console.log('mro undef for '+klass+' '+dir(klass)+'\n arg '+arg)}
 for(var i=0;i<klass.__mro__.length;i++){
 if(klass.__mro__[i]===arg.$dict){return true}
@@ -5124,7 +5133,7 @@ function issubclass(klass,classinfo){
 if(arguments.length!==2){
 throw __builtins__.TypeError("issubclass expected 2 arguments, got "+arguments.length)
 }
-if(!klass.__class__.is_class){
+if(!klass.__class__ || !klass.__class__.is_class){
 throw __builtins__.TypeError("issubclass() arg 1 must be a class")
 }
 if(isinstance(classinfo,__builtins__.tuple)){
@@ -5143,13 +5152,13 @@ function iter(obj){
 try{return getattr(obj,'__iter__')()}
 catch(err){
 $B.$pop_exc()
-throw __builtins__.TypeError("'"+obj.__class__.__name__+"' object is not iterable")
+throw __builtins__.TypeError("'"+$B.get_class(obj).__name__+"' object is not iterable")
 }
 }
 function len(obj){
 try{return getattr(obj,'__len__')()}
 catch(err){
-throw __builtins__.TypeError("object of type '"+obj.__class__.__name__+"' has no len()")}
+throw __builtins__.TypeError("object of type '"+$B.get_class(obj).__name__+"' has no len()")}
 }
 function locals(obj_id,module){
 if($B.scope[obj_id]===undefined){
@@ -5241,7 +5250,7 @@ return $extreme(args,'__lt__')
 function next(obj){
 var ga=getattr(obj,'__next__')
 if(ga!==undefined){return ga()}
-throw __builtins__.TypeError("'"+obj.__class__.__name__+"' object is not an iterator")
+throw __builtins__.TypeError("'"+$B.get_class(obj).__name__+"' object is not an iterator")
 }
 var $NotImplementedDict={__class__:$B.$type,__name__:'NotImplementedType'}
 $NotImplementedDict.__mro__=[$NotImplementedDict,$ObjectDict]
@@ -5482,7 +5491,7 @@ if(!isinstance(attr,__builtins__.str)){throw __builtins__.TypeError("setattr(): 
 if($B.forbidden.indexOf(attr)>-1){attr='$$'+attr}
 var res=obj[attr]
 if(res===undefined){
-var mro=obj.__class__.__mro__
+var mro=$B.get_class(obj).__mro__
 for(var i=0;i<mro.length;i++){
 var res=mro[i][attr]
 if(res!==undefined){break}
@@ -5846,13 +5855,12 @@ return function(){return "<method-wrapper "+f+" of NoneType object>"}
 })($func)
 }
 }
-var $FunctionDict={__class__:$B.$type}
+var $FunctionDict=$B.$FunctionDict={__class__:$B.$type}
 $FunctionDict.__repr__=$FunctionDict.__str__=function(self){return '<function '+self.__name__+'>'}
 $FunctionDict.__mro__=[$FunctionDict,$ObjectDict]
 Function.__name__='function'
 Function.__class__=$B.$type
 Function.prototype.__call__=function(){return this.apply(null,arguments)}
-Function.prototype.__class__=$FunctionDict
 $FunctionDict.$factory=Function
 __builtins__.$BaseExceptionDict={
 __class__:$B.$type,

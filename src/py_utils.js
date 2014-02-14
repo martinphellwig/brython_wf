@@ -101,6 +101,14 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$
     return $ns
 }
 
+$B.get_class = function(obj){
+    // generally we get the attribute __class__ of an object by obj.__class__
+    // but functions don't have this attribute so we must return it
+    var klass = obj.__class__
+    if(klass===undefined && (typeof obj=='function')){return $B.$FunctionDict}
+    return klass
+}
+
 $B.$mkdict = function(glob,loc){
     var res = {}
     for(var arg in glob){res[arg]=glob[arg]}

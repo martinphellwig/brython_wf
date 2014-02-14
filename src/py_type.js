@@ -66,7 +66,7 @@ $B.$class_constructor = function(class_name,class_obj,parents,parents_names,kwar
 
 $B.builtins.type = function(name,bases,cl_dict){
     // if called with a single argument, returns the class of the first argument
-    if(arguments.length==1){return name.__class__.$factory}
+    if(arguments.length==1){return $B.get_class(name).$factory}
 
     // Else return a new type object. This is essentially a dynamic form of the 
     // class statement. The name string is the class name and becomes the 
