@@ -66,8 +66,9 @@ $ObjectDict.__eq__ = function(self,other){
 $ObjectDict.__ge__ = $ObjectNI('__ge__','>=')
 
 $ObjectDict.__getattribute__ = function(obj,attr){
+    var klass = $B.get_class(obj)
     if(attr==='__class__'){
-        return obj.__class__.$factory
+        return klass.$factory
     }
     var res = obj[attr],args=[]
     if(obj.$dict!==undefined && obj.$dict[attr]!==undefined){
@@ -76,7 +77,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
     if(res===undefined){
         // search in classes hierarchy, following method resolution order
         //if(attr=='show'){console.log('object getattr '+attr+' of obj '+obj)}
-        var mro = obj.__class__.__mro__
+        var mro = klass.__mro__
         for(var i=0;i<mro.length;i++){
             var v=mro[i][attr]
             if(v!==undefined){
@@ -101,7 +102,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
             res.__name__ = attr
             // __new__ is a static method
             if(attr=='__new__'){res.$type='staticmethod'}
-            var res1 = get_func.apply(null,[res,obj,obj.__class__])
+            var res1 = get_func.apply(null,[res,obj,klass])
             if(typeof res1=='function'){
                 // if attribute is a class then return it as is
                 // example :
@@ -132,7 +133,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                     __func__ = res1
                     __repr__ = __str__ = function(){
                         var x = '<bound method '+attr
-                        x += " of '"+obj.__class__.__name__+"' object>"
+                        x += " of '"+klass.__name__+"' object>"
                         return x
                     }
                 }else if(res.$type==='function'){
@@ -140,19 +141,19 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                     return res
                 }else if(res.$type==='classmethod'){
                     // class method : called with the class as first argument
-                    args = [obj.__class__]
-                    __self__ = obj.__class_
+                    args = [klass]
+                    __self__ = klass
                     __func__ = res1
                     __repr__ = __str__ = function(){
                         var x = '<bound method type'+'.'+attr
-                        x += ' of '+obj.__class__.__name__+'>'
+                        x += ' of '+klass.__name__+'>'
                         return x
                     }
                 }else if(res.$type==='staticmethod'){
                     // static methods have no __self__ or __func__
                     args = []
                     __repr__ = __str__ = function(){
-                        return '<function '+obj.__class__.__name__+'.'+attr+'>'
+                        return '<function '+klass.__name__+'.'+attr+'>'
                     }
                 }
                 var method = (function(initial_args){
@@ -181,7 +182,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
         // XXX search __getattr__
         var _ga = obj['__getattr__']
         if(_ga===undefined){
-            var mro = obj.__class__.__mro__
+            var mro = klass.__mro__
             if(mro===undefined){console.log('in getattr mro undefined for '+obj)}
             for(var i=0;i<mro.length;i++){
                 var v=mro[i]['__getattr__']
