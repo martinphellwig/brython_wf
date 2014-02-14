@@ -1398,13 +1398,7 @@ Function.__class__ = $B.$type
 
 Function.prototype.__call__ = function(){return this.apply(null,arguments)}
 Function.prototype.__class__ = $FunctionDict
-Function.prototype.__get__ = function(self,obj,objtype){
-    // Functions are Python descriptors, so this function is called by
-    // __getattribute__ if the attribute of an object is a function
-    // If the object is a class, __get__ is called with (None,klass)
-    // If it is an instance, it is called with (instance,type(instance))
-    return self
-}
+
 $FunctionDict.$factory = Function
 
 // built-in exceptions

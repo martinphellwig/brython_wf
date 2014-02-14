@@ -93,11 +93,15 @@ $ObjectDict.__getattribute__ = function(obj,attr){
     }
         
     if(res!==undefined){
-        if(res.__get__!==undefined){ // descriptor
+        var get_func = res.__get__
+        if(get_func===undefined && (typeof res=='function')){
+            get_func = function(x){return x}
+        }
+        if(get_func!==undefined){ // descriptor
             res.__name__ = attr
             // __new__ is a static method
             if(attr=='__new__'){res.$type='staticmethod'}
-            var res1 = res.__get__.apply(null,[res,obj,obj.__class__])
+            var res1 = get_func.apply(null,[res,obj,obj.__class__])
             if(typeof res1=='function'){
                 // if attribute is a class then return it as is
                 // example :
