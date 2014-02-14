@@ -246,10 +246,14 @@ $B.$type.__getattribute__=function(klass,attr){
         }
     }
     if(res!==undefined){
-        if(res.__get__!==undefined){ // descriptor
+        var get_func = res.__get__
+        if(get_func===undefined && (typeof res=='function')){
+            get_func = function(x){return x}
+        }
+        if(get_func!==undefined){ // descriptor
             // __new__ is a static method
             if(attr=='__new__'){res.$type='staticmethod'}
-            var res1 = res.__get__.apply(null,[res,$B.builtins.None,klass])
+            var res1 = get_func.apply(null,[res,$B.builtins.None,klass])
             var args
             if(typeof res1=='function'){
                 res.__name__ = attr
