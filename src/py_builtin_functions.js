@@ -344,8 +344,7 @@ function filter(){
 //format() (built in function)
 
 function getattr(obj,attr,_default){
-    var klass = obj.__class__
-    if(klass===undefined && (typeof obj=='function')){klass = $FunctionDict}
+    var klass = $B.get_class(obj)
     //if(attr=='alert'){console.log('-- getattr '+attr+' of obj '+obj+' native '+klass.$native)}
     if(klass===undefined){
         // for native JS objects used in Python code
@@ -1378,7 +1377,7 @@ for(var $key in $B.$comps){ // None is not orderable with any type
         None['__'+$B.$comps[$key]+'__']=(function(k){
             return function(other){
             throw __builtins__.TypeError("unorderable types: NoneType() "+k+" "+
-                other.__class__.__name__)}
+                $B.get_class(other).__name__)}
         })($key)
     }
 }
@@ -1397,9 +1396,6 @@ $FunctionDict.__repr__=$FunctionDict.__str__ = function(self){return '<function 
 $FunctionDict.__mro__ = [$FunctionDict,$ObjectDict]
 Function.__name__ = 'function'
 Function.__class__ = $B.$type
-
-Function.prototype.__call__ = function(){return this.apply(null,arguments)}
-//Function.prototype.__class__ = $FunctionDict
 
 $FunctionDict.$factory = Function
 
