@@ -230,14 +230,16 @@ $JSObjectDict.__str__ = $JSObjectDict.__repr__
 
 function JSObject(obj){
     if(obj===null){return new $JSObject(obj)}
-    if(obj.__class__===__builtins__.list.$dict){
+    var klass = $B.get_class(obj)
+    if(klass===__builtins__.list.$dict){
         // JS arrays not created by list() must be wrapped
         if(obj.__brython__){return obj}
         else{var res = new $JSObject(obj)
             return res
         }
     }
-    if(obj.__class__!==undefined && (typeof obj!=='function')){return obj}
+    //if(obj.__class__!==undefined && (typeof obj!=='function')){return obj}
+    if(klass!==undefined){return obj}
     return new $JSObject(obj)
 }
 JSObject.__class__ = $B.$factory
