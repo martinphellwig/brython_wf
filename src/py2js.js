@@ -4258,7 +4258,7 @@ function brython(options){
                 //if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
                     $trace += '\n'+$err.info
                 //}
-                __BRYTHON__.stderr.__getattr__('write')($trace)
+                getattr(__BRYTHON__.stderr,'write')($trace)
                 //$err.message += '\n'+$err.info
                 throw $err
             }
