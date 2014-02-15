@@ -536,4 +536,8 @@ assert ("ko" if [] else "ok")=="ok"
 assert ("ko" if {} else "ok")=="ok"
 assert ("ko" if False else "ok")=="ok"
 
+# issue 213
+import math
+assert str(math.atan2(0.,-0.)).startswith('3.14')
+
 print('passed all tests')
