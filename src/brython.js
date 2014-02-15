@@ -4262,6 +4262,7 @@ if(typeof obj=='function'){return $B.$FunctionDict}
 else if(typeof obj=='number'){return $B.builtins.int.$dict}
 else if(typeof obj=='string'){return $B.builtins.str.$dict}
 else if(obj===true||obj===false){return $B.$BoolDict}
+else if(typeof obj=='object' && obj.constructor===Array){return $B.builtins.list.$dict}
 }
 return klass
 }
@@ -7671,7 +7672,6 @@ return res
 list.__class__=$B.$factory
 list.$dict=$ListDict
 $ListDict.$factory=list
-Array.prototype.__class__=$ListDict
 Array.prototype.$dict={
 'pop':function(){$ListDict.pop.apply(this,arguments)},
 'sort':function(){$ListDict.sort.apply(this,arguments)}
