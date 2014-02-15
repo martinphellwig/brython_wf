@@ -173,7 +173,7 @@ function $FloatClass(value){
 var float = function (value){
     if(value===undefined){return new $FloatClass(0.0)}
     if(typeof value=="number" || (typeof value=="string" && !isNaN(value))){
-        var res = new $FloatClass(parseFloat(value))
+        var res = new $FloatClass(eval(value))
         return res
     }
     if(isinstance(value,float)) return value

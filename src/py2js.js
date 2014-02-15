@@ -3586,7 +3586,7 @@ function $transition(context,token){
             // of the correct value
             context.parent.parent.tree.pop()
             var value = arguments[2]
-            if(context.op==='-'){value=-value}
+            if(context.op==='-'){value="-"+value}
             if(context.op==='~'){value=~value}
             return $transition(context.parent.parent,token,value)
         }else if(token==='id'){
@@ -3936,7 +3936,7 @@ function $tokenize(src,module,parent){
                     context = $transition(context,'float',res[0])
                 }else{
                     $pos = pos
-                    context = $transition(context,'float',eval(res[0]))
+                    context = $transition(context,'float',res[0]) //eval(res[0]))
                 }
             }else{
                 res = float_pattern2.exec(src.substr(pos))
@@ -3946,7 +3946,7 @@ function $tokenize(src,module,parent){
                 }else{
                     res = int_pattern.exec(src.substr(pos))
                     $pos = pos
-                    context = $transition(context,'int',eval(res[0]))
+                    context = $transition(context,'int',res[0]) //eval(res[0]))
                 }
             }
             pos += res[0].length

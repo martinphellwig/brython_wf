@@ -3084,7 +3084,7 @@ else{$_SyntaxError(C,'token '+token+' after '+C)}
 if(['int','float'].indexOf(token)>-1){
 C.parent.parent.tree.pop()
 var value=arguments[2]
-if(C.op==='-'){value=-value}
+if(C.op==='-'){value="-"+value}
 if(C.op==='~'){value=~value}
 return $transition(C.parent.parent,token,value)
 }else if(token==='id'){
@@ -3397,7 +3397,7 @@ $pos=pos
 C=$transition(C,'float',res[0])
 }else{
 $pos=pos
-C=$transition(C,'float',eval(res[0]))
+C=$transition(C,'float',res[0])
 }
 }else{
 res=float_pattern2.exec(src.substr(pos))
@@ -3407,7 +3407,7 @@ C=$transition(C,'float',res[0])
 }else{
 res=int_pattern.exec(src.substr(pos))
 $pos=pos
-C=$transition(C,'int',eval(res[0]))
+C=$transition(C,'int',res[0])
 }
 }
 pos +=res[0].length
@@ -6702,7 +6702,7 @@ this.valueOf=function(){return value}
 var float=function(value){
 if(value===undefined){return new $FloatClass(0.0)}
 if(typeof value=="number" ||(typeof value=="string" && !isNaN(value))){
-var res=new $FloatClass(parseFloat(value))
+var res=new $FloatClass(eval(value))
 return res
 }
 if(isinstance(value,float))return value
