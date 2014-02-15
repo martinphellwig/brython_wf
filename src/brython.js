@@ -7601,22 +7601,22 @@ self[self.length-i-1]=buf
 function $partition(arg,array,begin,end,pivot)
 {
 var piv=array[pivot]
-array.swap(pivot, end-1)
+array=swap(array, pivot, end-1)
 var store=begin
 for(var ix=begin;ix<end-1;++ix){
 if(getattr(arg(array[ix]),'__le__')(arg(piv))){
-array.swap(store, ix)
+array=swap(array, store, ix)
 ++store
 }
 }
-array.swap(end-1, store)
+array=swap(array, end-1, store)
 return store
 }
-Array.prototype.swap=function(a, b)
-{
-var tmp=this[a]
-this[a]=this[b]
-this[b]=tmp
+function swap(_array,a,b){
+var tmp=_array[a]
+_array[a]=_array[b]
+_array[b]=tmp
+return _array
 }
 function $qsort(arg,array, begin, end)
 {
@@ -7672,10 +7672,6 @@ return res
 list.__class__=$B.$factory
 list.$dict=$ListDict
 $ListDict.$factory=list
-Array.prototype.$dict={
-'pop':function(){$ListDict.pop.apply(this,arguments)},
-'sort':function(){$ListDict.sort.apply(this,arguments)}
-}
 function $tuple(arg){return arg}
 var $TupleDict={__class__:$B.$type,__name__:'tuple',$native:true}
 $TupleDict.__iter__=function(self){
