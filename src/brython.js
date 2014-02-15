@@ -1646,7 +1646,7 @@ this.toString=function(){return 'int '+this.value}
 this.parent=C
 this.tree=[]
 C.tree.push(this)
-this.to_js=function(){return 'Number('+this.value+')'}
+this.to_js=function(){return this.value}
 }
 function $JSCode(js){
 this.js=js
@@ -2228,8 +2228,8 @@ prefix='$globals'
 var offset=1
 if(prefix){
 var new_node=new $Node('expression')
-var js='if($temp.$fast_augm && '
-js +=C.to_js()+'.$fast_augm){'
+var js='if(typeof $temp=="number" && '
+js +='typeof '+C.to_js()+'=="number"){'
 js +=C.to_js()+op+'$temp'
 js +=';'+prefix+'["'+C.tree[0].value+'"]='+C.to_js()
 js +='}'
@@ -6895,7 +6895,6 @@ $comp_func +=''
 for(var $op in $B.$comps){
 eval("$IntDict.__"+$B.$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
-Number.prototype.$fast_augm=true 
 var int=function(value){
 var res
 if(value===undefined){res=Number(0)}

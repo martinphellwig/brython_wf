@@ -230,8 +230,6 @@ for(var $op in $B.$comps){
     eval("$IntDict.__"+$B.$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 
-Number.prototype.$fast_augm = true // used to speed up augmented assigns
-
 var int = function(value){
     var res
     if(value===undefined){res = Number(0)}
