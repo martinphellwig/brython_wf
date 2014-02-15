@@ -1892,7 +1892,7 @@ function $IntCtx(context,value){
     this.parent = context
     this.tree = []
     context.tree.push(this)
-    this.to_js = function(){return 'Number('+this.value+')'}
+    this.to_js = function(){return this.value}
 }
 
 function $JSCode(js){
@@ -2560,13 +2560,12 @@ function $augmented_assign(context,op){
         }
     }
 
-
     // insert shortcut node if op is += and both args are numbers
     var offset = 1
     if(prefix){
         var new_node = new $Node('expression')
-        var js = 'if($temp.$fast_augm && '
-        js += context.to_js()+'.$fast_augm){'
+        var js = 'if(typeof $temp=="number" && '
+        js += 'typeof '+context.to_js()+'=="number"){'
         js += context.to_js()+op+'$temp'
         js += ';'+prefix+'["'+context.tree[0].value+'"]='+context.to_js()
         js += '}'
