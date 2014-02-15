@@ -111,6 +111,7 @@ $B.get_class = function(obj){
         else if(typeof obj=='number'){return $B.builtins.int.$dict}
         else if(typeof obj=='string'){return $B.builtins.str.$dict}
         else if(obj===true||obj===false){return $B.$BoolDict}
+        else if(typeof obj=='object' && obj.constructor===Array){return $B.builtins.list.$dict}
     }
     return klass
 }

@@ -413,7 +413,7 @@ list.__class__ = $B.$factory
 list.$dict = $ListDict
 $ListDict.$factory = list
 
-Array.prototype.__class__ = $ListDict
+//Array.prototype.__class__ = $ListDict
 
 // override built-in methods 'pop' and 'sort'
 Array.prototype.$dict = {
