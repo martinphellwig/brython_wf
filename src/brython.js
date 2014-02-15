@@ -4668,14 +4668,6 @@ return res
 $B.$CodeDict={__class__:__BRYTHON__.$type,__name__:'code'}
 $B.$CodeDict.__mro__=[$B.$CodeDict,__BRYTHON__.builtins.object.$dict]
 })(__BRYTHON__)
-Array.prototype.match=function(other){
-var $i=0
-while($i<this.length && $i<other.length){
-if(this[$i]!==other[$i]){return false}
-$i++
-}
-return true
-}
 if(!Array.indexOf){
 Array.prototype.indexOf=function(obj){
 for(var i=0;i<this.length;i++){

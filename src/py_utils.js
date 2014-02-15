@@ -601,17 +601,6 @@ $B.$CodeDict.__mro__ = [$B.$CodeDict,__BRYTHON__.builtins.object.$dict]
 
 })(__BRYTHON__)
 
-
-Array.prototype.match = function(other){
-    // return true if array and other have the same first items
-    var $i = 0
-    while($i<this.length && $i<other.length){
-        if(this[$i]!==other[$i]){return false}
-        $i++
-    }
-    return true
-}
-
 // IE doesn't implement indexOf on Arrays
 if(!Array.indexOf){  
 Array.prototype.indexOf = function(obj){  
