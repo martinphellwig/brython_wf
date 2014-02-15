@@ -163,7 +163,7 @@ def dup2(*args,**kw):
     Duplicate file descriptor."""
     pass
 
-environ = {}
+environ = {'PYTHONUSERBASE': ' '}
 
 error = OSError
 
