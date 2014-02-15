@@ -4,13 +4,19 @@ var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 
 var float_check=function(x) {
-    if (isinstance(x, float)) return x.value;
-    return x;
+    if (isinstance(x, float)) return x.value
+    return x
+}
+
+// is negative infinity
+var isninf=function(x) {
+    var x1=float_check(x)
+    return x1 == -Infinity || x1 == Number.NEGATIVE_INFINITY
 }
 
 var isinf=function(x) {
-    var x1=float_check(x);
-    return x1 == -Infinity || x1 == Infinity || x1 == Number.POSITIVE_INFINITY || x1 == Number.NEGATIVE_INFINITY;
+    var x1=float_check(x)
+    return x1 == -Infinity || x1 == Infinity || x1 == Number.POSITIVE_INFINITY || x1 == Number.NEGATIVE_INFINITY
 }
 
 var _mod = {
@@ -27,15 +33,18 @@ var _mod = {
     },
     asin: function(x) {return float(Math.asin(float_check(x)))},
     asinh: function(x) {
+        if (isninf(x)) return float('-inf');
         if (isinf(x)) return float('inf');
         var y = float_check(x);
-        
         return float(Math.log(y + Math.sqrt(y*y+1)))
     },
     atan: function(x) {
+        if (isninf(x)) return float(-Math.PI/2);
         if (isinf(x)) return float(Math.PI/2);
         return float(Math.atan(float_check(x)))},
-    atan2: function(y,x) {return float(Math.atan2(y,x))},
+    atan2: function(y,x) {
+        return float(Math.atan2(float_check(y),float_check(x)))
+    },
     atanh: function(x) { 
        var y=float_check(x);
        if (y==0) return 0;
