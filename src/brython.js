@@ -3672,7 +3672,7 @@ console.log('line info '+__BRYTHON__.line_info)
 if($err.py_error===undefined){$err=__BRYTHON__.builtins.RuntimeError($err+'')}
 var $trace=$err.__name__+': '+$err.message
 $trace +='\n'+$err.info
-__BRYTHON__.stderr.__getattr__('write')($trace)
+getattr(__BRYTHON__.stderr,'write')($trace)
 throw $err
 }
 }
@@ -4261,6 +4261,7 @@ if(klass===undefined){
 if(typeof obj=='function'){return $B.$FunctionDict}
 else if(typeof obj=='number'){return $B.builtins.int.$dict}
 else if(typeof obj=='string'){return $B.builtins.str.$dict}
+else if(obj===true||obj===false){return $B.$BoolDict}
 }
 return klass
 }
@@ -5757,13 +5758,12 @@ return res
 zip.__class__=$B.$factory
 zip.$dict=$ZipDict
 $ZipDict.$factory=zip
-var True=true
-var False=false
-var $BoolDict={__class__:$B.$type,
+var $BoolDict=$B.$BoolDict={__class__:$B.$type,
 __name__:'bool',
 __repr__ : function(){return "<class 'bool'>"},
 __str__ : function(){return "<class 'bool'>"},
 toString : function(){return "<class 'bool'>"},
+$native:true
 }
 $BoolDict.__mro__=[$BoolDict,$ObjectDict]
 bool.__class__=$B.$factory
@@ -5773,7 +5773,8 @@ $BoolDict.__add__=function(self,other){
 if(self.valueOf())return other + 1
 return other
 }
-Boolean.prototype.__class__=$BoolDict
+var True=true
+var False=false
 $BoolDict.__eq__=function(self,other){
 if(self.valueOf()){return !!other}else{return !other}
 }
@@ -5793,12 +5794,10 @@ $BoolDict.__mul__=function(self,other){
 if(self.valueOf())return other
 return 0
 }
-$BoolDict.toString=function(){
+$BoolDict.__repr__=$BoolDict.__str__=function(){
 if(this.valueOf())return "True"
 return "False"
 }
-$BoolDict.__repr__=$BoolDict.toString
-$BoolDict.__str__=$BoolDict.toString
 $BoolDict.__sub__=function(self,other){
 if(self.valueOf())return 1-other
 return -other

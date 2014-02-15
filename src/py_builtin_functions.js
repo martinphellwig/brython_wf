@@ -1262,14 +1262,12 @@ $ZipDict.$factory = zip
 
 // built-in constants : True, False, None
 
-var True = true
-var False = false
-
-var $BoolDict = {__class__:$B.$type,
+var $BoolDict = $B.$BoolDict = {__class__:$B.$type,
     __name__:'bool',
     __repr__ : function(){return "<class 'bool'>"},
     __str__ : function(){return "<class 'bool'>"},
     toString : function(){return "<class 'bool'>"},
+    $native:true
 }
 $BoolDict.__mro__ = [$BoolDict,$ObjectDict]
 bool.__class__ = $B.$factory
@@ -1281,7 +1279,10 @@ $BoolDict.__add__ = function(self,other){
     return other;
 }
 
-Boolean.prototype.__class__ = $BoolDict
+// True and False are the same as Javascript true and false
+
+var True = true
+var False = false
 
 $BoolDict.__eq__ = function(self,other){
     if(self.valueOf()){return !!other}else{return !other}
@@ -1309,14 +1310,10 @@ $BoolDict.__mul__ = function(self,other){
     return 0;
 }
 
-$BoolDict.toString = function(){
+$BoolDict.__repr__ = $BoolDict.__str__ = function(){
     if(this.valueOf()) return "True"
     return "False"
 }
-
-$BoolDict.__repr__ = $BoolDict.toString
-
-$BoolDict.__str__ = $BoolDict.toString
 
 $BoolDict.__sub__ = function(self,other){
     if(self.valueOf()) return 1-other;
