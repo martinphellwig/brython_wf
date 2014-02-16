@@ -229,7 +229,7 @@ var _mod = {
 
        var x2=Math.ceil(x1)
        var i=float(x1-x2)
-       return tuple(i, float(x2))
+       return tuple([i, float(x2)])
     },
     pi : float(Math.PI),
     pow: function(x,y) {
