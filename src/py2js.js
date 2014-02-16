@@ -342,7 +342,9 @@ function $AssignCtx(context){
         }else{ // form x,y=a
             // evaluate right argument (it might be a function call)
             var new_node = new $Node('expression')
-            new $NodeJSCtx(new_node,'var $right=iter('+right.to_js()+');var $counter=-1')
+            var js = 'var $right'+$loop_num+'=iter('+right.to_js()+');'
+            js += 'var $counter'+$loop_num+'=-1'
+            new $NodeJSCtx(new_node,js)
             var new_nodes = [new_node]
             
             var try_node = new $Node('expression')
@@ -354,14 +356,14 @@ function $AssignCtx(context){
                 
             for(var i=0;i<left_items.length;i++){
                 var new_node = new $Node('expression')
-                new $NodeJSCtx(new_node,'$counter++')
+                new $NodeJSCtx(new_node,'$counter'+$loop_num+'++')
                 try_node.add(new_node)
                 
                 var new_node = new $Node('expression')
                 var context = new $NodeCtx(new_node) // create ordinary node
                 left_items[i].parent = context
                 var assign = new $AssignCtx(left_items[i]) // assignment to left operand
-                assign.tree[1] = new $JSCode('__builtins__.next($right)')
+                assign.tree[1] = new $JSCode('__builtins__.next($right'+$loop_num+')')
                 try_node.add(new_node)
             }
 
@@ -371,17 +373,19 @@ function $AssignCtx(context){
             
             var catch_node1 = new $Node('expression')
             var js = 'if($err'+$loop_num+'.__name__=="StopIteration")'
-            js += '{__BRYTHON__.$pop_exc();throw ValueError("need more than "+$counter+" value"+'
-            js += '($counter>1 ? "s" : "")+" to unpack")}else{throw $err'+$loop_num+'};'
+            js += '{__BRYTHON__.$pop_exc();throw ValueError("need more than "+'
+            js += '$counter'+$loop_num+'+" value"+'
+            js += '($counter'+$loop_num+'>1 ? "s" : "")+" to unpack")}else{throw $err'+$loop_num+'};'
             new $NodeJSCtx(catch_node1,js)
             catch_node.add(catch_node1)
             
             // add a test to see if iterator is exhausted
             var exhausted = new $Node('expression')
-            js = 'var $exhausted=true;try{__builtins__.next($right);$exhausted=false}'
+            js = 'var $exhausted'+$loop_num+'=true;try{__builtins__.next($right'+$loop_num
+            js += ');$exhausted'+$loop_num+'=false}'
             js += 'catch(err){if(err.__name__=="StopIteration"){__BRYTHON__.$pop_exc()}}'
-            js += 'if(!$exhausted){throw ValueError('
-            js += '"too many values to unpack (expected "+($counter+1)+")")}'
+            js += 'if(!$exhausted'+$loop_num+'){throw ValueError('
+            js += '"too many values to unpack (expected "+($counter'+$loop_num+'+1)+")")}'
             new $NodeJSCtx(exhausted,js)
             new_nodes.push(exhausted)
             
