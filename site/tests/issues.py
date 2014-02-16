@@ -551,6 +551,17 @@ class myclass:
 _m=myclass()
 assert _m.myfunc()=='test'
 
+# issue 212
+class Test:
+    def sound(self, a=""):
+        return "moo: " + a
+
+class Test2(Test):
+    def sound(self):
+        return super().sound("apple")
+
+assert Test2().sound()=='moo: apple'
+
 # issue 213
 import math
 assert str(math.atan2(0.,-0.)).startswith('3.14')

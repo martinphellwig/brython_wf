@@ -1078,11 +1078,14 @@ var $SuperDict = {__class__:$B.$type,__name__:'super'}
 
 $SuperDict.__getattribute__ = function(self,attr){
     var mro = self.__thisclass__.$dict.__mro__,res
+    //console.log(''+$B.$type.__getattribute__(mro[1], attr))
     for(var i=1;i<mro.length;i++){ // start with 1 = ignores the class where super() is defined
         res = mro[i][attr]
         if(res!==undefined){
             // if super() is called with a second argument, the result is bound
             if(self.__self_class__!==None){
+                var _args = [self.__self_class__]
+                if(attr=='__new__'){_args=[]}
                 var method = (function(initial_args){
                     return function(){
                         // make a local copy of initial args
@@ -1092,7 +1095,7 @@ $SuperDict.__getattribute__ = function(self,attr){
                         }
                         var x = res.apply(null,local_args)
                         if(x===undefined){return None}else{return x}
-                    }})([self.__self_class__])
+                    }})(_args)
                 method.__class__ = {
                     __class__:$B.$type,
                     __name__:'method',
