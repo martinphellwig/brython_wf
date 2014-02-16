@@ -3752,6 +3752,7 @@ for(var i=0;i<mro.length;i++){
 var v=mro[i][attr]
 if(v!==undefined){
 res=v
+if(attr=='calc_v'){console.log('found '+attr+' in class '+mro[i].__name__);console.log(''+res)}
 break
 }
 }
@@ -3772,7 +3773,7 @@ var res1=get_func.apply(null,[res,obj,klass])
 if(typeof res1=='function'){
 if(res1.__class__===$B.$factory){return res}
 var __self__,__func__,__repr__,__str__
-if(res.$type===undefined || res.$type==='instancemethod'){
+if(res.$type===undefined || res.$type=='function'){
 args=[obj]
 __self__=obj
 __func__=res1
@@ -3781,7 +3782,7 @@ var x='<bound method '+attr
 x +=" of '"+klass.__name__+"' object>"
 return x
 }
-}else if(res.$type==='function'){
+}else if(res.$type==='instancemethod'){
 return res
 }else if(res.$type==='classmethod'){
 args=[klass]
@@ -3807,12 +3808,13 @@ local_args.push(arguments[i])
 var x=res.apply(obj,local_args)
 if(x===undefined){return $B.builtins.None}else{return x}
 }})(args)
-method.__class__=__BRYTHON__.$MethodDict
+method.__class__=__BRYTHON__.$InstanceMethodDict
 method.__func__=__func__
 method.__repr__=__repr__
 method.__self__=__self__
 method.__str__=__str__
 method.__doc__=res.__doc__ || ''
+method.$type='instancemethod'
 return method
 }else{
 return res1
@@ -4036,7 +4038,6 @@ if(klass['__setattr__']!==undefined){return klass['__setattr__']}
 return function(key,value){
 if(typeof value=='function'){
 klass[key]=function(){return value.apply(null,arguments)}
-klass[key].$type='instancemethod' 
 }else{
 klass[key]=value
 }
@@ -4162,6 +4163,11 @@ __mro__:[$B.builtins.object.$dict],
 $factory:$MethodFactory
 }
 $MethodFactory.$dict=$B.$MethodDict
+$B.$InstanceMethodDict={__class__:$B.$type,
+__name__:'instancemethod',
+__mro__:[$B.builtins.object.$dict],
+$factory:$MethodFactory
+}
 })(__BRYTHON__)
 ;(function($B){
 $B.$MakeArgs=function($fname,$args,$required,$defaults,$other_args,$other_kw,$after_star){
@@ -4431,7 +4437,7 @@ return $res
 $B.$lambda=function($mod,$globals,$locals,$args,$body){
 for(var $attr in $globals){eval('var '+$attr+'=$globals["'+$attr+'"]')}
 for(var $attr in $locals){eval('var '+$attr+'=$locals["'+$attr+'"]')}
-var $res='res'+Math.random().toString(36).substr(2,8)
+var $res='lambda_'+Math.random().toString(36).substr(2,8)
 var $py='def '+$res+'('+$args+'):\n'
 $py +='    return '+$body
 var $js=$B.py2js($py,'lambda').to_js()

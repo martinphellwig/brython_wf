@@ -104,8 +104,9 @@ $ObjectDict.__getattribute__ = function(obj,attr){
             if(attr=='__new__'){res.$type='staticmethod'}
             var res1 = get_func.apply(null,[res,obj,klass])
             if(typeof res1=='function'){
-                // if attribute is a class then return it as is
-                // example :
+                // If attribute is a class then return it unchanged
+                //
+                // Example :
                 // ===============
                 // class A:
                 //    def __init__(self,x):
@@ -123,11 +124,12 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                 // self as first argument
     
                 if(res1.__class__===$B.$factory){return res}
+
                 // instance method object
                 var __self__,__func__,__repr__,__str__
-                if(res.$type===undefined || res.$type==='instancemethod'){
-                    // instance method : called with the instance as first 
-                    // argument
+                if(res.$type===undefined || res.$type=='function'){
+                    // the attribute is a function : return an instance method,
+                    // called with the instance as first argument
                     args = [obj]
                     __self__ = obj
                     __func__ = res1
@@ -136,9 +138,12 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                         x += " of '"+klass.__name__+"' object>"
                         return x
                     }
-                }else if(res.$type==='function'){
-                    // module level function
+
+                }else if(res.$type==='instancemethod'){
+                    // The attribute is a method of an instance of another class
+                    // Return it unchanged
                     return res
+
                 }else if(res.$type==='classmethod'){
                     // class method : called with the class as first argument
                     args = [klass]
@@ -149,6 +154,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                         x += ' of '+klass.__name__+'>'
                         return x
                     }
+
                 }else if(res.$type==='staticmethod'){
                     // static methods have no __self__ or __func__
                     args = []
@@ -156,6 +162,9 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                         return '<function '+klass.__name__+'.'+attr+'>'
                     }
                 }
+
+                // build the instance method, called with a list of arguments
+                // depending on the method type
                 var method = (function(initial_args){
                     return function(){
                         // make a local copy of initial args
@@ -166,20 +175,23 @@ $ObjectDict.__getattribute__ = function(obj,attr){
                         var x = res.apply(obj,local_args)
                         if(x===undefined){return $B.builtins.None}else{return x}
                     }})(args)
-                method.__class__ = __BRYTHON__.$MethodDict
+                method.__class__ = __BRYTHON__.$InstanceMethodDict
                 method.__func__ = __func__
                 method.__repr__ = __repr__
                 method.__self__ = __self__
                 method.__str__ = __str__
                 method.__doc__ = res.__doc__ || ''
+                method.$type = 'instancemethod'
                 return method
             }else{
+                // result of __get__ is not a function
                 return res1
             }
         }
+        // attribute is not a descriptor : return it unchanged
         return res
     }else{
-        // XXX search __getattr__
+        // search __getattr__
         var _ga = obj['__getattr__']
         if(_ga===undefined){
             var mro = klass.__mro__
