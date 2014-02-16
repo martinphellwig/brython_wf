@@ -654,6 +654,15 @@ new $IdCtx(this,scope.parent.C.tree[0].name)
 }
 }
 }
+if(this.tree.length==1){
+var scope=$get_scope(this)
+if(scope.ntype=='def' || scope.ntype=='generator'){
+var args=scope.C.tree[0].args
+if(args.length>0){
+new $IdCtx(this,args[0])
+}
+}
+}
 }
 else if(this.func!==undefined && this.func.type=='unary'){
 var op=this.func.op
@@ -896,6 +905,7 @@ var after_star=[]
 var other_args=null
 var other_kw=null
 var env=[]
+this.args=[]
 for(var i=0;i<this.tree[0].tree.length;i++){
 var arg=this.tree[0].tree[i]
 if(arg.type==='func_arg_id'){
@@ -916,6 +926,7 @@ env.push(arg.tree[0].tree[0].value)
 }
 }else if(arg.type==='func_star_arg'&&arg.op==='*'){other_args='"'+arg.name+'"'}
 else if(arg.type==='func_star_arg'&&arg.op==='**'){other_kw='"'+arg.name+'"'}
+this.args.push(arg.name)
 }
 this.env=env
 this.defs=defs
@@ -3752,7 +3763,6 @@ for(var i=0;i<mro.length;i++){
 var v=mro[i][attr]
 if(v!==undefined){
 res=v
-if(attr=='calc_v'){console.log('found '+attr+' in class '+mro[i].__name__);console.log(''+res)}
 break
 }
 }
@@ -5599,6 +5609,8 @@ for(var i=1;i<mro.length;i++){
 res=mro[i][attr]
 if(res!==undefined){
 if(self.__self_class__!==None){
+var _args=[self.__self_class__]
+if(attr=='__new__'){_args=[]}
 var method=(function(initial_args){
 return function(){
 var local_args=initial_args.slice()
@@ -5607,7 +5619,7 @@ local_args.push(arguments[i])
 }
 var x=res.apply(null,local_args)
 if(x===undefined){return None}else{return x}
-}})([self.__self_class__])
+}})(_args)
 method.__class__={
 __class__:$B.$type,
 __name__:'method',

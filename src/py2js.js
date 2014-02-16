@@ -658,6 +658,16 @@ function $CallCtx(context){
                     }
                 }
             }
+            if(this.tree.length==1){
+                // second argument omitted : add the instance
+                var scope = $get_scope(this)
+                if(scope.ntype=='def' || scope.ntype=='generator'){
+                    var args = scope.context.tree[0].args
+                    if(args.length>0){
+                        new $IdCtx(this,args[0])
+                    }
+                }
+            }
         }
         else if(this.func!==undefined && this.func.type=='unary'){
             // form " -(x+2) "
@@ -991,6 +1001,7 @@ function $DefCtx(context){
         var other_args = null
         var other_kw = null
         var env = []
+        this.args = []
         for(var i=0;i<this.tree[0].tree.length;i++){
             var arg = this.tree[0].tree[i]
             if(arg.type==='func_arg_id'){
@@ -1011,6 +1022,7 @@ function $DefCtx(context){
                 }
             }else if(arg.type==='func_star_arg'&&arg.op==='*'){other_args='"'+arg.name+'"'}
             else if(arg.type==='func_star_arg'&&arg.op==='**'){other_kw='"'+arg.name+'"'}
+            this.args.push(arg.name)
         }
         this.env = env
         this.defs = defs
