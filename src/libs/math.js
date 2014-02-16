@@ -4,7 +4,7 @@ var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 
 var float_check=function(x) {
-    if (isinstance(x, float)) return x.value
+    if (x.value !== undefined && isinstance(x, float)) return x.value
     return x
 }
 
@@ -16,8 +16,10 @@ var isninf=function(x) {
 
 var isinf=function(x) {
     var x1=float_check(x)
-    return x1 == -Infinity || x1 == Infinity || x1 == Number.POSITIVE_INFINITY || x1 == Number.NEGATIVE_INFINITY
+    return x1 == Infinity || x1 == -Infinity || x1 == Number.POSITIVE_INFINITY || x1 == Number.NEGATIVE_INFINITY
 }
+
+var isNegZero=function(x) {return x===0 && Math.atan2(x,x) < 0}
 
 var _mod = {
     __getattr__ : function(attr){
@@ -58,13 +60,19 @@ var _mod = {
        $raise('ValueError', 'object is not a number and does not contain __ceil__')
     },
     copysign: function(x,y) {
-        var x1=Math.abs(float_check(x));
-        var y1=float_check(y); 
+        var x1=Math.abs(float_check(x))
+        var y1=float_check(y)
         var sign=y1?y1<0?-1:1:1
-        if(isinstance(x,int)){return x1 * sign}
-        else{return float(x1 * sign)}
+        if (isNegZero(y1)) sign=-1   // probably need to work on adding a check for -0
+        return float(x1 * sign)
     },
     cos : function(x){return float(Math.cos(float_check(x)))},
+    cosh: function(x){
+        if (isinf(x)) return float('inf')
+        var y = float_check(x)
+        if (Math.cosh !== undefined) return float(Math.cosh(y))
+        return float((Math.pow(Math.E,y) + Math.pow(Math.E,-y))/2)
+    },
     degrees: function(x){return float(float_check(x) * 180/Math.PI)},
     e: float(Math.E),
     erf: function(x) {
@@ -105,7 +113,13 @@ var _mod = {
         if (y >= 0.0) return 1-ans
         return 1+ans
     },
-    exp: function(x){return float(Math.exp(float_check(x)))},
+    exp: function(x){
+         if (isninf(x)) {return float(0)}
+         if (isinf(x)) {return float('inf')}
+         var _r=Math.exp(float_check(x))
+         if (isinf(_r)) {throw OverflowError("math range error")}
+         return float(_r)
+    },
     expm1: function(x){return float(Math.exp(float_check(x))-1)},
     fabs: function(x){ return x>0?float(x):float(-x)},
     factorial: function(x) {
@@ -118,10 +132,33 @@ var _mod = {
     floor:function(x){return Math.floor(float_check(x))},
     fmod:function(x,y){return float(float_check(x)%float_check(y))},
     frexp:function(x){
-       var x1=float_check(x);
-       var ex = Math.floor(Math.log(x1) / Math.log(2)) + 1;
-       frac = x1 / Math.pow(2, ex);
-       return [frac, ex];
+       var x1=float_check(x)
+
+       if (isNaN(x1) || isinf(x1)) { return tuple([x1,-1])}
+       if (x1 == 0) { return tuple([0,0])}
+
+       var sign=1
+       var ex = 0
+       var man = x1
+
+       if (man < 0.) {
+          sign=-sign
+          man = -man
+       }
+
+       while (man < 0.5) {
+          man *= 2.0
+          ex--
+       }
+
+       while (man >= 1.0) {
+          man *= 0.5
+          ex++
+       }
+
+       man *= sign
+
+       return tuple([man , ex])
     },
     //fsum:function(x){},
     gamma: function(x){
@@ -143,16 +180,21 @@ var _mod = {
          return d1 * d2 * Math.pow(z+5.5,z+0.5) * Math.exp(-(z+5.5));
     },
     hypot: function(x,y){
+       if (isinf(x) || isinf(y)) return float('inf')
        var x1=float_check(x);
        var y1=float_check(y);
        return float(Math.sqrt(x1*x1 + y1*y1))},
     isfinite:function(x) {return isFinite(float_check(x))},
-    isinf:function(x) { return isinf(x);},
+    isinf:function(x) { return isinf(float_check(x))},
     isnan:function(x) {return isNaN(float_check(x))},
     ldexp:function(x,i) {
+        if(isninf(x)) return float('-inf')
+        if(isinf(x)) return float('inf')
+
+        var y=float_check(x)
+        if (y == 0) return y
         var mul = Math.pow(2,float_check(i))
-        if(isinstance(x,int)){return x * mul}
-        else{return float(x.value*mul)}
+        return y * mul
     },
     lgamma:function(x) {
          // see gamma function for sources
@@ -181,26 +223,74 @@ var _mod = {
     modf:function(x) {
        var x1=float_check(x);
        if (x1 > 0) {
-          var i=float(x1-Math.floor(x1));
-          return [i, float(x1-i)]
+          var i=float(x1-Math.floor(x1))
+          return tuple([i, float(x1-i)])
        }
 
-       var i=float(x1-Math.ceil(x1));
-       return [i, float(Math.ceil(x1))]
+       var x2=Math.ceil(x1)
+       var i=float(x1-x2)
+       return tuple(i, float(x2))
     },
     pi : float(Math.PI),
     pow: function(x,y) {
-        if(isinstance(x,int)){return Math.pow(x,float_check(y))}
-        else{return float(Math.pow(x.value,float_check(y)))}
+        var x1=float_check(x)
+        var y1=float_check(y)
+        if (y1 == 0) return 1        
+        if (x1 == 0) return float(0)        
+
+        if(isNaN(y)) {if(x1==1) {return 1} return float('nan')}
+
+        if(isninf(y)) {if(x1==1||x1==-1) {return float(1)}
+                       if(x1 < 1 && x1 > -1) return float('inf') 
+                       //if(isinf(x)) return float(0)
+                       return float(0)}
+        if(isinf(y)) {if(x==1||x==-1) {return float(1)} 
+                      if(x1 < 1 && x1 > -1) return float(0) 
+                      return float('inf')}
+
+        if(isNaN(x)) {return float('nan')}
+
+        var r=Math.pow(x1,y1)
+        if (isNaN(r)) return float('nan')
+        if (isninf(r)) return float('-inf')
+        if (isinf(r)) return float('inf')
+
+        return r
     },
     radians: function(x){return float(float_check(x) * Math.PI/180)},
     sin : function(x){return float(Math.sin(float_check(x)))},
-    sqrt : function(x){return float(Math.sqrt(float_check(x)))},
+    sinh: function(x) { 
+        //if (isinf(x)) return float('inf');
+        var y = float_check(x)
+        if (Math.sinh !== undefined) { return float(Math.sinh(y))}
+        return float((Math.pow(Math.E,y) - Math.pow(Math.E,-y))/2)
+    },
+    sqrt : function(x){
+      var y = float_check(x)
+      if (y < 0) { throw OverflowError("math range error")}
+      if (isinf(y)) return float('inf')
+      var _r=Math.sqrt(y)
+      if (isinf(_r)) {throw OverflowError("math range error")}
+      return float(_r)
+    },
+    tan: function(x) {
+        var y = float_check(x)
+        return float(Math.tan(y))
+    },
+    tanh: function(x) {
+        var y = float_check(x)
+        if (Math.tanh !== undefined) return float(Math.tanh(y))
+        return float((Math.pow(Math.E,y) - Math.pow(Math.E,-y))/
+                     (Math.pow(Math.E,y) + Math.pow(Math.E,-y)))       
+    },
     trunc: function(x) {
        try{return getattr(x,'__trunc__')()}catch(err){$B.$pop_exc()}
        var x1=float_check(x);
-       if (!isNaN(parseFloat(x1)) && isFinite(x1)) return int(Math.floor(x1));
-       
+       if (!isNaN(parseFloat(x1)) && isFinite(x1)) {
+          if (Math.trunc !== undefined) { return int(Math.trunc(x1))}
+          if (x1 > 0) {return int(Math.floor(x1))}
+          return int(Math.ceil(x1))  // x1 < 0
+       }
        $raise('ValueError', 'object is not a number and does not contain __trunc__')
     }
 }
