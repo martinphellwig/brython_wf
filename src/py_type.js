@@ -208,7 +208,7 @@ $B.$type.__getattribute__=function(klass,attr){
         return function(key,value){
             if(typeof value=='function'){
                 klass[key]=function(){return value.apply(null,arguments)}
-                klass[key].$type = 'instancemethod' // for attribute resolution
+                //klass[key].$type = 'instancemethod' // for attribute resolution
             }else{
                 klass[key]=value
             }
@@ -358,6 +358,12 @@ $B.$MethodDict = {__class__:$B.$type,
     $factory:$MethodFactory
 }
 $MethodFactory.$dict = $B.$MethodDict
+
+$B.$InstanceMethodDict = {__class__:$B.$type,
+    __name__:'instancemethod',
+    __mro__:[$B.builtins.object.$dict],
+    $factory:$MethodFactory
+}
 
 })(__BRYTHON__)
 

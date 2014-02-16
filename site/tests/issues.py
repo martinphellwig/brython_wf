@@ -536,6 +536,21 @@ assert ("ko" if [] else "ok")=="ok"
 assert ("ko" if {} else "ok")=="ok"
 assert ("ko" if False else "ok")=="ok"
 
+# issue 210
+class myRepr:
+  def repr(self, a):
+      return a
+
+class myclass:
+    _repr=myRepr()
+    repr= _repr.repr
+
+    def myfunc(self):
+        return self.repr('test')
+
+_m=myclass()
+assert _m.myfunc()=='test'
+
 # issue 213
 import math
 assert str(math.atan2(0.,-0.)).startswith('3.14')
