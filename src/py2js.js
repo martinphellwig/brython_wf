@@ -3160,7 +3160,6 @@ function $transition(context,token){
             expr.tree = [op1]
             repl.parent = expr
             var new_op = new $OpCtx(repl,op) // replace old operation
-            //var res = new $AbstractExprCtx(new_op,false)
             return new $AbstractExprCtx(new_op,false)
 
         }else if(token==='augm_assign' && context.expect===','){
@@ -3174,8 +3173,14 @@ function $transition(context,token){
                 return new $AbstractExprCtx(new $AssignCtx(context),true)
             }
         }else if(token==='if' && context.parent.type!=='comp_iterable'){ 
-            // ternary operator : expr1 if cond else expr2
-            return new $AbstractExprCtx(new $TernaryCtx(context),false)
+            // Ternary operator : "expr1 if cond else expr2"
+            // If the part before "if" is an operation, apply operator
+            // precedence
+            // Example : print(1+n if n else 0)
+            var ctx = context.parent
+            while(ctx.type=='op' && ctx.parent){ctx=ctx.parent}
+            
+            return new $AbstractExprCtx(new $TernaryCtx(ctx),false)
         }else{return $transition(context.parent,token)}
 
     }else if(context.type==='expr_not'){
