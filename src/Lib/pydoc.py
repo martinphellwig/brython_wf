@@ -1363,9 +1363,9 @@ location listed above.
 
     def docother(self, object, name=None, mod=None, parent=None, maxlen=None, doc=None):
         """Produce text documentation for a data object."""
-        #fixme brython
-        print(self.repr)
         repr = self.repr(object)
+        #fixme brython
+        print(repr)
         if maxlen:
             line = (name and name + ' = ' or '') + repr
             chop = maxlen - len(line)

@@ -221,6 +221,10 @@ var _mod = {
     log2: function(x) {return float(Math.log(float_check(x))/Math.LN2)},
     log10: function(x) {return float(Math.log(float_check(x))/Math.LN10)},
     modf:function(x) {
+       if (isninf(x)) return tuple([0.0, float('-inf')])
+       if (isinf(x)) return tuple([0.0, float('inf')])
+       if (isNaN(x)) return tuple([float('nan'), float('nan')])
+
        var x1=float_check(x);
        if (x1 > 0) {
           var i=float(x1-Math.floor(x1))
