@@ -2741,7 +2741,9 @@ C=C.tree[0]
 return new $AbstractExprCtx(new $AssignCtx(C),true)
 }
 }else if(token==='if' && C.parent.type!=='comp_iterable'){
-return new $AbstractExprCtx(new $TernaryCtx(C),false)
+var ctx=C.parent
+while(ctx.type=='op' && ctx.parent){ctx=ctx.parent}
+return new $AbstractExprCtx(new $TernaryCtx(ctx),false)
 }else{return $transition(C.parent,token)}
 }else if(C.type==='expr_not'){
 if(token==='in'){
