@@ -71,9 +71,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
         return klass.$factory
     }
     var res = obj[attr],args=[]
-    if(obj.$dict!==undefined && obj.$dict[attr]!==undefined){
-        res=obj.$dict[attr]
-    }
+
     if(res===undefined){
         // search in classes hierarchy, following method resolution order
         //if(attr=='show'){console.log('object getattr '+attr+' of obj '+obj)}
@@ -92,7 +90,7 @@ $ObjectDict.__getattribute__ = function(obj,attr){
             return res
         }
     }
-        
+
     if(res!==undefined){
         var get_func = res.__get__
         if(get_func===undefined && (typeof res=='function')){
