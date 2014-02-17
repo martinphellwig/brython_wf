@@ -2416,7 +2416,6 @@ C=C.parent
 if(token==='id'){return new $IdCtx(new $ExprCtx(C,'id',commas),arguments[2])}
 else if(token==='str'){return new $StringCtx(new $ExprCtx(C,'str',commas),arguments[2])}
 else if(token==='bytes'){
-console.log('bytes '+arguments[2])
 return new $StringCtx(new $ExprCtx(C,'bytes',commas),arguments[2])
 }
 else if(token==='int'){return new $IntCtx(new $ExprCtx(C,'int',commas),arguments[2])}
@@ -2681,6 +2680,10 @@ else if(token==='['){return new $AbstractExprCtx(new $SubCtx(C),false)}
 else if(token==='('){return new $CallCtx(C)}
 else if(token==='op'){
 var op_parent=C.parent,op=arguments[2]
+if(op_parent.type=='ternary' && op_parent.in_else){
+var new_op=new $OpCtx(op_parent,op)
+return new $AbstractExprCtx(new_op,false)
+}
 var op1=C.parent,repl=null
 while(true){
 if(op1.type==='expr'){op1=op1.parent}
@@ -2741,8 +2744,13 @@ C=C.tree[0]
 return new $AbstractExprCtx(new $AssignCtx(C),true)
 }
 }else if(token==='if' && C.parent.type!=='comp_iterable'){
-var ctx=C.parent
-while(ctx.type=='op' && ctx.parent){ctx=ctx.parent}
+var ctx=C
+while(ctx.parent && ctx.parent.type=='op'){
+ctx=ctx.parent
+if(ctx.type=='expr' && ctx.parent && ctx.parent.type=='op'){
+ctx=ctx.parent
+}
+}
 return new $AbstractExprCtx(new $TernaryCtx(ctx),false)
 }else{return $transition(C.parent,token)}
 }else if(C.type==='expr_not'){
@@ -3092,8 +3100,10 @@ return C
 }else if(C.expect===','){return $transition(C.parent,token,arguments[2])}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='ternary'){
-if(token==='else'){return new $AbstractExprCtx(C,false)}
-else{return $transition(C.parent,token,arguments[2])}
+if(token==='else'){
+C.in_else=true
+return new $AbstractExprCtx(C,false)
+}else{return $transition(C.parent,token,arguments[2])}
 }else if(C.type==='try'){
 if(token===':'){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
@@ -3674,8 +3684,6 @@ var $js=$root.to_js()
 if(__BRYTHON__.debug>1){console.log($js)}
 eval($js)
 var _mod=$globals
-for(var $attr in $globals){
-}
 _mod.__class__=__BRYTHON__.$ModuleDict
 _mod.__name__='__main__'
 _mod.__file__=__BRYTHON__.$py_module_path['__main__']

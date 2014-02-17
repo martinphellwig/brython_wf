@@ -2785,7 +2785,6 @@ function $transition(context,token){
         if(token==='id'){return new $IdCtx(new $ExprCtx(context,'id',commas),arguments[2])}
         else if(token==='str'){return new $StringCtx(new $ExprCtx(context,'str',commas),arguments[2])}
         else if(token==='bytes'){
-            console.log('bytes '+arguments[2])
             return new $StringCtx(new $ExprCtx(context,'bytes',commas),arguments[2])
             }
         else if(token==='int'){return new $IntCtx(new $ExprCtx(context,'int',commas),arguments[2])}
@@ -2909,12 +2908,6 @@ function $transition(context,token){
         else if(token===':'){return $BodyCtx(context)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
-        //}
-        //else if(token==='(' && context.expect==='(:'){
-        //    return $transition(new $AbstractExprCtx(context,true),'(')
-        //}else if(token===':' && context.expect==='(:'){return $BodyCtx(context)}
-        //else{$_SyntaxError(context,'token '+token+' after '+context)}
-
     }else if(context.type==='comp_if'){
 
         return $transition(context.parent,token,arguments[2])
@@ -2973,7 +2966,6 @@ function $transition(context,token){
         if(context.closed){
             if(token==='['){return new $SubCtx(context.parent)}
             else if(token==='('){return new $CallArgCtx(new $CallCtx(context))}
-            //else if(token==='.'){return new $AttrCtx(context)}
             else if(token==='op'){
                 return new $AbstractExprCtx(new $OpCtx(context,arguments[2]),false)
             }else{return $transition(context.parent,token,arguments[2])}
@@ -3054,11 +3046,6 @@ function $transition(context,token){
         if($expr_starters.indexOf(token)>-1 && context.expect==='id'){
             context.expect = 'as'
             return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
-
-        //if(token==='id' && context.expect==='id'){
-        //    new $TargetCtx(context,arguments[2])
-        //    context.expect='as'
-        //    return context
         }else if(token==='as' && context.expect==='as'
             && context.has_alias===undefined) {  // only one alias allowed
             context.expect = 'alias'
@@ -3106,6 +3093,13 @@ function $transition(context,token){
         else if(token==='op'){
             // handle operator precedence
             var op_parent=context.parent,op=arguments[2]
+            
+            // conditional expressions have the lowest priority
+            if(op_parent.type=='ternary' && op_parent.in_else){
+                var new_op = new $OpCtx(op_parent,op)
+                return new $AbstractExprCtx(new_op,false)
+            }
+            
             var op1 = context.parent,repl=null
             while(true){
                 if(op1.type==='expr'){op1=op1.parent}
@@ -3177,9 +3171,13 @@ function $transition(context,token){
             // If the part before "if" is an operation, apply operator
             // precedence
             // Example : print(1+n if n else 0)
-            var ctx = context.parent
-            while(ctx.type=='op' && ctx.parent){ctx=ctx.parent}
-            
+            var ctx = context
+            while(ctx.parent && ctx.parent.type=='op'){
+                ctx=ctx.parent
+                if(ctx.type=='expr' && ctx.parent && ctx.parent.type=='op'){
+                    ctx=ctx.parent
+                }
+            }
             return new $AbstractExprCtx(new $TernaryCtx(ctx),false)
         }else{return $transition(context.parent,token)}
 
@@ -3588,8 +3586,10 @@ function $transition(context,token){
 
     }else if(context.type==='ternary'){
     
-        if(token==='else'){return new $AbstractExprCtx(context,false)}
-        else{return $transition(context.parent,token,arguments[2])}
+        if(token==='else'){
+            context.in_else = true
+            return new $AbstractExprCtx(context,false)
+        }else{return $transition(context.parent,token,arguments[2])}
 
     }else if(context.type==='try'){ 
 
@@ -4260,9 +4260,6 @@ function brython(options){
                 if(__BRYTHON__.debug>1){console.log($js)}
                 eval($js)
                 var _mod = $globals
-                for(var $attr in $globals){
-                    //console.log('var '+$attr)
-                }
                 _mod.__class__ = __BRYTHON__.$ModuleDict
                 _mod.__name__ = '__main__'
                 _mod.__file__ = __BRYTHON__.$py_module_path['__main__']
