@@ -51,6 +51,7 @@ class Repr:
         self.maxother = 30
 
     def repr(self, x):
+        print(x)
         return self.repr1(x, self.maxlevel)
 
     def repr1(self, x, level):
@@ -131,6 +132,7 @@ class Repr:
         return s
 
     def repr_instance(self, x, level):
+        s = builtins.repr(x)
         try:
             s = builtins.repr(x)
             # Bugs in x.__repr__() can cause arbitrary

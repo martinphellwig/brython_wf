@@ -114,7 +114,8 @@ class SRE_Pattern:
         filter = template
         if not callable(template) and "\\" in template:
             # handle non-literal strings ; hand it over to the template compiler
-            import sre
+            #import sre  #sre was renamed to re
+            import re as sre
             filter = sre._subx(self, template)
         state = _State(string, 0, sys.maxsize, self.flags)
         sublist = []
