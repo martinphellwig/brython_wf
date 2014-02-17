@@ -395,7 +395,7 @@ DOMNode.__eq__ = function(self,other){
 }
 
 DOMNode.__getattribute__ = function(self,attr){
-    if(['children','html','left','parent','query','text',
+    if(['children','html','id','left','parent','query','text',
         'top','value','height','width'].indexOf(attr)>-1){
         return DOMNode[attr](self)
     }
@@ -459,7 +459,6 @@ DOMNode.__getattribute__ = function(self,attr){
             return __BRYTHON__.$JS2Py(self.elt[attr])
         }
     }
-    if(self.elt[attr]!==undefined){return self.elt[attr]}
     return $ObjectDict.__getattribute__(self,attr)
 }
 

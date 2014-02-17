@@ -3768,9 +3768,6 @@ if(attr==='__class__'){
 return klass.$factory
 }
 var res=obj[attr],args=[]
-if(obj.$dict!==undefined && obj.$dict[attr]!==undefined){
-res=obj.$dict[attr]
-}
 if(res===undefined){
 var mro=klass.__mro__
 for(var i=0;i<mro.length;i++){
@@ -9362,7 +9359,7 @@ DOMNode.__eq__=function(self,other){
 return self.elt==other.elt
 }
 DOMNode.__getattribute__=function(self,attr){
-if(['children','html','left','parent','query','text',
+if(['children','html','id','left','parent','query','text',
 'top','value','height','width'].indexOf(attr)>-1){
 return DOMNode[attr](self)
 }
@@ -9421,7 +9418,6 @@ return $Style(self.elt[attr])
 return __BRYTHON__.$JS2Py(self.elt[attr])
 }
 }
-if(self.elt[attr]!==undefined){return self.elt[attr]}
 return $ObjectDict.__getattribute__(self,attr)
 }
 DOMNode.__getitem__=function(self,key){
