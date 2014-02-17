@@ -14,7 +14,7 @@ L'objet `doc` du module **browser** référence le document HTML. Il se comporte
 
 On peut aussi récupérer tous les éléments d'un certain type, par exemple tous les liens hypertexte (balise HTML `A`), en  utilisant la syntaxe
 
->    import html
+>    from browser import html
 >    links = doc[html.A]
 
 Enfin, tous les éléments de la page possèdent une méthode `get()` qui permet de rechercher des éléments de plusieurs façons :
