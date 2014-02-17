@@ -4853,6 +4853,7 @@ errors:errors
 }
 bytes.__class__=$B.$factory
 bytes.$dict=$BytesDict
+$BytesDict.$factory=bytes
 function callable(obj){
 return hasattr(obj,'__call__')
 }
@@ -5816,8 +5817,8 @@ $BoolDict.__mul__=function(self,other){
 if(self.valueOf())return other
 return 0
 }
-$BoolDict.__repr__=$BoolDict.__str__=function(){
-if(this.valueOf())return "True"
+$BoolDict.__repr__=$BoolDict.__str__=function(self){
+if(self.valueOf())return "True"
 return "False"
 }
 $BoolDict.__sub__=function(self,other){
