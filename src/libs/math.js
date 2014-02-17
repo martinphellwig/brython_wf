@@ -271,7 +271,7 @@ var _mod = {
     },
     sqrt : function(x){
       var y = float_check(x)
-      if (y < 0) { throw OverflowError("math range error")}
+      if (y < 0) { throw ValueError("math range error")}
       if (isinf(y)) return float('inf')
       var _r=Math.sqrt(y)
       if (isinf(_r)) {throw OverflowError("math range error")}
