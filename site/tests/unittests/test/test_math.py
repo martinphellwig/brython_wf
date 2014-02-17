@@ -157,6 +157,7 @@ def parse_testfile(fname):
     Empty lines or lines starting with -- are ignored
     yields id, fn, arg_real, arg_imag, exp_real, exp_imag
     """
+
     with open(fname) as fp:
         for line in fp:
             # skip comment lines and blank lines
@@ -1019,8 +1020,9 @@ class MathTests(unittest.TestCase):
             else:
                 self.fail("sqrt(-1) didn't raise ValueError")
 
+    #don't run this in brython
     @requires_IEEE_754
-    def test_testfile(self):
+    def _test_testfile(self):
         for id, fn, ar, ai, er, ei, flags in parse_testfile(test_file):
             # Skip if either the input or result is complex, or if
             # flags is nonempty
@@ -1042,8 +1044,9 @@ class MathTests(unittest.TestCase):
                 self.fail(message)
             self.ftest("%s:%s(%r)" % (id, fn, ar), result, er)
 
+    #don't run this in brython
     @requires_IEEE_754
-    def test_mtestfile(self):
+    def _test_mtestfile(self):
         fail_fmt = "{}:{}({!r}): expected {!r}, got {!r}"
 
         failures = []
@@ -1104,10 +1107,10 @@ class MathTests(unittest.TestCase):
 
 
 def test_main():
-    from doctest import DocFileSuite
+    #from doctest import DocFileSuite
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(MathTests))
-    suite.addTest(DocFileSuite("ieee754.txt"))
+    #suite.addTest(DocFileSuite("ieee754.txt"))
     run_unittest(suite)
 
 if __name__ == '__main__':
