@@ -178,6 +178,7 @@ function bytes(source, encoding, errors) {
 }
 bytes.__class__ = $B.$factory
 bytes.$dict = $BytesDict
+$BytesDict.$factory = bytes
 
 //callable() (built in function)
 function callable(obj) {
@@ -1313,8 +1314,8 @@ $BoolDict.__mul__ = function(self,other){
     return 0;
 }
 
-$BoolDict.__repr__ = $BoolDict.__str__ = function(){
-    if(this.valueOf()) return "True"
+$BoolDict.__repr__ = $BoolDict.__str__ = function(self){
+    if(self.valueOf()) return "True"
     return "False"
 }
 
