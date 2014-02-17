@@ -28,6 +28,9 @@ Comme le nom des attributs peut être différent d'un navigateur à l'autre, Bry
 <td>*class*</td><td>chaine</td><td>le nom de la classe de l'élément (attribut *class* de la balise)</td><td>L/E</td>
 </tr>
 <tr>
+<td>*clear*</td><td>fonction</td><td><code>`elt.clear()</code>` supprime tous les descendants de l'élément</td><td>L</td>
+</tr>
+<tr>
 <td>*remove*</td><td>fonction</td><td><code>remove(_child_)</code> supprime *child* de la liste des descendants de l'élément</td><td>L</td>
 </tr>
 </table>

@@ -28,6 +28,9 @@ Since their name may vary depending on the browser, Brython defines additional a
 <td>*class*</td><td>string</td><td>the name of the element's class (tag attribute *class*)</td><td>R/W</td>
 </tr>
 <tr>
+<td>*clear*</td><td>fonction</td><td><code>`elt.clear()</code>` removes all the descendants of the element</td><td>L</td>
+</tr>
+<tr>
 <td>*remove*</td><td>function</td><td><code>remove(_child_)</code> removes *child* from the list of the element's children</td><td>R</td>
 </tr>
 </table>

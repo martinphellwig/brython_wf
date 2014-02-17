@@ -613,6 +613,13 @@ DOMNode.children = function(self){
     return res
 }
 
+DOMNode.clear = function(self){
+    // remove all children elements
+    for(var i=self.elt.childNodes.length-1;i>=0;i--){
+        self.elt.removeChild(self.elt.childNodes[i])
+    }    
+}
+
 DOMNode.class = function(self){
     if(self.elt.className !== undefined){return self.elt.className}
     else{return None}
