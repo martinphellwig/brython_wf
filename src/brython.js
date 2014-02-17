@@ -2113,6 +2113,13 @@ C.tree.push(this)
 this.tree=[]
 this.expect='as'
 this.toString=function(){return '(with) '}
+this.set_alias=function(arg){
+var scope=$get_scope(this)
+this.tree[this.tree.length-1].alias=arg
+if(scope.ntype !=='module'){
+scope.C.tree[0].locals.push(arg)
+}
+}
 this.transform=function(node,rank){
 if(this.transformed){return}
 if(this.tree[0].alias===null){this.tree[0].alias='$temp'}
@@ -2136,9 +2143,17 @@ this.transformed=true
 }
 this.to_js=function(){
 var res='var $ctx_manager='+this.tree[0].to_js()
+var scope=$get_scope(this)
 res +='\nvar $ctx_manager_exit = getattr($ctx_manager,"__exit__")\n'
 if(this.tree[0].alias){
+var alias=this.tree[0].alias
 res +='var '+this.tree[0].alias+'='
+if(scope.ntype=='module'){res +='$globals["'}
+else{
+res +='$locals["'
+scope.C.tree[0].locals.push(alias)
+}
+res +=alias + '"]='
 }
 res +='getattr($ctx_manager,"__enter__")()'
 return res+'\ntry'
@@ -3146,7 +3161,7 @@ return C
 }else if(token==='id' && C.expect==='alias'){
 if(C.parenth!==undefined){C.expect=','}
 else{C.expect=':'}
-C.tree[C.tree.length-1].alias=arguments[2]
+C.set_alias(arguments[2])
 return C
 }else if(token===':' &&['id','as',':'].indexOf(C.expect)>-1){
 return $BodyCtx(C)
