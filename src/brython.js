@@ -1878,9 +1878,9 @@ C.tree.push(this)
 this.to_js=function(){
 if(this.tree.length===0){return '__BRYTHON__.$raise()'}
 var exc=this.tree[0]
-if(exc.type==='id'){return 'throw '+exc.value+'("")'}
+if(exc.type==='id'){return 'throw '+exc.value+'(None)'}
 else if(exc.type==='expr' && exc.tree[0].type==='id'){
-return 'throw '+exc.tree[0].value+'("")'
+return 'throw '+exc.tree[0].value+'(None)'
 }else{
 while(this.tree.length>1){this.tree.pop()}
 return 'throw '+$to_js(this.tree)
@@ -5902,12 +5902,19 @@ return function(){return "<method-wrapper "+f+" of NoneType object>"}
 })($func)
 }
 }
-var $FunctionDict=$B.$FunctionDict={__class__:$B.$type}
-$FunctionDict.__repr__=$FunctionDict.__str__=function(self){return '<function '+self.__name__+'>'}
+var $FunctionCodeDict={__class__:$B.$type,__name__:'function code'}
+var $FunctionGlobalsDict={__class:$B.$type,__name__:'function globals'}
+var $FunctionDict=$B.$FunctionDict={
+__class__:$B.$type,
+__code__:{__class__:$FunctionCodeDict,__name__:'function code'},
+__globals__:{__class__:$FunctionGlobalsDict,__name__:'function globals'},
+__name__:'function'
+}
+$FunctionDict.__repr__=$FunctionDict.__str__=function(self){return '<function type>'}
 $FunctionDict.__mro__=[$FunctionDict,$ObjectDict]
-Function.__name__='function'
-Function.__class__=$B.$type
-$FunctionDict.$factory=Function
+var $Function=function(){}
+$FunctionDict.$factory=$Function
+$Function.$dict=$FunctionDict
 __builtins__.$BaseExceptionDict={
 __class__:$B.$type,
 __name__:'BaseException'
@@ -5916,7 +5923,11 @@ __builtins__.$BaseExceptionDict.__init__=function(self){
 console.log(self.__class__.__name__+' '+arguments[1])
 self.msg=arguments[1]
 }
-__builtins__.$BaseExceptionDict.__repr__=__builtins__.$BaseExceptionDict.__str__=function(){return 'BaseException'}
+__builtins__.$BaseExceptionDict.__repr__=function(self){
+if(self.message===None){return self.__class__.__name__+'()'}
+return self.message
+}
+__builtins__.$BaseExceptionDict.__str__=__builtins__.$BaseExceptionDict.__repr__
 __builtins__.$BaseExceptionDict.__mro__=[__builtins__.$BaseExceptionDict,$ObjectDict]
 __builtins__.$BaseExceptionDict.__new__=function(cls){
 var err=__builtins__.BaseException()
@@ -5924,10 +5935,19 @@ err.__name__=cls.$dict.__name__
 err.__class__=cls.$dict
 return err
 }
+var $TracebackDict={__class__:$B.$type,
+__name__:'traceback',
+__mro__:[$ObjectDict]
+}
+var $FrameDict={__class__:$B.$type,
+__name__:'frame',
+__mro__:[$ObjectDict]
+}
 var BaseException=function(msg,js_exc){
 var err=Error()
 err.info='Traceback (most recent call last):'
 if(msg===undefined){msg='BaseException'}
+var tb=None
 if($B.debug && !msg.info){
 if(js_exc!==undefined){
 for(var attr in js_exc){
@@ -5953,6 +5973,13 @@ var line=lines[call_info[0]-1]
 while(line && line.charAt(0)==' '){line=line.substr(1)}
 err.info +='\n    '+line
 last_info=call_info
+if(i==0){
+tb={__class__:$TracebackDict,
+tb_frame:{__class__:$FrameDict},
+tb_lineno:call_info[0],
+tb_lasti:line
+}
+}
 }
 var err_info=$B.line_info
 while(true){
@@ -5972,18 +5999,21 @@ err.info +="\n  module "+lib_module+" line "+line_num
 var line=lines[line_num-1]
 while(line && line.charAt(0)==' '){line=line.substr(1)}
 err.info +='\n    '+line
+tb={__class__:$TracebackDict,
+tb_frame:{__class__:$FrameDict},
+tb_lineno:line_num,
+tb_lasti:line
+}
 }
 }
 err.message=msg
 err.args=msg
-err.__str__=function(){return msg}
-err.toString=err.__str__
 err.__name__='BaseException'
 err.__class__=__builtins__.$BaseExceptionDict
 err.py_error=true
 err.type='BaseException'
 err.value=msg
-err.traceback=None
+err.traceback=tb
 $B.exception_stack.push(err)
 return err
 }
@@ -6047,6 +6077,7 @@ var $exc=(BaseException+'').replace(/BaseException/g,name)
 eval('__builtins__.$'+name+'Dict={__class__:$B.$type,__name__:"'+name+'"}')
 eval('__builtins__.$'+name+'Dict.__mro__=[__builtins__.$'+name+'Dict].concat(parent.$dict.__mro__)')
 eval('__builtins__.'+name+'='+$exc)
+eval('__builtins__.'+name+'.__repr__ = function(){return "<class '+"'"+name+"'"+'>"}')
 eval('__builtins__.'+name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
 eval('__builtins__.'+name+'.__class__=$B.$factory')
 eval('__builtins__.$'+name+'Dict.$factory=__builtins__.'+name)

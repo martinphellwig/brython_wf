@@ -1391,14 +1391,21 @@ for(var $func in None){
 }
 
 // add attributes to native Function
-var $FunctionDict = $B.$FunctionDict = {__class__:$B.$type}
-$FunctionDict.__repr__=$FunctionDict.__str__ = function(self){return '<function '+self.__name__+'>'}
+var $FunctionCodeDict = {__class__:$B.$type,__name__:'function code'}
+var $FunctionGlobalsDict = {__class:$B.$type,__name__:'function globals'}
+
+var $FunctionDict = $B.$FunctionDict = {
+    __class__:$B.$type,
+    __code__:{__class__:$FunctionCodeDict,__name__:'function code'},
+    __globals__:{__class__:$FunctionGlobalsDict,__name__:'function globals'},
+    __name__:'function'
+}
+$FunctionDict.__repr__=$FunctionDict.__str__ = function(self){return '<function type>'}
 
 $FunctionDict.__mro__ = [$FunctionDict,$ObjectDict]
-Function.__name__ = 'function'
-Function.__class__ = $B.$type
-
-$FunctionDict.$factory = Function
+var $Function = function(){}
+$FunctionDict.$factory = $Function
+$Function.$dict = $FunctionDict
 
 // built-in exceptions
 
@@ -1412,7 +1419,11 @@ __builtins__.$BaseExceptionDict.__init__ = function(self){
     self.msg = arguments[1]
 }
 
-__builtins__.$BaseExceptionDict.__repr__ = __builtins__.$BaseExceptionDict.__str__ = function(){return 'BaseException'}
+__builtins__.$BaseExceptionDict.__repr__ = function(self){
+    if(self.message===None){return self.__class__.__name__+'()'}
+    return self.message
+}
+__builtins__.$BaseExceptionDict.__str__ = __builtins__.$BaseExceptionDict.__repr__
 
 __builtins__.$BaseExceptionDict.__mro__ = [__builtins__.$BaseExceptionDict,$ObjectDict]
 
@@ -1423,10 +1434,23 @@ __builtins__.$BaseExceptionDict.__new__ = function(cls){
     return err
 }
 
+// class of traceback objects
+var $TracebackDict = {__class__:$B.$type,
+    __name__:'traceback',
+    __mro__:[$ObjectDict]
+}
+
+// class of frame objects
+var $FrameDict = {__class__:$B.$type,
+    __name__:'frame',
+    __mro__:[$ObjectDict]
+}
+
 var BaseException = function (msg,js_exc){
     var err = Error()
     err.info = 'Traceback (most recent call last):'
     if(msg===undefined){msg='BaseException'}
+    var tb = None
     
     if($B.debug && !msg.info){
         if(js_exc!==undefined){
@@ -1454,6 +1478,14 @@ var BaseException = function (msg,js_exc){
             while(line && line.charAt(0)==' '){line=line.substr(1)}
             err.info += '\n    '+line
             last_info = call_info
+            // create traceback object
+            if(i==0){
+                tb = {__class__:$TracebackDict,
+                    tb_frame:{__class__:$FrameDict},
+                    tb_lineno:call_info[0],
+                    tb_lasti:line
+                    }
+            }
         }
         // error line
         var err_info = $B.line_info
@@ -1474,18 +1506,22 @@ var BaseException = function (msg,js_exc){
             var line = lines[line_num-1]
             while(line && line.charAt(0)==' '){line = line.substr(1)}
             err.info += '\n    '+line
+            // create traceback object
+            tb = {__class__:$TracebackDict,
+                tb_frame:{__class__:$FrameDict},
+                tb_lineno:line_num,
+                tb_lasti:line
+            }
         }
     }
     err.message = msg
     err.args = msg
-    err.__str__ = function(){return msg}
-    err.toString = err.__str__
     err.__name__ = 'BaseException'
     err.__class__ = __builtins__.$BaseExceptionDict
     err.py_error = true
     err.type = 'BaseException'
     err.value = msg
-    err.traceback = None
+    err.traceback = tb
     $B.exception_stack.push(err)
     return err
 }
@@ -1565,6 +1601,7 @@ function $make_exc(names,parent){
         eval('__builtins__.$'+name+'Dict.__mro__=[__builtins__.$'+name+'Dict].concat(parent.$dict.__mro__)')
         // class constructor
         eval('__builtins__.'+name+'='+$exc)
+        eval('__builtins__.'+name+'.__repr__ = function(){return "<class '+"'"+name+"'"+'>"}')
         eval('__builtins__.'+name+'.__str__ = function(){return "<class '+"'"+name+"'"+'>"}')
         eval('__builtins__.'+name+'.__class__=$B.$factory')
         eval('__builtins__.$'+name+'Dict.$factory=__builtins__.'+name)
