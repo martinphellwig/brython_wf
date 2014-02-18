@@ -2789,7 +2789,7 @@ function $arbo(ctx){
 }
 function $transition(context,token){
     //console.log('arbo '+$arbo(context))
-    // console.log('context '+context+' token '+token+' '+arguments[2])
+    //console.log('context '+context+' token '+token+' '+arguments[2])
     //console.log('')
 
     if(context.type==='abstract_expr'){
@@ -3101,6 +3101,7 @@ function $transition(context,token){
                 // implicit tuple
                 context.parent.tree.pop()
                 var tuple = new $ListOrTupleCtx(context.parent,'tuple')
+                tuple.implicit = true
                 tuple.tree = [context]
                 return tuple
             }else{return $transition(context.parent,token)}
@@ -3452,6 +3453,10 @@ function $transition(context,token){
                 }else if(context.real==='list'&& token===']'){
                     context.closed = true
                     return context
+                }else if(token=='eol' && context.real=='tuple' && 
+                    context.implicit===true){
+                    context.closed = true
+                    return $transition(context.parent,token)
                 }else if(token !==')'&&token!==']'&&token!==','){
                     context.expect = ','
                     var expr = new $AbstractExprCtx(context,false)
