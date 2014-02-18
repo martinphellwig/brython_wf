@@ -230,19 +230,25 @@ for(var $op in $B.$comps){
     eval("$IntDict.__"+$B.$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
 
-var int = function(value){
+var int = function(value,base){
     var res
+    if(base===undefined){base=10}
     if(value===undefined){res = Number(0)}
     else if(isinstance(value,int)){res = Number(value)}
     else if(value===True){res = Number(1)}
     else if(value===False){res = Number(0)}
     else if(typeof value=="number"){res = Number(parseInt(value))}
-    else if(typeof value=="string" && (new RegExp(/^[ ]*[+-]?\d+[ ]*$/)).test(value)){
-        res = Number(parseInt(value))
+    else if(typeof value=="string") { // && (new RegExp(/^[ ]*[+-]?\d+[ ]*$/)).test(value)){
+      try{
+         res = Number(parseInt(value,base))
+      } catch(err){
+         throw __builtins__.ValueError(
+        "Invalid literal for int() with base "+base +": '"+__builtins__.str(value)+"'")
+      }
     }else if(isinstance(value,__builtins__.float)){
         res = Number(parseInt(value.value))
     }else{ throw __builtins__.ValueError(
-        "Invalid literal for int() with base 10: '"+__builtins__.str(value)+"'")
+        "Invalid literal for int() with base "+base +": '"+__builtins__.str(value)+"'")
     }
     return res
 }
