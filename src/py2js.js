@@ -2423,6 +2423,14 @@ function $WithCtx(context){
     this.tree = []
     this.expect = 'as'
     this.toString = function(){return '(with) '}
+    this.set_alias = function(arg){
+        var scope = $get_scope(this)
+        this.tree[this.tree.length-1].alias = arg
+        if(scope.ntype !== 'module'){
+            // add to function local names
+            scope.context.tree[0].locals.push(arg)
+        }
+    }
     this.transform = function(node,rank){
         if(this.transformed){return} // used if inside a for loop
         if(this.tree[0].alias===null){this.tree[0].alias = '$temp'}
@@ -2446,14 +2454,23 @@ function $WithCtx(context){
     }
     this.to_js = function(){
         var res = 'var $ctx_manager='+this.tree[0].to_js()
+        var scope = $get_scope(this)
         res += '\nvar $ctx_manager_exit = getattr($ctx_manager,"__exit__")\n'
         if(this.tree[0].alias){
+            var alias = this.tree[0].alias
             res += 'var '+this.tree[0].alias+'='
+            if(scope.ntype=='module'){res += '$globals["'}
+            else{
+                res += '$locals["'
+                scope.context.tree[0].locals.push(alias)
+            }
+            res += alias + '"]='
         }
         res += 'getattr($ctx_manager,"__enter__")()'
         return res+'\ntry'
     }
 }
+
 
 function $YieldCtx(context){ // subscription or slicing
     this.type = 'yield'
@@ -3647,7 +3664,7 @@ function $transition(context,token){
         }else if(token==='id' && context.expect==='alias'){
             if(context.parenth!==undefined){context.expect = ','}
             else{context.expect=':'}
-            context.tree[context.tree.length-1].alias = arguments[2]
+            context.set_alias(arguments[2])
             return context
         }else if(token===':' && ['id','as',':'].indexOf(context.expect)>-1){
             return $BodyCtx(context)

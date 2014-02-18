@@ -48,7 +48,7 @@ from collections import namedtuple, OrderedDict
 
 # Create constants for the compiler flags in Include/code.h
 # We try to get them from dis to avoid duplication, but fall
-# back to hardcording so the dependency is optional
+# back to hardcoding so the dependency is optional
 try:
     from dis import COMPILER_FLAG_NAMES as _flag_names
 except ImportError:
@@ -185,7 +185,7 @@ def isgenerator(object):
     """Return true if the object is a generator.
 
     Generator objects provide these attributes:
-        __iter__        defined to support interation over container
+        __iter__        defined to support iteration over container
         close           raises a new GeneratorExit exception inside the
                         generator to terminate the iteration
         gi_code         code object
@@ -550,7 +550,7 @@ def findsource(object):
 
     file = getfile(object)
     sourcefile = getsourcefile(object)
-    if not sourcefile and file[0] + file[-1] != '<>':
+    if not sourcefile and file[:1] + file[-1:] != '<>':
         raise IOError('source code not available')
     file = sourcefile if sourcefile else file
 
@@ -753,7 +753,8 @@ def getclasstree(classes, unique=False):
             for parent in c.__bases__:
                 if not parent in children:
                     children[parent] = []
-                children[parent].append(c)
+                if c not in children[parent]:
+                    children[parent].append(c)
                 if unique and parent in classes: break
         elif c not in roots:
             roots.append(c)
@@ -877,77 +878,75 @@ def formatannotationrelativeto(object):
         return formatannotation(annotation, module)
     return _formatannotation
 
-#fixme brython
-#def formatargspec(args, varargs=None, varkw=None, defaults=None,
-#                  kwonlyargs=(), kwonlydefaults={}, annotations={},
-#                  formatarg=str,
-#                  formatvarargs=lambda name: '*' + name,
-#                  formatvarkw=lambda name: '**' + name,
-#                  formatvalue=lambda value: '=' + repr(value),
-#                  formatreturns=lambda text: ' -> ' + text,
-#                  formatannotation=formatannotation):
-#    """Format an argument spec from the values returned by getargspec
-#    or getfullargspec.
+def formatargspec(args, varargs=None, varkw=None, defaults=None,
+                  kwonlyargs=(), kwonlydefaults={}, annotations={},
+                  formatarg=str,
+                  formatvarargs=lambda name: '*' + name,
+                  formatvarkw=lambda name: '**' + name,
+                  formatvalue=lambda value: '=' + repr(value),
+                  formatreturns=lambda text: ' -> ' + text,
+                  formatannotation=formatannotation):
+    """Format an argument spec from the values returned by getargspec
+    or getfullargspec.
 
-#    The first seven arguments are (args, varargs, varkw, defaults,
-#    kwonlyargs, kwonlydefaults, annotations).  The other five arguments
-#    are the corresponding optional formatting functions that are called to
-#    turn names and values into strings.  The last argument is an optional
-#    function to format the sequence of arguments."""
-#    def formatargandannotation(arg):
-#        result = formatarg(arg)
-#        if arg in annotations:
-#            result += ': ' + formatannotation(annotations[arg])
-#        return result
-#    specs = []
-#    if defaults:
-#        firstdefault = len(args) - len(defaults)
-#    for i, arg in enumerate(args):
-#        spec = formatargandannotation(arg)
-#        if defaults and i >= firstdefault:
-#            spec = spec + formatvalue(defaults[i - firstdefault])
-#        specs.append(spec)
-#    if varargs is not None:
-#        specs.append(formatvarargs(formatargandannotation(varargs)))
-#    else:
-#        if kwonlyargs:
-#            specs.append('*')
-#    if kwonlyargs:
-#        for kwonlyarg in kwonlyargs:
-#            spec = formatargandannotation(kwonlyarg)
-#            if kwonlydefaults and kwonlyarg in kwonlydefaults:
-#                spec += formatvalue(kwonlydefaults[kwonlyarg])
-#            specs.append(spec)
-#    if varkw is not None:
-#        specs.append(formatvarkw(formatargandannotation(varkw)))
-#    result = '(' + ', '.join(specs) + ')'
-#    if 'return' in annotations:
-#        result += formatreturns(formatannotation(annotations['return']))
-#    return result
+    The first seven arguments are (args, varargs, varkw, defaults,
+    kwonlyargs, kwonlydefaults, annotations).  The other five arguments
+    are the corresponding optional formatting functions that are called to
+    turn names and values into strings.  The last argument is an optional
+    function to format the sequence of arguments."""
+    def formatargandannotation(arg):
+        result = formatarg(arg)
+        if arg in annotations:
+            result += ': ' + formatannotation(annotations[arg])
+        return result
+    specs = []
+    if defaults:
+        firstdefault = len(args) - len(defaults)
+    for i, arg in enumerate(args):
+        spec = formatargandannotation(arg)
+        if defaults and i >= firstdefault:
+            spec = spec + formatvalue(defaults[i - firstdefault])
+        specs.append(spec)
+    if varargs is not None:
+        specs.append(formatvarargs(formatargandannotation(varargs)))
+    else:
+        if kwonlyargs:
+            specs.append('*')
+    if kwonlyargs:
+        for kwonlyarg in kwonlyargs:
+            spec = formatargandannotation(kwonlyarg)
+            if kwonlydefaults and kwonlyarg in kwonlydefaults:
+                spec += formatvalue(kwonlydefaults[kwonlyarg])
+            specs.append(spec)
+    if varkw is not None:
+        specs.append(formatvarkw(formatargandannotation(varkw)))
+    result = '(' + ', '.join(specs) + ')'
+    if 'return' in annotations:
+        result += formatreturns(formatannotation(annotations['return']))
+    return result
 
-#fixme brython
-#def formatargvalues(args, varargs, varkw, locals,
-#                    formatarg=str,
-#                    formatvarargs=lambda name: '*' + name,
-#                    formatvarkw=lambda name: '**' + name,
-#                    formatvalue=lambda value: '=' + repr(value)):
-#    """Format an argument spec from the 4 values returned by getargvalues.
+def formatargvalues(args, varargs, varkw, locals,
+                    formatarg=str,
+                    formatvarargs=lambda name: '*' + name,
+                    formatvarkw=lambda name: '**' + name,
+                    formatvalue=lambda value: '=' + repr(value)):
+    """Format an argument spec from the 4 values returned by getargvalues.
 
-#    The first four arguments are (args, varargs, varkw, locals).  The
-#    next four arguments are the corresponding optional formatting functions
-#    that are called to turn names and values into strings.  The ninth
-#    argument is an optional function to format the sequence of arguments."""
-#    def convert(name, locals=locals,
-#                formatarg=formatarg, formatvalue=formatvalue):
-#        return formatarg(name) + formatvalue(locals[name])
-#    specs = []
-#    for i in range(len(args)):
-#        specs.append(convert(args[i]))
-#    if varargs:
-#        specs.append(formatvarargs(varargs) + formatvalue(locals[varargs]))
-#    if varkw:
-#        specs.append(formatvarkw(varkw) + formatvalue(locals[varkw]))
-#    return '(' + ', '.join(specs) + ')'
+    The first four arguments are (args, varargs, varkw, locals).  The
+    next four arguments are the corresponding optional formatting functions
+    that are called to turn names and values into strings.  The ninth
+    argument is an optional function to format the sequence of arguments."""
+    def convert(name, locals=locals,
+                formatarg=formatarg, formatvalue=formatvalue):
+        return formatarg(name) + formatvalue(locals[name])
+    specs = []
+    for i in range(len(args)):
+        specs.append(convert(args[i]))
+    if varargs:
+        specs.append(formatvarargs(varargs) + formatvalue(locals[varargs]))
+    if varkw:
+        specs.append(formatvarkw(varkw) + formatvalue(locals[varkw]))
+    return '(' + ', '.join(specs) + ')'
 
 def _missing_arguments(f_name, argnames, pos, values):
     names = [repr(name) for name in argnames if name not in values]
@@ -1457,9 +1456,7 @@ class _empty:
 
 
 class _ParameterKind(int):
-    #fixme brython..
-    #def __new__(self, *args, name):
-    def __new__(self, *args, name=None):
+    def __new__(self, *args, name):
         obj = int.__new__(self, *args)
         obj._name = name
         return obj

@@ -2113,6 +2113,13 @@ C.tree.push(this)
 this.tree=[]
 this.expect='as'
 this.toString=function(){return '(with) '}
+this.set_alias=function(arg){
+var scope=$get_scope(this)
+this.tree[this.tree.length-1].alias=arg
+if(scope.ntype !=='module'){
+scope.C.tree[0].locals.push(arg)
+}
+}
 this.transform=function(node,rank){
 if(this.transformed){return}
 if(this.tree[0].alias===null){this.tree[0].alias='$temp'}
@@ -2136,9 +2143,17 @@ this.transformed=true
 }
 this.to_js=function(){
 var res='var $ctx_manager='+this.tree[0].to_js()
+var scope=$get_scope(this)
 res +='\nvar $ctx_manager_exit = getattr($ctx_manager,"__exit__")\n'
 if(this.tree[0].alias){
+var alias=this.tree[0].alias
 res +='var '+this.tree[0].alias+'='
+if(scope.ntype=='module'){res +='$globals["'}
+else{
+res +='$locals["'
+scope.C.tree[0].locals.push(alias)
+}
+res +=alias + '"]='
 }
 res +='getattr($ctx_manager,"__enter__")()'
 return res+'\ntry'
@@ -3146,7 +3161,7 @@ return C
 }else if(token==='id' && C.expect==='alias'){
 if(C.parenth!==undefined){C.expect=','}
 else{C.expect=':'}
-C.tree[C.tree.length-1].alias=arguments[2]
+C.set_alias(arguments[2])
 return C
 }else if(token===':' &&['id','as',':'].indexOf(C.expect)>-1){
 return $BodyCtx(C)
@@ -3768,9 +3783,6 @@ if(attr==='__class__'){
 return klass.$factory
 }
 var res=obj[attr],args=[]
-if(obj.$dict!==undefined && obj.$dict[attr]!==undefined){
-res=obj.$dict[attr]
-}
 if(res===undefined){
 var mro=klass.__mro__
 for(var i=0;i<mro.length;i++){
@@ -4856,6 +4868,7 @@ errors:errors
 }
 bytes.__class__=$B.$factory
 bytes.$dict=$BytesDict
+$BytesDict.$factory=bytes
 function callable(obj){
 return hasattr(obj,'__call__')
 }
@@ -5819,8 +5832,8 @@ $BoolDict.__mul__=function(self,other){
 if(self.valueOf())return other
 return 0
 }
-$BoolDict.__repr__=$BoolDict.__str__=function(){
-if(this.valueOf())return "True"
+$BoolDict.__repr__=$BoolDict.__str__=function(self){
+if(self.valueOf())return "True"
 return "False"
 }
 $BoolDict.__sub__=function(self,other){
@@ -9362,7 +9375,7 @@ DOMNode.__eq__=function(self,other){
 return self.elt==other.elt
 }
 DOMNode.__getattribute__=function(self,attr){
-if(['children','html','left','parent','query','text',
+if(['children','html','id','left','parent','query','text',
 'top','value','height','width'].indexOf(attr)>-1){
 return DOMNode[attr](self)
 }
@@ -9421,7 +9434,6 @@ return $Style(self.elt[attr])
 return __BRYTHON__.$JS2Py(self.elt[attr])
 }
 }
-if(self.elt[attr]!==undefined){return self.elt[attr]}
 return $ObjectDict.__getattribute__(self,attr)
 }
 DOMNode.__getitem__=function(self,key){
