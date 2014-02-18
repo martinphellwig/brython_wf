@@ -1,4 +1,4 @@
-#! /usr/bin/python3.3
+#!/usr/bin/env python3
 """Generate Python documentation in HTML or text for interactive use.
 
 In the Python interpreter, do "from pydoc import help" to provide
@@ -26,10 +26,6 @@ Run "pydoc -w <name>" to write out the HTML documentation for a module
 to a file named "<name>.html".
 
 Module docs for core modules are assumed to be in
-
-    /usr/share/doc/pythonX.Y/html/library
-
-if the pythonX.Y-doc package is installed or in
 
     http://docs.python.org/X.Y/library/
 
@@ -61,7 +57,7 @@ import importlib.machinery
 import inspect
 import io
 import os
-#import pkgutil
+import pkgutil
 import platform
 import re
 import sys
@@ -70,7 +66,7 @@ import tokenize
 import warnings
 from collections import deque
 from reprlib import Repr
-#from traceback import extract_tb, format_exception_only
+from traceback import extract_tb, format_exception_only
 
 
 # --------------------------------------------------------- common routines
@@ -383,7 +379,6 @@ class Doc:
                                  'marshal', 'posix', 'signal', 'sys',
                                  '_thread', 'zipimport') or
              (file.startswith(basedir) and
-              not file.startswith(os.path.join(basedir, 'dist-packages')) and
               not file.startswith(os.path.join(basedir, 'site-packages')))) and
             object.__name__ not in ('xml.etree', 'test.pydoc_mod')):
             if docloc.startswith("http://"):
@@ -1364,8 +1359,6 @@ location listed above.
     def docother(self, object, name=None, mod=None, parent=None, maxlen=None, doc=None):
         """Produce text documentation for a data object."""
         repr = self.repr(object)
-        #fixme brython
-        print(repr)
         if maxlen:
             line = (name and name + ' = ' or '') + repr
             chop = maxlen - len(line)
@@ -1515,13 +1508,7 @@ def describe(thing):
 
 def locate(path, forceload=0):
     """Locate an object by name or dotted path, importing as necessary."""
-    #fixme brython, the line below should work, but doesn't
-    #parts = [part for part in path.split('.') if part]
-    parts=[]
-    for part in path.split('.'):
-        if part:
-           parts.append(part)
-
+    parts = [part for part in path.split('.') if part]
     module, n = None, 0
     while n < len(parts):
         nextmodule = safeimport('.'.join(parts[:n+1]), forceload)
@@ -1787,17 +1774,8 @@ class Helper:
         self._input = input
         self._output = output
 
-    #fixme brython
-    #input  = property(lambda self: self._input or sys.stdin)
-    #output = property(lambda self: self._output or sys.stdout)
-
-    @property
-    def input(self):
-        return self._input or sys.stdin
-
-    @property
-    def output(self):
-        return self._output or sys.stdout
+    input  = property(lambda self: self._input or sys.stdin)
+    output = property(lambda self: self._output or sys.stdout)
 
     def __repr__(self):
         if inspect.stack()[1][3] == '?':
@@ -1853,10 +1831,7 @@ has the same effect as typing a particular string at the help> prompt.
             elif request in self.symbols: self.showsymbol(request)
             elif request in ['True', 'False', 'None']:
                 # special case these keywords since they are objects too
-                #fixme brython
-                #doc(eval(request), 'Help on %s:')
-                _src=eval(request)
-                doc(_src, 'Help on %s:')
+                doc(eval(request), 'Help on %s:')
             elif request in self.keywords: self.showtopic(request)
             elif request in self.topics: self.showtopic(request)
             elif request: doc(request, 'Help on %s:', output=self._output)
@@ -2031,6 +2006,7 @@ class Scanner:
         if self.descendp(child):
             self.state.append((child, self.children(child)))
         return child
+
 
 class ModuleScanner:
     """An interruptible scanner that searches module synopses."""
@@ -2251,6 +2227,7 @@ def _start_server(urlhandler, port):
     while not thread.error and not thread.serving:
         time.sleep(.01)
     return thread
+
 
 def _url_handler(url, content_type="text/html"):
     """The pydoc url handler for use with the pydoc server.
@@ -2630,7 +2607,6 @@ def cli():
     directory.  If <name> contains a '{sep}', it is treated as a filename; if
     it names a directory, documentation is written for all the contents.
 """.format(cmd=cmd, sep=os.sep))
-
 
 if __name__ == '__main__':
     cli()
