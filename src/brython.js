@@ -2687,6 +2687,7 @@ return $transition(C,'op','in')
 if(C.with_commas){
 C.parent.tree.pop()
 var tuple=new $ListOrTupleCtx(C.parent,'tuple')
+tuple.implicit=true
 tuple.tree=[C]
 return tuple
 }else{return $transition(C.parent,token)}
@@ -2991,6 +2992,10 @@ return $transition(C.parent,token)
 }else if(C.real==='list'&& token===']'){
 C.closed=true
 return C
+}else if(token=='eol' && C.real=='tuple' && 
+C.implicit===true){
+C.closed=true
+return $transition(C.parent,token)
 }else if(token !==')'&&token!==']'&&token!==','){
 C.expect=','
 var expr=new $AbstractExprCtx(C,false)
@@ -6940,19 +6945,25 @@ $comp_func +=''
 for(var $op in $B.$comps){
 eval("$IntDict.__"+$B.$comps[$op]+'__ = '+$comp_func.replace(/>/gm,$op))
 }
-var int=function(value){
+var int=function(value,base){
 var res
+if(base===undefined){base=10}
 if(value===undefined){res=Number(0)}
 else if(isinstance(value,int)){res=Number(value)}
 else if(value===True){res=Number(1)}
 else if(value===False){res=Number(0)}
 else if(typeof value=="number"){res=Number(parseInt(value))}
-else if(typeof value=="string" &&(new RegExp(/^[]*[+-]?\d+[]*$/)).test(value)){
-res=Number(parseInt(value))
+else if(typeof value=="string"){
+try{
+res=Number(parseInt(value,base))
+}catch(err){
+throw __builtins__.ValueError(
+"Invalid literal for int() with base "+base +": '"+__builtins__.str(value)+"'")
+}
 }else if(isinstance(value,__builtins__.float)){
 res=Number(parseInt(value.value))
 }else{throw __builtins__.ValueError(
-"Invalid literal for int() with base 10: '"+__builtins__.str(value)+"'")
+"Invalid literal for int() with base "+base +": '"+__builtins__.str(value)+"'")
 }
 return res
 }
