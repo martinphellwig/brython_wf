@@ -621,7 +621,7 @@ res +='}catch(err){throw __BRYTHON__.exception(err)}'
 res +='})()'
 if(ns==='globals'){
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-res +='{window[$attr]=$globals[$attr]='
+res +='{__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
 res +='__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
 }else if(ns !=''){
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
@@ -3587,10 +3587,8 @@ src=src.substr(1)
 if(src.charAt(src.length-1)!="\n"){src+='\n'}
 if(module===undefined){module='__main__'}
 var __name__=module
-if(__BRYTHON__.scope[module]===undefined){
 __BRYTHON__.scope[module]={}
 __BRYTHON__.scope[module].__dict__={}
-}
 document.$py_src[module]=src
 var root=$tokenize(src,module,parent)
 root.transform()
