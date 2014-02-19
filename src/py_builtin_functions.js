@@ -213,6 +213,7 @@ function $class(obj,info){
 //compile() (built in function)
 function compile(source, filename, mode) {
     //for now ignore mode variable, and flags, etc
+    return source
     return $B.py2js(source, filename).to_js()
 }
 
