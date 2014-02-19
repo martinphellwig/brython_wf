@@ -320,8 +320,9 @@ $B.$JS2Py = function(src){
         if(src%1===0){return src}
         else{return $B.builtins.float(src)}
     }
-    if(src.__class__!==undefined){
-        if(src.__class__===__BRYTHON__.builtins.list.$dict){
+    var klass = $B.get_class(src)
+    if(klass!==undefined){
+        if(klass===__BRYTHON__.builtins.list.$dict){
             for(var i=0;i<src.length;i++){
                 src[i] = $B.$JS2Py(src[i])
             }
