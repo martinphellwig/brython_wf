@@ -69,6 +69,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_io",
 "_jsre",
 "_os",
+"_posixsubprocess",
 "_svg",
 "_sys",
 "_timer",
@@ -84,6 +85,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_re",
 "_socket",
 "_sre",
+"_sre.py",
 "_string",
 "_struct",
 "_sysconfigdata",
@@ -3634,7 +3636,9 @@ __BRYTHON__.exception_stack=[]
 __BRYTHON__.call_stack=[]
 __BRYTHON__.scope={}
 __BRYTHON__.events=__BRYTHON__.builtins.dict()
-var $elts=document.getElementsByTagName("script")
+if(options.py_tag===undefined){options.py_tag="script"}
+var $elts=document.getElementsByTagName(options.py_tag)
+var $scripts=document.getElementsByTagName('script')
 var $href=window.location.href
 var $href_elts=$href.split('/')
 $href_elts.pop()
@@ -3651,12 +3655,12 @@ __BRYTHON__.$options.re=options.re
 if(!(__BRYTHON__.path.indexOf($script_path)> -1)){
 __BRYTHON__.path.push($script_path)
 }
-for(var $i=0;$i<$elts.length;$i++){
-var $elt=$elts[$i]
+for(var $i=0;$i<$scripts.length;$i++){
+var $elt=$scripts[$i]
 var $br_scripts=['brython.js','py2js.js','brython_dist.js']
 for(var $j=0;$j<$br_scripts.length;$j++){
 var $bs=$br_scripts[$j]
-if($elt.src.substr($elt.src.length-$bs.length)==$bs){
+if($elt.src && $elt.src.substr($elt.src.length-$bs.length)==$bs){
 if($elt.src.length===$bs.length ||
 $elt.src.charAt($elt.src.length-$bs.length-1)=='/'){
 var $path=$elt.src.substr(0,$elt.src.length-$bs.length)
@@ -3673,7 +3677,7 @@ for(var $i=0;$i<$elts.length;$i++){
 var $elt=$elts[$i]
 if($elt.type=="text/python"||$elt.type==="text/python3"){
 var $src=null
-if($elt.src!==''){
+if($elt.src){
 if(window.XMLHttpRequest){
 var $xmlhttp=new XMLHttpRequest()
 }else{
@@ -3687,7 +3691,7 @@ $src=$xmlhttp.responseText
 }
 $xmlhttp.open('GET',$elt.src,false)
 $xmlhttp.send()
-__BRYTHON__.$py_module_path['__main__']=$elt.src 
+__BRYTHON__.$py_module_path['__main__']=$elt.src
 var $src_elts=$elt.src.split('/')
 $src_elts.pop()
 var $src_path=$src_elts.join('/')
@@ -3695,7 +3699,7 @@ if(__BRYTHON__.path.indexOf($src_path)==-1){
 __BRYTHON__.path.splice(0,0,$src_path)
 }
 }else{
-var $src=($elt.innerHTML || $elt.textContent)
+var $src=($elt.innerText || $elt.textContent)
 __BRYTHON__.$py_module_path['__main__']=$href
 }
 try{
@@ -4494,8 +4498,9 @@ if(typeof src==='number'){
 if(src%1===0){return src}
 else{return $B.builtins.float(src)}
 }
-if(src.__class__!==undefined){
-if(src.__class__===__BRYTHON__.builtins.list.$dict){
+var klass=$B.get_class(src)
+if(klass!==undefined){
+if(klass===__BRYTHON__.builtins.list.$dict){
 for(var i=0;i<src.length;i++){
 src[i]=$B.$JS2Py(src[i])
 }
@@ -4897,6 +4902,7 @@ this.__class__=$B.$type
 this.__mro__=[this,$ObjectDict]
 }
 function compile(source, filename, mode){
+return source
 return $B.py2js(source, filename).to_js()
 }
 function delattr(obj, attr){

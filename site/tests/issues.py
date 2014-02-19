@@ -572,4 +572,18 @@ n = 0
 assert 1+n if n else 0 == 0
 n = 7
 assert 1 + n*n if n else 0 == 50
+
+# issue 217
+def myfunc(code, code1):
+    code.append('1')
+    code.append('2')
+    code.append('3')
+
+
+a=[]
+b=0
+myfunc(a, b)
+
+assert a==['1', '2', '3']
+
 print('passed all tests')
