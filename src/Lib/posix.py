@@ -577,3 +577,8 @@ def write(*args,**kw):
     """write(fd, string) -> byteswritten    
     Write a string to a file descriptor."""
     pass
+
+## put WIFSIGNALED here. its needed by os module, and os module imports all
+## functions in this module
+def WIFSIGNALED(a):
+    return False
