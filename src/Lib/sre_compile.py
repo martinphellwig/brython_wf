@@ -485,11 +485,9 @@ def _code(p, flags):
 
     # compile info block
     _compile_info(code, p, flags)
-    print('code', code)
 
     # compile the pattern
     _compile(code, p.data, flags)
-    print('code', code)
 
     code.append(OPCODES[SUCCESS])
 

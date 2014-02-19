@@ -4197,8 +4197,6 @@ function brython(options){
     if(options.py_tag===undefined){options.py_tag="script"}
     
     var $elts = document.getElementsByTagName(options.py_tag)
-    console.log('found '+$elts.length)
-    
     var $scripts = document.getElementsByTagName('script')
     
     var $href = window.location.href
@@ -4250,7 +4248,6 @@ function brython(options){
     
     for(var $i=0;$i<$elts.length;$i++){
         var $elt = $elts[$i]
-        console.log('type '+$elt.type+' src '+$elt.src)
         if($elt.type=="text/python"||$elt.type==="text/python3"){
             var $src = null
             if($elt.src){ 
@@ -4280,7 +4277,6 @@ function brython(options){
                 }
             }else{
                 var $src = ($elt.innerText || $elt.textContent)
-                console.log('found python script '+$elt+' src '+$src)
                 __BRYTHON__.$py_module_path['__main__'] = $href
             }
 
