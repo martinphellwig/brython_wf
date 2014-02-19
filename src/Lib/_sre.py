@@ -277,7 +277,7 @@ class SRE_Match:
             if group >= 0 and group <= self.re.groups:
                 return group
         else:
-            if self.re.groupindex.has_key(group):
+            if group in self.re.groupindex:
                 return self.re.groupindex[group]
         raise IndexError("no such group")
 
