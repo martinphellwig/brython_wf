@@ -71,11 +71,11 @@ class SRE_Pattern:
         #print(string)
         state = _State(string, pos, endpos, self.flags)
         #print('_sre.py:match:73', self._code)
+        #print(state.match(self._code))
         if state.match(self._code):
             #print("_sre.py:70: match")
             return SRE_Match(self, state)
         #else:
-        #print("_sre.py:75: match")
         return None
 
     def search(self, string, pos=0, endpos=sys.maxsize):
@@ -586,7 +586,6 @@ class _Dispatcher:
 
     def dispatch(self, code, context):
         method = self.DISPATCH_TABLE.get(code, self.__class__.unknown)
-        #print("dispatcher:580:", method, code)
         return method(self, context)
 
     def unknown(self, code, ctx):
@@ -620,13 +619,15 @@ class _OpcodeDispatcher(_Dispatcher):
         while context.remaining_codes() > 0 and context.has_matched is None:
             #print("_sre.py:601:remaining_codes:", context.remaining_codes())
             opcode = context.peek_code()
-            #print('_sre.py:match:598', opcode)
+            #print('_sre.py:match:622', opcode)
+            #print(context.has_matched)
             if not self.dispatch(opcode, context):
                 return None
-            #print('_sre.py:match:611', opcode)
+            #print(context.has_matched)
+            #print('_sre.py:match:627', opcode)
         if context.has_matched is None:
             context.has_matched = False
-        #print('_sre.py:match:601', context.has_matched)
+        #print('_sre.py:match:630', context.has_matched)
         return context.has_matched
 
     def dispatch(self, opcode, context):
@@ -898,8 +899,8 @@ class _OpcodeDispatcher(_Dispatcher):
                 ctx.state.marks_pop_keep()
 
         ctx.state.marks_pop_discard()
-        #ctx.has_matched = False
-        ctx.has_matched = True      # <== this should be True (so match object gets returned to program)
+        ctx.has_matched = False
+        #ctx.has_matched = True      # <== this should be True (so match object gets returned to program)
         #print('_sre.py:875', id(ctx))
         #print(ctx)
         #print(ctx.has_matched)
@@ -961,7 +962,7 @@ class _OpcodeDispatcher(_Dispatcher):
         #   print("951:ctx.state.repeat is None")
         #   #ctx.state.repeat=_RepeatContext(ctx)
 
-        #print("repeat", ctx.state.repeat, mincount, maxcount)
+        print("repeat", ctx.state.repeat, mincount, maxcount)
         repeat = _RepeatContext(ctx)
         ctx.state.repeat = repeat
         ctx.state.string_position = ctx.string_position

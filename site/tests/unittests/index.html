@@ -76,12 +76,12 @@ def choose_test(event):
        return
 
     import unittest
-    import HTMLTestRunner
+    #import HTMLTestRunner
     exec("""
       import %s
       _suite=unittest.TestLoader().loadTestsFromModule(%s)
-      #unittest.TextTestRunner(sys.stdout, verbosity=2).run(_suite)
-      HTMLTestRunner.HTMLTestRunner(sys.stdout, verbosity=2).run(_suite)
+      unittest.TextTestRunner(sys.stdout, verbosity=2).run(_suite)
+      #HTMLTestRunner.HTMLTestRunner(sys.stdout, verbosity=2).run(_suite)
 """ % (module, module))
 
 window.choose_test=choose_test
