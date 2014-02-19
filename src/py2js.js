@@ -4194,7 +4194,13 @@ function brython(options){
     __BRYTHON__.call_stack = []
     __BRYTHON__.scope = {}
     __BRYTHON__.events = __BRYTHON__.builtins.dict() // maps $brython_id of DOM elements to events
-    var $elts = document.getElementsByTagName("script")
+    if(options.py_tag===undefined){options.py_tag="script"}
+    
+    var $elts = document.getElementsByTagName(options.py_tag)
+    console.log('found '+$elts.length)
+    
+    var $scripts = document.getElementsByTagName('script')
+    
     var $href = window.location.href
     var $href_elts = $href.split('/')
     $href_elts.pop()
@@ -4221,12 +4227,12 @@ function brython(options){
     // get path of brython.js or py2js to determine brython_path
     // it will be used for imports
 
-    for(var $i=0;$i<$elts.length;$i++){
-        var $elt = $elts[$i]
+    for(var $i=0;$i<$scripts.length;$i++){
+        var $elt = $scripts[$i]
         var $br_scripts = ['brython.js','py2js.js','brython_dist.js']
         for(var $j=0;$j<$br_scripts.length;$j++){
             var $bs = $br_scripts[$j]
-            if($elt.src.substr($elt.src.length-$bs.length)==$bs){
+            if($elt.src && $elt.src.substr($elt.src.length-$bs.length)==$bs){
                 if($elt.src.length===$bs.length ||
                     $elt.src.charAt($elt.src.length-$bs.length-1)=='/'){
                         var $path = $elt.src.substr(0,$elt.src.length-$bs.length)
@@ -4244,9 +4250,10 @@ function brython(options){
     
     for(var $i=0;$i<$elts.length;$i++){
         var $elt = $elts[$i]
+        console.log('type '+$elt.type+' src '+$elt.src)
         if($elt.type=="text/python"||$elt.type==="text/python3"){
             var $src = null
-            if($elt.src!==''){ 
+            if($elt.src){ 
                 // format <script type="text/python" src="python_script.py">
                 // get source code by an Ajax call
                 if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -4262,7 +4269,7 @@ function brython(options){
                 }
                 $xmlhttp.open('GET',$elt.src,false)
                 $xmlhttp.send()
-                __BRYTHON__.$py_module_path['__main__']=$elt.src 
+                __BRYTHON__.$py_module_path['__main__']=$elt.src
                 var $src_elts = $elt.src.split('/')
                 $src_elts.pop()
                 var $src_path = $src_elts.join('/')
@@ -4272,7 +4279,8 @@ function brython(options){
                     __BRYTHON__.path.splice(0,0,$src_path)
                 }
             }else{
-                var $src = ($elt.innerHTML || $elt.textContent)
+                var $src = ($elt.innerText || $elt.textContent)
+                console.log('found python script '+$elt+' src '+$src)
                 __BRYTHON__.$py_module_path['__main__'] = $href
             }
 
