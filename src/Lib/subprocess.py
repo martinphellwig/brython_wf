@@ -791,15 +791,16 @@ class Popen(object):
         # We wrap OS handles *before* launching the child, otherwise a
         # quickly terminating child could make our fds unwrappable
         # (see #8458).
-
-        if mswindows:
-            if p2cwrite != -1:
-                p2cwrite = msvcrt.open_osfhandle(p2cwrite.Detach(), 0)
-            if c2pread != -1:
-                c2pread = msvcrt.open_osfhandle(c2pread.Detach(), 0)
-            if errread != -1:
-                errread = msvcrt.open_osfhandle(errread.Detach(), 0)
-
+        
+        #fix me brython  syntax error
+        #if mswindows:
+        #    if p2cwrite != -1:
+        #        p2cwrite = msvcrt.open_osfhandle(p2cwrite.Detach(), 0)
+        #    if c2pread != -1:
+        #        c2pread = msvcrt.open_osfhandle(c2pread.Detach(), 0)
+        #    if errread != -1:
+        #        errread = msvcrt.open_osfhandle(errread.Detach(), 0)
+        
         if p2cwrite != -1:
             self.stdin = io.open(p2cwrite, 'wb', bufsize)
             if universal_newlines:
