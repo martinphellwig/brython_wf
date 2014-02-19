@@ -617,7 +617,7 @@ function $CallCtx(context){
             if(ns==='globals'){
                 // copy the execution namespace in module and global namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
+                res += '{window[$attr]=$globals[$attr]='
                 res += '__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
             }else if(ns !=''){
                 // use specified namespace
@@ -4135,8 +4135,10 @@ __BRYTHON__.py2js = function(src,module,parent){
     if(module===undefined){module='__main__'}
     // Python built-in variable __name__
     var __name__ = module
-    __BRYTHON__.scope[module] = {}
-    __BRYTHON__.scope[module].__dict__ = {}
+    if(__BRYTHON__.scope[module]===undefined){
+        __BRYTHON__.scope[module] = {}
+        __BRYTHON__.scope[module].__dict__ = {}
+    }
     document.$py_src[module]=src
     var root = $tokenize(src,module,parent)
     root.transform()
