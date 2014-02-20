@@ -417,6 +417,9 @@ var _mod = {
             return float(1)
         }
 
+        //if (isNegZero(x)) {
+        //}
+
         var r
         if (isLargeNumber(x1) || isLargeNumber(y1)) {
            var x=new BigNumber(x1)
