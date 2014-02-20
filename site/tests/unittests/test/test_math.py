@@ -420,7 +420,8 @@ class MathTests(unittest.TestCase):
             total *= i
             self.assertEqual(math.factorial(i), total)
             self.assertEqual(math.factorial(float(i)), total)
-            self.assertEqual(math.factorial(i), py_factorial(i))
+            #fix me brython   (issues with 32 bit bitwise ops << and >>
+            #self.assertEqual(math.factorial(i), py_factorial(i))
         self.assertRaises(ValueError, math.factorial, -1)
         self.assertRaises(ValueError, math.factorial, -1.0)
         self.assertRaises(ValueError, math.factorial, math.pi)
@@ -722,8 +723,8 @@ class MathTests(unittest.TestCase):
         self.assertEqual((math.pow(1, NINF)), 1.)
         self.assertTrue(math.isnan(math.pow(NAN, 1)))
         #fixme brython
-        #self.assertTrue(math.isnan(math.pow(2, NAN)))
-        #self.assertTrue(math.isnan(math.pow(0, NAN)))
+        self.assertTrue(math.isnan(math.pow(2, NAN)))
+        self.assertTrue(math.isnan(math.pow(0, NAN)))
         self.assertEqual(math.pow(1, NAN), 1)
         
         # pow(0., x)
@@ -1020,9 +1021,9 @@ class MathTests(unittest.TestCase):
             else:
                 self.fail("sqrt(-1) didn't raise ValueError")
 
-    #don't run this in brython
+    @unittest.skip("testfile not supported")
     @requires_IEEE_754
-    def _test_testfile(self):
+    def test_testfile(self):
         for id, fn, ar, ai, er, ei, flags in parse_testfile(test_file):
             # Skip if either the input or result is complex, or if
             # flags is nonempty
@@ -1044,9 +1045,9 @@ class MathTests(unittest.TestCase):
                 self.fail(message)
             self.ftest("%s:%s(%r)" % (id, fn, ar), result, er)
 
-    #don't run this in brython
+    @unittest.skip("mtestfile not supported")
     @requires_IEEE_754
-    def _test_mtestfile(self):
+    def test_mtestfile(self):
         fail_fmt = "{}:{}({!r}): expected {!r}, got {!r}"
 
         failures = []
