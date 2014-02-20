@@ -189,16 +189,16 @@ class SRE_Pattern:
 
     def finditer(self, string, pos=0, endpos=sys.maxsize):
         """Return a list of all non-overlapping matches of pattern in string."""
-        #scanner = self.scanner(string, pos, endpos)
-        _list=[]
+        scanner = self.scanner(string, pos, endpos)
+        ##_list=[]
         #_m=self.scanner(string, pos, endpos)
-        _re=SRE_Scanner(self, string, pos, endpos)
-        _m=_re.search()
-        while _m:
-           _list.append(_m)
-           _m=_re.search()
-        return _list
-        #return iter(scanner.search, None)
+        #_re=SRE_Scanner(self, string, pos, endpos)
+        #_m=_re.search()
+        #while _m:
+        #   _list.append(_m)
+        #   _m=_re.search()
+        #return _list
+        return iter(scanner.search, None)
 
     def scanner(self, string, start=0, end=sys.maxsize):
         return SRE_Scanner(self, string, start, end)
@@ -899,8 +899,8 @@ class _OpcodeDispatcher(_Dispatcher):
                 ctx.state.marks_pop_keep()
 
         ctx.state.marks_pop_discard()
-        ctx.has_matched = False
-        #ctx.has_matched = True      # <== this should be True (so match object gets returned to program)
+        #ctx.has_matched = False
+        ctx.has_matched = True      # <== this should be True (so match object gets returned to program)
         #print('_sre.py:875', id(ctx))
         #print(ctx)
         #print(ctx.has_matched)
@@ -962,7 +962,7 @@ class _OpcodeDispatcher(_Dispatcher):
         #   print("951:ctx.state.repeat is None")
         #   #ctx.state.repeat=_RepeatContext(ctx)
 
-        print("repeat", ctx.state.repeat, mincount, maxcount)
+        #print("repeat", ctx.state.repeat, mincount, maxcount)
         repeat = _RepeatContext(ctx)
         ctx.state.repeat = repeat
         ctx.state.string_position = ctx.string_position
