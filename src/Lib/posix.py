@@ -582,3 +582,19 @@ def write(*args,**kw):
 ## functions in this module
 def WIFSIGNALED(a):
     return False
+
+def WTERMSIG(status):
+    return 0
+
+def WIFSIGNALED(status):
+    "Return True if the process exited due to a signal, otherwise return False"
+    return False
+
+def WIFEXITED(status):
+    return False
+
+def WEXITSTATUS(status):
+    pass
+
+def WNOHANG():
+    return (0,0)
