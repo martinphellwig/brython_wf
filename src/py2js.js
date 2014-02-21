@@ -2156,9 +2156,13 @@ function $RaiseCtx(context){
     this.to_js = function(){
         if(this.tree.length===0){return '__BRYTHON__.$raise()'}
         var exc = this.tree[0]
-        if(exc.type==='id'){return 'throw '+exc.value+'(None)'}
-        else if(exc.type==='expr' && exc.tree[0].type==='id'){
-            return 'throw '+exc.tree[0].value+'(None)'
+        if(exc.type==='id' ||
+            (exc.type==='expr' && exc.tree[0].type==='id')){
+            var value = exc.value
+            if(exc.type=='expr'){value = exc.tree[0].value}
+            var res = 'if(isinstance('+value+',type)){throw '+value+'()}'
+            res += 'else{throw '+value+'}'
+            return res
         }else{
             // if raise had a 'from' clause, ignore it
             while(this.tree.length>1){this.tree.pop()}
