@@ -171,8 +171,6 @@ class TextTestRunner(object):
                 if stopTestRun is not None:
                     stopTestRun()
             stopTime = time.time()
-        print(stopTime)
-        print(startTime)
         timeTaken = stopTime - startTime
         result.printErrors()
         if hasattr(result, 'separator2'):

@@ -8,14 +8,11 @@ var float_check=function(x) {
     return x
 }
 
-var isWholeNumber=function(x){return x*10 % 10 == 0}
+var isWholeNumber=function(x){return (x*10) % 10 == 0}
 
-var isOdd=function(x) {2*Math.floor(x/2) != x}
+var isOdd=function(x) {return isWholeNumber(x) && 2*Math.floor(x/2) != x}
 
-var isLargeNumber=function(x) {
-    if (x > Math.pow(2,32)) return True
-    return False
-}
+var isLargeNumber=function(x) {return x > Math.pow(2,32)}
 
 // Big number Library from jsfromhell.com
 // This library helps with producing "correct" results from 
@@ -207,13 +204,14 @@ var _mod = {
        return float(0.5 * Math.log((1/y+1)/(1/y-1)));
     },
     ceil: function(x) {
+       try{return getattr(x,'__ceil__')()}catch(err){$B.$pop_exc()}
+
        if (isninf(x)) return float('-inf')
        if (isinf(x)) return float('inf')
        if (isNaN(x)) return float('nan')
 
        var y=float_check(x);
        if (!isNaN(parseFloat(y)) && isFinite(y)) return int(Math.ceil(y));
-       try{return getattr(y,'__ceil__')()}catch(err){$B.$pop_exc()}
        
        $raise('ValueError', 'object is not a number and does not contain __ceil__')
     },
@@ -406,11 +404,11 @@ var _mod = {
         var y1=float_check(y)
         if (y1 == 0) return float(1)        
         if (x1 == 0 && y1 < 0) throw ValueError('')        
-        if (x1 == 0) return float(0)
 
         if(isNaN(y1)) {if(x1==1) return float(1) 
                        return float('nan')
         }
+        if (x1 == 0) return float(0)
 
         if(isninf(y)) {if(x1==1||x1==-1) {return float(1)}
                        if(x1 < 1 && x1 > -1) return float('inf') 
@@ -422,8 +420,8 @@ var _mod = {
                       return float('inf')}
 
         if(isNaN(x1)) return float('nan')
-        if(isninf(x)) { 
-            if (y1 > 0 && isWholeNumber(y1) && isOdd(y1)) return float('-inf')
+        if(isninf(x)) {
+            if (y1 > 0 && isOdd(y1)) return float('-inf')
             if (y1 > 0) return float('inf')  // this is even or a float
             if (y1 < 0) return float(0)
             return float(1)
