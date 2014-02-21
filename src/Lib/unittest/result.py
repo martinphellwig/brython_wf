@@ -178,7 +178,9 @@ class TestResult(object):
 
 
     def _is_relevant_tb_level(self, tb):
-        return '__unittest' in tb.tb_frame.f_globals
+        #fix me brython
+        #return '__unittest' in tb.tb_frame.f_globals
+        return True  #for now, lets just return False
 
     def _count_relevant_tb_levels(self, tb):
         length = 0
