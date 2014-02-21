@@ -121,7 +121,7 @@ Définition de noms
 ../..
 Chaines de caractères
 =====================
-Utilise ' ou "
+Utilise `'` ou `"`
     `python
     'spam eggs'
     "spam eggs"
@@ -129,7 +129,7 @@ Utilise ' ou "
     "doesn't"
     '"Yes," he said.'
 
-<code>\</code> pour "échappement"
+<code>\</code> pour échappement
 
     `python
     'doesn\'t'
@@ -145,7 +145,7 @@ Chaines de caractères
         Note that whitespace at the beginning of the line is\
      significant."
 
-""" sur plusieurs lignes
+`"""` sur plusieurs lignes
     `python
     print """
     Usage: thingy [OPTIONS]
@@ -169,7 +169,7 @@ Mode brut :
 ../..
 Chaines de caractères
 =====================
-Concaténation par +, duplication par *
+Concaténation par `+`, duplication par `*`
 
     >>> word = 'Help' + 'A'
     >>> word
@@ -235,6 +235,7 @@ Longueur d'une chaine
     >>> word = 'anticonstitutionnellement'
     >>> len(word)
     25
+
 ../..
 Listes
 ======
@@ -255,14 +256,14 @@ Accès par index ou par tranche
 ../..
 Listes
 ======
-Concaténation par +, duplication par *
+Concaténation par `+`, duplication par `*`
 
     >>> 3*a[:3] + ['Boo!']
     ['spam', 'eggs', 100, 'spam', 'eggs', 100, 'spam', 'eggs', 100, 'Boo!']        
 
 Affectation et clonage
 
-    >>> a = [0,1]
+    >>> a = [0, 1]
     >>> b = a       # les noms 'a' et 'b' sont liés au même objet
     >>> b[0] = 9    # toute modification sur b modifie aussi a
     >>> a
@@ -294,7 +295,7 @@ Listes
 ======
 Transformer une listes de chaines en une seule chaine : méthode `join` appliquée au _séparateur_
 
-    >>> a = ["O rage","ô désespoir","ô vieillesse ennemie"]
+    >>> a = ["O rage", "ô désespoir", "ô vieillesse ennemie"]
     >>> ' ! '.join(a)
     'O rage ! ô désespoir ! ô vieillesse ennemie'
 
@@ -329,7 +330,7 @@ Ajout d'un élément à la fin d'une liste par `append`
     [2, 3, 'xtra']
 
 Insertion d'un élément à une position donnée par `insert`
-    >>> q.insert(1,'new')
+    >>> q.insert(1, 'new')
     >>> q
     [2, 'new', 3, 'xtra']
     >>>
@@ -338,7 +339,7 @@ Tuples
 ======
 Comme une liste, mais immuable
 
-    >>> t = (1,2,'a')
+    >>> t = (1, 2, 'a')
     >>> t[1]
     2
     >>> t[2] = 'b'
@@ -426,7 +427,7 @@ La fonction `range`
     3
     4
 
-syntaxe : `range(start,stop,step)`
+syntaxe : `range(start, stop, step)`
 ../..
 Itérateurs
 ==========
@@ -454,10 +455,10 @@ __[Python 3]__
 ==========
     >>> for num in range(2, 6):
     ...     if num % 2 == 0:
-    ...         print("Nombre pair", num)
     ...         continue
-    Nombre pair 2
-    Nombre pair 4
+    ...     print("Nombre impair", num)
+    Nombre impair 3
+    Nombre impair 5
 ../..
 `break` et `else` dans une boucle
 =================================
