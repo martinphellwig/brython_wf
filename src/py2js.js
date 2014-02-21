@@ -617,7 +617,7 @@ function $CallCtx(context){
             if(ns==='globals'){
                 // copy the execution namespace in module and global namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{window[$attr]=$globals[$attr]='
+                res += '{$globals[$attr]=__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
                 res += '__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
             }else if(ns !=''){
                 // use specified namespace
@@ -630,6 +630,7 @@ function $CallCtx(context){
                 res += '\nif($attr.search(/[\.]/)>-1){continue}\n'
                 res += 'eval("var "+$attr+"='
                 res += '$globals[$attr]='
+                res += '__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
                 res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
             }
             return res
