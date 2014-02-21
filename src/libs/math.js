@@ -203,6 +203,10 @@ var _mod = {
        return float(0.5 * Math.log((1/y+1)/(1/y-1)));
     },
     ceil: function(x) {
+       if (isninf(x)) return float('-inf')
+       if (isinf(x)) return float('inf')
+       if (isNaN(x)) return float('nan')
+
        var y=float_check(x);
        if (!isNaN(parseFloat(y)) && isFinite(y)) return int(Math.ceil(y));
        try{return getattr(y,'__ceil__')()}catch(err){$B.$pop_exc()}
