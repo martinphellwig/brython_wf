@@ -721,14 +721,14 @@ class MathTests(unittest.TestCase):
         self.ftest('pow(2,-1)', math.pow(2,-1), 0.5)
         self.assertEqual(math.pow(INF, 1), INF)
         self.assertEqual(math.pow(NINF, 1), NINF)
-        self.assertEqual((math.pow(1, INF)), 1.)
-        self.assertEqual((math.pow(1, NINF)), 1.)
+        self.assertEqual(math.pow(1, INF), 1.)
+        self.assertEqual(math.pow(1, NINF), 1.)
         self.assertTrue(math.isnan(math.pow(NAN, 1)))
         #fixme brython
         #self.assertTrue(math.isnan(math.pow(2, NAN)))
         #self.assertTrue(math.isnan(math.pow(0, NAN)))
-        #self.assertEqual(math.pow(1, NAN), 1)
-        return        
+        self.assertEqual(math.pow(1, NAN), 1)
+        
         # pow(0., x)
         self.assertEqual(math.pow(0., INF), 0.)
         self.assertEqual(math.pow(0., 3.), 0.)
@@ -742,7 +742,7 @@ class MathTests(unittest.TestCase):
         self.assertRaises(ValueError, math.pow, 0., NINF)
         #fixme brython
         #self.assertTrue(math.isnan(math.pow(0., NAN)))
-
+        
         # pow(INF, x)
         self.assertEqual(math.pow(INF, INF), INF)
         self.assertEqual(math.pow(INF, 3.), INF)
@@ -785,7 +785,7 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.pow(NINF, NINF), 0.)
         #fixme brython
         #self.assertTrue(math.isnan(math.pow(NINF, NAN)))
-        #return
+        return
         # pow(-1, x)
         self.assertEqual(math.pow(-1., INF), 1.)
         self.assertEqual(math.pow(-1., 3.), -1.)

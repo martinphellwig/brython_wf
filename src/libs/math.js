@@ -8,6 +8,10 @@ var float_check=function(x) {
     return x
 }
 
+var isWholeNumber=function(x){return x*10 % 10 == 0}
+
+var isOdd=function(x) {2*Math.floor(x/2) != x}
+
 var isLargeNumber=function(x) {
     if (x > Math.pow(2,32)) return True
     return False
@@ -404,25 +408,32 @@ var _mod = {
         if (x1 == 0 && y1 < 0) throw ValueError('')        
         if (x1 == 0) return float(0)
 
-        if(isNaN(y)) {if(x1==1) {return 1} return float('nan')}
+        if(isNaN(y1)) {if(x1==1) return float(1) 
+                       return float('nan')
+        }
 
         if(isninf(y)) {if(x1==1||x1==-1) {return float(1)}
                        if(x1 < 1 && x1 > -1) return float('inf') 
                        //if(isinf(x)) return float(0)
-                       return float(0)}
-        if(isinf(y)) {if(x==1||x==-1) {return float(1)} 
+                       return float(0)
+        }
+        if(isinf(y)) {if(x1==1||x1==-1) {return float(1)} 
                       if(x1 < 1 && x1 > -1) return float(0) 
                       return float('inf')}
 
-        if(isNaN(x)) {return float('nan')}
-        if(isinf(x)) { 
-            if (y > 0) return float('inf')
-            if (y < 0) return float(0)
+        if(isNaN(x1)) return float('nan')
+        if(isninf(x)) { 
+            if (y1 > 0 && isWholeNumber(y1) && isOdd(y1)) return float('-inf')
+            if (y1 > 0) return float('inf')  // this is even or a float
+            if (y1 < 0) return float(0)
             return float(1)
         }
 
-        //if (isNegZero(x)) {
-        //}
+        if(isinf(x)) { 
+            if (y1 > 0) return float('inf')
+            if (y1 < 0) return float(0)
+            return float(1)
+        }
 
         var r
         if (isLargeNumber(x1) || isLargeNumber(y1)) {
