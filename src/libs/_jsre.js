@@ -40,13 +40,13 @@ var $module = (function($B){
 
         var re_list=['\{,\d+\}']
         for(var i=0; i < re_list.length; i++) {
-           var _re=new Regex(re_list[i])
+           var _re=new RegExp(re_list[i])
            if (_re.test(pattern)) return false
         }
 
         // it looks like the pattern has passed all our tests so lets assume
         // javascript can handle this pattern.
-        return true;
+        return true
     }
     var $SRE_PatternDict = {
         __class__:$B.$type,
