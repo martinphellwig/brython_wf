@@ -17,6 +17,8 @@ class CodeBlock:
         self.lines = [line]
     
     def to_html(self):
+        if self.lines[0].startswith("`"):
+            self.lines.pop(0)
         res = escape('\n'.join(self.lines))
         res = unmark(res)
         res = '<pre class="marked">%s</pre>\n' %res
