@@ -1563,7 +1563,8 @@ var BaseException = function (msg,js_exc){
                 tb = {__class__:$TracebackDict,
                     tb_frame:{__class__:$FrameDict},
                     tb_lineno:call_info[0],
-                    tb_lasti:line
+                    tb_lasti:line,
+                    tb_next: None // fix me
                     }
             }
         }
@@ -1590,7 +1591,8 @@ var BaseException = function (msg,js_exc){
             tb = {__class__:$TracebackDict,
                 tb_frame:{__class__:$FrameDict},
                 tb_lineno:line_num,
-                tb_lasti:line
+                tb_lasti:line,
+                tb_next: None   // fix me
             }
         }
     }
