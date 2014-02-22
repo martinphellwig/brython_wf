@@ -663,7 +663,7 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.log2(4), 2.0)
 
         # Large integer values
-        #fixme brython
+        #fixme brython (javascript chokes on these large values)
         #self.assertEqual(math.log2(2**1023), 1023.0)
         #self.assertEqual(math.log2(2**1024), 1024.0)
         #self.assertEqual(math.log2(2**2000), 2000.0)
@@ -677,6 +677,7 @@ class MathTests(unittest.TestCase):
     # log2() is not accurate enough on Mac OS X Tiger (10.4)
     @support.requires_mac_ver(10, 5)
     def testLog2Exact(self):
+        #fixme brython.   
         # Check that we get exact equality for log2 of powers of 2.
         actual = [math.log2(math.ldexp(1.0, n)) for n in range(-1074, 1024)]
         expected = [float(n) for n in range(-1074, 1024)]

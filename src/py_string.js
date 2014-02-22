@@ -959,8 +959,27 @@ $StringDict.lstrip = function(self,x){
     return self.replace(sp,"")
 }
 
-$StringDict.maketrans = function(self) {
-  throw NotImplementedError("function maketrans not implemented yet");
+// note, maketrans should be a static function.
+$StringDict.maketrans = function(from, to) {
+ var _t=[]
+   // make 'default' translate table
+   for(var i=0; i < 256; i++) {
+      _t[i]=String.fromCharCode(i)
+   }
+
+   // make substitution in the translation table
+   for(var i=0; i < from.source.length; i++) {
+      var _ndx=from.source[i].charCodeAt(0)     //retrieve ascii code of char
+      _t[_ndx]=to.source[i]
+   }
+
+   // create a data structure that string.translate understands
+   var _d=__BRYTHON__.$dict()
+   for(var i=0; i < 256; i++) {
+      _d.$keys.push(i)
+      _d.$values.push(_t[i])
+   }
+   return _d
 }
 
 $StringDict.partition = function(self,sep) {
