@@ -913,6 +913,7 @@ class _OpcodeDispatcher(_Dispatcher):
         mincount = ctx.peek_code(2)
         maxcount = ctx.peek_code(3)
         #self._log(ctx, "MIN_REPEAT_ONE", mincount, maxcount)
+        #print(ctx, "MIN_REPEAT_ONE", mincount, maxcount)
 
         if ctx.remaining_chars() < mincount:
             ctx.has_matched = False
