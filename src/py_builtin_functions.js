@@ -160,6 +160,49 @@ var $bytes_iterator = $B.$iterator_class('bytes_iterator')
 $BytesDict.__iter__ = function(self){
     return $B.$iterator(self.source,$bytes_iterator)
 }
+
+// borrowed from py_string.js.
+$BytesDict.__getitem__ = function(self,arg){
+    var i
+    if(isinstance(arg,__builtins__.int)){
+        var pos = arg
+        if(arg<0){pos=self.source.length+pos}
+        if(pos>=0 && pos<self.source.length){return self.source.charAt(pos)}
+        else{throw __builtins__.IndexError('byte index out of range')}
+    } else if(isinstance(arg,slice)) {
+        var step = arg.step===None ? 1 : arg.step
+        if(step>0){
+            var start = arg.start===None ? 0 : arg.start
+            var stop = arg.stop===None ? getattr(self.source,'__len__')() : arg.stop
+        }else{
+            var start = arg.start===None ? 
+           getattr(self.source,'__len__')()-1 : arg.start
+            var stop = arg.stop===None ? 0 : arg.stop
+        }
+        if(start<0){start=self.source.length+start}
+        if(stop<0){stop=self.source.length+stop}
+        var res = '',i=null
+        if(step>0){
+            if(stop<=start){return ''}
+            else {
+                for(i=start;i<stop;i+=step){
+                    res += self.source.charAt(i)
+                }
+            }
+        } else {
+            if(stop>=start){return ''}
+            else {
+                for(i=start;i>=stop;i+=step){
+                    res += self.source.charAt(i)
+                }
+            }
+        }
+        return res
+    } else if(isinstance(arg,bool)){
+        return self.source.__getitem__(__builtins__.int(arg))
+    }
+}
+
 $BytesDict.__len__ = function(self){return self.source.length}
 
 $BytesDict.__mro__ = [$BytesDict,$ObjectDict]
