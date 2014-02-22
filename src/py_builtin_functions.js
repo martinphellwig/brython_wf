@@ -168,6 +168,41 @@ $BytesDict.__repr__ = $BytesDict.__str__ = function(self){return self.source}
 
 $BytesDict.decode = function(self){return repr(self)} // fix ?
 
+$BytesDict.maketrans=function(from, to) {
+   var _t=[]
+   // make 'default' translate table
+   for(var i=0; i < 256; i++) {
+      _t[i]=String.fromCharCode(i)
+   }
+
+   // make substitution in the translation table
+   for(var i=0; i < from.source.length; i++) {
+      var _ndx=from.source[i].charCodeAt(0)     //retrieve ascii code of char
+      _t[_ndx]=to.source[i]
+   }
+
+   // create a data structure that string.translate understands
+   var _d=__BRYTHON__.$dict()
+   for(var i=0; i < 256; i++) {
+      _d.$keys.push(i)
+      _d.$values.push(_t[i])
+   }
+
+   return _d
+}
+
+$BytesDict.translate = function(self,table) {
+    var res = ''
+    if (isinstance(table, __builtins__.dict)) {
+       for (var i=0; i<self.source.length; i++) {
+           var repl = __builtins__.dict.$dict.get(table,self.source.charCodeAt(i),-1)
+           if(repl==-1){res += self.source.charAt(i)}
+           else if(repl!==None){res += repl}
+       }
+    }
+    return res
+}
+
 function bytes(source, encoding, errors) {
     return {
         __class__:$BytesDict,
@@ -176,6 +211,7 @@ function bytes(source, encoding, errors) {
         errors:errors
     }
 }
+
 bytes.__class__ = $B.$factory
 bytes.$dict = $BytesDict
 $BytesDict.$factory = bytes

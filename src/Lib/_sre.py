@@ -70,12 +70,13 @@ class SRE_Pattern:
         None if the string does not match the pattern."""
         #print(string)
         state = _State(string, pos, endpos, self.flags)
-        #print('_sre.py:match:73', self._code)
+        print('_sre.py:match:73', self._code)
         #print(state.match(self._code))
         if state.match(self._code):
-            #print("_sre.py:70: match")
+            print("_sre.py:76: match")
             return SRE_Match(self, state)
         #else:
+        print("_sre.py:79:no match")
         return None
 
     def search(self, string, pos=0, endpos=sys.maxsize):
@@ -398,7 +399,7 @@ class _State:
             #except:
             #  pass
             has_matched = dispatcher.match(context)
-            #print('_sre.py:386', has_matched)
+            print('_sre.py:402', has_matched)
             if has_matched is not None: # don't pop if context isn't done
                 self.context_stack.pop()
         #print("end:_State.match:", has_matched)
@@ -643,7 +644,7 @@ class _OpcodeDispatcher(_Dispatcher):
         else:
             method = self.DISPATCH_TABLE.get(opcode, _OpcodeDispatcher.unknown)
             #print('_sre.py:dispatch:615', method)
-            #print('begin:', method, id(context), id(context.state))
+            print('begin:', method, id(context), id(context.state))
             has_finished = method(self, context)
             #print('end:', method, id(context), id(context.state))
             #print('_sre.py:dispatch:617:has_finished', has_finished)
@@ -962,7 +963,7 @@ class _OpcodeDispatcher(_Dispatcher):
         #   print("951:ctx.state.repeat is None")
         #   #ctx.state.repeat=_RepeatContext(ctx)
 
-        #print("repeat", ctx.state.repeat, mincount, maxcount)
+        print("repeat", ctx.state.repeat)
         repeat = _RepeatContext(ctx)
         ctx.state.repeat = repeat
         ctx.state.string_position = ctx.string_position
