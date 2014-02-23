@@ -85,7 +85,6 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "_re",
 "_socket",
 "_sre",
-"_sre.py",
 "_string",
 "_struct",
 "_sysconfigdata",
@@ -588,51 +587,65 @@ var module=ctx_node.node.module
 var arg=this.tree[0].to_js()
 var ns=''
 var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
-if(this.tree.length>1){
-var arg2=this.tree[1]
-if(arg2.tree!==undefined&&arg2.tree.length>0){
-arg2=arg2.tree[0]
-}
-if(arg2.tree!==undefined&&arg2.tree.length>0){
-arg2=arg2.tree[0]
-}
-if(arg2.type==='call'){
-if(arg2.func.value==='globals'){
-ns='globals'
-_name=module
-}
-}else if(arg2.type==='id'){
-ns=arg2.value
-}
-}
-__BRYTHON__.$py_module_path[_name]=__BRYTHON__.$py_module_path[module]
-var res='(function(){try{'
-res +='\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
-res +='\nfor(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
-if(ns!=='' && ns!=='globals'){
-res +='\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
-res +='eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
-}
-res +='var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
-res +='if(__BRYTHON__.debug>1){console.log($jscode)};'
-res +='var $res = eval($jscode);'
-res +='if($res===undefined){return None};return $res'
-res +='}catch(err){throw __BRYTHON__.exception(err)}'
-res +='})()'
-if(ns==='globals'){
-res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-res +='{$globals[$attr]=__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
-res +='__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
-}else if(ns !=''){
-res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-res +='{__builtins__.dict.$dict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}' 
+var args=[]
+for(var i=1;i<this.tree.length;i++){
+var ns=this.tree[i]
+if(ns.tree!==undefined&&ns.tree.length>0){ns=ns.tree[0]}
+if(ns.tree!==undefined&&ns.tree.length>0){ns=ns.tree[0]}
+console.log('ns '+ns)
+if(ns.type==='call'){
+if(i==1 && ns.func.value==='globals'){
+args.push(null)
+}else if(i==2 && ns.func.value=='locals'){
+args.push(null)
 }else{
-res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
-res +='\nif($attr.search(/[\.]/)>-1){continue}\n'
-res +='eval("var "+$attr+"='
-res +='$globals[$attr]='
+args.push(ns.to_js())
+}
+}else if(ns.type==='id'){
+args.push(ns.value)
+}else{
+args.push(ns.to_js())
+}
+}
+var globals=args[0]|| null
+var locals=args[1]|| null
+__BRYTHON__.$py_module_path[_name]=__BRYTHON__.$py_module_path[module]
+var res='(function(){\ntry{\n'
+if(globals===null){
+res +='for(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};\n'
+}else{
+res +='for(var $i=0;$i<'+globals+'.$keys.length;$i++){\n'
+res +='eval("var "+'+globals+'.$keys[$i]+"='+globals+'.$values[$i]")\n};\n'
+}
+if(locals===null){
+res +='for(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};\n'
+}else{
+res +='for(var $i=0;$i<'+locals+'.$keys.length;$i++){\n'
+res +='    eval("var "+'+locals+'.$keys[$i]+"='+locals+'.$values[$i]")\n};\n' 
+}
+res +='var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();\n'
+res +='if(__BRYTHON__.debug>1){console.log($jscode)};\n'
+res +='var $res = eval($jscode);\n'
+res +='if($res===undefined){return None};return $res\n'
+res +='}\ncatch(err){throw __BRYTHON__.exception(err)}\n'
+res +='})()'
+if(globals===null && locals===null){
+res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){\n'
+res +='    if($attr.search(/[\.]/)>-1){continue}\n'
+res +='    eval("var "+$attr+"='
 res +='__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
-res +='__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
+res +='__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")\n}\n'
+}else if(globals!==null){
+res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){\n'
+res +='    if($attr.search(/[\.]/)>-1){continue}\n'
+res +='  __builtins__.dict.$dict.__setitem__('+globals+',$attr,\n'
+res +='    __BRYTHON__.scope["'+_name+'"].__dict__[$attr])\n}\n'
+}
+if(locals!==null){
+res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
+res +='    if($attr.search(/[\.]/)>-1){continue}\n'
+res +='{__builtins__.dict.$dict.__setitem__('+locals
+res +=',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'
 }
 return res
 }else if(this.func!==undefined && this.func.value==='classmethod'){
@@ -4869,10 +4882,77 @@ var $bytes_iterator=$B.$iterator_class('bytes_iterator')
 $BytesDict.__iter__=function(self){
 return $B.$iterator(self.source,$bytes_iterator)
 }
+$BytesDict.__getitem__=function(self,arg){
+var i
+if(isinstance(arg,__builtins__.int)){
+var pos=arg
+if(arg<0){pos=self.source.length+pos}
+if(pos>=0 && pos<self.source.length){return self.source.charAt(pos)}
+else{throw __builtins__.IndexError('byte index out of range')}
+}else if(isinstance(arg,slice)){
+var step=arg.step===None ? 1 : arg.step
+if(step>0){
+var start=arg.start===None ? 0 : arg.start
+var stop=arg.stop===None ? getattr(self.source,'__len__')(): arg.stop
+}else{
+var start=arg.start===None ? 
+getattr(self.source,'__len__')()-1 : arg.start
+var stop=arg.stop===None ? 0 : arg.stop
+}
+if(start<0){start=self.source.length+start}
+if(stop<0){stop=self.source.length+stop}
+var res='',i=null
+if(step>0){
+if(stop<=start){return ''}
+else{
+for(i=start;i<stop;i+=step){
+res +=self.source.charAt(i)
+}
+}
+}else{
+if(stop>=start){return ''}
+else{
+for(i=start;i>=stop;i+=step){
+res +=self.source.charAt(i)
+}
+}
+}
+return res
+}else if(isinstance(arg,bool)){
+return self.source.__getitem__(__builtins__.int(arg))
+}
+}
 $BytesDict.__len__=function(self){return self.source.length}
 $BytesDict.__mro__=[$BytesDict,$ObjectDict]
 $BytesDict.__repr__=$BytesDict.__str__=function(self){return self.source}
 $BytesDict.decode=function(self){return repr(self)}
+$BytesDict.maketrans=function(from, to){
+var _t=[]
+for(var i=0;i < 256;i++){
+_t[i]=String.fromCharCode(i)
+}
+for(var i=0;i < from.source.length;i++){
+var _ndx=from.source[i].charCodeAt(0)
+_t[_ndx]=to.source[i]
+}
+var _d=__BRYTHON__.$dict()
+for(var i=0;i < 256;i++){
+_d.$keys.push(i)
+_d.$values.push(_t[i])
+}
+return _d
+}
+$BytesDict.translate=function(self,table){
+var res=''
+if(isinstance(table, __builtins__.dict)){
+for(var i=0;i<self.source.length;i++){
+var repl=__builtins__.dict.$dict.get(table,self.source.charCodeAt(i),-1)
+if(repl==-1){res +=self.source.charAt(i)}
+else if(repl!==None){res +=repl}
+}
+}
+return res
+}
 function bytes(source, encoding, errors){
 return{
 __class__:$BytesDict,
@@ -5988,7 +6068,8 @@ if(i==0){
 tb={__class__:$TracebackDict,
 tb_frame:{__class__:$FrameDict},
 tb_lineno:call_info[0],
-tb_lasti:line
+tb_lasti:line,
+tb_next: None 
 }
 }
 }
@@ -6013,7 +6094,8 @@ err.info +='\n    '+line
 tb={__class__:$TracebackDict,
 tb_frame:{__class__:$FrameDict},
 tb_lineno:line_num,
-tb_lasti:line
+tb_lasti:line,
+tb_next: None 
 }
 }
 }
@@ -8594,8 +8676,21 @@ else{pattern="["+x+"]*"}
 var sp=new RegExp("^"+pattern)
 return self.replace(sp,"")
 }
-$StringDict.maketrans=function(self){
-throw NotImplementedError("function maketrans not implemented yet")
+$StringDict.maketrans=function(from, to){
+var _t=[]
+for(var i=0;i < 256;i++){
+_t[i]=String.fromCharCode(i)
+}
+for(var i=0;i < from.source.length;i++){
+var _ndx=from.source[i].charCodeAt(0)
+_t[_ndx]=to.source[i]
+}
+var _d=__BRYTHON__.$dict()
+for(var i=0;i < 256;i++){
+_d.$keys.push(i)
+_d.$values.push(_t[i])
+}
+return _d
 }
 $StringDict.partition=function(self,sep){
 if(sep===undefined){
