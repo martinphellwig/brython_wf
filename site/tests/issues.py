@@ -579,11 +579,20 @@ def myfunc(code, code1):
     code.append('2')
     code.append('3')
 
-
 a=[]
 b=0
 myfunc(a, b)
 
 assert a==['1', '2', '3']
+
+# issue 219
+y=3
+w=2
+w2=1
+
+y, w, w2 = -y, -w, -w2
+assert y == -3
+assert w == -2
+assert w2 == -1
 
 print('passed all tests')
