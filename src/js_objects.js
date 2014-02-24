@@ -99,6 +99,7 @@ $JSObjectDict.__bool__ = function(self){
 }
 
 $JSObjectDict.__getattribute__ = function(obj,attr){
+    if(attr.substr(0,2)=='$$'){attr=attr.substr(2)}
     if(obj.js===null){return $ObjectDict.__getattribute__(None,attr)}
     if(attr==='__class__'){return $JSObjectDict}
     if(obj['get_'+attr]!==undefined){
