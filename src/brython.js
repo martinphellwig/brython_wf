@@ -587,65 +587,51 @@ var module=ctx_node.node.module
 var arg=this.tree[0].to_js()
 var ns=''
 var _name=module+',exec_'+Math.random().toString(36).substr(2,8)
-var args=[]
-for(var i=1;i<this.tree.length;i++){
-var ns=this.tree[i]
-if(ns.tree!==undefined&&ns.tree.length>0){ns=ns.tree[0]}
-if(ns.tree!==undefined&&ns.tree.length>0){ns=ns.tree[0]}
-console.log('ns '+ns)
-if(ns.type==='call'){
-if(i==1 && ns.func.value==='globals'){
-args.push(null)
-}else if(i==2 && ns.func.value=='locals'){
-args.push(null)
-}else{
-args.push(ns.to_js())
+if(this.tree.length>1){
+var arg2=this.tree[1]
+if(arg2.tree!==undefined&&arg2.tree.length>0){
+arg2=arg2.tree[0]
 }
-}else if(ns.type==='id'){
-args.push(ns.value)
-}else{
-args.push(ns.to_js())
+if(arg2.tree!==undefined&&arg2.tree.length>0){
+arg2=arg2.tree[0]
+}
+if(arg2.type==='call'){
+if(arg2.func.value==='globals'){
+ns='globals'
+_name=module
+}
+}else if(arg2.type==='id'){
+ns=arg2.value
 }
 }
-var globals=args[0]|| null
-var locals=args[1]|| null
 __BRYTHON__.$py_module_path[_name]=__BRYTHON__.$py_module_path[module]
-var res='(function(){\ntry{\n'
-if(globals===null){
-res +='for(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};\n'
-}else{
-res +='for(var $i=0;$i<'+globals+'.$keys.length;$i++){\n'
-res +='eval("var "+'+globals+'.$keys[$i]+"='+globals+'.$values[$i]")\n};\n'
+var res='(function(){try{'
+res +='\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
+res +='\nfor(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
+if(ns!=='' && ns!=='globals'){
+res +='\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
+res +='eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
 }
-if(locals===null){
-res +='for(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};\n'
-}else{
-res +='for(var $i=0;$i<'+locals+'.$keys.length;$i++){\n'
-res +='    eval("var "+'+locals+'.$keys[$i]+"='+locals+'.$values[$i]")\n};\n' 
-}
-res +='var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();\n'
-res +='if(__BRYTHON__.debug>1){console.log($jscode)};\n'
-res +='var $res = eval($jscode);\n'
-res +='if($res===undefined){return None};return $res\n'
-res +='}\ncatch(err){throw __BRYTHON__.exception(err)}\n'
+res +='var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
+res +='if(__BRYTHON__.debug>1){console.log($jscode)};'
+res +='var $res = eval($jscode);'
+res +='if($res===undefined){return None};return $res'
+res +='}catch(err){throw __BRYTHON__.exception(err)}'
 res +='})()'
-if(globals===null && locals===null){
-res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){\n'
-res +='    if($attr.search(/[\.]/)>-1){continue}\n'
-res +='    eval("var "+$attr+"='
-res +='__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
-res +='__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")\n}\n'
-}else if(globals!==null){
-res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){\n'
-res +='    if($attr.search(/[\.]/)>-1){continue}\n'
-res +='  __builtins__.dict.$dict.__setitem__('+globals+',$attr,\n'
-res +='    __BRYTHON__.scope["'+_name+'"].__dict__[$attr])\n}\n'
-}
-if(locals!==null){
+if(ns==='globals'){
 res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-res +='    if($attr.search(/[\.]/)>-1){continue}\n'
-res +='{__builtins__.dict.$dict.__setitem__('+locals
-res +=',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'
+res +='{$globals[$attr]=__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
+res +='__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
+}else if(ns !=''){
+res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
+res +='{__builtins__.dict.$dict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}' 
+}else{
+res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
+res +='\nif($attr.search(/[\.]/)>-1){continue}\n'
+res +='eval("var "+$attr+"='
+res +='$globals[$attr]='
+res +='__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
+res +='__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
 }
 return res
 }else if(this.func!==undefined && this.func.value==='classmethod'){
@@ -6313,6 +6299,7 @@ $JSObjectDict.__bool__=function(self){
 return(new Boolean(self.js)).valueOf()
 }
 $JSObjectDict.__getattribute__=function(obj,attr){
+if(attr.substr(0,2)=='$$'){attr=attr.substr(2)}
 if(obj.js===null){return $ObjectDict.__getattribute__(None,attr)}
 if(attr==='__class__'){return $JSObjectDict}
 if(obj['get_'+attr]!==undefined){

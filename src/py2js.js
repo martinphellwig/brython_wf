@@ -576,122 +576,83 @@ function $CallCtx(context){
             var arg = this.tree[0].to_js()
             var ns = ''
             var _name = module+',exec_'+Math.random().toString(36).substr(2,8)
-
-            // Get additional arguments globals and locals
-            // Default value is "null"
-            var args = []
-            for(var i=1;i<this.tree.length;i++){
-                var ns = this.tree[i]
-                if(ns.tree!==undefined&&ns.tree.length>0){ns=ns.tree[0]}
-                if(ns.tree!==undefined&&ns.tree.length>0){ns=ns.tree[0]}
-                console.log('ns '+ns)
-                if(ns.type==='call'){
-                    if(i==1 && ns.func.value==='globals'){
+            if(this.tree.length>1){
+                var arg2 = this.tree[1]
+                if(arg2.tree!==undefined&&arg2.tree.length>0){
+                    arg2 = arg2.tree[0]
+                }
+                if(arg2.tree!==undefined&&arg2.tree.length>0){
+                    arg2 = arg2.tree[0]
+                }
+                if(arg2.type==='call'){
+                    if(arg2.func.value==='globals'){
                         // exec in globals
-                        args.push(null)
-                    }else if(i==2 && ns.func.value=='locals'){
-                        args.push(null)
-                    }else{
-                        args.push(ns.to_js())
+                        ns = 'globals'
+                        _name = module
                     }
-                }else if(ns.type==='id'){
-                    args.push(ns.value)
-                }else{
-                    args.push(ns.to_js())
+                }else if(arg2.type==='id'){
+                    ns = arg2.value
                 }
             }
-            var globals=args[0] || null
-            var locals=args[1] || null
-
-            // Module path for exec code is the same as current module
             __BRYTHON__.$py_module_path[_name] = __BRYTHON__.$py_module_path[module]
-
-            // Replace exec() or eval() by the result of an anonymous function 
-            // with a try/except clause
-            var res = '(function(){\ntry{\n'
-            
-            // Insert globals and locals in the function
-            
-            // If no argument "globals" is passed, or is equal to globals(),
-            // run in module $globals
-            if(globals===null){
-                res += 'for(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};\n'
-            }else{ // use specified globals
-                res += 'for(var $i=0;$i<'+globals+'.$keys.length;$i++){\n'
-                res += 'eval("var "+'+globals+'.$keys[$i]+"='+globals+'.$values[$i]")\n};\n'
+            // replace by the result of an anonymous function with a try/except clause
+            var res = '(function(){try{'
+            // insert globals and locals in the function
+            res += '\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
+            res += '\nfor(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
+            // if an argument namespace is passed, insert it
+            if(ns!=='' && ns!=='globals'){
+                res += '\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
+                res += 'eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
             }
-            // Same for locals
-            if(locals===null){
-                res += 'for(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};\n'
-            }else{
-                res += 'for(var $i=0;$i<'+locals+'.$keys.length;$i++){\n'
-                res += '    eval("var "+'+locals+'.$keys[$i]+"='+locals+'.$values[$i]")\n};\n'                           
-            }
-
-            // Execute the Python code and return its result
-            // The namespace built inside the function will be in
+            // execute the Python code and return its result
+            // the namespace built inside the function will be in
             // __BRYTHON__.scope[_name].__dict__
-            res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();\n'
-            res += 'if(__BRYTHON__.debug>1){console.log($jscode)};\n'
-            res += 'var $res = eval($jscode);\n'
-            res += 'if($res===undefined){return None};return $res\n'
-            res += '}\ncatch(err){throw __BRYTHON__.exception(err)}\n'
+            res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
+            res += 'if(__BRYTHON__.debug>1){console.log($jscode)};'
+            res += 'var $res = eval($jscode);'
+            res += 'if($res===undefined){return None};return $res'
+            res += '}catch(err){throw __BRYTHON__.exception(err)}'
             res += '})()'
-            if(globals===null && locals===null){
-                // Update global namespace with the names defined in the executed code
-                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){\n'
-                // check that $attr is a valid identifier
-                res += '    if($attr.search(/[\.]/)>-1){continue}\n'
-                res += '    eval("var "+$attr+"='
-                res += '__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
-                res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")\n}\n'
-            }else if(globals!==null){
-                // use specified global namespace
-                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){\n'
-                res += '    if($attr.search(/[\.]/)>-1){continue}\n'
-                res += '  __builtins__.dict.$dict.__setitem__('+globals+',$attr,\n'
-                res += '    __BRYTHON__.scope["'+_name+'"].__dict__[$attr])\n}\n'
-            }
-            if(locals!==null){
+            if(ns==='globals'){
+                // copy the execution namespace in module and global namespace
                 res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '    if($attr.search(/[\.]/)>-1){continue}\n'
-                res += '{__builtins__.dict.$dict.__setitem__('+locals
-                res += ',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'
+                res += '{$globals[$attr]=__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
+                res += '__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
+            }else if(ns !=''){
+                // use specified namespace
+                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
+                res += '{__builtins__.dict.$dict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
+            }else{
+                // namespace not specified copy the execution namespace in module namespace
+                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
+                // check that $attr is a valid identifier
+                res += '\nif($attr.search(/[\.]/)>-1){continue}\n'
+                res += 'eval("var "+$attr+"='
+                res += '$globals[$attr]='
+                res += '__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
+                res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
             }
             return res
-
         }else if(this.func!==undefined && this.func.value === 'classmethod'){
             return 'classmethod($class,'+$to_js(this.tree)+')'
-
         }else if(this.func!==undefined && this.func.value ==='locals'){
-            // For locals(), add an argument set to the function identifier
-            // It will be used in builtin function locals()
-
             var scope = $get_scope(this),mod = $get_module(this)
             if(scope !== null && (scope.ntype==='def'||scope.ntype=='generator')){
                 return 'locals("'+scope.context.tree[0].id+'","'+mod.module+'")'
             }
-
         }else if(this.func!==undefined && this.func.value ==='globals'){
-            // For globals(), insert a reference to the module name
-            // It will be used in builtin function globals()
-
             var ctx_node = this
             while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
             var module = ctx_node.node.module
             return 'globals("'+module+'")'
-
         }else if(this.func!==undefined && this.func.value ==='dir'){
             if(this.tree.length==0){
                 // dir() : pass arguments (null,module name)
                 var mod=$get_module(this)
                 return 'dir(null,"'+mod.module+'")'                
             }
-
         }else if(this.func!==undefined && this.func.value=='$$super'){
-            // The tokeniser replaces Python "super" by javascript "$$super"
-            // to avoid naming conflict
-
             if(this.tree.length==0){
                 // super() called with no argument : if inside a class, add the
                 // class parent as first argument
@@ -703,7 +664,7 @@ function $CallCtx(context){
                 }
             }
             if(this.tree.length==1){
-                // Second argument omitted : add the instance
+                // second argument omitted : add the instance
                 var scope = $get_scope(this)
                 if(scope.ntype=='def' || scope.ntype=='generator'){
                     var args = scope.context.tree[0].args
@@ -713,17 +674,13 @@ function $CallCtx(context){
                 }
             }
         }
-
         else if(this.func!==undefined && this.func.type=='unary'){
-            // Replace unary operators "-" and "~" by a call to special methods
-            // __neg__ and __invert__
-
+            // form " -(x+2) "
             var op = this.func.op
             if(op=='+'){return $to_js(this.tree)}
             else if(op=='-'){return 'getattr('+$to_js(this.tree)+',"__neg__")()'}
             else if(op=='~'){return 'getattr('+$to_js(this.tree)+',"__invert__")()'}
         }
-
         if(this.tree.length>0){
             return 'getattr('+this.func.to_js()+',"__call__")('+$to_js(this.tree)+')'
         }else{return 'getattr('+this.func.to_js()+',"__call__")()'}
