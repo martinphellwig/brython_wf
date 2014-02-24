@@ -13,7 +13,7 @@ var $operators = {
     "/":"truediv","%":"mod","&":"and","|":"or","~":"invert",
     "^":"xor","<":"lt",">":"gt",
     "<=":"le",">=":"ge","==":"eq","!=":"ne",
-    "or":"or","and":"and", "in":"in", //"not":"not",
+    "or":"or","and":"and", "in":"in",
     "is":"is","not_in":"not_in","is_not":"is_not" // fake
     }
 
@@ -30,6 +30,7 @@ var $op_order = [['or'],['and'],
     ['-'],
     ['/','//','%'],
     ['*'],
+    ['unary_neg','unary_inv'],
     ['**']
 ]
 
@@ -2123,6 +2124,19 @@ function $OpCtx(context,op){ // context is the left operand
             return '__BRYTHON__.$is_member('+$to_js(this.tree)+')'
         }else if(this.op=='not_in'){ // membership
             return '!__BRYTHON__.$is_member('+$to_js(this.tree)+')'
+        }else if(['unary_neg','unary_inv'].indexOf(this.op)>-1){
+            // For unary operators, the left operand is the unary sign(s)
+            if(this.op=='unary_neg'){op='-'}else{op='~'}
+            // for integers or float, replace their value using
+            // Javascript operators
+            if(this.tree[1].type=="expr"){
+                var x = this.tree[1].tree[0]
+                if(x.type=='int'){return op+x.value}
+                else if(x.type=='float'){return 'float('+op+x.value+')'}
+            }
+            if(op=='-'){res = 'getattr('+this.tree[1].to_js()+',"__neg__")()'}
+            else{res = 'getattr('+this.tree[1].to_js()+',"__invert__")()'}
+            return res
         }else{
             res = this.tree[0].to_js()
             if(this.op==="is"){
@@ -2414,11 +2428,10 @@ function $TryCtx(context){
 function $UnaryCtx(context,op){
     this.type = 'unary'
     this.op = op
-    this.toString = function(){return '(unary) '+this.op+' ['+this.tree+']'}
+    this.toString = function(){return '(unary) '+this.op}
     this.parent = context
-    this.tree = []
     context.tree.push(this)
-    this.to_js = function(){return this.op+$to_js(this.tree)}
+    this.to_js = function(){return this.op}
 }
 
 function $WithCtx(context){
@@ -2824,9 +2837,17 @@ function $transition(context,token){
         }else if(token==='lambda'){return new $LambdaCtx(new $ExprCtx(context,'lambda',commas))}
         else if(token==='op'){
             var tg = arguments[2]
-            if(tg=='+'){tg='\\+'} // must escape + in regular expression passed to search() next line
-            if('+-~'.search(tg)>-1){ // unary + or -, bitwise ~
-                return new $UnaryCtx(new $ExprCtx(context,'unary',false),arguments[2])
+            // ignore unary +
+            if(tg=='+'){return context}
+            if('-~'.search(tg)>-1){ // unary -, bitwise ~
+                // create a left argument for operator "unary"
+                context.parent.tree.pop()
+                var left = new $UnaryCtx(context.parent,tg)
+                // create the operator "unary"
+                if(tg=='-'){var op_expr = new $OpCtx(left,'unary_neg')}
+                else{var op_expr = new $OpCtx(left,'unary_inv')}
+                return new $AbstractExprCtx(op_expr,false)
+                //return new $UnaryCtx(new $ExprCtx(context,'unary',false),arguments[2])
             }else{$_SyntaxError(context,'token '+token+' after '+context)}
         }else if(token=='='){
             $_SyntaxError(context,token)
@@ -3530,10 +3551,26 @@ function $transition(context,token){
         }else if($expr_starters.indexOf(token)>-1){
             var expr = new $AbstractExprCtx(context,false)
             return $transition(expr,token,arguments[2])
+        }else if(token=='op' && ['+','-','~'].indexOf(arguments[2])>-1){
+            var expr = new $AbstractExprCtx(context,false)
+            return $transition(expr,token,arguments[2])
         }else{return $transition(context.parent,token)}
 
     }else if(context.type==='op'){ 
     
+        if(context.op===undefined){
+            $_SyntaxError(context,['context op undefined '+context])
+        }
+        if(context.op.substr(0,5)=='unary'){
+            if(context.parent.type=='assign'){
+                // create and return a tuple whose first element is context
+                context.parent.tree.pop()
+                var t = new $ListOrTupleCtx(context.parent,'tuple')
+                t.tree.push(context)
+                context.parent = t
+                return t
+            }
+        }
         if($expr_starters.indexOf(token)>-1){
             return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
         }else if(token==='op' && '+-~'.search(arguments[2])>-1){

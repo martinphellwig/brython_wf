@@ -104,7 +104,7 @@ var $operators={
 "/":"truediv","%":"mod","&":"and","|":"or","~":"invert",
 "^":"xor","<":"lt",">":"gt",
 "<=":"le",">=":"ge","==":"eq","!=":"ne",
-"or":"or","and":"and", "in":"in", 
+"or":"or","and":"and", "in":"in",
 "is":"is","not_in":"not_in","is_not":"is_not" 
 }
 var $oplist=[]
@@ -118,6 +118,7 @@ var $op_order=[['or'],['and'],
 ['-'],
 ['/','//','%'],
 ['*'],
+['unary_neg','unary_inv'],
 ['**']
 ]
 var $op_weight={}
@@ -1849,6 +1850,16 @@ return res
 return '__BRYTHON__.$is_member('+$to_js(this.tree)+')'
 }else if(this.op=='not_in'){
 return '!__BRYTHON__.$is_member('+$to_js(this.tree)+')'
+}else if(['unary_neg','unary_inv'].indexOf(this.op)>-1){
+if(this.op=='unary_neg'){op='-'}else{op='~'}
+if(this.tree[1].type=="expr"){
+var x=this.tree[1].tree[0]
+if(x.type=='int'){return op+x.value}
+else if(x.type=='float'){return 'float('+op+x.value+')'}
+}
+if(op=='-'){res='getattr('+this.tree[1].to_js()+',"__neg__")()'}
+else{res='getattr('+this.tree[1].to_js()+',"__invert__")()'}
+return res
 }else{
 res=this.tree[0].to_js()
 if(this.op==="is"){
@@ -2106,11 +2117,10 @@ this.to_js=function(){return 'try'}
 function $UnaryCtx(C,op){
 this.type='unary'
 this.op=op
-this.toString=function(){return '(unary) '+this.op+' ['+this.tree+']'}
+this.toString=function(){return '(unary) '+this.op}
 this.parent=C
-this.tree=[]
 C.tree.push(this)
-this.to_js=function(){return this.op+$to_js(this.tree)}
+this.to_js=function(){return this.op}
 }
 function $WithCtx(C){
 this.type='with'
@@ -2454,9 +2464,13 @@ return new $NotCtx(new $ExprCtx(C,'not',commas))
 }else if(token==='lambda'){return new $LambdaCtx(new $ExprCtx(C,'lambda',commas))}
 else if(token==='op'){
 var tg=arguments[2]
-if(tg=='+'){tg='\\+'}
-if('+-~'.search(tg)>-1){
-return new $UnaryCtx(new $ExprCtx(C,'unary',false),arguments[2])
+if(tg=='+'){return C}
+if('-~'.search(tg)>-1){
+C.parent.tree.pop()
+var left=new $UnaryCtx(C.parent,tg)
+if(tg=='-'){var op_expr=new $OpCtx(left,'unary_neg')}
+else{var op_expr=new $OpCtx(left,'unary_inv')}
+return new $AbstractExprCtx(op_expr,false)
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(token=='='){
 $_SyntaxError(C,token)
@@ -3064,8 +3078,23 @@ return new $ExprCtx(new $OpCtx(C.parent,'not_in'),'op',false)
 }else if($expr_starters.indexOf(token)>-1){
 var expr=new $AbstractExprCtx(C,false)
 return $transition(expr,token,arguments[2])
+}else if(token=='op' &&['+','-','~'].indexOf(arguments[2])>-1){
+var expr=new $AbstractExprCtx(C,false)
+return $transition(expr,token,arguments[2])
 }else{return $transition(C.parent,token)}
 }else if(C.type==='op'){
+if(C.op===undefined){
+$_SyntaxError(C,['C op undefined '+C])
+}
+if(C.op.substr(0,5)=='unary'){
+if(C.parent.type=='assign'){
+C.parent.tree.pop()
+var t=new $ListOrTupleCtx(C.parent,'tuple')
+t.tree.push(C)
+C.parent=t
+return t
+}
+}
 if($expr_starters.indexOf(token)>-1){
 return $transition(new $AbstractExprCtx(C,false),token,arguments[2])
 }else if(token==='op' && '+-~'.search(arguments[2])>-1){
