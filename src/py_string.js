@@ -185,41 +185,51 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 var res = elts[0]+this.type+elts[1].charAt(0)
                 if(elts[1].length===2){res += '0'}
                 return res+elts[1].substr(1)
-            }else if(this.type=="x" || this.type=="X"){
+            }else if(this.type=="x" || this.type=="X"){ // hex
                 if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = src
                 res = src.toString(16)
+
+                var pad=' '
                 if(this.flag===' '){res = ' '+res}
-                else if(this.flag==='+' && num>=0){res = '+'+res}
-                else if(this.flag==='#'){
+                else if(this.flag==='+' && num>=0){pad='+';res = '+'+res}
+
+                if(this.precision){
+                    var width=this.precision.substr(1)
+                    if(this.flag==='#'){pad="0"}
+                    //if(this.flag==='0'){pad="0"}
+                    while(res.length<width){res=pad+res}
+                }
+
+                if(this.flag==='#'){
                     if(this.type==='x'){res = '0x'+res}
                     else{res = '0X'+res}
-                }
-                if(this.min_width){
-                    var pad = ' '
-                    if(this.flag==='0'){pad="0"}
-                    while(res.length<parseInt(this.min_width)){res=pad+res}
                 }
                 return res
             }else if(this.type=="i" || this.type=="d"){
                 if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseInt(src)
-                if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
+                //if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
                 res = num+''
                 if(this.flag===' '){res = ' '+res}
                 else if(this.flag==='+' && num>=0){res = '+'+res}
-                if(this.min_width){
+
+                if(this.precision){   //for integers, precision is actually the width
+                    var flag=this.precision[0]
                     var pad = ' '
-                    if(this.flag==='0'){pad="0"}
-                    while(res.length<parseInt(this.min_width)){res=pad+res}
+                    if(flag==='0' || flag==='.'){pad="0"}
+                    var width=parseInt(this.precision.substr(1))
+                    while(res.length<width){res=pad+res}
                 }
                 return res
             }else if(this.type=="f" || this.type=="F"){
                 if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
                     "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseFloat(src)
+                // set default precision of 6 if precision is not specified
+                if(this.precision === undefined) this.precision=".6" 
                 if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
                 res = num+''
                 if(this.flag===' '){res = ' '+res}
@@ -234,6 +244,10 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 if(isinstance(src,str) && str.length==1){return src}
                 else if(isinstance(src,__builtins__.int) && src>0 && src<256){return String.fromCharCode(src)}
                 else{throw __builtins__.TypeError('%c requires __builtins__.int or char')}
+            }else if(this.type=='o'){
+                res = src.toString(8)
+                if(this.flag==='#') return '0o' + res
+                return res
             }
         }
     }  // end $legacy_format
@@ -487,7 +501,6 @@ var $FormattableString=function(format_string) {
 
        //fix me
        _name_parts=this.field_part(_literal)
-
        var _start=_literal.substring(0,1)
        var _name=''
        if (_start == '' || '.['.indexOf(_start) != -1) {
@@ -497,7 +510,7 @@ var $FormattableString=function(format_string) {
           }
 
           _name = self._index.toString()
-          this._index=1
+          this._index+=1
 
           if (! _literal ) {
              _name_parts.shift()
@@ -514,6 +527,7 @@ var $FormattableString=function(format_string) {
          }
        }
 
+       //console.log('name:',_name)
        var _empty_attribute=false
 
        var _k
@@ -540,6 +554,7 @@ var $FormattableString=function(format_string) {
 
        var _rv=''
        if (_format_spec.indexOf('{') != -1) {
+          //console.log('line 544')
           _format_spec = this.format_sub_re.replace(_format_spec, this._prepare)
           _rv = [_name_parts, _conversion, _format_spec]
           if (this._nested[_name] === undefined) {
@@ -548,6 +563,7 @@ var $FormattableString=function(format_string) {
           }
           this._nested[_name].push(_rv) 
        } else {
+          //console.log('line 554')
           _rv = [_name_parts, _conversion, _format_spec]
           if (this._kwords[_name] === undefined) {
              this._kwords[_name]=[]
@@ -555,6 +571,7 @@ var $FormattableString=function(format_string) {
           }
           this._kwords[_name].push(_rv) 
        }
+       //console.log(this._kwords)
        return '%(' + id(_rv) + ')s'
     } // this.prepare
 
@@ -567,12 +584,12 @@ var $FormattableString=function(format_string) {
        if (args) {
           for (var i=0; i < args[0].length; i++) {
               //kwargs[str(i)]=args.$dict[i]
-              //console.log(args[0][i])
               getattr(kwargs, '__setitem__')(str(i), args[0][i]) 
           }
        }
 
        //console.log(kwargs)
+       //console.log(this._kwords_array)
        //encode arguments to ASCII, if format string is bytes
        var _want_bytes = isinstance(this._string, str)
        var _params=__builtins__.dict()
@@ -580,22 +597,26 @@ var $FormattableString=function(format_string) {
        for (var i=0; i < this._kwords_array.length; i++) {
            var _name = this._kwords_array[i]
            var _items = this._kwords[_name]
-
+           //console.log(_name, _items)
            var _var = getattr(kwargs, '__getitem__')(_name)
            var _value;
            if (hasattr(_var, 'value')) {
-              _value = getattr(getattr(kwargs, '__getitem__')(_name), 'value')
+              //_value = getattr(getattr(kwargs, '__getitem__')(_name), 'value')
+              _value = getattr(_var, 'value')
            } else {
              _value=_var
            }
 
+           //console.log(_name, _var)
            for (var j=0; j < _items.length; j++) {
                var _parts = _items[j][0]
                var _conv = _items[j][1]
                var _spec = _items[j][2]
 
-               getattr(_params,'__setitem__')(id(_items[j]).toString(), this.format_field(_value, _parts, 
-                                                      _conv, _spec, _want_bytes))
+               getattr(_params,'__setitem__')(id(_items[j]).toString(), 
+                                              this.format_field(_value, _parts, 
+                                                                _conv, _spec, 
+                                                                _want_bytes))
            }
        }
 
@@ -618,11 +639,13 @@ var $FormattableString=function(format_string) {
 
                _spec=$legacy_format(_spec, _params)
 
-               getattr(_params,'__setitem__')(id(_items[j]).toString(), this.format_field(_value, _parts, 
-                                                      _conv, _spec, _want_bytes))
+               getattr(_params,'__setitem__')(id(_items[j]).toString(), 
+                                              this.format_field(_value, _parts, 
+                                                                _conv, _spec, 
+                                                                _want_bytes))
            }
        }
-
+       //console.log(this._string, _params)
        return $legacy_format(this._string, _params)
     }  // this.format
 
@@ -786,8 +809,8 @@ var $FormattableString=function(format_string) {
                 _pos++
              }
              if (literal.substring(_pos, 1) == ']') _end=']'
-             } else {
-               if (literal.substring(_pos,1) == '.') {
+          } else {
+             if (literal.substring(_pos,1) == '.') {
                   _start='.'
                   _pos++
              }
