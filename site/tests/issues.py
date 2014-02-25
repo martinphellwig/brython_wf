@@ -595,6 +595,9 @@ assert y == -3
 assert w == -2
 assert w2 == -1
 
+#issue 220
+assert '{} {} {}'.format(1, 2, 3) == '1 2 3'
+
 # issue 222
 atuple = ()
 assert not type(atuple) != type(atuple), "type of tuple is different of itself"
