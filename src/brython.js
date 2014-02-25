@@ -4107,6 +4107,7 @@ $B.builtins.object.__class__=$B.$factory
 $B.$type.__getattribute__=function(klass,attr){
 if(attr==='__call__'){return $instance_creator(klass)}
 else if(attr==='__eq__'){return function(other){return klass.$factory===other}}
+else if(attr==='__ne__'){return function(other){return klass.$factory!==other}}
 else if(attr==='__repr__'){return function(){return "<class '"+klass.__name__+"'>"}}
 else if(attr==='__str__'){return function(){return "<class '"+klass.__name__+"'>"}}
 else if(attr==='__class__'){return klass.__class__.$factory}
@@ -4149,6 +4150,7 @@ break
 }
 }
 if(res!==undefined){
+if(attr=='__eq__'){console.log('attr '+attr+' '+res)}
 var get_func=res.__get__
 if(get_func===undefined &&(typeof res=='function')){
 get_func=function(x){return x}
@@ -7562,7 +7564,7 @@ $ListDict.__eq__=function(self,other){
 if(other===undefined){
 return self===list
 }
-if(other.__class__===self.__class__){
+if($B.get_class(other)===$B.get_class(self)){
 if(other.length==self.length){
 for(var i=0;i<self.length;i++){
 if(!getattr(self[i],'__eq__')(other[i])){return False}

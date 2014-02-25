@@ -595,4 +595,8 @@ assert y == -3
 assert w == -2
 assert w2 == -1
 
+# issue 222
+atuple = ()
+assert not type(atuple) != type(atuple), "type of tuple is different of itself"
+
 print('passed all tests')

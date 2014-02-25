@@ -199,6 +199,7 @@ $B.$type.__getattribute__=function(klass,attr){
     // we call $type.__getattribute__(obj.$dict,attr)
     if(attr==='__call__'){return $instance_creator(klass)}
     else if(attr==='__eq__'){return function(other){return klass.$factory===other}}
+    else if(attr==='__ne__'){return function(other){return klass.$factory!==other}}
     else if(attr==='__repr__'){return function(){return "<class '"+klass.__name__+"'>"}}
     else if(attr==='__str__'){return function(){return "<class '"+klass.__name__+"'>"}}
     else if(attr==='__class__'){return klass.__class__.$factory}
@@ -218,7 +219,7 @@ $B.$type.__getattribute__=function(klass,attr){
         return function(key){delete klass[key]}
     }
     var res = klass[attr],is_class=true
-    //if(attr=='__abstractmethods__'){console.log(klass.__name__+' direct attr '+attr+' '+res)}
+    //if(attr=='__eq__'){console.log(klass.__name__+' direct attr '+attr+' '+res)}
     if(res===undefined){
         // search in classes hierarchy, following method resolution order
         var mro = klass.__mro__
@@ -246,6 +247,7 @@ $B.$type.__getattribute__=function(klass,attr){
         }
     }
     if(res!==undefined){
+        if(attr=='__eq__'){console.log('attr '+attr+' '+res)}
         var get_func = res.__get__
         if(get_func===undefined && (typeof res=='function')){
             get_func = function(x){return x}
