@@ -73,7 +73,7 @@ $ListDict.__eq__ = function(self,other){
     if(other===undefined){ // compare object "self" to class "list"
         return self===list
     }
-    if(other.__class__===self.__class__){
+    if($B.get_class(other)===$B.get_class(self)){
         if(other.length==self.length){
             for(var i=0;i<self.length;i++){
                 if(!getattr(self[i],'__eq__')(other[i])){return False}

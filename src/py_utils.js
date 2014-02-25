@@ -103,9 +103,9 @@ $B.$MakeArgs = function($fname,$args,$required,$defaults,$other_args,$other_kw,$
 
 $B.get_class = function(obj){
     // generally we get the attribute __class__ of an object by obj.__class__
-    // but functions don't have this attribute so we must return it
+    // but Javascript builtins used by Brython (functions, numbers, strings...)
+    // don't have this attribute so we must return it
     var klass = obj.__class__
-    //console.log('get class of '+obj+' klass '+klass)
     if(klass===undefined){
         if(typeof obj=='function'){return $B.$FunctionDict}
         else if(typeof obj=='number'){return $B.builtins.int.$dict}
