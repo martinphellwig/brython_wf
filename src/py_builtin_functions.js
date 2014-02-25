@@ -422,7 +422,9 @@ function filter(){
 }
 
 
-//format() (built in function)
+function format(value, format_spec) {
+  throw __builtins__.NotImplementedError("format is not implemented yet")
+}
 
 function getattr(obj,attr,_default){
     var klass = $B.get_class(obj)

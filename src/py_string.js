@@ -111,8 +111,9 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
 
     function format(s){
         var conv_flags = '([#\\+\\- 0])*'
-        var conv_types = '[diouxXeEfFgGcrsa%]'
-        var re = new RegExp('\\%(\\(.+?\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*('+conv_types+'){1}')
+        //var conv_types = '[diouxXeEfFgGcrsa%]'
+        //var re = new RegExp('\\%(\\(.+?\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*('+conv_types+'){1}')
+        var re = new RegExp('\\%(\\(.+?\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*(.){1}')
         var res = re.exec(s)
         this.is_format = true
         if(!res){this.is_format = false;return}
@@ -124,7 +125,19 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
         this.precision = res[4]
         this.length_modifier = res[5]
         this.type = res[6]
-            
+        
+        this._number_check=function(s) {
+            if(!isinstance(s,[__builtins__.int,__builtins__.float])){
+              if (s.__class__ !== undefined) {
+                 throw __builtins__.TypeError("%"+this.type+" format: a number is required, not " + str(s.__class__))
+              } else if (typeof(s) === 'string') {
+                 throw __builtins__.TypeError("%"+this.type+" format: a number is required, not str")
+              } else {
+                 throw __builtins__.TypeError("%"+this.type+" format: a number is required, not 'unknown type'")
+              }
+            }
+        }
+    
         this.toString = function(){
             var res = 'type '+this.type+' key '+this.mapping_key+' min width '+this.min_width
             res += ' precision '+this.precision
@@ -148,8 +161,8 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
                 return res
             }else if(this.type=="g" || this.type=="G"){
-                if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
-                    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
+                if(!isinstance(src,[__builtins__.int,__builtins__.float])){
+                   throw __builtins__.TypeError("a float is required")}
                 var prec = -4
                 if(this.precision){prec=parseInt(this.precision.substr(1))}
                 var res = parseFloat(src).toExponential()
@@ -167,17 +180,27 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                     if(elts[1].length===2){res += '0'}
                     return res+elts[1].substr(1)
                 }else{
-                    var prec = 6
-                    if(this.precision){prec=parseInt(this.precision.substr(1))-1}
-                    var elts = str(src).split('.')
-                    this.precision = '.'+(prec-elts[0].length)
+                    var prec = 2
+                    if(this.flag=='#'){
+                      if (this.precision === undefined) {
+                         this.precision='.5'  // use a default of 6
+                      } else {
+                        prec=parseInt(this.precision.substr(1))-1
+                        var elts = str(src).split('.')
+                        this.precision = '.'+(prec-elts[0].length)
+                      }
+                    } else {
+                      this.precision = 0
+                    }
+
                     this.type="f"
                     return this.format(src)
                 }
             }else if(this.type=="e" || this.type=="E"){
-                if(!isinstance(src,[__builtins__.int,__builtins__.float])){
-                    throw __builtins__.TypeError(
-                        "%"+this.type+" format : a number is required, not "+str(src.__class__))}
+                this._number_check(src)
+                //if(!isinstance(src,[__builtins__.int,__builtins__.float])){
+                //    throw __builtins__.TypeError(
+                //        "%"+this.type+" format: a number is required, not "+str(src.__class__))}
                 var prec = 6
                 if(this.precision){prec=parseInt(this.precision.substr(1))}
                 var res = parseFloat(src).toExponential(prec)
@@ -186,8 +209,9 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 if(elts[1].length===2){res += '0'}
                 return res+elts[1].substr(1)
             }else if(this.type=="x" || this.type=="X"){ // hex
-                if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
-                    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
+                this._number_check(src)
+                //if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
+                //    "%"+this.type+" format: a number is required, not "+str(src.__class__))}
                 var num = src
                 res = src.toString(16)
 
@@ -208,10 +232,24 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 }
                 return res
             }else if(this.type=="i" || this.type=="d"){
-                if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
-                    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
+                this._number_check(src)
+                //if(!isinstance(src,[__builtins__.int,__builtins__.float])){
+                //   if (src.__class__ !== undefined) {
+                //      throw __builtins__.TypeError("%"+this.type+" format: a number is required, not " + str(src.__class__))
+                //   } else if (typeof(src) === 'string') {
+                //      throw __builtins__.TypeError("%"+this.type+" format: a number is required, not str")
+                //   } else {
+                //      throw __builtins__.TypeError("%"+this.type+" format: a number is required, not 'unknown type'")
+                //   }
+                //}
+
                 var num = parseInt(src)
-                //if(this.precision){num = num.toFixed(parseInt(this.precision.substr(1)))}
+                //console.log(this.precision)
+                //if(this.precision){
+                //  num = num.toPrecision(parseInt(this.precision.substr(1)))
+                //} else {
+                  num=num.toPrecision()
+                //}
                 res = num+''
                 if(this.flag===' '){res = ' '+res}
                 else if(this.flag==='+' && num>=0){res = '+'+res}
@@ -225,8 +263,9 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 }
                 return res
             }else if(this.type=="f" || this.type=="F"){
-                if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
-                    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
+                this._number_check(src)
+                //if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
+                //    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseFloat(src)
                 // set default precision of 6 if precision is not specified
                 if(this.precision === undefined) this.precision=".6" 
@@ -248,6 +287,12 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 res = src.toString(8)
                 if(this.flag==='#') return '0o' + res
                 return res
+            }else { // consider this 'type' invalid
+                var _msg="unsupported format character '" + this.type
+                    _msg+= "' (0x" + this.type.charCodeAt(0).toString(16) + ") at index "
+                    _msg+= (self.valueOf().indexOf('%' + this.type)+1)
+                console.log(_msg) 
+                throw __builtins__.ValueError(_msg) 
             }
         }
     }  // end $legacy_format
@@ -278,6 +323,10 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 }
             }else{pos++}
         }else{pos++}
+    }
+    // check for invalid format string  "no format"
+    if(elts.length == 0) {
+        throw __builtins__.TypeError('not all arguments converted during string formatting')
     }
     elts.push(val.substr(start))
     if(!isinstance(args,__builtins__.tuple)){
@@ -464,7 +513,7 @@ var $FormattableString=function(format_string) {
 
     this._prepare = function(match) {
        //console.log('part', match)
-       //if (match == '%') return '%%'
+       if (match == '%') return '%%'
        if (match.substring(0,1) == match.substring(match.length)) {
           // '{{' or '}}'
           return match.substring(0, __builtins__.int(match.length/2))
@@ -572,6 +621,7 @@ var $FormattableString=function(format_string) {
           this._kwords[_name].push(_rv) 
        }
        //console.log(this._kwords)
+       //console.log(this._kwords_array)
        return '%(' + id(_rv) + ')s'
     } // this.prepare
 
