@@ -48,7 +48,7 @@ estado de la petición
 > establece el _valor_ del _nombre_ del cabecero
 
 `set_timeout(`_duration, function_`)`
-> si la petición no devuelve una respuesta durante la _duración_ en segundos, cancelará; la petición y ejecutará la _función_. Esta función no puede tener argumentos
+> si la petición no devuelve una respuesta durante la _duración_ en segundos, cancelará la petición y ejecutará la _función_. Esta función no puede tener argumentos
 
 `send()`
 > envía (inicia) la petición
