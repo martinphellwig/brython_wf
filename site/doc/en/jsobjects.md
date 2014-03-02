@@ -9,7 +9,7 @@ By default, Brython only exposes two names in the global Javascript namespace :
 
 > `brython()` : the function run on page load
 
-> `__BRYTHON__` : an object use internally par Brython to store the objects needed for scripts execution
+> `__BRYTHON__` : an object used internally by Brython to store the objects needed for scripts execution
 
 Consequently, by default, a Javascript program can not access Brython objects.
  For instance, for a function `echo()` defined in a Brython script 
@@ -35,7 +35,7 @@ Another option is to force the introduction of the name _echo_ in the Javascript
 
 ### Objects in Javascript programs
 
-An HTML document can use Javascript scripts or libraries, and Python scripts or libraries. Brython can't use Javascript objects directly : for instance attribute lookup uses the attribute _\_\_class\_\__, which doesn't exist for Javascript objects
+An HTML document can use Javascript scripts or libraries, and Python scripts or libraries. Brython cannot use Javascript objects directly: for instance attribute lookup uses the attribute _\_\_class\_\__, which does not exist for Javascript objects
 
 To be able to use them in a Python script, they must be explicitely transformed by the function `JSObject()` defined in the built-in module **javascript**
 
