@@ -16,9 +16,10 @@ Créez un nouveau répertoire (par exemple "test") dans le répertoire Brython. 
     </head>
     <body onLoad="brython()">
     <script type="text/python">
-    from browser import doc
+    from browser import doc, win, alert
     def echo():
         alert("Salut %s !" %doc["zone"].value)
+    win.echo = echo
     </script>
     <p>Vous vous appelez : <input id="zone"><button onclick="echo()">click !</button>
     </body>

@@ -7,7 +7,7 @@ Since their name may vary depending on the browser, Brython defines additional a
 
 <table border=1 cellpadding=3>
 <tr>
-<th>Nom</th><th>Type</th><th>Description</th><th>R = read only<br>R/W = read + write</th>
+<th>Name</th><th>Type</th><th>Description</th><th>R = read only<br>R/W = read + write</th>
 </tr>
 <tr>
 <td>*text*</td><td>string</td><td>the text inside the element</td><td>R/W</td>

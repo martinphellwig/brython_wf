@@ -585,6 +585,12 @@ myfunc(a, b)
 
 assert a==['1', '2', '3']
 
+# issue 218
+_d = { 0: b'a', 1: b'b'}
+
+assert [v[0] for v in _d.items()] == [0, 1]
+
+
 # issue 219
 y=3
 w=2
@@ -594,6 +600,9 @@ y, w, w2 = -y, -w, -w2
 assert y == -3
 assert w == -2
 assert w2 == -1
+
+#issue 220
+assert '{} {} {}'.format(1, 2, 3) == '1 2 3'
 
 # issue 222
 atuple = ()
