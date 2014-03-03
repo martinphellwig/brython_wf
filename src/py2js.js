@@ -4277,14 +4277,19 @@ function brython(options){
                     $elt.src.charAt($elt.src.length-$bs.length-1)=='/'){
                         var $path = $elt.src.substr(0,$elt.src.length-$bs.length)
                         __BRYTHON__.brython_path = $path
-                        if (!(__BRYTHON__.path.indexOf($path+'Lib')> -1)) {
-                           __BRYTHON__.path.push($path+'Lib')
+                        var subpaths = ['Lib','Lib/site-packages']
+                        for(var j=0;j<subpaths.length;j++){
+                            var subpath = $path+subpaths[j]
+                            if (!(__BRYTHON__.path.indexOf(subpath)> -1)) {
+                               __BRYTHON__.path.push(subpath)
+                            }
                         }
                         break
                 }
             }
         }
     }
+    console.log('path '+__BRYTHON__.path)
 
     // get all scripts with type = text/python and run them
     

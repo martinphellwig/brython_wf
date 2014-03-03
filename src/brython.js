@@ -3706,7 +3706,6 @@ break
 }
 }
 }
-console.log('path '+__BRYTHON__.path)
 for(var $i=0;$i<$elts.length;$i++){
 var $elt=$elts[$i]
 if($elt.type=="text/python"||$elt.type==="text/python3"){

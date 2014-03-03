@@ -16,6 +16,10 @@ $B.$import_via_VFS=function(module,origin){
      search_path.unshift(root+'/Lib')
   }
 
+  if (search_path.indexOf(root+'/Lib/site-packages') == -1) {
+     search_path.unshift(root+'/Lib/site-packages')
+  }
+
   var _name=module.name
   _name=_name.replace('.', '/')
   var search=[_name, _name+'/__init__'];
