@@ -5,7 +5,7 @@ $B.$import_via_VFS=function(module,origin){
   //console.log("import_via_VFS: " + module.name)
   var search_path=__BRYTHON__.path
   var root = __BRYTHON__.brython_path;
-  if (root.substring(root.length) == '/') {
+  if (root.charAt(root.length-1) == '/') {
      root=root.substring(0,root.length-1); 
   }
   if (search_path.indexOf(root+'/libs') == -1) {
