@@ -154,7 +154,9 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
     for(var j=0; j < search.length; j++) {
         var modpath = search[j]
         for(var i=0;i<path_list.length;i++){
-           var path = path_list[i] + "/" + modpath;
+           var path = path_list[i]
+           if(path.charAt(path.length-1)!='/'){path += "/"}
+           path += modpath
            try {
                var mod = $B.$import_py(module,path)
                flag = true

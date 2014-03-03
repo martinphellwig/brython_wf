@@ -3706,6 +3706,7 @@ break
 }
 }
 }
+console.log('path '+__BRYTHON__.path)
 for(var $i=0;$i<$elts.length;$i++){
 var $elt=$elts[$i]
 if($elt.type=="text/python"||$elt.type==="text/python3"){
@@ -5112,6 +5113,9 @@ return{
 __class__: $FilterDict,
 __next__: __next__
 }
+}
+function format(value, format_spec){
+throw __builtins__.NotImplementedError("format is not implemented yet")
 }
 function getattr(obj,attr,_default){
 var klass=$B.get_class(obj)
@@ -6575,7 +6579,9 @@ var flag=false
 for(var j=0;j < search.length;j++){
 var modpath=search[j]
 for(var i=0;i<path_list.length;i++){
-var path=path_list[i]+ "/" + modpath
+var path=path_list[i]
+if(path.charAt(path.length-1)!='/'){path +="/"}
+path +=modpath
 try{
 var mod=$B.$import_py(module,path)
 flag=true
@@ -8004,8 +8010,7 @@ var $legacy_format=$StringDict.__mod__=function(self,args){
 var ph=[]
 function format(s){
 var conv_flags='([#\\+\\- 0])*'
-var conv_types='[diouxXeEfFgGcrsa%]'
-var re=new RegExp('\\%(\\(.+?\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*('+conv_types+'){1}')
+var re=new RegExp('\\%(\\(.+?\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*(.){1}')
 var res=re.exec(s)
 this.is_format=true
 if(!res){this.is_format=false;return}
@@ -8017,6 +8022,17 @@ this.min_width=res[3]
 this.precision=res[4]
 this.length_modifier=res[5]
 this.type=res[6]
+this._number_check=function(s){
+if(!isinstance(s,[__builtins__.int,__builtins__.float])){
+if(s.__class__ !==undefined){
+throw __builtins__.TypeError("%"+this.type+" format: a number is required, not " + str(s.__class__))
+}else if(typeof(s)==='string'){
+throw __builtins__.TypeError("%"+this.type+" format: a number is required, not str")
+}else{
+throw __builtins__.TypeError("%"+this.type+" format: a number is required, not 'unknown type'")
+}
+}
+}
 this.toString=function(){
 var res='type '+this.type+' key '+this.mapping_key+' min width '+this.min_width
 res +=' precision '+this.precision
@@ -8040,8 +8056,8 @@ var res=ascii(src)
 if(this.precision){res=res.substr(0,parseInt(this.precision.substr(1)))}
 return res
 }else if(this.type=="g" || this.type=="G"){
-if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
-"%"+this.type+" format : a number is required, not "+str(src.__class__))}
+if(!isinstance(src,[__builtins__.int,__builtins__.float])){
+throw __builtins__.TypeError("a float is required")}
 var prec=-4
 if(this.precision){prec=parseInt(this.precision.substr(1))}
 var res=parseFloat(src).toExponential()
@@ -8057,17 +8073,23 @@ var res=elts[0]+this.type+elts[1].charAt(0)
 if(elts[1].length===2){res +='0'}
 return res+elts[1].substr(1)
 }else{
-var prec=6
-if(this.precision){prec=parseInt(this.precision.substr(1))-1}
+var prec=2
+if(this.flag=='#'){
+if(this.precision===undefined){
+this.precision='.5' 
+}else{
+prec=parseInt(this.precision.substr(1))-1
 var elts=str(src).split('.')
 this.precision='.'+(prec-elts[0].length)
+}
+}else{
+this.precision=0
+}
 this.type="f"
 return this.format(src)
 }
 }else if(this.type=="e" || this.type=="E"){
-if(!isinstance(src,[__builtins__.int,__builtins__.float])){
-throw __builtins__.TypeError(
-"%"+this.type+" format : a number is required, not "+str(src.__class__))}
+this._number_check(src)
 var prec=6
 if(this.precision){prec=parseInt(this.precision.substr(1))}
 var res=parseFloat(src).toExponential(prec)
@@ -8076,8 +8098,7 @@ var res=elts[0]+this.type+elts[1].charAt(0)
 if(elts[1].length===2){res +='0'}
 return res+elts[1].substr(1)
 }else if(this.type=="x" || this.type=="X"){
-if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
-"%"+this.type+" format : a number is required, not "+str(src.__class__))}
+this._number_check(src)
 var num=src
 res=src.toString(16)
 var pad=' '
@@ -8094,9 +8115,9 @@ else{res='0X'+res}
 }
 return res
 }else if(this.type=="i" || this.type=="d"){
-if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
-"%"+this.type+" format : a number is required, not "+str(src.__class__))}
+this._number_check(src)
 var num=parseInt(src)
+num=num.toPrecision()
 res=num+''
 if(this.flag===' '){res=' '+res}
 else if(this.flag==='+' && num>=0){res='+'+res}
@@ -8109,8 +8130,7 @@ while(res.length<width){res=pad+res}
 }
 return res
 }else if(this.type=="f" || this.type=="F"){
-if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
-"%"+this.type+" format : a number is required, not "+str(src.__class__))}
+this._number_check(src)
 var num=parseFloat(src)
 if(this.precision===undefined)this.precision=".6" 
 if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
@@ -8131,6 +8151,12 @@ else{throw __builtins__.TypeError('%c requires __builtins__.int or char')}
 res=src.toString(8)
 if(this.flag==='#')return '0o' + res
 return res
+}else{
+var _msg="unsupported format character '" + this.type
+_msg+="' (0x" + this.type.charCodeAt(0).toString(16)+ ") at index "
+_msg+=(self.valueOf().indexOf('%' + this.type)+1)
+console.log(_msg)
+throw __builtins__.ValueError(_msg)
 }
 }
 }
@@ -8157,6 +8183,9 @@ pos++;pos++
 }
 }else{pos++}
 }else{pos++}
+}
+if(elts.length==0){
+throw __builtins__.TypeError('not all arguments converted during string formatting')
 }
 elts.push(val.substr(start))
 if(!isinstance(args,__builtins__.tuple)){
@@ -8305,6 +8334,7 @@ else{return start+res}
 var $FormattableString=function(format_string){
 this.format_string=format_string
 this._prepare=function(match){
+if(match=='%')return '%%'
 if(match.substring(0,1)==match.substring(match.length)){
 return match.substring(0, __builtins__.int(match.length/2))
 }
