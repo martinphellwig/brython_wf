@@ -1,5 +1,6 @@
 @title Introduction à Python
 @pagenum True
+@index Introduction
 
 Introduction à Python
 =====================
@@ -119,6 +120,7 @@ Définition de noms
     >>> round(ttc, 2)
     113,06
 ../..
+@index Chaines de caractères
 Chaines de caractères
 =====================
 Utilise `'` ou `"`
@@ -237,6 +239,7 @@ Longueur d'une chaine
     25
 
 ../..
+@index Listes
 Listes
 ======
     >>> a = ['spam', 'eggs', 100, 1234]
@@ -402,6 +405,7 @@ Conditions : `if, elif, else`
 
 nb : pas de "switch / case"
 ../..
+@index Boucle "for"
 Boucle `for`
 ============
 Un des outils les plus puissants de Python
@@ -480,6 +484,7 @@ __[Python 3]__
     9 = 3 * 3
 Le bloc après `else` est exécuté si on ne sort pas de la boucle par un `break`
 ../..
+@index Fonctions
 Fonctions
 =========
     >>> def fib(n):
@@ -611,6 +616,7 @@ ou par "dépliage de dictionnaire"
     >>> f(**d)
     8
 ../..
+@index List comprehensions
 Listes
 ======
 Création par _list comprehensions_ (listes en extansion)
@@ -663,6 +669,7 @@ C'est la virgule qui crée un tuple, pas la parenthèse
     >>> x
     (1,)
 ../..
+@index Ensembles (set)
 Ensemble
 ========
 Comme une liste, mais sans duplication ni ordre
@@ -696,6 +703,7 @@ Union
     >>> panier | couleurs
     {'jaune', 'poire', 'banane', 'abricot', 'bleu', 'pomme', 'orange'}
 ../..
+@index Dictionnaires
 Dictionnaires
 =============
 Associe une clé (immuable : chaine, entier, tuple...) à une valeur
@@ -765,6 +773,7 @@ ou par _dict comprehensions_
     >>> {x: x**2 for x in (2, 4, 6)}
     {2: 4, 4: 16, 6: 36}
 ../..
+@index Itérations
 Itérations
 ==========
 `enumerate` pour itérer sur le tuple (rang,valeur)
@@ -814,6 +823,7 @@ itère sur x et affecte les valeurs
     
 Il faut le même nombre de valeurs des deux côtés !
 ../..
+@index Scripts, modules, packages
 Scripts
 =======
 Enregistrement du programme dans un fichier _script.py_
@@ -921,6 +931,7 @@ Sans arguments : liste les noms définis dans le module courant
     >>> dir()
     ['__builtins__', '__doc__', '__file__', '__name__', 'a', 'fib', 'fibo']
 ../..
+@index Formattage de chaines
 `str.format()`
 ==============
 Permet de mettre en forme une chaine de caractères selon certains paramètres
@@ -971,6 +982,7 @@ et le nombre minimal de caractères
     Dcab       ==>       7678
     Sjoerd     ==>       4127
 ../..
+@index Fichiers
 Fichiers
 ========
 
@@ -1039,6 +1051,7 @@ Permet de transformer en chaine des objets complexes (listes, dictionnaires...) 
     
     obj = pickle.load(f) # récupère l'objet x depuis le fichier f
 ../..
+@index Erreurs et exceptions
 Erreurs et exceptions
 =====================
 Python distingue :
@@ -1210,6 +1223,7 @@ Exceptions
       File "<stdin>", line 3, in divide
     TypeError: unsupported operand type(s) for /: 'str' and 'str'
 ../..
+@index Espaces de noms
 Espaces de noms
 ===============
 Permet de définir et d'utiliser le même nom dans des contextes différents
@@ -1269,6 +1283,7 @@ Dans l'exécution de g :
 - pas de nom `b` dans l'espace de noms de g, on remonte jusqu'à l'espace de noms de f
 - pas de nom `a` dans l'espace de noms de g ni de f, on remonte jusqu'à l'espace de noms global
 ../..
+@index Classes
 Classes
 =======
 Définis par le mot clé `class`
@@ -1320,7 +1335,7 @@ Par convention, on les écrit avec l'instance comme premier argument, appelé `s
 
     >>> class MyClass:
     ...     def f(self):
-    ...         print('function f')
+    ...         print('hello')
     ...     def greet(self,name):
     ...         print('hello, ',name)
     ...
@@ -1343,6 +1358,29 @@ Pour initialiser une instance avec des attributs spécifiques : fonction spécia
     ...
     >>> x = MyClass()
     >>> x.data
+    []
+../..
+Classes
+=======
+Bien distinguer attributs de classe (partagés entre toutes les instances) 
+
+    >>> class A:
+    ...     data = []
+    ...
+    >>> a = A()
+    >>> a.data.append(1)
+    >>> b = A()
+    >>> b.data
+    [1]
+et attributs propres à chaque instance
+    >>> class B:
+    ...     def __init__(self):
+    ...         self.data = []
+    ...
+    >>> a = B()
+    >>> a.data.append(1)
+    >>> b = B()
+    >>> b.data
     []
 ../..
 Classes
@@ -1414,7 +1452,7 @@ Une sous-classe peut réécrire (_surcharger_) les fonctions de la classe dont e
 
     classe B(A):
         def show(self):
-            print(je suis B')
+            print('je suis B')
 ../..
 Héritage
 ========
@@ -1462,13 +1500,53 @@ Construit pour la classe `Derived` un _ordre de résolution de méthodes_ (MRO) 
 ../..
 Héritage
 ========
+Ordre de résolution quand 2 classes parentes définissent le même attribut
+    >>> class A:
+    ...     info = "classe A"
+    ...
+    >>> class B:
+    ...     info = "classe B"
+    ...
+    >>> class C(A, B):
+    ...     pass
+    ...
+    >>> C().info
+    'classe A'
+    >>> class D(B, A):
+    ...     pass
+    ...
+    >>> D().info
+    'classe B'
+
+../..
+Héritage
+========
 <code>issubclass(_A,B_)</code> teste si la classe _A_ hérite de la classe _B_
 
-<code>isinstance(_obj,A_)</code> teste si l'objet _obj_ est une instance de _A_ ou d'une classe dont _A_ hérite
+<code>isinstance(_obj,A_)</code> teste si l'objet _obj_ est une instance de _A_ ou d'une classe qui hérite de _A_
 
 ../..
 Méthodes spéciales
 ==================
+`__repr__(self)` pour définir le résultat de print(_objet_)
+
+    class A:
+
+        def __init__(self, nom, prenom):
+            self.nom = nom
+            self.prenom = prenom
+
+        def __repr__(self):
+            return '%s %s' %(self.prenom, self.nom)
+
+    x = A('Einstein', 'Albert')
+    print(x)
+    
+
+../..
+Méthodes spéciales
+==================
+`__getitem__(`<code>_self, pos_)</code> pour définir l'accès par index
 
     >>> class A:
     ...     def __init__(self):
@@ -1479,9 +1557,30 @@ Méthodes spéciales
     >>> x = A()
     >>> x[3]
     c
-
-La définition d'une méthode `__getitem__(self, pos)` permet d'utiliser l'accès par index
 ../..
+Méthodes spéciales
+==================
+`__mul__`<code>(_self, other_)</code> pour définir la multiplication d'une
+instance par _other_
+
+    >>> class Vecteur:
+    ...     def __init__(self, x, y):
+    ...         self.x = x
+    ...         self.y = y
+    ...     def __mul__(self,vec):
+    ...         return self.x*vec.x + self.y*vec.y
+    ...
+    >>> Vecteur(2,3) * Vecteur(-1,2)
+    4
+
+de même : `__add__, __sub__, __div__, __pow__ ...`
+
+`__eq__` pour tester l'égalité, `__ne__` pour inégalité
+
+`__le__` pour <=, `__gt__` pour > etc.
+    
+../..
+@index Itérateurs, générateurs
 Itérateurs
 ==========
 Utilisés très fréquemment en Python
@@ -1523,18 +1622,21 @@ Itérateurs
 ==========
 `iterator = iter(instance)` équivaut à `iterator = instance.__iter__()`
 
-`item = next(iterator)` équivaut à `item = iterator.next()`
+`item = next(iterator)` équivaut à `item = iterator.__next__()`
 
-Pour pouvoir itérer sur les instances d'une classe il faut lui définir une fonction `__iter__`, qui renvoie un objet qui possède une méthode `next`
+Pour pouvoir itérer sur les instances d'une classe il faut lui définir une fonction `__iter__`, qui renvoie un objet qui possède une méthode `__next__`
 
     class Reverse:
         """Iterator for looping over a sequence backwards."""
+
         def __init__(self, data):
             self.data = data
             self.index = len(data)
+
         def __iter__(self):
             return self
-        def next(self):
+
+        def __next__(self):
             if self.index == 0:
                 raise StopIteration
             self.index = self.index - 1
@@ -1572,6 +1674,7 @@ Simplifie le passage d'argument à une fonction qui attend un itérateur
     
     >>> unique_words = set(word  for line in page  for word in line.split())
 ../..
+@index Décorateurs
 Décorateurs
 ===========
 Fonction qui renvoie une autre fonction, utilisée avec `@`
@@ -1587,6 +1690,7 @@ Fonction qui renvoie une autre fonction, utilisée avec `@`
     f = staticmethod(f)
     
 ../..
+@index Librairie standard
 Librairie standard : `os`
 ==========================
 
@@ -1693,5 +1797,6 @@ Modules standard `zlib, gzip, bz2, zipfile, tarfile`
     'witch which has which witches wrist watch'
     >>> zlib.crc32(s)
     226805979
+
 
 
