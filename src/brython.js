@@ -8080,36 +8080,39 @@ if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.Ty
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=src
 res=src.toString(16)
+var pad=' '
 if(this.flag===' '){res=' '+res}
-else if(this.flag==='+' && num>=0){res='+'+res}
-else if(this.flag==='#'){
+else if(this.flag==='+' && num>=0){pad='+';res='+'+res}
+if(this.precision){
+var width=this.precision.substr(1)
+if(this.flag==='#'){pad="0"}
+while(res.length<width){res=pad+res}
+}
+if(this.flag==='#'){
 if(this.type==='x'){res='0x'+res}
 else{res='0X'+res}
-}
-if(this.min_width){
-var pad=' '
-if(this.flag==='0'){pad="0"}
-while(res.length<parseInt(this.min_width)){res=pad+res}
 }
 return res
 }else if(this.type=="i" || this.type=="d"){
 if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=parseInt(src)
-if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
 res=num+''
 if(this.flag===' '){res=' '+res}
 else if(this.flag==='+' && num>=0){res='+'+res}
-if(this.min_width){
+if(this.precision){
+var flag=this.precision[0]
 var pad=' '
-if(this.flag==='0'){pad="0"}
-while(res.length<parseInt(this.min_width)){res=pad+res}
+if(flag==='0' || flag==='.'){pad="0"}
+var width=parseInt(this.precision.substr(1))
+while(res.length<width){res=pad+res}
 }
 return res
 }else if(this.type=="f" || this.type=="F"){
 if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
 "%"+this.type+" format : a number is required, not "+str(src.__class__))}
 var num=parseFloat(src)
+if(this.precision===undefined)this.precision=".6" 
 if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
 res=num+''
 if(this.flag===' '){res=' '+res}
@@ -8124,6 +8127,10 @@ return res
 if(isinstance(src,str)&& str.length==1){return src}
 else if(isinstance(src,__builtins__.int)&& src>0 && src<256){return String.fromCharCode(src)}
 else{throw __builtins__.TypeError('%c requires __builtins__.int or char')}
+}else if(this.type=='o'){
+res=src.toString(8)
+if(this.flag==='#')return '0o' + res
+return res
 }
 }
 }
@@ -8332,7 +8339,7 @@ if(this._index===undefined){
 throw __builtins__.ValueError("cannot switch from manual field specification to automatic field numbering")
 }
 _name=self._index.toString()
-this._index=1
+this._index+=1
 if(! _literal ){
 _name_parts.shift()
 }
@@ -8401,7 +8408,7 @@ var _items=this._kwords[_name]
 var _var=getattr(kwargs, '__getitem__')(_name)
 var _value
 if(hasattr(_var, 'value')){
-_value=getattr(getattr(kwargs, '__getitem__')(_name), 'value')
+_value=getattr(_var, 'value')
 }else{
 _value=_var
 }
@@ -8409,8 +8416,10 @@ for(var j=0;j < _items.length;j++){
 var _parts=_items[j][0]
 var _conv=_items[j][1]
 var _spec=_items[j][2]
-getattr(_params,'__setitem__')(id(_items[j]).toString(), this.format_field(_value, _parts, 
-_conv, _spec, _want_bytes))
+getattr(_params,'__setitem__')(id(_items[j]).toString(), 
+this.format_field(_value, _parts, 
+_conv, _spec, 
+_want_bytes))
 }
 }
 for(var i=0;i < this._nested_array.length;i++){
@@ -8428,8 +8437,10 @@ var _parts=_items[j][0]
 var _conv=_items[j][1]
 var _spec=_items[j][2]
 _spec=$legacy_format(_spec, _params)
-getattr(_params,'__setitem__')(id(_items[j]).toString(), this.format_field(_value, _parts, 
-_conv, _spec, _want_bytes))
+getattr(_params,'__setitem__')(id(_items[j]).toString(), 
+this.format_field(_value, _parts, 
+_conv, _spec, 
+_want_bytes))
 }
 }
 return $legacy_format(this._string, _params)
