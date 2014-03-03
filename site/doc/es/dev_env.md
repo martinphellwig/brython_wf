@@ -3,7 +3,7 @@ Entorno de desarrollo
 
 Los desarrolladores deberían usar el entorno de desarrollo disponible para descarga en [downloads](https://bitbucket.org/olemis/brython/downloads) : elige el fichero zip cuyo nombre comienza por "Brython\_site\_mirror" y descomprímelo en una carpeta (la llamaremos la carpeta Brython  en los siguientes párrafos).
 
-Es necesario un servidor web para poder probar los scripts localmente mientras nos encontramos desarrollando. Cualquier servidor web que sea capaz de servir ficheros con la carpeta Brython como documento raíz es válido ; puedes usar el servidor incluido con la distribuci&oacute;n : abre una consola, muévete hasta la carpeta donde se encuentra el fichero server.py y ejecuta `python server.py`. Esto arrancará un servidor en el puerto 8000 (edita _server.py_ para cambiar el número del puerto).
+Es necesario un servidor web para poder probar los scripts localmente mientras nos encontramos desarrollando. Cualquier servidor web que sea capaz de servir ficheros con la carpeta Brython como documento raíz es válido ; puedes usar el servidor incluido con la distribución : abre una consola, muévete hasta la carpeta donde se encuentra el fichero server.py y ejecuta `python server.py`. Esto arrancará un servidor en el puerto 8000 (edita _server.py_ para cambiar el número del puerto).
 
 Una vez que el servidor ha arrancado, apunta tu navegador a _http://localhost:8000/site_ : deberías poder ver la misma página que en [la página de inicio oficial de Brython](http://www.brython.info)
 
@@ -16,9 +16,10 @@ Crea una nueva carpeta (eg "test") en la carpeta Brython. Con un editor de texto
 >    </head>
 >    <body onLoad="brython()">
 >    <script type="text/python">
->    from browser import doc
+>    from browser import doc, win, alert
 >    def echo():
 >        alert("Hola %s !" %doc["zone"].value)
+>    win.echo = echo
 >    </script>
 >    <p>Tu nombre es : <input id="zone"><button onclick="echo()">click !</button>
 >    </body>
