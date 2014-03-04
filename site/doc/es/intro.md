@@ -1,3 +1,9 @@
+Cita de la [especificación del Document Object Model del W3C](http://www.w3.org/DOM/) :
+
+> _¿Qué es el Document Object Model?_
+
+> _El Document Object Model es una interfaz independiente del **lenguaje** y de la plataforma que permite a los programas y scripts acceder dinámicamente y modificar el contenido, estructura y estilo del documento_
+
 El objetivo de Brython es reemplazar Javascript con Python como lenguaje de scripting en los navegadores.
 
 Un ejemplo simple :
@@ -17,9 +23,9 @@ Un ejemplo simple :
     def echo(ev):
         alert(doc["zone"].value)
     
-    doc['echo'].bind('click',echo)
+    doc['mybutton'].bind('click',echo)
     </script>
-    <input id="zone"><button idk="echo">click !</button>
+    <input id="zone"><button id="mybutton">click !</button>
     </body>
     </html>
 
@@ -34,10 +40,10 @@ from browser import doc, alert
 def echo(ev):
     alert(doc["zone"].value)
 
-doc['echo'].bind('click',echo)
+doc['mybutton'].bind('click',echo)
 </script>
 
-<input id="zone"><button id="echo">click !</button>
+<input id="zone"><button id="mybutton">click !</button>
 
 </td>
 </tr>
@@ -53,7 +59,7 @@ Si el programa Python es extenso, otra opción sería escribirlo en un fichero s
     </head>
     <body onload="brython()">
     <script type="text/python" src="test.py"></script>
-    <input id="zone"><button onclick="echo()">clic !</button>
+    <input id="zone"><button id="mybutton">click!</button>
     </body>
     </html>
 
