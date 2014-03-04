@@ -479,11 +479,6 @@ return res
 if(scope.globals && scope.globals.indexOf(left.value)>-1){
 return left.to_js()+'=$globals["'+left.to_js()+'"]='+right.to_js()
 }else{
-var scope_id=scope.C.tree[0].id
-var locals=__BRYTHON__.scope[scope_id].locals
-if(locals.indexOf(left.to_js())===-1){
-locals.push(left.to_js())
-}
 var res='var '+left.to_js()+'='
 res +='$locals["'+left.to_js()+'"]='
 res +=right.to_js()+';None;'
@@ -620,19 +615,20 @@ res +='if($res===undefined){return None};return $res'
 res +='}catch(err){throw __BRYTHON__.exception(err)}'
 res +='})()'
 if(ns==='globals'){
-res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-res +='{$globals[$attr]=__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
-res +='__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
+res +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
+res +='{$globals[$attr]=__BRYTHON__.vars["'+module+'"][$attr]='
+res +='__BRYTHON__.vars["'+_name+'"][$attr]}'
 }else if(ns !=''){
-res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-res +='{__builtins__.dict.$dict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}' 
+res +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
+res +='{__builtins__.dict.$dict.__setitem__('+ns+',$attr,'
+res +='__BRYTHON__.vars["'+_name+'"][$attr])}' 
 }else{
-res +=';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
+res +=';for(var $attr in __BRYTHON__.vars["'+_name+'"]){'
 res +='\nif($attr.search(/[\.]/)>-1){continue}\n'
 res +='eval("var "+$attr+"='
 res +='$globals[$attr]='
-res +='__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
-res +='__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
+res +='__BRYTHON__.vars[\\"'+module+'\\"][$attr]='
+res +='__BRYTHON__.vars[\\"'+_name+'\\"][$attr]")}'
 }
 return res
 }else if(this.func!==undefined && this.func.value==='classmethod'){
@@ -746,7 +742,7 @@ var cl_cons=new $Node('expression')
 new $NodeJSCtx(cl_cons,js)
 node.parent.insert(rank+2,cl_cons)
 if(scope.ntype==='module'){
-js='__BRYTHON__.scope["'+scope.module+'"].__dict__["'
+js='__BRYTHON__.vars["'+scope.module+'"]["'
 js +=this.name+'"]='+this.name
 var w_decl=new $Node('expression')
 new $NodeJSCtx(w_decl,js)
@@ -880,7 +876,7 @@ this.name=null
 this.parent=C
 this.tree=[]
 this.id=Math.random().toString(36).substr(2,8)
-__BRYTHON__.scope[this.id]=this
+__BRYTHON__.vars[this.id]={}
 this.locals=[]
 C.tree.push(this)
 this.enclosing=[]
@@ -939,7 +935,7 @@ this.env=env
 this.defs=defs
 if(required.length>0){required=required.substr(0,required.length-1)}
 var nodes=[]
-var js='var $locals = __BRYTHON__.scope["'+this.id+'"].__dict__={}'
+var js='var $locals = __BRYTHON__.vars["'+this.id+'"]={}'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
@@ -948,7 +944,7 @@ var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
 for(var i=this.enclosing.length-1;i>=0;i--){
-var js='var $ns=__BRYTHON__.scope["'+this.enclosing[i]+'"].__dict__'
+var js='var $ns=__BRYTHON__.vars["'+this.enclosing[i]+'"]'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
@@ -1354,7 +1350,7 @@ res +=head+'var $mod=__BRYTHON__.imported["'+this.module+'"]\n'
 res +=head+'for(var $attr in $mod){\n'
 res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
 if(scope.ntype==="module"){
-res +='=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
+res +='=__BRYTHON__.vars["'+scope.module+'"]["'+"'+$attr+'"+'"]'
 }
 res +='=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x)}}'
 }else{
@@ -1639,7 +1635,7 @@ res +='=$locals["'+alias+'"]'
 }else if(scope.ntype==="module"){
 res +='=$globals["'+alias+'"]'
 }
-res +='=__BRYTHON__.scope["'+key+'"].__dict__;'
+res +='=__BRYTHON__.vars["'+key+'"];'
 }
 }
 res +='None;'
@@ -2941,7 +2937,6 @@ return C
 C.expect=','
 C.tree[C.tree.length-1].alias=arguments[2]
 var mod_name=C.tree[C.tree.length-1].name
-__BRYTHON__.$py_module_alias[mod_name]=arguments[2]
 return C
 }else if(token==='eol' && C.expect===','){
 return $transition(C.parent,token)
@@ -3620,14 +3615,13 @@ src=src.substr(1)
 if(src.charAt(src.length-1)!="\n"){src+='\n'}
 if(module===undefined){module='__main__'}
 var __name__=module
-if(__BRYTHON__.scope[module]===undefined){
-__BRYTHON__.scope[module]={}
-__BRYTHON__.scope[module].__dict__={}
+if(__BRYTHON__.vars[module]===undefined){
+__BRYTHON__.vars[module]={}
 }
 document.$py_src[module]=src
 var root=$tokenize(src,module,parent)
 root.transform()
-var js='var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $globals\n'
+var js='var $globals = __BRYTHON__.vars["'+module+'"]\nvar $locals = $globals\n'
 js +='var __builtins__ = __BRYTHON__.builtins;\n'
 js +='for(var $py_builtin in __builtins__)'
 js +='{eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
@@ -3652,7 +3646,6 @@ return root
 function brython(options){
 document.$py_src={}
 __BRYTHON__.$py_module_path={}
-__BRYTHON__.$py_module_alias={}
 __BRYTHON__.path_hooks=[]
 __BRYTHON__.modules={}
 __BRYTHON__.imported={}
@@ -3660,22 +3653,21 @@ __BRYTHON__.$options={}
 __BRYTHON__.$py_next_hash=-Math.pow(2,53)
 if(options===undefined){options={'debug':0}}
 if(typeof options==='number'){options={'debug':options}}
-__BRYTHON__.$options.debug=__BRYTHON__.debug=options.debug
+__BRYTHON__.debug=options.debug
 if(options.open !==undefined){__BRYTHON__.builtins.$open=options.open}
 __BRYTHON__.builtins.$CORS=false 
 if(options.CORS !==undefined){__BRYTHON__.builtins.$CORS=options.CORS}
 __BRYTHON__.$options=options
 __BRYTHON__.exception_stack=[]
 __BRYTHON__.call_stack=[]
-__BRYTHON__.scope={}
-__BRYTHON__.events=__BRYTHON__.builtins.dict()
+__BRYTHON__.vars={}
 if(options.py_tag===undefined){options.py_tag="script"}
 var $elts=document.getElementsByTagName(options.py_tag)
 var $scripts=document.getElementsByTagName('script')
 var $href=window.location.href
 var $href_elts=$href.split('/')
 $href_elts.pop()
-var $script_path=$href_elts.join('/')
+var $script_dir=$href_elts.join('/')
 __BRYTHON__.path=[]
 if(options.pythonpath!==undefined){
 __BRYTHON__.path=options.pythonpath
@@ -3685,8 +3677,8 @@ if(options.re_module=='pyre' || options.re_module=='jsre'){
 __BRYTHON__.$options.re=options.re
 }
 }
-if(!(__BRYTHON__.path.indexOf($script_path)> -1)){
-__BRYTHON__.path.push($script_path)
+if(!(__BRYTHON__.path.indexOf($script_dir)> -1)){
+__BRYTHON__.path.push($script_dir)
 }
 for(var $i=0;$i<$scripts.length;$i++){
 var $elt=$scripts[$i]
@@ -3755,9 +3747,10 @@ for(var attr in $err){
 console.log(attr+' : '+$err[attr])
 }
 console.log('line info '+__BRYTHON__.line_info)
-if($err.py_error===undefined){$err=__BRYTHON__.builtins.RuntimeError($err+'')}
-var $trace=$err.__name__+': '+$err.message
-$trace +='\n'+$err.info
+if($err.py_error===undefined){
+$err=__BRYTHON__.builtins.RuntimeError($err+'')
+}
+var $trace=$err.__name__+': '+$err.message+'\n'+$err.info
 getattr(__BRYTHON__.stderr,'write')($trace)
 throw $err
 }
@@ -3767,7 +3760,7 @@ throw $err
 __BRYTHON__.$operators=$operators
 __BRYTHON__.$Node=$Node
 __BRYTHON__.$NodeJSCtx=$NodeJSCtx
-__BRYTHON__.brython=brython 
+__BRYTHON__.brython=brython
 })()
 var brython=__BRYTHON__.brython
 
@@ -4384,7 +4377,7 @@ var $mod_name='lc'+$ix
 var $root=$B.py2js($py,$mod_name,$B.line_info)
 $root.caller=$B.line_info
 var $js=$root.to_js()
-$B.scope[$mod_name].__dict__=$env
+$B.vars[$mod_name]=$env
 try{
 eval($js)
 }catch(err){throw $B.exception(err)}
@@ -4418,7 +4411,7 @@ var $mod_name='ge'+$ix
 var $root=$B.py2js($py,$mod_name,$B.line_info)
 $root.caller=$B.line_info
 var $js=$root.to_js()
-$B.scope[$mod_name].__dict__=$env
+$B.vars[$mod_name]=$env
 eval($js)
 var $res1=eval($res)
 var $GenExprDict={
@@ -4457,7 +4450,7 @@ var $mod_name='dc'+$ix
 var $root=$B.py2js($py,$mod_name,$B.line_info)
 $root.caller=$B.line_info
 var $js=$root.to_js()
-$B.scope[$mod_name].__dict__=$env
+$B.vars[$mod_name]=$env
 eval($js)
 return eval($res)
 }
@@ -5029,7 +5022,7 @@ getattr(obj,'__delattr__')(attr)
 function dir(obj){
 if(obj===null){
 var mod_name=arguments[1]
-var res=[],$globals=$B.scope[mod_name].__dict__
+var res=[],$globals=$B.vars[mod_name]
 for(var attr in $globals){res.push(attr)}
 return res
 }
@@ -5209,7 +5202,7 @@ throw __builtins__.AttributeError("'"+klass.__name__+"' object has no attribute 
 getattr.__name__='getattr'
 function globals(module){
 var res=__builtins__.dict()
-var scope=$B.scope[module].__dict__
+var scope=$B.vars[module]
 for(var name in scope){res.$keys.push(name);res.$values.push(scope[name])}
 return res
 }
@@ -5323,11 +5316,11 @@ catch(err){
 throw __builtins__.TypeError("object of type '"+$B.get_class(obj).__name__+"' has no len()")}
 }
 function locals(obj_id,module){
-if($B.scope[obj_id]===undefined){
+if($B.vars[obj_id]===undefined){
 return globals(module)
 }
 var res=__builtins__.dict()
-var scope=$B.scope[obj_id].__dict__
+var scope=$B.vars[obj_id]
 for(var name in scope){__builtins__.dict.$dict.__setitem__(res,name,scope[name])}
 return res
 }
@@ -6551,7 +6544,7 @@ try{$module}
 catch(err){
 throw __builtins__.ImportError("name '$module' is not defined in module")
 }
-__BRYTHON__.scope[module.name]={__dict__:$module}
+__BRYTHON__.vars[module.name]=$module
 $module.__class__=$B.$ModuleDict
 $module.__name__=module.name
 $module.__repr__=function(){return "<module '"+module.name+"' from "+filepath+" >"}
@@ -6637,8 +6630,8 @@ if(__BRYTHON__.debug>0){console.log('line info '+__BRYTHON__.line_info)}
 throw err
 }
 try{
-for(var attr in __BRYTHON__.scope[module.name].__dict__){
-$module[attr]=__BRYTHON__.scope[module.name].__dict__[attr]
+for(var attr in __BRYTHON__.vars[module.name]){
+$module[attr]=__BRYTHON__.vars[module.name][attr]
 }
 $module.__class__=$B.$ModuleDict
 $module.__repr__=function(){return "<module '"+module.name+"' from "+path+" >"}
@@ -9270,6 +9263,7 @@ for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_
 var $ObjectDict=object.$dict
 var $JSObject=__BRYTHON__.$JSObject
 var JSObject=__BRYTHON__.JSObject
+$B.events=__BRYTHON__.builtins.dict()
 function $getMouseOffset(target, ev){
 ev=ev || window.event
 var docPos=$getPosition(target)
@@ -9748,17 +9742,17 @@ DOMNode.bind=function(self,event){
 var _id
 if(self.elt.nodeType===9){_id=0}
 else{_id=self.elt.$brython_id}
-var ix=__BRYTHON__.events.$keys.indexOf(_id)
+var ix=$B.events.$keys.indexOf(_id)
 if(ix===-1){
-__BRYTHON__.events.$keys.push(_id)
-__BRYTHON__.events.$values.push(dict())
-ix=__BRYTHON__.events.$keys.length-1
+$B.events.$keys.push(_id)
+$B.events.$values.push(dict())
+ix=$B.events.$keys.length-1
 }
-var ix_event=__BRYTHON__.events.$values[ix].$keys.indexOf(event)
+var ix_event=$B.events.$values[ix].$keys.indexOf(event)
 if(ix_event==-1){
-__BRYTHON__.events.$values[ix].$keys.push(event)
-__BRYTHON__.events.$values[ix].$values.push([])
-ix_event=__BRYTHON__.events.$values[ix].$values.length-1
+$B.events.$values[ix].$keys.push(event)
+$B.events.$values[ix].$values.push([])
+ix_event=$B.events.$values[ix].$values.length-1
 }
 for(var i=2;i<arguments.length;i++){
 var func=arguments[i]

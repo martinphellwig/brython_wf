@@ -322,7 +322,7 @@ function dir(obj){
         // if dir is called without arguments, the parser transforms dir() into
         // dir(null,module_name)
         var mod_name=arguments[1]
-        var res = [],$globals = $B.scope[mod_name].__dict__
+        var res = [],$globals = $B.vars[mod_name]
         for(var attr in $globals){res.push(attr)}
         return res
     }
@@ -532,7 +532,7 @@ getattr.__name__ = 'getattr'
 function globals(module){
     // the translation engine adds the argument module
     var res = __builtins__.dict()
-    var scope = $B.scope[module].__dict__
+    var scope = $B.vars[module]
     for(var name in scope){res.$keys.push(name);res.$values.push(scope[name])}
     return res
 }
@@ -668,11 +668,11 @@ function locals(obj_id,module){
     // used for locals() ; the translation engine adds the argument obj,
     // a dictionary mapping local variable names to their values, and the
     // module name
-    if($B.scope[obj_id]===undefined){
+    if($B.vars[obj_id]===undefined){
         return globals(module)
     }
     var res = __builtins__.dict()
-    var scope = $B.scope[obj_id].__dict__
+    var scope = $B.vars[obj_id]
     for(var name in scope){__builtins__.dict.$dict.__setitem__(res,name,scope[name])}
     return res
 }

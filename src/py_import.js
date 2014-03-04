@@ -116,7 +116,7 @@ $B.$import_js_module = function(module,filepath,module_contents){
         throw __builtins__.ImportError("name '$module' is not defined in module")
     }
     // add class and __str__
-    __BRYTHON__.scope[module.name] = {__dict__:$module}
+    __BRYTHON__.vars[module.name] = $module
     $module.__class__ = $B.$ModuleDict
     $module.__name__ = module.name
     $module.__repr__ = function(){return "<module '"+module.name+"' from "+filepath+" >"}
@@ -222,8 +222,8 @@ $B.$import_py_module = function(module,path,module_contents) {
 
     try{
         // add names defined in the module as attributes of $module
-        for(var attr in __BRYTHON__.scope[module.name].__dict__){
-            $module[attr] = __BRYTHON__.scope[module.name].__dict__[attr]
+        for(var attr in __BRYTHON__.vars[module.name]){
+            $module[attr] = __BRYTHON__.vars[module.name][attr]
         }
         // add class and __str__
         $module.__class__ = $B.$ModuleDict

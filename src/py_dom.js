@@ -6,6 +6,9 @@ var $ObjectDict = object.$dict
 var $JSObject = __BRYTHON__.$JSObject
 var JSObject = __BRYTHON__.JSObject
 
+// Maps $brython_id of DOM elements to events
+$B.events = __BRYTHON__.builtins.dict()
+
 // cross-browser utility functions
 function $getMouseOffset(target, ev){
     ev = ev || window.event;
@@ -577,17 +580,17 @@ DOMNode.bind = function(self,event){
     var _id
     if(self.elt.nodeType===9){_id=0}
     else{_id = self.elt.$brython_id}
-    var ix = __BRYTHON__.events.$keys.indexOf(_id)
+    var ix = $B.events.$keys.indexOf(_id)
     if(ix===-1){
-        __BRYTHON__.events.$keys.push(_id)
-        __BRYTHON__.events.$values.push(dict())
-        ix = __BRYTHON__.events.$keys.length-1
+        $B.events.$keys.push(_id)
+        $B.events.$values.push(dict())
+        ix = $B.events.$keys.length-1
     }
-    var ix_event = __BRYTHON__.events.$values[ix].$keys.indexOf(event)
+    var ix_event = $B.events.$values[ix].$keys.indexOf(event)
     if(ix_event==-1){
-        __BRYTHON__.events.$values[ix].$keys.push(event)
-        __BRYTHON__.events.$values[ix].$values.push([])
-        ix_event = __BRYTHON__.events.$values[ix].$values.length-1
+        $B.events.$values[ix].$keys.push(event)
+        $B.events.$values[ix].$values.push([])
+        ix_event = $B.events.$values[ix].$values.length-1
     }
     for(var i=2;i<arguments.length;i++){
         var func = arguments[i]

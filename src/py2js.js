@@ -436,11 +436,6 @@ function $AssignCtx(context){
                 if(scope.globals && scope.globals.indexOf(left.value)>-1){
                     return left.to_js()+'=$globals["'+left.to_js()+'"]='+right.to_js()
                 }else{ // local to scope : prepend 'var'
-                    var scope_id = scope.context.tree[0].id
-                    var locals = __BRYTHON__.scope[scope_id].locals
-                    if(locals.indexOf(left.to_js())===-1){
-                        locals.push(left.to_js())
-                    }
                     var res = 'var '+left.to_js()+'='
                     res += '$locals["'+left.to_js()+'"]='
                     res += right.to_js()+';None;'
@@ -617,22 +612,23 @@ function $CallCtx(context){
             res += '})()'
             if(ns==='globals'){
                 // copy the execution namespace in module and global namespace
-                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{$globals[$attr]=__BRYTHON__.scope["'+module+'"].__dict__[$attr]='
-                res += '__BRYTHON__.scope["'+_name+'"].__dict__[$attr]}'
+                res += ';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
+                res += '{$globals[$attr]=__BRYTHON__.vars["'+module+'"][$attr]='
+                res += '__BRYTHON__.vars["'+_name+'"][$attr]}'
             }else if(ns !=''){
                 // use specified namespace
-                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__)'
-                res += '{__builtins__.dict.$dict.__setitem__('+ns+',$attr,__BRYTHON__.scope["'+_name+'"].__dict__[$attr])}'            
+                res += ';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
+                res += '{__builtins__.dict.$dict.__setitem__('+ns+',$attr,'
+                res += '__BRYTHON__.vars["'+_name+'"][$attr])}'            
             }else{
                 // namespace not specified copy the execution namespace in module namespace
-                res += ';for(var $attr in __BRYTHON__.scope["'+_name+'"].__dict__){'
+                res += ';for(var $attr in __BRYTHON__.vars["'+_name+'"]){'
                 // check that $attr is a valid identifier
                 res += '\nif($attr.search(/[\.]/)>-1){continue}\n'
                 res += 'eval("var "+$attr+"='
                 res += '$globals[$attr]='
-                res += '__BRYTHON__.scope[\\"'+module+'\\"].__dict__[$attr]='
-                res += '__BRYTHON__.scope[\\"'+_name+'\\"].__dict__[$attr]")}'
+                res += '__BRYTHON__.vars[\\"'+module+'\\"][$attr]='
+                res += '__BRYTHON__.vars[\\"'+_name+'\\"][$attr]")}'
             }
             return res
         }else if(this.func!==undefined && this.func.value === 'classmethod'){
@@ -780,7 +776,7 @@ function $ClassCtx(context){
         
         // if class is defined at module level, add to module namespace
         if(scope.ntype==='module'){
-            js = '__BRYTHON__.scope["'+scope.module+'"].__dict__["'
+            js = '__BRYTHON__.vars["'+scope.module+'"]["'
             js += this.name+'"]='+this.name
             var w_decl = new $Node('expression')
             new $NodeJSCtx(w_decl,js)
@@ -965,7 +961,7 @@ function $DefCtx(context){
     this.parent = context
     this.tree = []
     this.id = Math.random().toString(36).substr(2,8)
-    __BRYTHON__.scope[this.id] = this
+    __BRYTHON__.vars[this.id] = {} //this
     this.locals = []
     context.tree.push(this)
 
@@ -1037,7 +1033,7 @@ function $DefCtx(context){
 
         var nodes = []
         // add lines of code to node children
-        var js = 'var $locals = __BRYTHON__.scope["'+this.id+'"].__dict__={}'
+        var js = 'var $locals = __BRYTHON__.vars["'+this.id+'"]={}'
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
@@ -1049,7 +1045,7 @@ function $DefCtx(context){
         nodes.push(new_node)
         
         for(var i=this.enclosing.length-1;i>=0;i--){
-            var js = 'var $ns=__BRYTHON__.scope["'+this.enclosing[i]+'"].__dict__'
+            var js = 'var $ns=__BRYTHON__.vars["'+this.enclosing[i]+'"]'
             var new_node = new $Node('expression')
             new $NodeJSCtx(new_node,js)
             nodes.push(new_node)
@@ -1522,7 +1518,7 @@ function $FromCtx(context){
              res += head+'for(var $attr in $mod){\n'
              res +="if($attr.substr(0,1)!=='_')\n"+head+"{var $x = 'var '+$attr+'"
               if(scope.ntype==="module"){
-                  res += '=__BRYTHON__.scope["'+scope.module+'"].__dict__["'+"'+$attr+'"+'"]'
+                  res += '=__BRYTHON__.vars["'+scope.module+'"]["'+"'+$attr+'"+'"]'
               }
              res += '=$mod["'+"'+$attr+'"+'"]'+"'"+'\n'+head+'eval($x)}}'
            }else{
@@ -1882,7 +1878,7 @@ function $ImportCtx(context){
                 }else if(scope.ntype==="module"){
                     res += '=$globals["'+alias+'"]'
                 }
-                res += '=__BRYTHON__.scope["'+key+'"].__dict__;'
+                res += '=__BRYTHON__.vars["'+key+'"];'
             }
         }
         // add None for interactive console
@@ -3397,7 +3393,6 @@ function $transition(context,token){
             context.expect = ','
             context.tree[context.tree.length-1].alias = arguments[2]
             var mod_name=context.tree[context.tree.length-1].name;
-            __BRYTHON__.$py_module_alias[mod_name]=arguments[2]
             return context
         }else if(token==='eol' && context.expect===','){
             return $transition(context.parent,token)
@@ -4169,23 +4164,26 @@ __BRYTHON__.py2js = function(src,module,parent){
     // src = Python source (string)
     // module = module name (string)
     // parent = the name of the "calling" module, eg for a list comprehension (string)
+    // Returns a tree structure representing the Python source code
+
+    // Normalise line ends and script end
     var src = src.replace(/\r\n/gm,'\n')
     while (src.length>0 && (src.charAt(0)=="\n" || src.charAt(0)=="\r")){
         src = src.substr(1)
     }
     if(src.charAt(src.length-1)!="\n"){src+='\n'}
+
     if(module===undefined){module='__main__'}
     // Python built-in variable __name__
     var __name__ = module
-    if(__BRYTHON__.scope[module]===undefined){
-        __BRYTHON__.scope[module] = {}
-        __BRYTHON__.scope[module].__dict__ = {}
+    if(__BRYTHON__.vars[module]===undefined){
+        __BRYTHON__.vars[module] = {}
     }
     document.$py_src[module]=src
     var root = $tokenize(src,module,parent)
     root.transform()
     // add variable $globals
-    var js = 'var $globals = __BRYTHON__.scope["'+module+'"].__dict__\nvar $locals = $globals\n'
+    var js = 'var $globals = __BRYTHON__.vars["'+module+'"]\nvar $locals = $globals\n'
     js += 'var __builtins__ = __BRYTHON__.builtins;\n'
     js += 'for(var $py_builtin in __builtins__)'
     js += '{eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
@@ -4214,58 +4212,96 @@ __BRYTHON__.py2js = function(src,module,parent){
 
 function brython(options){
     document.$py_src = {}
+    
+    // Mapping between a module name and its path (url)
     __BRYTHON__.$py_module_path = {}
-    __BRYTHON__.$py_module_alias = {}
+    
+    // path_hook used in py_import.js
     __BRYTHON__.path_hooks = []
-    //__BRYTHON__.$py_modules = {}
+
+    // Maps a module name to matching module object
+    // A module can be the body of a script, or the body of a block inside a
+    // script, such as in exec() or in a comprehension
     __BRYTHON__.modules = {}
+
+    // Maps the name of imported modules to the module object
     __BRYTHON__.imported = {}
+
+    // Options passed to brython(), with default values
     __BRYTHON__.$options= {}
+
+    // Used to compute the hash value of some objects (see 
+    // py_builtin_functions.js)
     __BRYTHON__.$py_next_hash = -Math.pow(2,53)
 
-    // debug level
+    // By default, only set debug level
     if(options===undefined){options={'debug':0}}
+    
+    // If the argument provided to brython() is a number, it is the debug 
+    // level
     if(typeof options==='number'){options={'debug':options}}
-    __BRYTHON__.$options.debug = __BRYTHON__.debug = options.debug
+    __BRYTHON__.debug = options.debug
 
+    // If options has an attribute "open", it will be used by the built-in
+    // function open() - see py_builtin_functions.js
     if (options.open !== undefined) {__BRYTHON__.builtins.$open = options.open}
-    __BRYTHON__.builtins.$CORS=false        // Cross-origin resource sharing
+
+    // Cross-origin resource sharing
+    __BRYTHON__.builtins.$CORS=false 
     if (options.CORS !== undefined) {__BRYTHON__.builtins.$CORS = options.CORS}
+
     __BRYTHON__.$options=options
+
+    // Stacks for exceptions and function calls, used for exception handling
     __BRYTHON__.exception_stack = []
     __BRYTHON__.call_stack = []
-    __BRYTHON__.scope = {}
-    __BRYTHON__.events = __BRYTHON__.builtins.dict() // maps $brython_id of DOM elements to events
+    
+    // Maps a Python block (module, function, class) to a Javascript object
+    // mapping the names defined in this block to their value
+    __BRYTHON__.vars = {}
+
     if(options.py_tag===undefined){options.py_tag="script"}
     
     var $elts = document.getElementsByTagName(options.py_tag)
     var $scripts = document.getElementsByTagName('script')
     
+    // URL of the script where function brython() is called
     var $href = window.location.href
     var $href_elts = $href.split('/')
     $href_elts.pop()
-    var $script_path = $href_elts.join('/')
+    
+    // URL of the directory where the script stands
+    var $script_dir = $href_elts.join('/')
 
+    // List of URLs where imported modules should be searched
     __BRYTHON__.path = []
+    // A list can be provided as attribute of options
     if (options.pythonpath!==undefined) {
        __BRYTHON__.path = options.pythonpath
     }
-    // allow user to specify the re module they want to use as a default
-    // valid values are 'pyre' for pythons re module and 
+    // Allow user to specify the re module they want to use as a default
+    // Valid values are 'pyre' for pythons re module and 
     // 'jsre' for brythons customized re module
-    // default is for brython to guess which to use by looking at 
+    // Default is for brython to guess which to use by looking at 
     // complexity of the re pattern
     if (options.re_module !==undefined) {
        if (options.re_module == 'pyre' || options.re_module=='jsre') {
           __BRYTHON__.$options.re=options.re
        }
     }
-    if (!(__BRYTHON__.path.indexOf($script_path) > -1)) {
-       __BRYTHON__.path.push($script_path)
+
+    // Current script directory inserted in path for imports
+    if (!(__BRYTHON__.path.indexOf($script_dir) > -1)) {
+       __BRYTHON__.path.push($script_dir)
     }
 
-    // get path of brython.js or py2js to determine brython_path
-    // it will be used for imports
+    // Get path of brython.js or py2js.js or brython_dist.js to determine 
+    // brython_path, the url of the directory where this script stands
+    // It will be used for imports :
+    // - the subfolder <brython_path>/libs is used for Javascript modules
+    // - <brython_path>/Lib is used for Python modules in the standard library
+    // - <brython_path>/Lib/site-packages is used for 3rd party modules
+    //   or packages
 
     for(var $i=0;$i<$scripts.length;$i++){
         var $elt = $scripts[$i]
@@ -4290,11 +4326,13 @@ function brython(options){
         }
     }
 
-    // get all scripts with type = text/python and run them
+    // Get all scripts with type = text/python or text/python3 and run them
     
     for(var $i=0;$i<$elts.length;$i++){
         var $elt = $elts[$i]
         if($elt.type=="text/python"||$elt.type==="text/python3"){
+        
+            // Get Python source code
             var $src = null
             if($elt.src){ 
                 // format <script type="text/python" src="python_script.py">
@@ -4322,33 +4360,45 @@ function brython(options){
                     __BRYTHON__.path.splice(0,0,$src_path)
                 }
             }else{
+                // Get source code inside the script element
                 var $src = ($elt.innerText || $elt.textContent)
                 __BRYTHON__.$py_module_path['__main__'] = $href
             }
 
             try{
+                // Conversion of Python source code to Javascript
                 var $root = __BRYTHON__.py2js($src,'__main__')
                 var $js = $root.to_js()
                 if(__BRYTHON__.debug>1){console.log($js)}
+
+                // Run resulting Javascript
                 eval($js)
+
                 var _mod = $globals
                 _mod.__class__ = __BRYTHON__.$ModuleDict
                 _mod.__name__ = '__main__'
                 _mod.__file__ = __BRYTHON__.$py_module_path['__main__']
                 __BRYTHON__.imported['__main__'] = _mod
+
             }catch($err){
+
                 console.log('PY2JS '+$err)
                 for(var attr in $err){
                     console.log(attr+' : '+$err[attr])
                 }
                 console.log('line info '+__BRYTHON__.line_info)
-                if($err.py_error===undefined){$err = __BRYTHON__.builtins.RuntimeError($err+'')}
-                var $trace = $err.__name__+': '+$err.message
-                //if($err.__name__=='SyntaxError'||$err.__name__==='IndentationError'){
-                    $trace += '\n'+$err.info
-                //}
+                
+                // If the error was not caught by the Python runtime, build an
+                // instance of a Python exception
+                if($err.py_error===undefined){
+                    $err = __BRYTHON__.builtins.RuntimeError($err+'')
+                }
+
+                // Print the error traceback on the standard error stream                
+                var $trace = $err.__name__+': '+$err.message+'\n'+$err.info
                 getattr(__BRYTHON__.stderr,'write')($trace)
-                //$err.message += '\n'+$err.info
+                
+                // Throw the error to stop execution
                 throw $err
             }
         }
@@ -4361,7 +4411,7 @@ __BRYTHON__.$NodeJSCtx = $NodeJSCtx
 // in case the name 'brython' is used in a Javascript library,
 // we can use __BRYTHON__.brython
 
-__BRYTHON__.brython = brython 
+__BRYTHON__.brython = brython
                               
 })()
 var brython = __BRYTHON__.brython
