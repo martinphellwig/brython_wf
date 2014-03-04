@@ -40,6 +40,7 @@ function $Tag(tagName,args){
                         // option.selected=false sets it to true :-)
                         try{
                             var arg = $arg.name.toLowerCase()
+                            arg = arg.replace(/_/g,'-')
                             obj.elt.setAttribute(arg,$arg.value)
                             if(arg=="class"){ // for IE
                                 obj.elt.setAttribute("className",$arg.value)
