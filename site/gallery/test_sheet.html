@@ -15,13 +15,13 @@ from browser.local_storage import storage
 from browser.html import *
 
 def on_complete(req):
-    log(req.text)
+    print(req.text)
 
 def update(ev):
     elt = ev.target
     print('store',ev.target.id)
     storage[elt.id]=elt.value
-    log(storage[elt.id])
+    print(storage[elt.id])
 
 nb_cols = 3
 nb_lines = 5
