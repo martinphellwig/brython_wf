@@ -145,7 +145,7 @@ $B.$list_comp = function(){
     var $root = $B.py2js($py,$mod_name,$B.line_info)
     $root.caller = $B.line_info
     var $js = $root.to_js()
-    $B.scope[$mod_name].__dict__ = $env
+    $B.vars[$mod_name] = $env
     try{
     eval($js)
     }catch(err){throw $B.exception(err)}
@@ -180,7 +180,7 @@ $B.$gen_expr = function(){ // generator expresssion
     var $root = $B.py2js($py,$mod_name,$B.line_info)
     $root.caller = $B.line_info
     var $js = $root.to_js()
-    $B.scope[$mod_name].__dict__=$env
+    $B.vars[$mod_name] = $env
     eval($js)
     var $res1 = eval($res)
     var $GenExprDict = {
@@ -222,7 +222,7 @@ $B.$dict_comp = function(){ // dictionary comprehension
     var $root = $B.py2js($py,$mod_name,$B.line_info)
     $root.caller = $B.line_info
     var $js = $root.to_js()
-    $B.scope[$mod_name].__dict__ = $env
+    $B.vars[$mod_name] = $env
     eval($js)
     return eval($res)
 }
