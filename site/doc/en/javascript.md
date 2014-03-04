@@ -32,7 +32,7 @@ It defines two classes :
 
 > <code>JSConstructor(_jsconstr_)</code> returns a Brython object. This object is callable ; it returns an instance of `JSObject` representing the Javascript obtained by passing to the constructor *jsconstr* the arguments converted as indicated in the table above
 
-Exemples
+Examples
 --------
 Using `JSObject` with the Javascript library jQuery
 
