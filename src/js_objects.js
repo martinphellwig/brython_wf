@@ -130,7 +130,9 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
                         // Python dictionaries are transformed into a Javascript object
                         // whose attributes are the dictionary keys
                         var jsobj = {}
-                        for(var i=0;i<arg.$keys.length;i++){jsobj[arg.$keys[i]]=arg.$values[i].js || arg.$values[i]}
+                        for(var j=0;j<arg.$keys.length;j++){
+                            jsobj[arg.$keys[j]]=arg.$values[j].js || arg.$values[j]
+                        }
                         args.push(jsobj)
                     }else if(arg && arg.__class__===$B.builtins.float.$dict){
                         // Python floats are converted to the underlying value
