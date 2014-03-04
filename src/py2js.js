@@ -4289,7 +4289,6 @@ function brython(options){
             }
         }
     }
-    console.log('path '+__BRYTHON__.path)
 
     // get all scripts with type = text/python and run them
     

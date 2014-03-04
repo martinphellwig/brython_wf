@@ -3698,8 +3698,12 @@ if($elt.src.length===$bs.length ||
 $elt.src.charAt($elt.src.length-$bs.length-1)=='/'){
 var $path=$elt.src.substr(0,$elt.src.length-$bs.length)
 __BRYTHON__.brython_path=$path
-if(!(__BRYTHON__.path.indexOf($path+'Lib')> -1)){
-__BRYTHON__.path.push($path+'Lib')
+var subpaths=['Lib','Lib/site-packages']
+for(var j=0;j<subpaths.length;j++){
+var subpath=$path+subpaths[j]
+if(!(__BRYTHON__.path.indexOf(subpath)> -1)){
+__BRYTHON__.path.push(subpath)
+}
 }
 break
 }
@@ -6356,7 +6360,9 @@ args.push(arg.js)
 args.push(arg.elt)
 }else if(arg && arg.__class__===$B.builtins.dict.$dict){
 var jsobj={}
-for(var i=0;i<arg.$keys.length;i++){jsobj[arg.$keys[i]]=arg.$values[i].js || arg.$values[i]}
+for(var j=0;j<arg.$keys.length;j++){
+jsobj[arg.$keys[j]]=arg.$values[j].js || arg.$values[j]
+}
 args.push(jsobj)
 }else if(arg && arg.__class__===$B.builtins.float.$dict){
 args.push(arg.value)
