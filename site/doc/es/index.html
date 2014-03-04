@@ -17,6 +17,7 @@ import time
 
 def load(url,target):
     # fake query string to bypass browser cache
+    t0 = time.time()
     qs = '?foo=%s' %time.time()
     try:
         mk,scripts = markdown.mark(open(url+qs).read())
@@ -24,13 +25,16 @@ def load(url,target):
         doc[target].html = "Page %s not found" %url
         return False
     doc[target].html = mk
+    t1 = time.time()
+    print('markdown done in %s' %(t1-t0))
     for script in scripts:
         exec(script,globals())
+    print('exec scripts in %s' %(time.time()-t1))
     return False
 
 # put in global namespace, for inline callbacks
 window.load = load
-
+    
 language = "es"
 </script>
 
@@ -50,14 +54,22 @@ language = "es"
 
 <h4>Interfaz del navegador</h4>
 <div style="padding-left:10px;">
-<a class="navig" href="#" onClick="load('create.md','content')">Creando un documento</a>
+<a class="navig" href="#" onClick="load('dom_api.md','content')">Introducción - DOM API</a>
+<br><a class="navig" href="#" onClick="load('create.md','content')">Creando un documento</a>
 <br><a class="navig" href="#" onClick="load('access.md','content')">Accediendo a los elementos</a>
 <br><a class="navig" href="#" onClick="load('attributes.md','content')">Atributos y métodos</a>
+<br>
 <br><a class="navig" href="#" onClick="load('events.md','content')">Eventos</a>
-<br><a class="navig" href="#" onClick="load('query.md','content')">Query</a>
+<br><a class="navig" href="#" onClick="load('mouse_events.md','content')">Eventos del ratón</a>
+<br><a class="navig" href="#" onClick="load('keyboard_events.md','content')">Eventos del teclado</a>
+<br><a class="navig" href="#" onClick="load('focus_events.md','content')">Eventos de foco</a>
+<br><a class="navig" href="#" onClick="load('drag_events.md','content')">Eventos de arrastre</a>
+<br>
+<br><a class="navig" href="#" onClick="load('query.md','content')">Query string</a>
 <br><a class="navig" href="#" onClick="load('jsobjects.md','content')">Usando objetos y librerías Javascript</a>
+</div>
 
-<h4><a class="navig" href="#" onClick="load('browser.md','content')">Paquete `browser`</a></h4>
+<h4><a class="navig" href="#" onClick="load('browser.md','content')">El módulo integrado `browser`</a></h4>
 <div style="padding-left:10px;">
 <a class="navig" href="#" onClick="load('ajax.md','content')">browser.ajax</a>
 <br><a class="navig" href="#" onClick="load('html.md','content')">browser.html</a>
@@ -67,23 +79,29 @@ language = "es"
 <br><a class="navig" href="#" onClick="load('timer.md','content')">browser.timer</a>
 <br><a class="navig" href="#" onClick="load('websockets.md','content')">browser.websocket</a>
 </div>
+
+<h4>Otros módulos integrados</h4>
+<div style="padding-left:10px;">
+<a class="navig" href="#" onClick="load('javascript.md','content')">javascript</a>
+</div>
+
 <h4>Trabajando con Brython</h4>
 <div style="padding-left:10px;">
 <a class="navig" href="#" onClick="load('dev_env.md','content')">Instalando el entorno de desarrollo</a>
-<br><a class="navig" href="#" onClick="load('test.md','content')">Probando y depurando</a>
+<br><a class="navig" href="#" onClick="load('test.md','content')">Testing y depuración</a>
 <br><a class="navig" href="#" onClick="load('deploy.md','content')">Desplegando una aplicación</a></div>
 
 <h4>Cookbook</h4>
 <div style="padding-left:10px;">
-<a class="navig" href="#" onClick="load('cookbook/hello_world.md','content')">Hola mundo !</a>
+<a class="navig" href="#" onClick="load('cookbook/hello_world.md','content')">Hola Mundo !</a>
 <br><a class="navig" href="#" onClick="load('cookbook/content_in_div.md','content')">Insertar contenido en un elemento</a>
 <br><a class="navig" href="#" onClick="load('cookbook/basic_markup.md','content')">Marcado HTML (bold,italic...)</a>
 <br><a class="navig" href="#" onClick="load('cookbook/table.md','content')">Tabla HTML</a>
-<br><a class="navig" href="#" onClick="load('cookbook/validate_form.md','content')">Validando un formulario</a>
-<br><a class="navig" href="#" onClick="load('cookbook/drag_drop.md','content')">Drag and drop</a>
-<br><a class="navig" href="#" onClick="load('cookbook/get_content.md','content')">Obteniendo el contenido de un elemento</a>
-<br><a class="navig" href="#" onClick="load('cookbook/read_file.md','content')">Leyendo el contenido de un fichero</a>
-<br><a class="navig" href="#" onClick="load('cookbook/local_storage.md','content')">Almacenando objetos de forma local</a>
+<br><a class="navig" href="#" onClick="load('cookbook/validate_form.md','content')">Validar un formulario</a>
+<br><a class="navig" href="#" onClick="load('cookbook/drag_drop.md','content')">Arrastrar y soltar</a>
+<br><a class="navig" href="#" onClick="load('cookbook/get_content.md','content')">Obtener el contenido de un elemento</a>
+<br><a class="navig" href="#" onClick="load('cookbook/read_file.md','content')">Leer el contenido de un fichero</a>
+<br><a class="navig" href="#" onClick="load('cookbook/local_storage.md','content')">Almnacenar objetos localmente</a>
 <br><a class="navig" href="#" onClick="load('cookbook/read_text_from_imagemap.md','content')">Ejemplo de onmouseover</a>
 </div>
 
