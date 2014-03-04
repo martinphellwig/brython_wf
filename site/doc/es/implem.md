@@ -60,7 +60,7 @@ _float_ es una función Javascript definida en __py\_builtin\_functions.js__</td
 <td>`x+y`</td>
 <td>`getattr(x,"__add__")(y)`
 <td>lo mismo para todos los operadores
-<br>necesario para implementas operaciones como 2 * "a"</td>
+<br>necesario para implementar operaciones como 2 * "a"</td>
 </td>
 </tr>
 
