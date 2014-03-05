@@ -9383,7 +9383,7 @@ return $B.$JS2Py(res)
 throw __builtins__.AttributeError("object DOMEvent has no attribute '"+attr+"'")
 }
 }
-var $DOMEvent=__BRYTHON__.$DOMEvent=function(ev){
+var $DOMEvent=__BRYTHON__.DOMEvent=function(ev){
 ev.__class__=$DOMEventDict
 if(ev.preventDefault===undefined){ev.preventDefault=function(){ev.returnValue=false}}
 if(ev.stopPropagation===undefined){ev.stopPropagation=function(){ev.cancelBubble=true}}
@@ -9394,6 +9394,7 @@ return ev
 }
 $DOMEvent.__class__=__BRYTHON__.$factory
 $DOMEvent.$dict=$DOMEventDict
+$DOMEventDict.$factory=$DOMEvent
 var $ClipboardDict={
 __class__:__BRYTHON__.$type,
 __name__:'Clipboard'
