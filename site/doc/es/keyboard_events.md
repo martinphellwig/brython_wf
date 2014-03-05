@@ -43,7 +43,7 @@ Para los eventos del teclado, la instancia `DOMEvent` posee los siguientes atrib
 <td>
 #### Ejemplo
 
-Introduce testo en el campo de más abajo pulsando y sin pulsar la tecla Alt
+Introduce texto en el campo de más abajo pulsando y sin pulsar la tecla Alt
 <p><input id="altKey" value=""></input>&nbsp;<span id="traceAltKey">&nbsp;</span>
 
 #### Código
