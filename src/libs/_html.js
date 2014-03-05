@@ -4,7 +4,9 @@ var $module = (function($B){
 var __builtins__ = $B.builtins
 var $TagSumDict = $B.$TagSum.$dict
 
-for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
+for(var $py_builtin in __builtins__){
+    eval("var "+$py_builtin+"=__builtins__[$py_builtin]")
+}
 
 function $Tag(tagName,args){
     var obj = $B.$DOMNode(document.createElement(tagName))
@@ -23,7 +25,7 @@ function $Tag(tagName,args){
                 }
             } else { // argument is another DOMNode instance
                 try{obj.elt.appendChild($first.elt)}
-                catch(err){console.log('erreur '+err);throw ValueError('wrong element '+$first)}
+                catch(err){throw ValueError('wrong element '+$first)}
             }
         }
         // attributes
@@ -31,8 +33,12 @@ function $Tag(tagName,args){
             // keyword arguments
             var $arg = args[$i]
             if($arg && $arg.__class__===$B.$KwDict){
-                if($arg.name.toLowerCase().substr(0,2)==="on"){ // events
-                    eval('$B.DOMNode.bind(obj,"'+$arg.name.toLowerCase().substr(2)+'",function(){'+$arg.value+'})')
+                if($arg.name.toLowerCase().substr(0,2)==="on"){ 
+                    // Event binding passed as argument "onclick", "onfocus"...
+                    // Better use method bind of DOMNode objects
+                    var js = '$B.DOMNode.bind(obj,"'
+                    js += $arg.name.toLowerCase().substr(2)
+                    eval(js+'",function(){'+$arg.value+'})')
                 }else if($arg.name.toLowerCase()=="style"){
                     $B.DOMNode.set_style(obj,$arg.value)
                 } else {
@@ -40,13 +46,11 @@ function $Tag(tagName,args){
                         // option.selected=false sets it to true :-)
                         try{
                             var arg = $arg.name.toLowerCase()
-                            arg = arg.replace(/_/g,'-')
                             obj.elt.setAttribute(arg,$arg.value)
                             if(arg=="class"){ // for IE
                                 obj.elt.setAttribute("className",$arg.value)
                             }
                         }catch(err){
-                            console.log('erreur '+err)
                             throw ValueError("can't set attribute "+$arg.name)
                         }
                     }
