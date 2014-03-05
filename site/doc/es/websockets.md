@@ -62,11 +62,11 @@ Ejemplo :
     
     def on_message(evt):
         # message reeived from server
-        alert("Message reçu : %s" %evt.data)
+        alert("Mensaje recibido : %s" %evt.data)
     
     def on_close(evt):
         # websocket is closed
-        alert("Connection is closed")
+        alert("Se ha cerrado la conexión")
         doc['openbtn'].disabled = False
         doc['closebtn'].disabled = True
         doc['send_button'].disabled = True
@@ -99,9 +99,9 @@ Ejemplo :
 exec(doc['py_source'].text)
 </script>
 
-<button id="openbtn" onclick="_open()">Open connection</button>
-<br><input id="data"><button id="send_button" disabled onclick="send()">Send</button>
-<p><button id="closebtn" disabled onclick="close_connection()">Close connection</button>
+<button id="openbtn" onclick="_open()">Abrir conexión</button>
+<br><input id="data"><button id="send_button" disabled onclick="send()">Enviar</button>
+<p><button id="closebtn" disabled onclick="close_connection()">Cerrar conexión</button>
 </td>
 </tr>
 </table>
