@@ -23,9 +23,19 @@ The syntax to create an object (e.g. a hyperlink) is :
 
 > *attributes* is a sequence of keywords corresponding to the [attributes](http://www.w3.org/TR/html5-author/index.html#attributes-1) of the HTML tag. These attributes must be provided as Javascript syntax, not CSS (e.g., *backgroundColor* instead of *background-color*)
 
+If an attribute is not a valid Python name (eg _data-type_) it can't be 
+passed as argument ; the method `setAttribute` must be used :
+
+>    form = html.FORM()
+>    form.setAttribute("data-type", "confirm")
+
 For the *style* attribute, the value must be a dictionary :
 
 >    d = html.DIV('Brython', style={'height':100, 'width':200})
+
+or
+
+>    d = html.DIV('Brython', style=dict(height=100, width=200))
 
 To avoid conflicts with Python keywords, attributes such as *class* or *id* must be capitalized :
 
