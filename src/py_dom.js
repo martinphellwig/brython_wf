@@ -148,7 +148,7 @@ $DOMEventDict.__getattribute__ = function(self,attr){
     }
 }
 
-var $DOMEvent = __BRYTHON__.$DOMEvent = function(ev){
+var $DOMEvent = __BRYTHON__.DOMEvent = function(ev){
     ev.__class__ = $DOMEventDict
     if(ev.preventDefault===undefined){ev.preventDefault = function(){ev.returnValue=false}}
     if(ev.stopPropagation===undefined){ev.stopPropagation = function(){ev.cancelBubble=true}}
@@ -159,6 +159,7 @@ var $DOMEvent = __BRYTHON__.$DOMEvent = function(ev){
 }
 $DOMEvent.__class__ = __BRYTHON__.$factory
 $DOMEvent.$dict = $DOMEventDict
+$DOMEventDict.$factory = $DOMEvent
 
 var $ClipboardDict = {
     __class__:__BRYTHON__.$type,
@@ -1246,5 +1247,6 @@ win.get_postMessage = function(msg,targetOrigin){
 
 $B.DOMNode = DOMNode
 $B.$DOMNode = $DOMNode
+
 $B.win = win
 })(__BRYTHON__)
