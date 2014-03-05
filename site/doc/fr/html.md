@@ -9,7 +9,7 @@ Les classes définies sont :
 
 > En suivant [ce lien](http://www.w3.org/TR/html4/index/elements.html), vous
 > trouverez la liste des balises HTML4 ainsi que leur documentation. Certaines
-> balises listées ci-dessus sont passées obsolètes en HTML4.01.
+> balises listées ci-dessus sont devenues obsolètes en HTML4.01.
 
 - les balises HTML5 : `ARTICLE, ASIDE, AUDIO, BDI, CANVAS, COMMAND, DATALIST, DETAILS, DIALOG, EMBED, FIGCAPTION, FIGURE, FOOTER, HEADER, HGROUP, KEYGEN, MARK, METER, NAV, OUTPUT, PROGRESS, RP, RT, RUBY, SECTION, SOURCE, SUMMARY, TIME, TRACK, VIDEO, WBR`
 
@@ -30,9 +30,20 @@ La syntaxe pour créer un objet (par exemple un lien hypertexte) est :
 > balise HTML. Ces attributs doivent être fournis avec la syntaxe Javascript et
 > non CSS : *backgroundColor* et pas *background-color*.
 
+Si un attribut n'est pas un nom Python valide (par exemple _data-type_) on
+ne peut pas le passer comme paramètre ; il faut utiliser la méthode
+`setAttribute` :
+
+>    form = html.FORM()
+>    form.setAttribute("data-type", "confirm")
+
 Pour l’attribut *style*, la valeur fournie doit être un dictionnaire :
 
 >    d = html.DIV('Brython', style={'height':100, 'width':200})
+
+ou
+
+>    d = html.DIV('Brython', style=dict(height=100, width=200))
 
 Pour éviter les conflits avec les mots-clés de Python, les attributs tels que
 *class* ou *id* doivent être écrits avec une majuscule :
