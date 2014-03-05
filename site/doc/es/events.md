@@ -131,7 +131,9 @@ doc['_target'].bind('click',lambda ev:alert('target : %s ' %ev.target))
 </td>
 </tr>
 
-<tr><td>`timeStamp`
+<tr>
+<td>
+`timeStamp`
 > entero, el tiempo (en milisegundos desde el 1 de ennero de 1970 a las 0h) en el que el evento fue creado
 </td>
 <td>
@@ -142,7 +144,9 @@ doc['_timeStamp'].bind('click',lambda ev:alert('timeStamp : %s ' %ev.timeStamp))
 </td>
 </tr>
 
-<tr><td>`type`
+<tr>
+<td>
+`type`
 > cadena, contiene el tipo del evento
 </td>
 <td>
