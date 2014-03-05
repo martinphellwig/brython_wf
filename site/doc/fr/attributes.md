@@ -37,8 +37,8 @@ Comme le nom des attributs peut être différent d'un navigateur à l'autre, Bry
 
 Pour ajouter un descendant à un élément, on utilise l'opérateur `<=` (à visualiser comme une flèche vers la gauche, pas comme "inférieur ou égal")
 
->    from browser import doc
->    doc['zone'] <= INPUT(Id="data")
+>    from browser import doc, html
+>    doc['zone'] <= html.INPUT(Id="data")
 
 On peut itérer sur les enfants d'un élément par la syntaxe classique Python : 
 >    for child in element:
@@ -53,3 +53,4 @@ La collection `options` associée à un objet SELECT a l'interface d'une liste P
  - insertion d'une option à la position _index_ : `elt.options.insert(index,option)`
  - insertion d'une option en fin de liste : `elt.options.append(option)`
  - suppression d'une option : `del elt.options[index]`
+
