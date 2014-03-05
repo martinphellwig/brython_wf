@@ -37,8 +37,8 @@ Since their name may vary depending on the browser, Brython defines additional a
 
 To add a child to an element, use the operator `<=` (think of it as a left arrow for assignment)
 
->    from browser import doc
->    doc['zone'] <= INPUT(Id="data")
+>    from browser import doc, html
+>    doc['zone'] <= html.INPUT(Id="data")
 
 Iterating on an element's children can be done using the usual Python syntax : 
 >    for child in element:
@@ -54,3 +54,4 @@ The `options` collection associated with a SELECT object has an interface of a P
  - insertion of an option at the _index_ position : `elt.options.insert(index,option)`
  - insertion of an option at the end of the list : `elt.options.append(option)`
  - deleting an option : `del elt.options[index]`
+

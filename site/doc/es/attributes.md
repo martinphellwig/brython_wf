@@ -34,8 +34,8 @@ Debido a que sus nombres pueden variar dependiendo del navegador, Brython define
 
 Para añadir un hijo a un elemento se usa el operador `<=` (piensa en ello como una flecha que indica asignación)
 
->    from browser import doc
->    doc['zone'] <= INPUT(Id="data")
+>    from browser import doc, html
+>    doc['zone'] <= html.INPUT(Id="data")
 
 La iteración sobre los hijos de un elemento se puede hacer usando la sintaxis Python habitual : 
 
