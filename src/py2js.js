@@ -406,20 +406,40 @@ function $AssignCtx(context){
                 left=left.tree[0]
             }
             var right = this.tree[1]
-            if(left.type==='attribute'){ // assign to attribute
-                left.func = 'setattr'
-                var res = left.to_js()
-                left.func = 'getattr'
-                res = res.substr(0,res.length-1) // remove trailing )
-                res += ','+right.to_js()+');None;'
-                return res
-            }else if(left.type==='sub'){ // assign to item
-                left.func = 'setitem' // just for to_js()
-                var res = left.to_js()
-                res = res.substr(0,res.length-1) // remove trailing )
-                left.func = 'getitem' // restore default function
-                res += ','+right.to_js()+');None;'
-                return res
+            if(['attribute', 'sub'].indexOf(left.type)>-1){
+                // In case of an assignment to an attribute or a subscript, we
+                // use setattr() and setitem
+                // If the right part is a call to exec or eval, it must be
+                // evaluated and stored in a temporary variable, before
+                // setting the attribute to this variable
+                // This is because the code generated for exec() or eval()
+                // can't be inserted as the third parameter of a function
+                var res='',rvar=''
+                if(right.type=='expr' && right.tree[0]!==undefined &&
+                    right.tree[0].type=='call' &&
+                    ['eval','exec'].indexOf(right.tree[0].func.value)>-1){
+                    console.log('exec')
+                    res += '$temp'+$loop_num+'='+right.to_js()+';\n'
+                    rvar = '$temp'+$loop_num
+                    $loop_num++
+                }else{
+                    rvar = right.to_js()
+                }
+                if(left.type==='attribute'){ // assign to attribute
+                    left.func = 'setattr'
+                    res += left.to_js()
+                    left.func = 'getattr'
+                    res = res.substr(0,res.length-1) // remove trailing )
+                    res += ','+rvar+');None;'
+                    return res
+                }else if(left.type==='sub'){ // assign to item
+                    left.func = 'setitem' // just for to_js()
+                    res += left.to_js()
+                    res = res.substr(0,res.length-1) // remove trailing )
+                    left.func = 'getitem' // restore default function
+                    res += ','+rvar+');None;'
+                    return res
+                }
             }
             var scope = $get_scope(this)
             if(scope.ntype==="module"){
@@ -594,22 +614,22 @@ function $CallCtx(context){
             // replace by the result of an anonymous function with a try/except clause
             var res = '(function(){try{'
             // insert globals and locals in the function
-            res += '\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
-            res += '\nfor(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
+            res += '\n    for(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};\n'
+            res += '\n    for(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};\n'
             // if an argument namespace is passed, insert it
             if(ns!=='' && ns!=='globals'){
-                res += '\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
-                res += 'eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
+                res += '\n    for(var $i=0;$i<'+ns+'.$keys.length;$i++){\n'
+                res += '      eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")\n};\n'
             }
             // execute the Python code and return its result
             // the namespace built inside the function will be in
             // __BRYTHON__.scope[_name].__dict__
-            res += 'var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
-            res += 'if(__BRYTHON__.debug>1){console.log($jscode)};'
-            res += 'var $res = eval($jscode);'
-            res += 'if($res===undefined){return None};return $res'
-            res += '}catch(err){throw __BRYTHON__.exception(err)}'
-            res += '})()'
+            res += '    var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();\n'
+            res += '    if(__BRYTHON__.debug>1){console.log($jscode)};\n'
+            res += '    var $res = eval($jscode);\n'
+            res += '    if($res===undefined){return None};return $res'
+            res += '\n}\ncatch(err){throw __BRYTHON__.exception(err)}'
+            res += '})()\n'
             if(ns==='globals'){
                 // copy the execution namespace in module and global namespace
                 res += ';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
