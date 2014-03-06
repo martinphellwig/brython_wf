@@ -608,4 +608,9 @@ assert '{} {} {}'.format(1, 2, 3) == '1 2 3'
 atuple = ()
 assert not type(atuple) != type(atuple), "type of tuple is different of itself"
 
+# bug in assignment of attributes or subscriptions to exec() or eval()
+x={}
+x['a'] = eval("2")
+assert x=={'a':2}
+
 print('passed all tests')

@@ -452,20 +452,33 @@ if(left.type==='expr'){
 left=left.tree[0]
 }
 var right=this.tree[1]
+if(['attribute', 'sub'].indexOf(left.type)>-1){
+var res='',rvar=''
+if(right.type=='expr' && right.tree[0]!==undefined &&
+right.tree[0].type=='call' &&
+['eval','exec'].indexOf(right.tree[0].func.value)>-1){
+console.log('exec')
+res +='$temp'+$loop_num+'='+right.to_js()+';\n'
+rvar='$temp'+$loop_num
+$loop_num++
+}else{
+rvar=right.to_js()
+}
 if(left.type==='attribute'){
 left.func='setattr'
-var res=left.to_js()
+res +=left.to_js()
 left.func='getattr'
 res=res.substr(0,res.length-1)
-res +=','+right.to_js()+');None;'
+res +=','+rvar+');None;'
 return res
 }else if(left.type==='sub'){
 left.func='setitem' 
-var res=left.to_js()
+res +=left.to_js()
 res=res.substr(0,res.length-1)
 left.func='getitem' 
-res +=','+right.to_js()+');None;'
+res +=','+rvar+');None;'
 return res
+}
 }
 var scope=$get_scope(this)
 if(scope.ntype==="module"){
@@ -602,18 +615,18 @@ ns=arg2.value
 }
 __BRYTHON__.$py_module_path[_name]=__BRYTHON__.$py_module_path[module]
 var res='(function(){try{'
-res +='\nfor(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};'
-res +='\nfor(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};'
+res +='\n    for(var $attr in $globals){eval("var "+$attr+"=$globals[$attr]")};\n'
+res +='\n    for(var $attr in $locals){eval("var "+$attr+"=$locals[$attr]")};\n'
 if(ns!=='' && ns!=='globals'){
-res +='\nfor(var $i=0;$i<'+ns+'.$keys.length;$i++){'
-res +='eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")};'
+res +='\n    for(var $i=0;$i<'+ns+'.$keys.length;$i++){\n'
+res +='      eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")\n};\n'
 }
-res +='var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();'
-res +='if(__BRYTHON__.debug>1){console.log($jscode)};'
-res +='var $res = eval($jscode);'
-res +='if($res===undefined){return None};return $res'
-res +='}catch(err){throw __BRYTHON__.exception(err)}'
-res +='})()'
+res +='    var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();\n'
+res +='    if(__BRYTHON__.debug>1){console.log($jscode)};\n'
+res +='    var $res = eval($jscode);\n'
+res +='    if($res===undefined){return None};return $res'
+res +='\n}\ncatch(err){throw __BRYTHON__.exception(err)}'
+res +='})()\n'
 if(ns==='globals'){
 res +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
 res +='{$globals[$attr]=__BRYTHON__.vars["'+module+'"][$attr]='
