@@ -24,11 +24,11 @@ Este objeto tem os seguintes atributos e métodos:
 
 Isso é equivalente a: _req.on_evt = func_
 
-`open(`_método, url, async_`)`
+`open(`_method, url, async_`)`
 
- > _método_ é o método HTTP usado para a requisição (normalmente GET
-   ou POST), _url_ é a url a chamar, _async_ é o valor booleano que
-   indica se a chamada é asíncrona ou não
+ > o método _method_ é o método HTTP usado para a requisição
+   (normalmente GET ou POST), _url_ é a url a chamar, _async_ é o
+   valor booleano que indica se a chamada é asíncrona ou não
 
 `readyState` 
 
