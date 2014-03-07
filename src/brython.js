@@ -163,10 +163,12 @@ this.children=[]
 this.add=function(child){
 this.children.push(child)
 child.parent=this
+child.module=this.module
 }
 this.insert=function(pos,child){
 this.children.splice(pos,0,child)
 child.parent=this
+child.module=this.module
 }
 this.toString=function(){return "<object 'Node'>"}
 this.show=function(indent){
@@ -624,25 +626,34 @@ res +='      eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")\n};\n'
 res +='    var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();\n'
 res +='    if(__BRYTHON__.debug>1){console.log($jscode)};\n'
 res +='    var $res = eval($jscode);\n'
-res +='    if($res===undefined){return None};return $res'
+var set_ns=''
+if(ns==='globals'){
+set_ns +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
+set_ns +='{$globals[$attr]=__BRYTHON__.vars["'+module+'"][$attr]='
+set_ns +='__BRYTHON__.vars["'+_name+'"][$attr]};'
+}else if(ns !=''){
+set_ns +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
+set_ns +='{__builtins__.dict.$dict.__setitem__('+ns+',$attr,'
+set_ns +='__BRYTHON__.vars["'+_name+'"][$attr])};' 
+}else{
+set_ns +=';for(var $attr in __BRYTHON__.vars["'+_name+'"]){'
+set_ns +='\nif($attr.search(/[\.]/)>-1){continue}\n'
+set_ns +='eval("var "+$attr+"='
+set_ns +='$globals[$attr]='
+set_ns +='__BRYTHON__.vars[\\"'+module+'\\"][$attr]='
+set_ns +='__BRYTHON__.vars[\\"'+_name+'\\"][$attr]")};'
+}
+res +=set_ns
+res +='\n    if($res===undefined){return None};return $res'
 res +='\n}\ncatch(err){throw __BRYTHON__.exception(err)}'
 res +='})()\n'
-if(ns==='globals'){
-res +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
-res +='{$globals[$attr]=__BRYTHON__.vars["'+module+'"][$attr]='
-res +='__BRYTHON__.vars["'+_name+'"][$attr]}'
-}else if(ns !=''){
-res +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
-res +='{__builtins__.dict.$dict.__setitem__('+ns+',$attr,'
-res +='__BRYTHON__.vars["'+_name+'"][$attr])}' 
-}else{
-res +=';for(var $attr in __BRYTHON__.vars["'+_name+'"]){'
-res +='\nif($attr.search(/[\.]/)>-1){continue}\n'
-res +='eval("var "+$attr+"='
-res +='$globals[$attr]='
-res +='__BRYTHON__.vars[\\"'+module+'\\"][$attr]='
-res +='__BRYTHON__.vars[\\"'+_name+'\\"][$attr]")}'
+var new_node=new $Node('expression')
+new $NodeJSCtx(new_node, set_ns)
+var node=$get_node(this)
+for(var i=0;i<node.parent.children.length;i++){
+if(node===node.parent.children[i]){break}
 }
+node.parent.insert(i+1,new_node)
 return res
 }else if(this.func!==undefined && this.func.value==='classmethod'){
 return 'classmethod($class,'+$to_js(this.tree)+')'
@@ -872,7 +883,7 @@ res +=(scope.ntype==='class' ? '$class.' : '')
 res +=obj.name+tail
 var decor_node=new $Node('expression')
 new $NodeJSCtx(decor_node,res)
-node.parent.children.splice(func_rank+1,0,decor_node)
+node.parent.insert(func_rank+1,decor_node)
 this.decorators=decorators
 }
 this.to_js=function(){
@@ -1017,14 +1028,14 @@ js +=';$locals["'+this.name+'"]='+this.name
 }
 var name_decl=new $Node('expression')
 new $NodeJSCtx(name_decl,js)
-node.parent.children.splice(rank+offset,0,name_decl)
+node.parent.insert(rank+offset,name_decl)
 offset++
 if(scope.ntype==='module'){
 js='$globals["'+this.name+'"]='+this.name
 js +=';'+this.name+".$type='function'"
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
-node.parent.children.splice(rank+offset,0,new_node)
+node.parent.insert(rank+offset,new_node)
 offset++
 }
 var module=$get_module(this)
@@ -1032,18 +1043,18 @@ var prefix=scope.ntype=='class' ? '$class.' : ''
 js=prefix+this.name+'.__module__ = "'+module.module+'"'
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
-node.parent.children.splice(rank+offset,0,new_node)
+node.parent.insert(rank+offset,new_node)
 offset++
 js=prefix+this.name+'.__doc__='+(this.doc_string || 'None')
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
-node.parent.children.splice(rank+offset,0,new_node)
+node.parent.insert(rank+offset,new_node)
 offset++
 js=prefix+this.name+'.__code__= {__class__:__BRYTHON__.$CodeDict}'
 js +=';None;' 
 new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
-node.parent.children.splice(rank+offset,0,new_node)
+node.parent.insert(rank+offset,new_node)
 offset++
 var default_node=new $Node('expression')
 new $NodeJSCtx(default_node,'var $defaults = {'+defs1.join(',')+'}')
@@ -1730,7 +1741,7 @@ this.to_js=function(){
 var ctx_node=this
 while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
 var module=ctx_node.node.module
-var src=document.$py_src[module]
+var src=__BRYTHON__.$py_src[module]
 var qesc=new RegExp('"',"g")
 var args=src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
 var body=src.substring(this.body_start+1,this.body_end).replace(qesc,'\\"')
@@ -1757,10 +1768,8 @@ this.is_comp=function(){
 return['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1
 }
 this.get_src=function(){
-var ctx_node=this
-while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
-var module=ctx_node.node.module
-return document.$py_src[module]
+var module=$get_module(this).module
+return __BRYTHON__.$py_src[module]
 }
 this.to_js=function(){
 if(this.real==='list'){return 'list(['+$to_js(this.tree)+'])'}
@@ -2234,11 +2243,25 @@ i +=$add_line_num(node.children[i],i)
 var elt=node.C.tree[0],offset=1
 var flag=true
 if(node.line_num===undefined){flag=false}
+if(node.module===undefined){
+var nd=node.parent
+while(nd){
+if(nd.module!==undefined){
+node.module=nd.module
+break
+}
+nd=nd.parent
+}
+if(node.module===undefined){
+console.log('module undef, node '+node.C);flag=false
+}
+}
 if(elt.type==='condition' && elt.token==='elif'){flag=false}
 else if(elt.type==='except'){flag=false}
 else if(elt.type==='single_kw'){flag=false}
 if(flag){
 var js='__BRYTHON__.line_info=['+node.line_num+',"'+node.module+'"];'
+if(node.module===undefined){console.log('tiens, module undef !')}
 js +='None;'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
@@ -2510,8 +2533,10 @@ else if($expr_starters.indexOf(token)>-1){
 if(C.has_dstar){$_SyntaxError(C,token)}
 var expr=new $CallArgCtx(C)
 return $transition(expr,token,arguments[2])
-}else if(token===')'){C.end=$pos;return C.parent}
-else if(token==='op'){
+}else if(token===')'){
+C.end=$pos
+return C.parent
+}else if(token==='op'){
 var op=arguments[2]
 if(op==='-'||op==='~'){return new $UnaryCtx(new $ExprCtx(C,'unary',false),op)}
 else if(op==='+'){return C}
@@ -3631,7 +3656,7 @@ var __name__=module
 if(__BRYTHON__.vars[module]===undefined){
 __BRYTHON__.vars[module]={}
 }
-document.$py_src[module]=src
+__BRYTHON__.$py_src[module]=src
 var root=$tokenize(src,module,parent)
 root.transform()
 var js='var $globals = __BRYTHON__.vars["'+module+'"]\nvar $locals = $globals\n'
@@ -3657,7 +3682,7 @@ __BRYTHON__.modules[module]=root
 return root
 }
 function brython(options){
-document.$py_src={}
+__BRYTHON__.$py_src={}
 __BRYTHON__.$py_module_path={}
 __BRYTHON__.path_hooks=[]
 __BRYTHON__.modules={}
@@ -4572,7 +4597,7 @@ else{throw Error('Exception')}
 $B.$syntax_err_line=function(module,pos){
 var pos2line={}
 var lnum=1
-var src=document.$py_src[module]
+var src=__BRYTHON__.$py_src[module]
 var line_pos={1:0}
 for(var i=0;i<src.length;i++){
 pos2line[i]=lnum
@@ -6088,7 +6113,7 @@ call_info=caller
 lib_module=caller[1]
 }
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-var lines=document.$py_src[call_info[1]].split('\n')
+var lines=__BRYTHON__.$py_src[call_info[1]].split('\n')
 err.info +='\n  module '+lib_module+' line '+call_info[0]
 var line=lines[call_info[0]-1]
 while(line && line.charAt(0)==' '){line=line.substr(1)}
@@ -6114,7 +6139,9 @@ err_info=caller
 if(err_info!==last_info){
 var module=err_info[1]
 var line_num=err_info[0]
-var lines=document.$py_src[module].split('\n')
+try{
+var lines=__BRYTHON__.$py_src[module].split('\n')
+}catch(err){console.log('--module '+module);throw err}
 var lib_module=module
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
 err.info +="\n  module "+lib_module+" line "+line_num
@@ -6159,7 +6186,7 @@ var mod_name=$B.line_info[1]
 var lib_module=mod_name
 if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
 var line_num=$B.line_info[0]
-var lines=document.$py_src[mod_name].split('\n')
+var lines=__BRYTHON__.$py_src[mod_name].split('\n')
 js_exc.message +="\n  module '"+lib_module+"' line "+line_num
 js_exc.message +='\n'+lines[line_num-1]
 js_exc.info_in_msg=true
@@ -6620,7 +6647,7 @@ root.children=[]
 var mod_node=new $Node('expression')
 new $NodeJSCtx(mod_node,'var $module=(function()')
 root.insert(0,mod_node)
-mod_node.children=body
+for(var i=0;i<body.length;i++){mod_node.add(body[i])}
 var ret_node=new $Node('expression')
 new $NodeJSCtx(ret_node,'return $globals')
 mod_node.add(ret_node)

@@ -390,6 +390,7 @@ enumerate.$dict = $EnumerateDict
 $EnumerateDict.$factory = enumerate
 
 //eval() (built in function)
+
 //exec() (built in function)
 
 var $FilterDict = {__class__:$B.$type,__name__:'filter'}
@@ -1554,7 +1555,7 @@ var BaseException = function (msg,js_exc){
                 lib_module = caller[1]
             }
             if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
-            var lines = document.$py_src[call_info[1]].split('\n')
+            var lines = __BRYTHON__.$py_src[call_info[1]].split('\n')
             err.info += '\n  module '+lib_module+' line '+call_info[0]
             var line = lines[call_info[0]-1]
             while(line && line.charAt(0)==' '){line=line.substr(1)}
@@ -1582,7 +1583,9 @@ var BaseException = function (msg,js_exc){
         if(err_info!==last_info){
             var module = err_info[1]
             var line_num = err_info[0]
-            var lines = document.$py_src[module].split('\n')
+            try{
+            var lines = __BRYTHON__.$py_src[module].split('\n')
+            }catch(err){console.log('--module '+module);throw err}
             var lib_module = module
             if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
             err.info += "\n  module "+lib_module+" line "+line_num
@@ -1637,7 +1640,7 @@ $B.exception = function(js_exc){
                     var lib_module = mod_name
                     if(lib_module.substr(0,13)==='__main__,exec'){lib_module='__main__'}
                     var line_num = $B.line_info[0]
-                    var lines = document.$py_src[mod_name].split('\n')
+                    var lines = __BRYTHON__.$py_src[mod_name].split('\n')
                     js_exc.message += "\n  module '"+lib_module+"' line "+line_num
                     js_exc.message += '\n'+lines[line_num-1]
                     js_exc.info_in_msg = true

@@ -82,10 +82,12 @@ function $Node(type){
     this.add = function(child){
         this.children.push(child)
         child.parent = this
+        child.module = this.module
     }
     this.insert = function(pos,child){
         this.children.splice(pos,0,child)
         child.parent = this
+        child.module = this.module
     }
     this.toString = function(){return "<object 'Node'>"} 
     this.show = function(indent){
@@ -228,7 +230,6 @@ function $AssignCtx(context){
     context.parent.tree.push(this)
     this.parent = context.parent
     this.tree = [context]
-    
     
     if(context.type=='expr' && context.tree[0].type=='call'){
         $_SyntaxError(context,["can't assign to function call "])
@@ -627,30 +628,46 @@ function $CallCtx(context){
             res += '    var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();\n'
             res += '    if(__BRYTHON__.debug>1){console.log($jscode)};\n'
             res += '    var $res = eval($jscode);\n'
-            res += '    if($res===undefined){return None};return $res'
-            res += '\n}\ncatch(err){throw __BRYTHON__.exception(err)}'
-            res += '})()\n'
+
+            var set_ns = ''
             if(ns==='globals'){
                 // copy the execution namespace in module and global namespace
-                res += ';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
-                res += '{$globals[$attr]=__BRYTHON__.vars["'+module+'"][$attr]='
-                res += '__BRYTHON__.vars["'+_name+'"][$attr]}'
+                set_ns += ';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
+                set_ns += '{$globals[$attr]=__BRYTHON__.vars["'+module+'"][$attr]='
+                set_ns += '__BRYTHON__.vars["'+_name+'"][$attr]};'
             }else if(ns !=''){
                 // use specified namespace
-                res += ';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
-                res += '{__builtins__.dict.$dict.__setitem__('+ns+',$attr,'
-                res += '__BRYTHON__.vars["'+_name+'"][$attr])}'            
+                set_ns += ';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
+                set_ns += '{__builtins__.dict.$dict.__setitem__('+ns+',$attr,'
+                set_ns += '__BRYTHON__.vars["'+_name+'"][$attr])};'         
             }else{
                 // namespace not specified copy the execution namespace in module namespace
-                res += ';for(var $attr in __BRYTHON__.vars["'+_name+'"]){'
+                set_ns += ';for(var $attr in __BRYTHON__.vars["'+_name+'"]){'
                 // check that $attr is a valid identifier
-                res += '\nif($attr.search(/[\.]/)>-1){continue}\n'
-                res += 'eval("var "+$attr+"='
-                res += '$globals[$attr]='
-                res += '__BRYTHON__.vars[\\"'+module+'\\"][$attr]='
-                res += '__BRYTHON__.vars[\\"'+_name+'\\"][$attr]")}'
+                set_ns += '\nif($attr.search(/[\.]/)>-1){continue}\n'
+                set_ns += 'eval("var "+$attr+"='
+                set_ns += '$globals[$attr]='
+                set_ns += '__BRYTHON__.vars[\\"'+module+'\\"][$attr]='
+                set_ns += '__BRYTHON__.vars[\\"'+_name+'\\"][$attr]")};'
             }
+            res += set_ns
+            res += '\n    if($res===undefined){return None};return $res'
+            res += '\n}\ncatch(err){throw __BRYTHON__.exception(err)}'
+            res += '})()\n'
+            
+            // the names defined inside the anonymous function must be visible outside
+            // so we add a node after current one
+            var new_node = new $Node('expression')
+            new $NodeJSCtx(new_node, set_ns)
+            var node = $get_node(this)
+            // get rank of current node
+            for(var i=0;i<node.parent.children.length;i++){
+                if(node===node.parent.children[i]){break}
+            }
+            node.parent.insert(i+1,new_node)
+
             return res
+
         }else if(this.func!==undefined && this.func.value === 'classmethod'){
             return 'classmethod($class,'+$to_js(this.tree)+')'
         }else if(this.func!==undefined && this.func.value ==='locals'){
@@ -964,7 +981,7 @@ function $DecoratorCtx(context){
         res += obj.name+tail
         var decor_node = new $Node('expression')
         new $NodeJSCtx(decor_node,res)
-        node.parent.children.splice(func_rank+1,0,decor_node)
+        node.parent.insert(func_rank+1,decor_node)
         this.decorators = decorators
     }
     this.to_js = function(){
@@ -1141,7 +1158,7 @@ function $DefCtx(context){
         }
         var name_decl = new $Node('expression')
         new $NodeJSCtx(name_decl,js)
-        node.parent.children.splice(rank+offset,0,name_decl)
+        node.parent.insert(rank+offset,name_decl)
         offset++
 
         // if function is defined at module level, add to module scope
@@ -1150,7 +1167,7 @@ function $DefCtx(context){
             js += ';'+this.name+".$type='function'"
             new_node = new $Node('expression')
             new $NodeJSCtx(new_node,js)
-            node.parent.children.splice(rank+offset,0,new_node)
+            node.parent.insert(rank+offset,new_node)
             offset++
         }
         // add attribute __module__
@@ -1160,14 +1177,14 @@ function $DefCtx(context){
         js = prefix+this.name+'.__module__ = "'+module.module+'"'
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
-        node.parent.children.splice(rank+offset,0,new_node)
+        node.parent.insert(rank+offset,new_node)
         offset++
         
         // if doc string, add it as attribute __doc__
         js = prefix+this.name+'.__doc__='+(this.doc_string || 'None')
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
-        node.parent.children.splice(rank+offset,0,new_node)
+        node.parent.insert(rank+offset,new_node)
         offset++
 
         // add attribute __code__
@@ -1175,7 +1192,7 @@ function $DefCtx(context){
         js += ';None;' // end with None for interactive interpreter
         new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
-        node.parent.children.splice(rank+offset,0,new_node)
+        node.parent.insert(rank+offset,new_node)
         offset++
 
         // define default values
@@ -1996,7 +2013,7 @@ function $LambdaCtx(context){
         var ctx_node = this
         while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
         var module = ctx_node.node.module
-        var src = document.$py_src[module]
+        var src = __BRYTHON__.$py_src[module]
         var qesc = new RegExp('"',"g") // to escape double quotes in arguments
 
         var args = src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
@@ -2028,10 +2045,8 @@ function $ListOrTupleCtx(context,real){
         return ['list_comp','gen_expr','dict_or_set_comp'].indexOf(this.real)>-1
     }
     this.get_src = function(){
-        var ctx_node = this
-        while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
-        var module = ctx_node.node.module
-        return document.$py_src[module]
+        var module = $get_module(this).module
+        return __BRYTHON__.$py_src[module]
     }
     this.to_js = function(){
         if(this.real==='list'){return 'list(['+$to_js(this.tree)+'])'}
@@ -2562,12 +2577,26 @@ function $add_line_num(node,rank){
         var flag = true
         // ignore lines added in transform()
         if(node.line_num===undefined){flag=false}
+        if(node.module===undefined){
+            var nd = node.parent
+            while(nd){
+                if(nd.module!==undefined){
+                    node.module = nd.module
+                    break
+                }
+                nd = nd.parent
+            }
+            if(node.module===undefined){
+                console.log('module undef, node '+node.context);flag=false
+            }
+        }
         // don't add line num before try,finally,else,elif
         if(elt.type==='condition' && elt.token==='elif'){flag=false}
         else if(elt.type==='except'){flag=false}
         else if(elt.type==='single_kw'){flag=false}
         if(flag){
             var js = '__BRYTHON__.line_info=['+node.line_num+',"'+node.module+'"];'
+            if(node.module===undefined){console.log('tiens, module undef !')}
             // add a trailing None for interactive mode
             js += 'None;'
             var new_node = new $Node('expression')
@@ -2899,13 +2928,16 @@ function $transition(context,token){
         else{$_SyntaxError(context,token)}
 
     }else if(context.type==='call'){ 
+
         if(token===','){return context}
         else if($expr_starters.indexOf(token)>-1){
             if(context.has_dstar){$_SyntaxError(context,token)}
             var expr = new $CallArgCtx(context)
             return $transition(expr,token,arguments[2])
-        }else if(token===')'){context.end=$pos;return context.parent}
-        else if(token==='op'){
+        }else if(token===')'){
+            context.end=$pos
+            return context.parent
+        }else if(token==='op'){
             var op=arguments[2]
             if(op==='-'||op==='~'){return new $UnaryCtx(new $ExprCtx(context,'unary',false),op)}
             else if(op==='+'){return context}
@@ -4199,7 +4231,7 @@ __BRYTHON__.py2js = function(src,module,parent){
     if(__BRYTHON__.vars[module]===undefined){
         __BRYTHON__.vars[module] = {}
     }
-    document.$py_src[module]=src
+    __BRYTHON__.$py_src[module]=src
     var root = $tokenize(src,module,parent)
     root.transform()
     // add variable $globals
@@ -4231,7 +4263,7 @@ __BRYTHON__.py2js = function(src,module,parent){
 }
 
 function brython(options){
-    document.$py_src = {}
+    __BRYTHON__.$py_src = {}
     
     // Mapping between a module name and its path (url)
     __BRYTHON__.$py_module_path = {}
