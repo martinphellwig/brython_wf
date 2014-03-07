@@ -34,7 +34,7 @@ Reload the page in the browser and open the console (Tools > Web developer > Web
 
 Each of the anchor object has an attribute _text_ ; you can see what this attribute is by changing the last line by
 
-    print(anchor.text for anchor in anchors)
+    print(list(anchor.text for anchor in anchors))
 
 This prints `['7', '8', '9', '÷', '4', '5', '6', '*', '1', '2', '3', '-', '.', '0', '=', '+']` in the console
 
