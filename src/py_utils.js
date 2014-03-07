@@ -355,7 +355,7 @@ $B.$syntax_err_line = function(module,pos) {
     // map position to line number
     var pos2line = {}
     var lnum=1
-    var src = document.$py_src[module]
+    var src = __BRYTHON__.$py_src[module]
     var line_pos = {1:0}
     for(var i=0;i<src.length;i++){
         pos2line[i]=lnum

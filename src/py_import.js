@@ -190,7 +190,7 @@ $B.$import_py_module = function(module,path,module_contents) {
     var mod_node = new $Node('expression')
     new $NodeJSCtx(mod_node,'var $module=(function()')
     root.insert(0,mod_node)
-    mod_node.children = body
+    for(var i=0;i<body.length;i++){mod_node.add(body[i])}
 
     // $globals will be returned when the anonymous function is run
     var ret_node = new $Node('expression')
