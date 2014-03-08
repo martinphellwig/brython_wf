@@ -613,4 +613,7 @@ x={}
 x['a'] = eval("2")
 assert x=={'a':2}
 
+# issue 224
+assert '{0}, {1}, {2}'.format('a', 'b', 'c') == 'a, b, c'
+
 print('passed all tests')
