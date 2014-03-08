@@ -1,58 +1,68 @@
-Keyboard events
-===============
+Eventos do Teclado
+------------------
 
 <script type="text/python">
 from browser import doc, alert
 </script>
 
-Keyboard events are
+Os eventos do teclado são:
 
 <table cellpadding=3 border=1>
 <tr>
 <td>*input*</td>
-<td>triggered when the value of an &lt;input&gt; or &lt;textarea&gt; element is modified, or the content of a `contenteditable` element is modified
+<td>disparado quando o valor de um elemento &lt;input&gt; ou &lt;textarea&gt; é modificado, ou o conteúdo de um elemento `contenteditable` é modificado.
 </td>
 </tr>
 
-<tr>
-<td>*keydown*</td><td>fired when any key on the keyboard is pressed down</td>
-</tr>
+<tr><td>*keydown*</td><td>disparado quando qualquer tecla no teclado é
+pressionada</td></tr>
 
-<tr><td>*keypress*</td><td>a key is pressed down and that key normally produces a character value. For instance, when entering Ctrl+C, the event *keypress* is only fired when the key C is pressed down, whereas *keydown* is fired as soon as the Ctrl key is pressed</td></tr>
+<tr><td>*keypress*</td><td>uma tecla é pressionada e isso normalmente
+produz um caractére. Por exemplo, quando usando Ctrl+C, o evento
+*keypress* só é disparado quando a tecla C é pressionada, enquanto que
+o evento *keydown* é disparado assim que a tecla Ctrl é
+pressionada</td></tr>
 
-<tr><td>*keyup*</td><td>a key is released</td></tr>
+<tr><td>*keyup*</td><td>a tecla é solta</td></tr>
 
 </table>
 
-`DOMEvent` object attributes
-----------------------------
+Atributos do objeto `DOMEvent`
+------------------------------
 
-For keyboard events, the `DOMEvent` instance has the following attributes
+Para eventos do teclado, a instância de `DOMEvent` tem os seguintes
+atributos:
 
 <table border=1 cellpadding=5>
 
 <tr>
 <td>
 `altKey`
-> `True` if the Alt (or Option, on Mac) key was active when the key event was generated
 
-> This attribute is not set for the *input* event
+> `True` se a tecla Alt (ou Option, no Mac) estava ativa quando o
+  evento foi gerado.
 
-> It is usually used with *keypress*, to be able to test if Alt+&lt;key&gt; was entered, or just &lt;key&gt;
+> Este atributo não é definido para o evento *input*.
+
+> É normalmente usado com *keypress*, para poder testar se a
+  combinação Alt+&lt;tecla&gt; foi usada, ou apenas &lt;key&gt; 
+
 </td>
-<td>
-#### Example
 
-Enter text in the field below, with or without pressing the Alt key
+<td>
+#### Exemplo
+
+Digite um texto no campo abaixo, com ou sem pressionar a tecla Alt:
+
 <p><input id="altKey" value=""></input>&nbsp;<span id="traceAltKey">&nbsp;</span>
 
-#### Code
+#### Código
 
 <div id="codeAltKey">
     def altKey(ev):
         doc["traceAltKey"].text = 'altKey : %s ' %ev.altKey
         
-    # the entry field has the id "altKey"
+    # o campo de entrada tem a id "altKey"
     doc['altKey'].bind('keypress', altKey)
 </div>
 </td>
@@ -60,20 +70,21 @@ Enter text in the field below, with or without pressing the Alt key
 
 <td>
 `charCode`
-> The Unicode reference number of the key
+> O número de referência Unicode de uma tecla.
 
-> This attribute is used only by the *keypress* event
+> Este atributo é usado apenas pelo evento *keypress*.
 
-> It is set to a different value if the Shift key is pressed or not
+> É atribuído um valor diferente a ele se a tecla Shift é pressionada ou não.
 </td>
 <td>
-#### Example
+#### Exemplo
 
-Enter text in the entry below. Note that the character can be read by `ch(ev.charCode)`
+Digite um texto no campo de entrada abaixo. Note que o caractére pode
+ser lido por `ch(ev.charCode)`.
 
 <input id="charCode" value=""></input>&nbsp;<span id="traceCharCode">&nbsp;</span>
 
-#### Code
+#### Código
 
 <div id="codeCharCode">
     trace = doc["traceCharCode"]
@@ -89,20 +100,22 @@ Enter text in the entry below. Note that the character can be read by `ch(ev.cha
 <tr>
 <td>
 `ctrlKey`
-> `True` if the Control key was active when the key event was generated
+> `True` se a tecla Ctrl estava ativa quando o evento foi gerado.
 
-> This attribute is not set for the *input* event
+> Este atributo não é definido para o evento *input*.
 
-> It is usually used with *keypress*, to be able to test if Ctrl+&lt;key&gt; was entered, or just &lt;key&gt;</td>
+> É normalmente usado com *keypress*, para poder testar se a
+  combinação Ctrl+&lt;tecla&gt; foi usada, ou apenas &lt;key&gt; 
+
 <td>
-#### Example
+#### Exemplo
 
-Enter text in the field below, with or without pressing the Ctrl key
+Digite um texto no campo abaixo, com ou sem pressionar a tecla Ctrl:
 
 <input id="ctrlKey" value=""></input>
 &nbsp;<span id="traceCtrlKey">&nbsp;</span>
 
-#### Code
+#### Código
 
 <div id="codeCtrlKey">
     trace = doc["traceCtrlKey"]
@@ -113,7 +126,9 @@ Enter text in the field below, with or without pressing the Ctrl key
     
     doc['ctrlKey'].bind('keypress', ctrlKey)
 </div>
-Note that `ev.preventDefault()` is used to avoid the default behaviour of some keyboard shortcuts using the Ctrl key
+
+Note que `ev.preventDefault()` é usado para evitar o comportamento
+padrão de alguns atalhos do navegador que usam a tecla Ctrl.
 
 </td>
 </tr>
@@ -121,25 +136,31 @@ Note that `ev.preventDefault()` is used to avoid the default behaviour of some k
 <tr>
 <td>
 `keyCode`
-> A system and implementation dependent numerical code identifying the unmodified value of the pressed key
 
-> The value doesn't change if the keys Alt, Ctrl or Shift are pressed
+> Um código numérico que depende do sistema e da implementaçao e
+  identifica o valor não modificado da tecla prassionada.
 
-> Note that the result is not the same depending on the handled events *keydown*, *keyup* or *keypress*
+> O valor não muda se as teclas Alt, Ctrl or Shift estiverem
+  pressionadas.
+
+> Note que o resultado não é o mesmo dependendo do evento resolvido:
+  *keydown*, *keyup* or *keypress*
+
 </td>
 <td>
-#### Example
+#### Exemplo
 
-Enter text in the entry fields below. Note that the character can be read by `ch(ev.charCode)` with the *keypress* event
+Digite um texto nos campos abaixo. Note que o caractére pode ser lido
+por `ch(ev.charCode)` com o evento *keypress*.
 
-with *keydown* <input id="keyCodeKeydown" value=""></input>
+com *keydown* <input id="keyCodeKeydown" value=""></input>
 
-<p>with *keypress* <input id="keyCodeKeypress" value=""></input>
+<p>com *keypress* <input id="keyCodeKeypress" value=""></input>
 &nbsp;<span id="traceKeyCode">&nbsp;</span>
 
-<p>with *keyup* <input id="keyCodeKeyup" value=""></input>
+<p>com *keyup* <input id="keyCodeKeyup" value=""></input>
 
-#### Code
+#### Código
 
 <div id="codeKeyCode">
     trace = doc["traceKeyCode"]
@@ -160,21 +181,23 @@ with *keydown* <input id="keyCodeKeydown" value=""></input>
 <tr>
 <td>
 `shiftKey`
-> `True` if the Shift key was active when the key event was generated
+> `True` se a tecla Shift estava ativa quando o evento foi gerado.
 
-> This attribute is not set for the *input* event
+> Este atributo não é definido para o evento *input*.
 
-> It is usually used with *keypress*, to be able to test if Shift+&lt;key&gt; was entered, or just &lt;key&gt;</td>
+> É normalmente usado com *keypress*, para poder testar se a
+  combinação Shift+&lt;tecla&gt; foi usada, ou apenas &lt;key&gt;
+
 </td>
 <td>
-#### Example
+#### Exemplo
 
-Enter text in the field below, with or without pressing the Shift key
+Digite um texto no campo abaixo, com ou sem pressionar a tecla Shift:
 
 <input id="shiftKey" value=""></input>
 &nbsp;<span id="traceShiftKey">&nbsp;</span>
 
-#### Code
+#### Código
 
 <div id="codeShiftKey">
     trace = doc["traceShiftKey"]
@@ -189,14 +212,18 @@ Enter text in the field below, with or without pressing the Shift key
 <tr>
 <td>
 `which`
-> A system and implementation dependent numeric code identifying the unmodified value of the pressed key
+> Um código numérico que depende do sistema e da implementaçao e
+  identifica o valor não modificado da tecla prassionada.
 
-> Note that the result is not the same depending on the handled events *keydown*, *keyup* or *keypress*
+> Note que o resultado não é o mesmo dependendo do evento resolvido:
+  *keydown*, *keyup* or *keypress*
+
 </td>
 <td>
-#### Example
+#### Exemplo
 
-Enter text in the entry below. Note that the character can be read by `chr(ev.which)` for the *keypress* event
+Digite um texto no campo abaixo. Note que o caractére pode ser lido
+por `ch(ev.charCode)` com o evento *keypress*.
 
 
 <table>
@@ -215,7 +242,7 @@ with *keydown* <input id="whichKeydown"></input>
  </tr>
  <tr>
  <td colspan=2>
-#### Code
+#### Código
 
  <div id="codeWhich">
     trace = doc["traceWhich"]
