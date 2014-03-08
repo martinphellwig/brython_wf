@@ -1,32 +1,34 @@
-Focus events
-============
+Eventos de Foco
+---------------
 
 <script type="text/python">
 from browser import doc, alert
 </script>
 
-Focus events are
+Os eventos de foco são os seguintes:
 
 <table cellpadding=3 border=1>
 <tr>
 <td>*blur*</td>
-<td>an element has lost focus
+<td>um elemento perdeu foco
 </td>
 </tr>
 
 <tr>
-<td>*focus*</td><td>an element has received focus</td>
+<td>*focus*</td><td>um elemento recebeu foco</td>
 </tr>
 
 </table>
 
-#### Example
+#### Exemplo
 
-Click in the entry field below to make it receive focus, then click somewhere outside the field to make it lose focus
+Clique no campo de entrada de texto abaixo para fazê-lo receber foco,
+e então clique em algum lugar fora deste campo para fazê-lo perder
+foco.
 
 <p><input id="entry"></input>&nbsp;<span id="traceFocus">&nbsp;</span>
 
-#### Code
+#### Código
 
 <div id="codeFocus">
     def getFocus(ev):
@@ -42,4 +44,3 @@ Click in the entry field below to make it receive focus, then click somewhere ou
 <script type="text/python">
 exec(doc["codeFocus"].text)
 </script>
-
