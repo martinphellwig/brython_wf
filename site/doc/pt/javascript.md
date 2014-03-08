@@ -1,40 +1,53 @@
-module **javascript**
+módulo **javascript**
 ---------------------
 
-The module **javascript** allows interaction with the objects defined in Javascript programs and libraries present in the same page as the Brython program
+O módulo **javascript** permite a interação com objetos definidos em
+programas e bibliotecas em Javascript presentes na mesma página que o
+programa em Brython.
 
-It defines two classes :
+Ele define duas classes:
 
 **javascript**.`JSObject`
->  is a class whose instances wrap Javascript objects
+> é uma classe cujas instâncias intermediam objetos Javascript
 
-> <code>JSObject(_jsobj_)</code> returns an object *brobj* that wraps the Javascript object *jsobj*. Operations performed on the instance of `JSObject` impact the Javascript object by converting as accurately as possible Python types into Javascript types
+> <code>JSObject(_jsobj_)</code> retorna um objeto *brobj* que
+  intermedia o objeto Javascript *jsobj*. Operações realizadas na
+  instância de `JSObject` impactam o objeto Javascript convertendo, o
+  mais precisamente possível, tipos Python em tipos Javascript.
 
-> If *jsobj* is a function, the arguments passed to *brobj* are converted before being passed to *jsobj* in this way
+> Se *jsobj* é uma função, os argumentos passados para *brobj* são
+  convertidos antes de serem passados para *jsobj* da seguinte
+  maneira:
 
 > <table border='1'>
-<tr><th>Argument in Brython function call</th><th>Argument passed to Javascript function</th></tr>
-<tr><td>`DOMNode` instance</td><td>DOM element</td></tr>
-<tr><td>`DOMEvent` instance</td><td>DOM event</td></tr>
-<tr><td>list of `DOMNode` instances</td><td>DOM nodes list</td></tr>
+<tr><th>Argumento na chamada da função em Brython</th><th>Argumento passado para a função Javascript</th></tr>
+<tr><td>instância de `DOMNode`</td><td>elementos DOM</td></tr>
+<tr><td>instância de `DOMEvent`</td><td>evento DOM</td></tr>
+<tr><td>lista de instâncias de `DOMNode`</td><td>lista de nodos DOM</td></tr>
 <tr><td>`None, True, False`</td><td>`null, true, false`</td></tr>
-<tr><td>`int` instance</td><td>integer</td></tr>
-<tr><td>`float` instance</td><td>float</td></tr>
-<tr><td>`str` instance</td><td>string</td></tr>
-<tr><td>`list` instance</td><td>Javascript array</td></tr>
-<tr><td>`JSObject` instance</td><td>Javascript object</td></tr>
+<tr><td>instância de `int`</td><td>inteiro</td></tr>
+<tr><td>instância de `float`</td><td>ponto flutuante (float)</td></tr>
+<tr><td>instância de `str`</td><td>cadeia de caractéres</td></tr>
+<tr><td>instância de `list`</td><td>array Javascript</td></tr>
+<tr><td>instância de `JSObject`</td><td>objeto Javascript</td></tr>
 </table>
 
-> The result is converted to a Brython object using the reverse operations.
+> O resultado é convertido para um objeto Brython usando operações
+  reversas.
 
 **javascript**.`JSConstructor`
-> is a class whose instances represent Javascript constructors, (ie functions used with the Javascript keyword `new`)
+> é uma classe cujas instâncias representam construtores Javascript,
+  (ex. funções usadas com a paravra-chave de Javascript `new`)
 
-> <code>JSConstructor(_jsconstr_)</code> returns a Brython object. This object is callable ; it returns an instance of `JSObject` representing the Javascript obtained by passing to the constructor *jsconstr* the arguments converted as indicated in the table above
+> <code>JSConstructor(_jsconstr_)</code> retorna um objeto
+  Brython. Este objeto é chamável; ele retorna uma instância de
+  `JSObject` representando o objeto Javascript obtido ao passar para o
+  construtor *jsconstr* os argumentos convertidos como indicado na
+  tabela acima
 
-Examples
+Exemplos
 --------
-Using `JSObject` with the Javascript library jQuery
+Usando `JSObject` com a biblioteca jQuery:
 
 >    from javascript import JSObject
 >
@@ -44,14 +57,16 @@ Using `JSObject` with the Javascript library jQuery
 >    _jQuery=JSObject($("body"))
 >    _jQuery.click(callback)
 
-> See [jQuery](../../gallery/jsobject_example.html) for a live demo.
+> Veja [jQuery](../../gallery/jsobject_example.html) para uma
+  demonstração.
 
 
-Using `JSConstructor` with the Javascript library three.js :
+Usando `JSConstructor` com a biblioteca three.js:
 
 >    from javascript import JSConstructor
 >    
 >    cameraC = JSConstructor( THREE.PerspectiveCamera )
 >    camera = cameraC( 75, 1, 1, 10000 )
 
-> See [three](../../gallery/three.html) for a full functional example
+> Veja [three](../../gallery/three.html) para um exemplo totalmente
+  funcional.
