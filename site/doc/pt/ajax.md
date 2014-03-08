@@ -1,19 +1,22 @@
 módulo **browser.ajax**
 -----------------------
 
-O módulo `ajax` permite executar requisições Ajax. Expõe a função `ajax()`
+Este módulo permite executar requisições Ajax. Ele define uma única
+função:
 
 `ajax()`
 > retorna um objeto `ajax`
 
-Ele tem os seguintes métodos e atributos:
+Este objeto tem os seguintes atributos e métodos:
 
 `bind(`_evt,function_`)`
-> vincula a função _function_ ao evento _evt_. Os eventos correspondem aos diferentes estados da requisição :
+
+> vincula a função _function_ ao evento _evt_. _evt_ é uma cadeia que
+  corresponde aos diferentes estados da requisição :
 
 - "uninitialized" : não inicializado
 - "loading" : conexão estabelecida
-- "loaded": pedido recebido
+- "loaded": requisição recebida
 - "interactive": resposta em andamento
 - "complete" : acabado
 
@@ -21,10 +24,16 @@ Ele tem os seguintes métodos e atributos:
 
 Isso é equivalente a: _req.on_evt = func_
 
-`open(`_método, url, async_`)`
- > _método_ é o método HTTP usado para a requisição (normalmente GET ou POST), _url_ é a url a chamar, _async_ é o valor booleano que indica se a chamada é asíncrona ou não
+`open(`_method, url, async_`)`
 
-`readyState` : um inteiro representando o estado da requisição (como na tabela abaixo)
+ > o método _method_ é o método HTTP usado para a requisição
+   (normalmente GET ou POST), _url_ é a url a chamar, _async_ é o
+   valor booleano que indica se a chamada é asíncrona ou não
+
+`readyState` 
+
+> um inteiro representando o estado da requisição (conforme a tabela
+abaixo)
 
 <blockquote>
 <table cellspacing=0 cellpadding=4 border=1>
@@ -41,29 +50,33 @@ request state
 </table>
 </blockquote>
 
-`set_header(`_nome, valor_`)`
-> estabelece o _valor_ do _nome_ do cabeçalho
+`set_header(`_name, value_`)`
+> Estabelece o valor _value_ do cabeçalho _name_
 
-`set_timeout(`_duração, função_`)`
-> se a consulta não retornar uma resposta durante a _duração_ em segundos, a consulta será cancelada e a _função_ será chamada. Esta função não pode ter argumentos
+`set_timeout(`_duration, function_`)`
+> Se a consulta não retornar uma resposta durante dentro da duração
+  _duration_ em segundos, este método cancelará a consulta e executará
+  a função _function_. Esta função não pode ter argumentos.
 
 `send()`
-> envia (inicia) a requisição
+> Envia (inicia) a requisição.
 
 `status`
-> um inteiro representando o status HTTP da requisição
+
+> Um inteiro representando o status HTTP da requisição. Os mais usuais
+  são 200 (ok) e 404 (arquivo não encontrado).
 
 `text`
-> a resposta do servidor como uma cadeia de caracteres
+> A resposta do servidor como uma cadeia de caracteres.
 
 `xml`
-> a resposta do servidor como um objeto DOM
+> A resposta do servidor como um objeto DOM.
 
 
 
 ### Exemplo
 
-Supomos que há um DIV com id _result_ na página HTML
+Supomos que exista um DIV com id _result_ na página HTML.
 
 >    from browser import doc,ajax
 >
@@ -75,7 +88,6 @@ Supomos que há um DIV com id _result_ na página HTML
 >    
 >    req = ajax.ajax()
 >    req.bind('complete',on_complete)
->    req.set_timeout(timeout,err_msg)
 >    req.open('POST',url,True)
 >    req.set_header('content-type','application/x-www-form-urlencoded')
 >    req.send(data)
