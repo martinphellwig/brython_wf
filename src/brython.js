@@ -626,28 +626,30 @@ res +='      eval("var "+'+ns+'.$keys[$i]+"='+ns+'.$values[$i]")\n};\n'
 res +='    var $jscode = __BRYTHON__.py2js('+arg+',"'+_name+'").to_js();\n'
 res +='    if(__BRYTHON__.debug>1){console.log($jscode)};\n'
 res +='    var $res = eval($jscode);\n'
-var set_ns=''
 if(ns==='globals'){
-set_ns +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
-set_ns +='{$globals[$attr]=__BRYTHON__.vars["'+module+'"][$attr]='
-set_ns +='__BRYTHON__.vars["'+_name+'"][$attr]};'
+res +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
+res +='{$globals[$attr]=__BRYTHON__.vars["'+module+'"][$attr]='
+res +='__BRYTHON__.vars["'+_name+'"][$attr]};'
 }else if(ns !=''){
-set_ns +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
-set_ns +='{__builtins__.dict.$dict.__setitem__('+ns+',$attr,'
-set_ns +='__BRYTHON__.vars["'+_name+'"][$attr])};' 
+res +=';for(var $attr in __BRYTHON__.vars["'+_name+'"])'
+res +='{__builtins__.dict.$dict.__setitem__('+ns+',$attr,'
+res +='__BRYTHON__.vars["'+_name+'"][$attr])};' 
 }else{
-set_ns +=';for(var $attr in __BRYTHON__.vars["'+_name+'"]){'
-set_ns +='\nif($attr.search(/[\.]/)>-1){continue}\n'
-set_ns +='eval("var "+$attr+"='
-set_ns +='$globals[$attr]='
-set_ns +='__BRYTHON__.vars[\\"'+module+'\\"][$attr]='
-set_ns +='__BRYTHON__.vars[\\"'+_name+'\\"][$attr]")};'
+res +=';for(var $attr in __BRYTHON__.vars["'+_name+'"]){'
+res +='\nif($attr.search(/[\.]/)>-1){continue}\n'
+res +='eval("var "+$attr+"='
+res +='$globals[$attr]='
+res +='__BRYTHON__.vars[\\"'+module+'\\"][$attr]='
+res +='__BRYTHON__.vars[\\"'+_name+'\\"][$attr]")};'
 }
-res +=set_ns
 res +='\n    if($res===undefined){return None};return $res'
 res +='\n}\ncatch(err){throw __BRYTHON__.exception(err)}'
 res +='})()\n'
 var new_node=new $Node('expression')
+var set_ns=';for(var $attr in __BRYTHON__.vars["'+_name+'"]){\n'
+set_ns +='    if($attr.search(/[\.]/)>-1){continue}\n    '
+set_ns +='eval("var "+$attr+"=__BRYTHON__.vars[\\"'+_name
+set_ns +='\\"][$attr]")\n};\n'
 new $NodeJSCtx(new_node, set_ns)
 var node=$get_node(this)
 for(var i=0;i<node.parent.children.length;i++){
