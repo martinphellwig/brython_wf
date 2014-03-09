@@ -3183,7 +3183,7 @@ function $transition(context,token){
                 return tuple
             }else{return $transition(context.parent,token)}
         }else if(token==='.'){return new $AttrCtx(context)}
-        else if(token==='['){return new $AbstractExprCtx(new $SubCtx(context),false)}
+        else if(token==='['){return new $AbstractExprCtx(new $SubCtx(context),true)}
         else if(token==='('){return new $CallCtx(context)}
         else if(token==='op'){
             // handle operator precedence

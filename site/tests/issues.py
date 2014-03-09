@@ -616,4 +616,9 @@ assert x=={'a':2}
 # issue 224
 assert '{0}, {1}, {2}'.format('a', 'b', 'c') == 'a, b, c'
 
+# issue 225
+a = dict()
+a[1,2]=3
+assert a[1,2] == 3
+
 print('passed all tests')
