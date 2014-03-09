@@ -631,14 +631,15 @@ var $FormattableString=function(format_string) {
 
     this.format=function() {
        // same as str.format() and unicode.format in Python 2.6+
+
        var $ns=$B.$MakeArgs('format',arguments,[],[],'args','kwargs')
        var args=$ns['args']
        var kwargs=$ns['kwargs']
 
-       if (args) {
-          for (var i=0; i < args[0].length; i++) {
+       if (args.length>0) {
+          for (var i=0; i < args.length; i++) {
               //kwargs[str(i)]=args.$dict[i]
-              getattr(kwargs, '__setitem__')(str(i), args[0][i])
+              getattr(kwargs, '__setitem__')(str(i), args[i])
           }
        }
 
@@ -852,10 +853,10 @@ var $FormattableString=function(format_string) {
 
        // arg_name
        while (_pos < literal.length &&
-              literal.substring(_pos,1) !== '[' && 
-              literal.substring(_pos,1) !== '.') {
-              console.log(literal.substring(_pos,1))
-              arg_name += literal.substring(_pos,1)
+              literal.charAt(_pos) !== '[' && 
+              literal.charAt(_pos) !== '.') {
+              console.log(literal.charAt(_pos))
+              arg_name += literal.charAt(_pos)
               _pos++
        }
 
@@ -869,26 +870,27 @@ var $FormattableString=function(format_string) {
        //look for attribute_name and element_index
        while (_pos < literal.length) {
           //var _start='', _middle='', _end=''
+          var car = literal.charAt(_pos)
 
-          if (literal.substring(_pos,1) == '[') { // element_index
+          if (car == '[') { // element_index
              _start='['
              _pos++
-             while (_pos < literal.length && literal.substring(_pos,1) !== ']') {
-                _middle += literal.substring(_pos,1)
+             while (_pos < literal.length && car !== ']') {
+                _middle += car
                 _pos++
              }
-             if (literal.substring(_pos, 1) == ']') _end=']'
+             if (car == ']') _end=']'
              _matches.push([_start, _middle, _end])
           
-          } else if (literal.substring(_pos,1) == '.') { // attribute_name
+          } else if (car == '.') { // attribute_name
                   _start='.'
                   _pos++
 
                   while (_pos < literal.length &&
-                         literal.substring(_pos,1) !== '[' && 
-                         literal.substring(_pos,1) !== '.') {
-                      console.log(literal.substring(_pos,1))
-                      _middle += literal.substring(_pos,1)
+                         car !== '[' && 
+                         car !== '.') {
+                      console.log(car)
+                      _middle += car
                       _pos++
                   }
 
@@ -934,7 +936,7 @@ $StringDict.format = function(self) {
     var args=[]
     // we don't need the first item (ie, self)
     for (var i =1; i < arguments.length; i++) { args.push(arguments[i])}
-    return _fs.format(args)
+    return _fs.format.apply(null, args)
 }
 
 $StringDict.format_map = function(self) {
