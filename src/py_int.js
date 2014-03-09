@@ -30,6 +30,7 @@ $IntDict.from_bytes = function(x, byteorder) {
 
 $IntDict.__bool__ = function(self){return new Boolean(self.valueOf())}
 
+//is this a duplicate?
 $IntDict.__class__ = $B.$type
 
 $IntDict.__eq__ = function(self,other){
