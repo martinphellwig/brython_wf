@@ -7686,8 +7686,8 @@ throw __builtins__.TypeError("unorderable types: list() >= "+other.__class__.__n
 var i=0
 while(i<self.length){
 if(i>=other.length){return true}
-else if(self[i]==other[i]){i++}
-else return(self[i]>=other[i])
+else if(getattr(self[i],'__eq__')(other[i])){i++}
+else return(getattr(self[i],"__ge__")(other[i]))
 }
 return false 
 }
@@ -7698,8 +7698,8 @@ throw __builtins__.TypeError("unorderable types: list() > "+other.__class__.__na
 var i=0
 while(i<self.length){
 if(i>=other.length){return true}
-else if(self[i]==other[i]){i++}
-else return(self[i]>other[i])
+else if(getattr(self[i],'__eq__')(other[i])){i++}
+else return(getattr(self[i],'__gt__')(other[i]))
 }
 return false 
 }
