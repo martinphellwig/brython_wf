@@ -628,4 +628,7 @@ b = { -20 : -1, -21 : 2, 2 : 0 }
 b = [ ((-20, 2), 1), ((-21, 1), 2), ((-2,0), 2)]
 assert sorted(b) == [((-21, 1), 2), ((-20, 2), 1), ((-2, 0), 2)]
 
+# bug in string format
+assert 'Coordinates: {latitude}, {b}'.format(latitude='2', b='4')=='Coordinates: 2, 4'
+
 print('passed all tests')
