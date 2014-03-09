@@ -2693,6 +2693,16 @@ return C
 C.expect=','
 var expr=new $AbstractExprCtx(C,false)
 return $transition(expr,token,arguments[2])
+}else if(token==='op'){
+var tg=arguments[2]
+if(tg=='+'){return C}
+if('-~'.search(tg)>-1){
+C.expect=','
+var left=new $UnaryCtx(C,tg)
+if(tg=='-'){var op_expr=new $OpCtx(left,'unary_neg')}
+else{var op_expr=new $OpCtx(left,'unary_inv')}
+return new $AbstractExprCtx(op_expr,false)
+}else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else{return $transition(C.parent,token,arguments[2])}
 }
@@ -2748,7 +2758,7 @@ tuple.tree=[C]
 return tuple
 }else{return $transition(C.parent,token)}
 }else if(token==='.'){return new $AttrCtx(C)}
-else if(token==='['){return new $AbstractExprCtx(new $SubCtx(C),false)}
+else if(token==='['){return new $AbstractExprCtx(new $SubCtx(C),true)}
 else if(token==='('){return new $CallCtx(C)}
 else if(token==='op'){
 var op_parent=C.parent,op=arguments[2]
@@ -5151,7 +5161,10 @@ __next__: __next__
 }
 }
 function format(value, format_spec){
-throw __builtins__.NotImplementedError("format is not implemented yet")
+if(hasattr(value, '__format__')){
+return value.__format__(format_spec)
+}
+throw __builtins__.NotImplementedError("__format__ is not implemented for object '" + str(value)+ "'")
 }
 function getattr(obj,attr,_default){
 var klass=$B.get_class(obj)
@@ -8373,10 +8386,15 @@ else{return start+res}
 }
 var $FormattableString=function(format_string){
 this.format_string=format_string
-this._prepare=function(match){
+this._prepare=function(){
+var match=arguments[0]
+var p1=arguments[2]
 if(match=='%')return '%%'
-if(match.substring(0,1)==match.substring(match.length)){
-return match.substring(0, __builtins__.int(match.length/2))
+if(match.substring(0,1)==match.substring(match.length-1)){
+return match.substring(0, Math.floor(match.length/2))
+}
+if(p1.substring(0,1)=='{' && p1.substring(match.length-1)=='}'){
+p1=match.substring(1, p1.length-1)
 }
 var _repl
 if(match.length >=2){
@@ -8384,27 +8402,26 @@ _repl=''
 }else{
 _repl=match.substring(1)
 }
-var _out=getattr(_repl, 'partition')(':')
-var _field=_out[0]
-var _dummy=_out[1]
-var _format_spec=_out[2]
-_out=getattr(_field, 'partition')('!')
-var _literal=_out[0]
-var _sep=_out[1]
-var _conversion=_out[2]
-if(_sep && ! _conversion){
+var _out=p1.split(':')
+var _field=_out[0]|| ''
+var _format_spec=_out[1]|| ''
+_out=_field.split('!')
+var _literal=_out[0]|| ''
+var _sep=_field.indexOf('!')> -1?'!': undefined 
+var _conversion=_out[1]
+if(_sep && _conversion===undefined){
 throw __builtins__.ValueError("end of format while looking for conversion specifier")
 }
-if(_conversion.length > 1){
+if(_conversion !==undefined && _conversion.length > 1){
 throw __builtins__.ValueError("expected ':' after format specifier")
 }
-if('rsa'.indexOf(_conversion)==-1){
+if(_conversion !==undefined && 'rsa'.indexOf(_conversion)==-1){
 throw __builtins__.ValueError("Unknown conversation specifier " + _conversion)
 }
 _name_parts=this.field_part(_literal)
 var _start=_literal.substring(0,1)
 var _name=''
-if(_start=='' || '.['.indexOf(_start)!=-1){
+if(_start=='' || _start=='.' || _start=='['){
 if(this._index===undefined){
 throw __builtins__.ValueError("cannot switch from manual field specification to automatic field numbering")
 }
@@ -8627,11 +8644,20 @@ _rv=getattr(_rv, 'ljust')(_width, _fill)
 return _rv
 }
 this.field_part=function(literal){
-var _matches=[]
+if(literal.length==0){return[['','','']]}
 var _pos=0
-if(literal.length==0){_matches.push(['','',''])}
+var arg_name=''
+while(_pos < literal.length &&
+literal.substring(_pos,1)!=='[' && 
+literal.substring(_pos,1)!=='.'){
+console.log(literal.substring(_pos,1))
+arg_name +=literal.substring(_pos,1)
+_pos++
+}
+return[['', arg_name, '']]
+var attribute_name=''
+var element_index=''
 while(_pos < literal.length){
-var _start='', _middle='', _end=''
 if(literal.substring(_pos,1)=='['){
 _start='['
 _pos++
@@ -8640,19 +8666,19 @@ _middle +=literal.substring(_pos,1)
 _pos++
 }
 if(literal.substring(_pos, 1)==']')_end=']'
-}else{
-if(literal.substring(_pos,1)=='.'){
+_matches.push([_start, _middle, _end])
+}else if(literal.substring(_pos,1)=='.'){
 _start='.'
 _pos++
-}
 while(_pos < literal.length &&
 literal.substring(_pos,1)!=='[' && 
 literal.substring(_pos,1)!=='.'){
+console.log(literal.substring(_pos,1))
 _middle +=literal.substring(_pos,1)
 _pos++
 }
+_matches.push([_start, _middle])
 }
-_matches.push([_start, _middle, _end])
 }
 return _matches
 }
@@ -8675,7 +8701,7 @@ this._kwords={}
 this._kwords_array=[]
 this._nested={}
 this._nested_array=[]
-this._string=format_string.replace(this.format_str_re, this._prepare, 'g')
+this._string=format_string.replace(this.format_str_re, this._prepare)
 return this
 }
 $StringDict.format=function(self){

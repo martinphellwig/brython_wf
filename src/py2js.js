@@ -3121,6 +3121,19 @@ function $transition(context,token){
                     context.expect = ','
                     var expr = new $AbstractExprCtx(context,false)
                     return $transition(expr,token,arguments[2])
+                }else if(token==='op'){
+                    var tg = arguments[2]
+                    // ignore unary +
+                    if(tg=='+'){return context}
+                    if('-~'.search(tg)>-1){ // unary -, bitwise ~
+                        // create a left argument for operator "unary"
+                        context.expect = ','
+                        var left = new $UnaryCtx(context,tg)
+                        // create the operator "unary"
+                        if(tg=='-'){var op_expr = new $OpCtx(left,'unary_neg')}
+                        else{var op_expr = new $OpCtx(left,'unary_inv')}
+                        return new $AbstractExprCtx(op_expr,false)
+                    }else{$_SyntaxError(context,'token '+token+' after '+context)}
                 }else{$_SyntaxError(context,'token '+token+' after '+context)}
             }else{return $transition(context.parent,token,arguments[2])}
         }

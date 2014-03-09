@@ -621,4 +621,7 @@ a = dict()
 a[1,2]=3
 assert a[1,2] == 3
 
+# issue 226
+b = { -20 : -1, -21 : 2, 2 : 0 }
+
 print('passed all tests')
