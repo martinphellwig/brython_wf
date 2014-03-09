@@ -138,8 +138,8 @@ $ListDict.__ge__ = function(self,other){
     var i=0
     while(i<self.length){
         if(i>=other.length){return true}
-        else if(self[i]==other[i]){i++}
-        else return(self[i]>=other[i])
+        else if(getattr(self[i],'__eq__')(other[i])){i++}
+        else return(getattr(self[i],"__ge__")(other[i]))
     }
     // other starts like self, but is longer
     return false        
@@ -152,8 +152,8 @@ $ListDict.__gt__ = function(self,other){
     var i=0
     while(i<self.length){
         if(i>=other.length){return true}
-        else if(self[i]==other[i]){i++}
-        else return(self[i]>other[i])
+        else if(getattr(self[i],'__eq__')(other[i])){i++}
+        else return(getattr(self[i],'__gt__')(other[i]))
     }
     // other starts like self, but is longer
     return false        
