@@ -509,14 +509,24 @@ $StringDict.find = function(self){
 }
 
 var $FormattableString=function(format_string) {
+    // inspired from 
+    // https://raw.github.com/florentx/stringformat/master/stringformat.py
     this.format_string=format_string
 
-    this._prepare = function(match) {
-       //console.log('part', match)
+    this._prepare = function() {
+       
+       var match = arguments[0]
+
+       var p1 = arguments[2]
+
        if (match == '%') return '%%'
-       if (match.substring(0,1) == match.substring(match.length)) {
+       if (match.substring(0,1) == match.substring(match.length-1)) {
           // '{{' or '}}'
-          return match.substring(0, __builtins__.int(match.length/2))
+          return match.substring(0, Math.floor(match.length/2))
+       }
+
+       if (p1.substring(0,1) == '{' && p1.substring(match.length-1) == '}') {
+          p1=match.substring(1, p1.length-1)
        }
 
        var _repl
@@ -526,25 +536,24 @@ var $FormattableString=function(format_string) {
          _repl = match.substring(1)
        }
 
-       var _out = getattr(_repl, 'partition')(':')
-       var _field=_out[0]
-       var _dummy=_out[1]
-       var _format_spec=_out[2]
+       var _out = p1.split(':') //getattr(_repl, 'partition')(':')
+       var _field=_out[0] || ''
+       var _format_spec=_out[1] || ''
 
-       _out= getattr(_field, 'partition')('!')
-       var _literal=_out[0]
-       var _sep=_out[1]
-       var _conversion=_out[2]
+       _out= _field.split('!') // getattr(_field, 'partition')('!')
+       var _literal=_out[0] || ''
+       var _sep=_field.indexOf('!') > -1?'!': undefined // _out[1]
+       var _conversion=_out[1]
 
-       if (_sep && ! _conversion) {
+       if (_sep && _conversion === undefined) {
           throw __builtins__.ValueError("end of format while looking for conversion specifier")
        }
 
-       if (_conversion.length > 1) {
+       if (_conversion !== undefined && _conversion.length > 1) {
           throw __builtins__.ValueError("expected ':' after format specifier")
        }
 
-       if ('rsa'.indexOf(_conversion) == -1) {
+       if (_conversion !== undefined && 'rsa'.indexOf(_conversion) == -1) {
           throw __builtins__.ValueError("Unknown conversation specifier " + _conversion)
        }
 
@@ -552,7 +561,7 @@ var $FormattableString=function(format_string) {
        _name_parts=this.field_part(_literal)
        var _start=_literal.substring(0,1)
        var _name=''
-       if (_start == '' || '.['.indexOf(_start) != -1) {
+       if (_start=='' || _start=='.' || _start == '[') {
           // auto-numbering
           if (this._index === undefined) {
              throw __builtins__.ValueError("cannot switch from manual field specification to automatic field numbering")
@@ -576,7 +585,6 @@ var $FormattableString=function(format_string) {
          }
        }
 
-       //console.log('name:',_name)
        var _empty_attribute=false
 
        var _k
@@ -603,7 +611,6 @@ var $FormattableString=function(format_string) {
 
        var _rv=''
        if (_format_spec.indexOf('{') != -1) {
-          //console.log('line 544')
           _format_spec = this.format_sub_re.replace(_format_spec, this._prepare)
           _rv = [_name_parts, _conversion, _format_spec]
           if (this._nested[_name] === undefined) {
@@ -612,16 +619,13 @@ var $FormattableString=function(format_string) {
           }
           this._nested[_name].push(_rv) 
        } else {
-          //console.log('line 554')
           _rv = [_name_parts, _conversion, _format_spec]
           if (this._kwords[_name] === undefined) {
              this._kwords[_name]=[]
              this._kwords_array.push(_name)
           }
-          this._kwords[_name].push(_rv) 
+          this._kwords[_name].push(_rv)
        }
-       //console.log(this._kwords)
-       //console.log(this._kwords_array)
        return '%(' + id(_rv) + ')s'
     } // this.prepare
 
@@ -634,20 +638,17 @@ var $FormattableString=function(format_string) {
        if (args) {
           for (var i=0; i < args[0].length; i++) {
               //kwargs[str(i)]=args.$dict[i]
-              getattr(kwargs, '__setitem__')(str(i), args[0][i]) 
+              getattr(kwargs, '__setitem__')(str(i), args[0][i])
           }
        }
 
-       //console.log(kwargs)
-       //console.log(this._kwords_array)
        //encode arguments to ASCII, if format string is bytes
        var _want_bytes = isinstance(this._string, str)
        var _params=__builtins__.dict()
-       //var _params = $dict()
+
        for (var i=0; i < this._kwords_array.length; i++) {
            var _name = this._kwords_array[i]
            var _items = this._kwords[_name]
-           //console.log(_name, _items)
            var _var = getattr(kwargs, '__getitem__')(_name)
            var _value;
            if (hasattr(_var, 'value')) {
@@ -657,7 +658,6 @@ var $FormattableString=function(format_string) {
              _value=_var
            }
 
-           //console.log(_name, _var)
            for (var j=0; j < _items.length; j++) {
                var _parts = _items[j][0]
                var _conv = _items[j][1]
@@ -695,7 +695,6 @@ var $FormattableString=function(format_string) {
                                                                 _want_bytes))
            }
        }
-       //console.log(this._string, _params)
        return $legacy_format(this._string, _params)
     }  // this.format
 
@@ -843,15 +842,35 @@ var $FormattableString=function(format_string) {
     }
 
     this.field_part=function(literal) {
-       var _matches=[]
+
+       // for now, lets just return '','',''
+       if (literal.length == 0) { return [['','','']]}
 
        var _pos=0
-       if (literal.length == 0) { _matches.push(['','',''])}
-  
-       while (_pos < literal.length) {
-          var _start='', _middle='', _end=''
 
-          if (literal.substring(_pos,1) == '[') {
+       var arg_name=''
+
+       // arg_name
+       while (_pos < literal.length &&
+              literal.substring(_pos,1) !== '[' && 
+              literal.substring(_pos,1) !== '.') {
+              console.log(literal.substring(_pos,1))
+              arg_name += literal.substring(_pos,1)
+              _pos++
+       }
+
+       // todo.. need to work on code below, but this takes cares of most
+       // common cases.
+       return [['', arg_name, '']]
+
+       var attribute_name=''
+       var element_index=''
+
+       //look for attribute_name and element_index
+       while (_pos < literal.length) {
+          //var _start='', _middle='', _end=''
+
+          if (literal.substring(_pos,1) == '[') { // element_index
              _start='['
              _pos++
              while (_pos < literal.length && literal.substring(_pos,1) !== ']') {
@@ -859,20 +878,22 @@ var $FormattableString=function(format_string) {
                 _pos++
              }
              if (literal.substring(_pos, 1) == ']') _end=']'
-          } else {
-             if (literal.substring(_pos,1) == '.') {
+             _matches.push([_start, _middle, _end])
+          
+          } else if (literal.substring(_pos,1) == '.') { // attribute_name
                   _start='.'
                   _pos++
-             }
 
-             while (_pos < literal.length &&
-                    literal.substring(_pos,1) !== '[' && 
-                    literal.substring(_pos,1) !== '.') {
-                 _middle += literal.substring(_pos,1)
-                 _pos++
-             }
+                  while (_pos < literal.length &&
+                         literal.substring(_pos,1) !== '[' && 
+                         literal.substring(_pos,1) !== '.') {
+                      console.log(literal.substring(_pos,1))
+                      _middle += literal.substring(_pos,1)
+                      _pos++
+                  }
+
+                  _matches.push([_start, _middle])
           }
-          _matches.push([_start, _middle, _end])
        }
 
        return _matches
@@ -889,7 +910,7 @@ var $FormattableString=function(format_string) {
 
     this.format_spec_re = new RegExp(
       '((?:[^{}]?[<>=^])?)' +      // alignment
-      '([\\-\\+ ]?)' +                 // sign
+      '([\\-\\+ ]?)' +                // sign
       '(#?)' + '(\\d*)' + '(,?)' +    // base prefix, minimal width, thousands sep
       '((?:\.\\d\\+)?)' +             // precision
       '(.?)$'                      // type
@@ -901,8 +922,7 @@ var $FormattableString=function(format_string) {
     this._nested = {}
     this._nested_array=[]
 
-    //console.log(format_string)
-    this._string=format_string.replace(this.format_str_re, this._prepare, 'g')
+    this._string=format_string.replace(this.format_str_re, this._prepare)
 
     return this
 }

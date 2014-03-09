@@ -424,7 +424,11 @@ function filter(){
 
 
 function format(value, format_spec) {
-  throw __builtins__.NotImplementedError("format is not implemented yet")
+  if(hasattr(value, '__format__')) {
+    return value.__format__(format_spec)
+  } 
+  
+  throw __builtins__.NotImplementedError("__format__ is not implemented for object '" + str(value) + "'")
 }
 
 function getattr(obj,attr,_default){
