@@ -331,7 +331,7 @@ $B.$JS2Py = function(src){
     }
     if(typeof src=="object"){
         if($B.$isNode(src)){return $B.$DOMNode(src)}
-        else if($B.$isEvent(src)){return $B.$DOMEvent(src)}
+        else if($B.$isEvent(src)){return $B.DOMEvent(src)}
         else if(src.constructor===Array||$B.$isNodeList(src)){
             var res = []
             for(var i=0;i<src.length;i++){

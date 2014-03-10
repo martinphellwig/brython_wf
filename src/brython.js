@@ -4591,7 +4591,7 @@ return src
 }
 if(typeof src=="object"){
 if($B.$isNode(src)){return $B.$DOMNode(src)}
-else if($B.$isEvent(src)){return $B.$DOMEvent(src)}
+else if($B.$isEvent(src)){return $B.DOMEvent(src)}
 else if(src.constructor===Array||$B.$isNodeList(src)){
 var res=[]
 for(var i=0;i<src.length;i++){
@@ -8482,9 +8482,9 @@ this.format=function(){
 var $ns=$B.$MakeArgs('format',arguments,[],[],'args','kwargs')
 var args=$ns['args']
 var kwargs=$ns['kwargs']
-if(args){
-for(var i=0;i < args[0].length;i++){
-getattr(kwargs, '__setitem__')(str(i), args[0][i])
+if(args.length>0){
+for(var i=0;i < args.length;i++){
+getattr(kwargs, '__setitem__')(str(i), args[i])
 }
 }
 var _want_bytes=isinstance(this._string, str)
@@ -8648,33 +8648,34 @@ if(literal.length==0){return[['','','']]}
 var _pos=0
 var arg_name=''
 while(_pos < literal.length &&
-literal.substring(_pos,1)!=='[' && 
-literal.substring(_pos,1)!=='.'){
-console.log(literal.substring(_pos,1))
-arg_name +=literal.substring(_pos,1)
+literal.charAt(_pos)!=='[' && 
+literal.charAt(_pos)!=='.'){
+console.log(literal.charAt(_pos))
+arg_name +=literal.charAt(_pos)
 _pos++
 }
 return[['', arg_name, '']]
 var attribute_name=''
 var element_index=''
 while(_pos < literal.length){
-if(literal.substring(_pos,1)=='['){
+var car=literal.charAt(_pos)
+if(car=='['){
 _start='['
 _pos++
-while(_pos < literal.length && literal.substring(_pos,1)!==']'){
-_middle +=literal.substring(_pos,1)
+while(_pos < literal.length && car !==']'){
+_middle +=car
 _pos++
 }
-if(literal.substring(_pos, 1)==']')_end=']'
+if(car==']')_end=']'
 _matches.push([_start, _middle, _end])
-}else if(literal.substring(_pos,1)=='.'){
+}else if(car=='.'){
 _start='.'
 _pos++
 while(_pos < literal.length &&
-literal.substring(_pos,1)!=='[' && 
-literal.substring(_pos,1)!=='.'){
-console.log(literal.substring(_pos,1))
-_middle +=literal.substring(_pos,1)
+car !=='[' && 
+car !=='.'){
+console.log(car)
+_middle +=car
 _pos++
 }
 _matches.push([_start, _middle])
@@ -8708,7 +8709,7 @@ $StringDict.format=function(self){
 var _fs=$FormattableString(self.valueOf())
 var args=[]
 for(var i=1;i < arguments.length;i++){args.push(arguments[i])}
-return _fs.format(args)
+return _fs.format.apply(null, args)
 }
 $StringDict.format_map=function(self){
 throw NotImplementedError("function format_map not implemented yet")
