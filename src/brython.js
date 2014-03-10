@@ -2754,7 +2754,9 @@ if(C.with_commas){
 C.parent.tree.pop()
 var tuple=new $ListOrTupleCtx(C.parent,'tuple')
 tuple.implicit=true
+tuple.has_comma=true
 tuple.tree=[C]
+C.parent=tuple
 return tuple
 }else{return $transition(C.parent,token)}
 }else if(token==='.'){return new $AttrCtx(C)}
@@ -3060,6 +3062,14 @@ return C
 }else if(token=='eol' && C.real=='tuple' && 
 C.implicit===true){
 C.closed=true
+return $transition(C.parent,token)
+}else if(token=='=' && C.real=='tuple' && 
+C.implicit===true){
+C.closed=true
+C.parent.tree.pop()
+var expr=new $ExprCtx(C.parent,'tuple',false)
+expr.tree=[C]
+C.parent=expr
 return $transition(C.parent,token)
 }else if(token !==')'&&token!==']'&&token!==','){
 C.expect=','
