@@ -1569,33 +1569,6 @@ scope.var2node[value].push(this)
 }
 }
 }
-this.transform=function(node,rank){
-console.log('transform id '+value)
-var scope=$get_scope(this)
-if(scope.ntype==='def' || scope.ntype==='generator'){
-var flag=true
-var parent=this.parent
-while(parent){parent=parent.parent}
-if(this.parent.type==='expr' && this.parent.parent.type=='call_arg'){
-if(this.parent.parent.tree[0].type==='kwarg'){
-var flag=false
-}
-}
-if(flag){
-console.log('add '+value+' to scope')
-var ctx=this.parent
-while(ctx.parent!==undefined){ctx=ctx.parent}
-var ctx_node=ctx.node
-if(scope.var2node===undefined){
-scope.var2node={value:[ctx_node]}
-}else if(scope.var2node[value]===undefined){
-scope.var2node[value]=[ctx_node]
-}else{
-scope.var2node[value].push(ctx_node)
-}
-}
-}
-}
 this.to_js=function(arg){
 var val=this.value
 if(['print','eval','open'].indexOf(this.value)>-1){val='$'+val}
@@ -2911,9 +2884,7 @@ C.expect='id'
 return C
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(token===')'){
-if(C.expect===','){return C.parent}
-else if(C.tree.length==0){return C.parent}
-else{$_SyntaxError(C,'token '+token+' after '+C)}
+return C.parent
 }else if(token==='op'){
 var op=arguments[2]
 C.expect=','
