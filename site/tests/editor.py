@@ -1,6 +1,5 @@
 import sys
 import time
-import dis
 import traceback
 
 from browser import doc
