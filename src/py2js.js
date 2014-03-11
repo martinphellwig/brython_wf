@@ -1780,40 +1780,6 @@ function $IdCtx(context,value,minus){
         }
     }
     
-    this.transform = function(node,rank){
-        // If the variable is used in a function, we store the current node 
-        // context in a dictionary indexed by the variables
-        // If later there is a local variable assigned with the same
-        // name, the context will be replaced by raising the exception
-        // "UnboundLocalError : local variable referenced before assignment"
-        console.log('transform id '+value)
-        var scope = $get_scope(this)
-        if(scope.ntype==='def' || scope.ntype==='generator'){
-            var flag = true
-            var parent=this.parent
-            while(parent){parent=parent.parent}
-            if(this.parent.type==='expr' && this.parent.parent.type=='call_arg'){
-                // left part of a keyword argument
-                if(this.parent.parent.tree[0].type==='kwarg'){
-                   var flag = false
-                }
-            }
-            if(flag){
-                console.log('add '+value+' to scope')
-                var ctx = this.parent
-                while(ctx.parent!==undefined){ctx=ctx.parent}
-                var ctx_node = ctx.node
-                if(scope.var2node===undefined){
-                    scope.var2node = {value:[ctx_node]}
-                }else if(scope.var2node[value]===undefined){
-                    scope.var2node[value] = [ctx_node]
-                }else{
-                    scope.var2node[value].push(ctx_node)
-                }            
-            }
-        }
-    }
- 
     this.to_js = function(arg){
         var val = this.value
         if(['print','eval','open'].indexOf(this.value)>-1){val = '$'+val}
@@ -3374,9 +3340,7 @@ function $transition(context,token){
                 return context
             }else{$_SyntaxError(context,'token '+token+' after '+context)}
         }else if(token===')'){
-            if(context.expect===','){return context.parent}
-            else if(context.tree.length==0){return context.parent} // no argument
-            else{$_SyntaxError(context,'token '+token+' after '+context)}
+            return context.parent
         }else if(token==='op'){
             var op = arguments[2]
             context.expect = ','

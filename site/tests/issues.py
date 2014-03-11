@@ -631,4 +631,8 @@ assert sorted(b) == [((-21, 1), 2), ((-20, 2), 1), ((-2, 0), 2)]
 # bug in string format
 assert 'Coordinates: {latitude}, {b}'.format(latitude='2', b='4')=='Coordinates: 2, 4'
 
+# check that trailing comma is supported in function calls
+def foo(a=2,):
+    print(a)
+
 print('passed all tests')
