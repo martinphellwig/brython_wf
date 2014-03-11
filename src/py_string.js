@@ -504,10 +504,10 @@ var $FormattableString=function(format_string) {
     this.format_string=format_string
 
     this._prepare = function() {
-       
        var match = arguments[0]
+       //console.log('match1', match)
 
-       var p1 = arguments[2]
+       var p1 = '' + arguments[2]
 
        if (match == '%') return '%%'
        if (match.substring(0,1) == match.substring(match.length-1)) {
@@ -526,11 +526,11 @@ var $FormattableString=function(format_string) {
          _repl = match.substring(1)
        }
 
-       var _out = p1.split(':') //getattr(_repl, 'partition')(':')
+       var _out = p1.split(':')
        var _field=_out[0] || ''
        var _format_spec=_out[1] || ''
 
-       _out= _field.split('!') // getattr(_field, 'partition')('!')
+       _out= _field.split('!')
        var _literal=_out[0] || ''
        var _sep=_field.indexOf('!') > -1?'!': undefined // _out[1]
        var _conversion=_out[1]
@@ -601,7 +601,9 @@ var $FormattableString=function(format_string) {
 
        var _rv=''
        if (_format_spec.indexOf('{') != -1) {
-          _format_spec = this.format_sub_re.replace(_format_spec, this._prepare)
+          //_format_spec = this.format_sub_re.replace(_format_spec, this._prepare)
+          _format_spec = _format_spec.replace(this.format_sub_re, this._prepare)
+          console.log(_format_spec)
           _rv = [_name_parts, _conversion, _format_spec]
           if (this._nested[_name] === undefined) {
              this._nested[_name]=[]
