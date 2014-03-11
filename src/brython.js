@@ -5478,8 +5478,7 @@ if(isinstance(y, __builtins__.float)){
 b=y.value
 }else if(isinstance(y, __builtins__.int)){
 b=y
-}
-else{
+}else{
 throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
 }
 return Math.pow(a,b)
@@ -8185,6 +8184,10 @@ else{throw __builtins__.TypeError('%c requires __builtins__.int or char')}
 res=src.toString(8)
 if(this.flag==='#')return '0o' + res
 return res
+}else if(this.type=='b'){
+res=src.toString(2)
+if(this.flag==='#')return '0b' + res
+return res
 }else{
 var _msg="unsupported format character '" + this.type
 _msg+="' (0x" + this.type.charCodeAt(0).toString(16)+ ") at index "
@@ -8397,7 +8400,7 @@ if(_conversion !==undefined && _conversion.length > 1){
 throw __builtins__.ValueError("expected ':' after format specifier")
 }
 if(_conversion !==undefined && 'rsa'.indexOf(_conversion)==-1){
-throw __builtins__.ValueError("Unknown conversation specifier " + _conversion)
+throw __builtins__.ValueError("Unknown conversion specifier " + _conversion)
 }
 _name_parts=this.field_part(_literal)
 var _start=_literal.substring(0,1)
@@ -8544,16 +8547,17 @@ if(!_m){
 throw __builtins__.ValueError('Invalid conversion specification')
 }
 var _match=this.format_spec_re.exec(format_spec)
-var _align=_match[0]
-var _sign=_match[1]
-var _prefix=_match[2]
-var _width=_match[3]
-var _comma=_match[4]
-var _precision=_match[5]
-var _conversion=_match[6]
+var _align=_match[1]
+var _sign=_match[2]
+var _prefix=_match[3]
+var _width=_match[4]
+var _comma=_match[5]
+var _precision=_match[6]
+var _conversion=_match[7]
 var _is_numeric=isinstance(value, __builtins__.float)
 var _is_integer=isinstance(value, __builtins__.int)
-if(_prefix && ! _is_numeric){
+console.log('match', _match)
+if(_prefix !='' && ! _is_numeric){
 if(_is_numeric){
 throw __builtins__.ValueError('Alternate form (#) not allowed in float format specifier')
 }else{
@@ -8565,14 +8569,23 @@ _conversion=_is_integer && 'd' || 'g'
 }else{
 if(_sign){
 if(! _is_numeric){
-throw __builtins__.ValueError('Sign not allowd in string format specifification')
+throw __builtins__.ValueError('Sign not allowed in string format specification')
 }
-if(_conversation=='c'){
-throw("Sign not allowd with integer format specifier 'c'")
+if(_conversion=='c'){
+throw("Sign not allowed with integer format specifier 'c'")
 }
 }
 }
-if(_comma){
+if(_comma !==''){
+value +=''
+var x=value.split('.')
+var x1=x[0]
+var x2=x.length > 1 ? '.' + x[1]: ''
+var rgx=/(\d+)(\d{3})/
+while(rgx.test(x1)){
+x1=x1.replace(rgx, '$1' + ',' + '$2')
+}
+value=x1+x2 
 }
 var _rv
 if(_conversion !='' &&((_is_numeric && _conversion=='s')|| 
@@ -8589,25 +8602,22 @@ _rv=_sign + _rv
 }
 var _zero=False
 if(_width){
-_zero=width.substring(0,1)=='0'
+_zero=_width.substring(0,1)=='0'
 _width=parseInt(_width)
 }else{
 _width=0
 }
 if(_width <=_rv.length){
 if(! _is_numeric &&(_align=='=' ||(_zero && ! _align))){
-throw __builtins__.ValueError("'=' alignment not allowd in string format specifier")
+throw __builtins__.ValueError("'=' alignment not allowed in string format specifier")
 }
 return _rv
 }
-_fill=_align.substring(0,_align.length-1)
-_align=_align.substring(_align.length)
+_fill=_align.substr(0,_align.length-1)
+_align=_align.substr(_align.length-1)
 if(! _fill){_fill=_zero && '0' || ' '}
 if(_align=='^'){
-_padding=_width - _rv.length
-if(_padding % 2){
 _rv=getattr(_rv, 'center')(_width, _fill)
-}
 }else if(_align=='=' ||(_zero && ! _align)){
 if(! _is_numeric){
 throw __builtins__.ValueError("'=' alignment not allowd in string format specifier")
@@ -8619,8 +8629,10 @@ _rv=getattr(_rv, 'rjust')(_width, _fill)
 }
 }else if((_align=='>' || _align=='=')||(_is_numeric && ! _aligned)){
 _rv=getattr(_rv, 'rjust')(_width, _fill)
-}else{
+}else if(_align=='<'){
 _rv=getattr(_rv, 'ljust')(_width, _fill)
+}else{
+throw __builtins__.ValueError("'" + _align + "' alignment not valid")
 }
 return _rv
 }
@@ -8631,7 +8643,6 @@ var arg_name=''
 while(_pos < literal.length &&
 literal.charAt(_pos)!=='[' && 
 literal.charAt(_pos)!=='.'){
-console.log(literal.charAt(_pos))
 arg_name +=literal.charAt(_pos)
 _pos++
 }
@@ -8675,7 +8686,7 @@ this.format_spec_re=new RegExp(
 '((?:[^{}]?[<>=^])?)' + 
 '([\\-\\+ ]?)' + 
 '(#?)' + '(\\d*)' + '(,?)' + 
-'((?:\.\\d\\+)?)' + 
+'((?:\.\\d+)?)' + 
 '(.?)$' 
 )
 this._index=0
