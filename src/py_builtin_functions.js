@@ -807,22 +807,23 @@ function pow() {
         var y = args[1]
         var a,b
         if(isinstance(x, __builtins__.float)){
-      a=x.value
-    } else if(isinstance(x, __builtins__.int)){
-      a=x
-    } else {
-      throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
-    }
+          a=x.value
+        } else if(isinstance(x, __builtins__.int)){
+          a=x
+        } else {
+          throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
+        }
+
         if (isinstance(y, __builtins__.float)){
-      b=y.value
-    } else if (isinstance(y, __builtins__.int)){
-      b=y
-    }
-        else {
-      throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
-    }
+           b=y.value
+        } else if (isinstance(y, __builtins__.int)){
+           b=y
+        } else {
+          throw __builtins__.TypeError("unsupported operand type(s) for ** or pow()")
+        }
         return Math.pow(a,b)
     }
+
     if(args.length === 3){
         var x = args[0]
         var y = args[1]

@@ -233,23 +233,9 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 return res
             }else if(this.type=="i" || this.type=="d"){
                 this._number_check(src)
-                //if(!isinstance(src,[__builtins__.int,__builtins__.float])){
-                //   if (src.__class__ !== undefined) {
-                //      throw __builtins__.TypeError("%"+this.type+" format: a number is required, not " + str(src.__class__))
-                //   } else if (typeof(src) === 'string') {
-                //      throw __builtins__.TypeError("%"+this.type+" format: a number is required, not str")
-                //   } else {
-                //      throw __builtins__.TypeError("%"+this.type+" format: a number is required, not 'unknown type'")
-                //   }
-                //}
 
                 var num = parseInt(src)
-                //console.log(this.precision)
-                //if(this.precision){
-                //  num = num.toPrecision(parseInt(this.precision.substr(1)))
-                //} else {
-                  num=num.toPrecision()
-                //}
+                num=num.toPrecision()
                 res = num+''
                 if(this.flag===' '){res = ' '+res}
                 else if(this.flag==='+' && num>=0){res = '+'+res}
@@ -286,6 +272,10 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
             }else if(this.type=='o'){
                 res = src.toString(8)
                 if(this.flag==='#') return '0o' + res
+                return res
+            }else if (this.type=='b') {
+                res = src.toString(2)
+                if(this.flag==='#') return '0b' + res
                 return res
             }else { // consider this 'type' invalid
                 var _msg="unsupported format character '" + this.type
@@ -554,7 +544,7 @@ var $FormattableString=function(format_string) {
        }
 
        if (_conversion !== undefined && 'rsa'.indexOf(_conversion) == -1) {
-          throw __builtins__.ValueError("Unknown conversation specifier " + _conversion)
+          throw __builtins__.ValueError("Unknown conversion specifier " + _conversion)
        }
 
        //fix me
@@ -733,7 +723,8 @@ var $FormattableString=function(format_string) {
 
     this.strformat=function(value, format_spec) {
        if (format_spec === undefined) format_spec = ''
-
+       //console.log(value)
+       //console.log(format_spec)
        var _m = this.format_spec_re.test(format_spec)
 
        if (!_m) {
@@ -741,18 +732,20 @@ var $FormattableString=function(format_string) {
        }
 
        var _match=this.format_spec_re.exec(format_spec)
-       var _align=_match[0]
-       var _sign=_match[1]
-       var _prefix=_match[2]
-       var _width=_match[3]
-       var _comma=_match[4]
-       var _precision=_match[5]
-       var _conversion=_match[6]
+       var _align=_match[1]
+       var _sign=_match[2]
+       var _prefix=_match[3]
+       var _width=_match[4]
+       var _comma=_match[5]
+       var _precision=_match[6]
+       var _conversion=_match[7]
 
        var _is_numeric = isinstance(value, __builtins__.float)
        var _is_integer = isinstance(value, __builtins__.int)
 
-       if (_prefix && ! _is_numeric) {
+       console.log('match', _match)
+
+       if (_prefix != '' && ! _is_numeric) {
           if (_is_numeric) {
              throw __builtins__.ValueError('Alternate form (#) not allowed in float format specifier')
           } else {
@@ -765,16 +758,25 @@ var $FormattableString=function(format_string) {
        } else {
           if (_sign) {
              if (! _is_numeric) {
-                throw __builtins__.ValueError('Sign not allowd in string format specifification');
+                throw __builtins__.ValueError('Sign not allowed in string format specification');
              }
-             if (_conversation == 'c') {
-                throw("Sign not allowd with integer format specifier 'c'")
+             if (_conversion == 'c') {
+                throw("Sign not allowed with integer format specifier 'c'")
              }
           }
        }
 
-       if (_comma) {
-          // to do thousand separator
+       if (_comma !== '') {
+          value += ''
+          var x = value.split('.')
+          var x1 = x[0];
+          var x2 = x.length > 1 ? '.' + x[1] : '';
+          var rgx = /(\d+)(\d{3})/;
+    
+          while (rgx.test(x1)) {
+                 x1 = x1.replace(rgx, '$1' + ',' + '$2');
+          }
+          value=x1+x2   
        }
 
        var _rv
@@ -791,14 +793,13 @@ var $FormattableString=function(format_string) {
        _rv='%' + _prefix + _precision + (_conversion || 's')
        _rv = $legacy_format(_rv, value)
 
-
        if (_sign != '-' && value >= 0) {
           _rv = _sign + _rv
        }
 
        var _zero = False
        if (_width) {
-          _zero = width.substring(0,1) == '0'
+          _zero = _width.substring(0,1) == '0'
           _width = parseInt(_width)
        } else {
           _width = 0
@@ -808,22 +809,18 @@ var $FormattableString=function(format_string) {
 
        if (_width <= _rv.length) {
           if (! _is_numeric && (_align == '=' || (_zero && ! _align))) {
-             throw __builtins__.ValueError("'=' alignment not allowd in string format specifier")
+             throw __builtins__.ValueError("'=' alignment not allowed in string format specifier")
           }
           return _rv
        }
 
-       _fill = _align.substring(0,_align.length-1)
-       _align= _align.substring(_align.length)
+       _fill = _align.substr(0,_align.length-1)
+       _align= _align.substr(_align.length-1)
 
        if (! _fill) {_fill = _zero && '0' || ' '}
 
        if (_align == '^') {
-          _padding = _width - _rv.length
-          // tweak the formatting if the padding is odd
-          if (_padding % 2) {
-             _rv = getattr(_rv, 'center')(_width, _fill)
-          }
+          _rv = getattr(_rv, 'center')(_width, _fill)
        } else if (_align == '=' || (_zero && ! _align)) {
           if (! _is_numeric) {
              throw __builtins__.ValueError("'=' alignment not allowd in string format specifier")
@@ -835,8 +832,10 @@ var $FormattableString=function(format_string) {
           }
        } else if ((_align == '>' || _align == '=') || (_is_numeric && ! _aligned)) {
          _rv = getattr(_rv, 'rjust')(_width, _fill)
-       } else {
+       } else if (_align == '<') {
          _rv = getattr(_rv, 'ljust')(_width, _fill)
+       } else {
+         throw __builtins__.ValueError("'" + _align + "' alignment not valid")
        }
 
        return _rv
@@ -855,7 +854,7 @@ var $FormattableString=function(format_string) {
        while (_pos < literal.length &&
               literal.charAt(_pos) !== '[' && 
               literal.charAt(_pos) !== '.') {
-              console.log(literal.charAt(_pos))
+              //console.log(literal.charAt(_pos))
               arg_name += literal.charAt(_pos)
               _pos++
        }
@@ -914,7 +913,7 @@ var $FormattableString=function(format_string) {
       '((?:[^{}]?[<>=^])?)' +      // alignment
       '([\\-\\+ ]?)' +                // sign
       '(#?)' + '(\\d*)' + '(,?)' +    // base prefix, minimal width, thousands sep
-      '((?:\.\\d\\+)?)' +             // precision
+      '((?:\.\\d+)?)' +             // precision
       '(.?)$'                      // type
     )
 
