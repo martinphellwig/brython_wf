@@ -2,13 +2,6 @@
 var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict = __builtins__.object.$dict
-// transforms a Javascript constructor into a Python function
-// that returns instances of the constructor, converted to Python objects
-function $applyToConstructor(constructor, argArray) {
-    var args = [null].concat(argArray);
-    var factoryFunction = constructor.bind.apply(constructor, args);
-    return new factoryFunction();
-}
 
 var $LocationDict = {__class__:$B.$type,
     __name__:'Location'
@@ -39,6 +32,14 @@ function $Location(){ // used because of Firefox bug #814622
 
 $LocationDict.$factory = $Location
 $Location.$dict = $LocationDict
+
+// transforms a Javascript constructor into a Python function
+// that returns instances of the constructor, converted to Python objects
+function $applyToConstructor(constructor, argArray) {
+    var args = [null].concat(argArray);
+    var factoryFunction = constructor.bind.apply(constructor, args);
+    return new factoryFunction();
+}
 
 var $JSConstructorDict = {
     __class__:$B.$type,
@@ -78,15 +79,9 @@ function JSConstructor(obj){
 }
 JSConstructor.__class__ = $B.$factory
 JSConstructor.$dict = $JSConstructorDict
+$JSConstructorDict.$factory = JSConstructor
 
 // JSObject : wrapper around a native Javascript object
-function $JSObject(js){
-    this.js = js
-    this.$dict = js
-    this.__class__ = $JSObjectDict
-    this.__str__ = function(){return "<object 'JSObject' wraps "+this.js+">"}
-    this.toString = this.__str__
-}
 
 var $JSObjectDict = {
     __class__:$B.$type,
@@ -228,26 +223,20 @@ $JSObjectDict.__setitem__ = $JSObjectDict.__setattr__
 $JSObjectDict.__str__ = $JSObjectDict.__repr__
 
 function JSObject(obj){
-    if(obj===null){return new $JSObject(obj)}
     var klass = $B.get_class(obj)
-    if(klass===__builtins__.list.$dict){
+    if(klass===__builtins__.list.$dict && obj.__brython__){
         // JS arrays not created by list() must be wrapped
         if(obj.__brython__){return obj}
-        else{var res = new $JSObject(obj)
-            return res
-        }
     }
-    //if(obj.__class__!==undefined && (typeof obj!=='function')){return obj}
+    // If obj is a Python object, return it unchanged
     if(klass!==undefined){return obj}
-    return {__class__:$JSObjectDict,
-        js:obj
-    }
+    // else wrap it
+    return {__class__:$JSObjectDict,js:obj}
 }
 JSObject.__class__ = $B.$factory
 JSObject.$dict = $JSObjectDict
 $JSObjectDict.$factory = JSObject
 
 $B.JSObject = JSObject
-$B.$JSObject = $JSObject
 $B.JSConstructor = JSConstructor
 })(__BRYTHON__)

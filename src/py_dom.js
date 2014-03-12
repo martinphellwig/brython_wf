@@ -3,7 +3,6 @@
 var __builtins__ = $B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict = object.$dict
-var $JSObject = __BRYTHON__.$JSObject
 var JSObject = __BRYTHON__.JSObject
 
 // Maps $brython_id of DOM elements to events
@@ -740,7 +739,7 @@ DOMNode.getContext = function(self){ // for CANVAS tag
     if(!('getContext' in self.elt)){throw __builtins__.AttributeError(
         "object has no attribute 'getContext'")}
     var obj = self.elt
-    return function(ctx){return new $JSObject(obj.getContext(ctx))}
+    return function(ctx){return JSObject(obj.getContext(ctx))}
 }
 
 DOMNode.getSelectionRange = function(self){ // for TEXTAREA
@@ -799,7 +798,7 @@ DOMNode.style = function(self){
     // set attribute "float" for cross-browser compatibility
     self.elt.style.float = self.elt.style.cssFloat || self.style.styleFloat
     console.log('get style')
-    return new $JSObject(self.elt.style)
+    return JSObject(self.elt.style)
 }
 
 DOMNode.setSelectionRange = function(self){ // for TEXTAREA
@@ -1233,7 +1232,7 @@ DOMNode.prototype.removeClass = function(name){
    this.__setattr('class', _class_string)
 }
 
-var win =  new $JSObject(window)
+var win =  JSObject(window)
 
 win.get_postMessage = function(msg,targetOrigin){
     if(isinstance(msg,dict)){
