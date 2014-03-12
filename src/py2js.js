@@ -4423,13 +4423,15 @@ function brython(options){
                 __BRYTHON__.imported['__main__'] = _mod
 
             }catch($err){
-
-                console.log('PY2JS '+$err)
-                for(var attr in $err){
-                    console.log(attr+' : '+$err[attr])
+                if(__BRYTHON__.debug>1){
+    
+                    console.log('PY2JS '+$err)
+                    for(var attr in $err){
+                        console.log(attr+' : '+$err[attr])
+                    }
+                    console.log('line info '+__BRYTHON__.line_info)
                 }
-                console.log('line info '+__BRYTHON__.line_info)
-                
+                                
                 // If the error was not caught by the Python runtime, build an
                 // instance of a Python exception
                 if($err.py_error===undefined){
