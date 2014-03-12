@@ -1,44 +1,56 @@
 Usando objetos Javascript
 -------------------------
 
-Teremos que gerenciar o período de transição em que Brython irá coexistir com Javascript ;-)
+Teremos que gerenciar o período de transição em que Brython irá
+coexistir com Javascript ;-)
 
-### Argumentos de funções de resposta (callback)
+### Acessando objetos de Brython a partir de código Javascript
 
-O código HTML pode vincular funções a eventos do DOM e passá-las alguns parâmetros. A função de resposta irá recebê-los transformados em tipos gerenciados por Brython : 
+Por padrão, Brython expõe somente dois nomes no espaço de nomes
+(namespace) global de Javascript:
 
-<table border='1'>
-<tr><th>Tipo de argumento na chamada da função</th><th>Argumento recebido pela função de resposta</th></tr>
-<tr><td>elemento DOM</td><td>instância de `DOMNode`</td></tr>
-<tr><td>evento DOM</td><td>instância de `DOMEvent`</td></tr>
-<tr><td>lista de nodos DOM</td><td>lista de instâncias de `DOMNode`</td></tr>
-<tr><td>`null, true, false`</td><td>`None, True, False`</td></tr>
-<tr><td>inteiro</td><td>instância de `int`</td></tr>
-<tr><td>ponto flutuante</td><td>instância de `float`</td></tr>
-<tr><td>cadeia de caracteres</td><td>instância de `str`</td></tr>
-<tr><td>Array Javascript array</td><td>instânncia de `list`</td></tr>
-<tr><td>Objeto Javascript</td><td>instância de `JSObject`</td></tr>
-</table>
+> `brython()` : a função executada ao carregar a página.
 
+> `__BRYTHON__` : um objeto usado internamente por Brython para
+  guardar os objetos necessários à execução dos scripts
 
+Consequentemente, por padrão, um programa Javascript não pode acessar
+objetos Brython. Por exemplo, para a função `echo()` definida em um
+script Brython reagir a um evento em um elemento na página, em vez de
+usar a sintaxe regular de Javascript:
 
-Por exemplo, se o evento 'click' em um botão provoca a execução da função foo :
+    <button onclick="echo()">
 
-    <button onclick="foo(this,33,{'x':99})">Click</button>
+(porque a função _echo_ de Brython não é acessável pelo Javascript),
+uma solução é atribuir um id ao elemento:
 
-esta função terá a assinatura
+    <button id="mybutton">
 
-    def foo(elt,value,obj):
+e definir o vínculo entre este elemento e o evento _click_ fazendo:
 
-onde _elt_ será a instância de `DOMNode` do elemento 'botão', _value_ será o inteiro 33 e _obj_ será uma instância da classe integrada `JSObject`
+    doc['mybutton'].bind('click',echo)
 
-Instâncias de `JSObject` são usadas como objetos Python ordinários ; aqui, o valor do atributo "x" é `obj.x`. Para convertê-los em um dicionário Python, use a função integrada `dict()` : `dict(obj)['x']`
+Uma outra opção é forçar a introdução do nome _echo_ no espaço de
+nomes de Javascript definindo-a como um atributo do objeto `window` no
+módulo **browser**:
+
+    from browser import window
+    window.echo = echo
+
+<strong>NOTA: Este método não é recomendado, pois ele cria um risco de
+conflito com nomes definidos em um programa ou biblioteca de
+Javascript usado na página.</strong>
 
 ### Objetos em programas Javascript
 
-Um documento HTML pode usar scripts e bibliotecas em Javascript, e scripts e bibliotecas em Python. Brython não pode usar objetos Javascript diretamente : por exemplo, a busca de atriburos é feita pelo método _\_\_getattr\_\__, que não existe em objetos Javascript
+Um documento HTML pode usar scripts e bibliotecas em Javascript, e
+scripts e bibliotecas em Python. Brython não pode usar objetos
+Javascript diretamente: por exemplo, a busca de atributos usa o
+atributo _\_\_class\_\__ que não existe em objetos objetos Javascript.
 
-Para poder utilizá-los em um script Python, eles devem ser explicitamente transformados pela função integrada `JSObject()`
+Para poder utilizá-los em um script Python, eles devem ser
+explicitamente transformados pela função `JSObject()` definida no
+módulo **javascript**.
 
 Por exemplo :
 
@@ -47,14 +59,23 @@ Por exemplo :
     </script>
     
     <script type="text/python">
+    from browser import doc
+    from javascript import JSObject
     doc['result'].value = JSObject(circle).surface(10)
     </script>
 
 ### Usando construtores Javascript
 
-Se uma função Javascript é um construtor de objetos que pode ser chamada em Javascript com a palavra-chave `new`, ela pode ser usada em Brython transformando-a com a função intrgrada `JSConstructor()`
+Se uma função Javascript é um construtor de objetos, que pode ser
+chamada em Javascript com a palavra-chave `new`, ela pode ser usada em
+Brython transformando-a com a função `JSConstructor()` definida no
+módulo **javascript**.
 
-<code>JSConstructor(_constr_)</code> retorna a função que, quando chamada com argumantos, retorna um objeto Python que corresponde ao objeto Javascript construído pelo construtor _constr_
+`JSConstructor(`_constr_`)`
+
+> retorna a função que, quando chamada com argumantos, retorna um
+  objeto Python que corresponde ao objeto Javascript construído pelo
+  construtor _constr_
 
 Por exemplo :
 
@@ -69,13 +90,16 @@ Por exemplo :
     </script>
     
     <script type="text/python">
+    from browser import alert
+    from javascript import JSConstructor
     rectangle = JSConstructor(Rectangle)
     alert(rectangle(10,10,30,30).surface())
     </script>
 
 ### Exemplo jQuery
 
-Abaixo um exemplo mais completo de como você pode usar a popular biblioteca jQuery :
+Abaixo um exemplo mais completo de como você pode usar a popular
+biblioteca jQuery :
 
     <html>
     <head>
@@ -85,26 +109,30 @@ Abaixo um exemplo mais completo de como você pode usar a popular biblioteca jQu
     </head>
     
     <script type="text/python">
-      def toggle_color(element):
-          _divs=doc.get(tag="div")
+        from browser import doc
+        from javascript import JSObject
+        
+        def change_color(ev):
+          _divs=doc.get(selector='div')
           for _div in _divs:
               if _div.style.color != "blue":
                  _div.style.color = "blue"
               else:
                  _div.style.color = "red"
-    
-      _jQuery=JSObject($("body"))
-      _jQuery.click(toggle_color)
-    
+        
+        # creating an alias for "$" in jQuery would cause a SyntaxError in Python
+        # so we assign jQuery to a variable named jq
+
+        jq = jQuery.noConflict(true)
+        _jQuery=JSObject(jq("body"))
+        _jQuery.click(change_color)    
     </script>
     
     <body onload="brython()">
+
       <div>Click here</div>
       <div>to iterate through</div>
       <div>these divs.</div>
-    <script>
-    </script>
      
     </body>
     </html>
-    
