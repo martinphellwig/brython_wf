@@ -3708,9 +3708,6 @@ if(options.re_module=='pyre' || options.re_module=='jsre'){
 __BRYTHON__.$options.re=options.re
 }
 }
-if(!(__BRYTHON__.path.indexOf($script_dir)> -1)){
-__BRYTHON__.path.push($script_dir)
-}
 for(var $i=0;$i<$scripts.length;$i++){
 var $elt=$scripts[$i]
 var $br_scripts=['brython.js','py2js.js','brython_dist.js']
@@ -3732,6 +3729,9 @@ break
 }
 }
 }
+}
+if(!(__BRYTHON__.path.indexOf($script_dir)> -1)){
+__BRYTHON__.path.push($script_dir)
 }
 for(var $i=0;$i<$elts.length;$i++){
 var $elt=$elts[$i]
@@ -6580,7 +6580,7 @@ var path_list=__BRYTHON__.path.slice()
 return $B.$import_module_search_path_list(module,__BRYTHON__.path,origin)
 }
 $B.$import_module_search_path_list=function(module,path_list,origin){
-var search=[]
+var search=[], path_modified=false
 if(origin!==undefined){
 var origin_path=__BRYTHON__.$py_module_path[origin]
 var elts=origin_path.split('/')
@@ -6588,6 +6588,7 @@ elts.pop()
 origin_path=elts.join('/')
 if(path_list.indexOf(origin_path)==-1){
 path_list.splice(0,0,origin_path)
+path_modified=true
 }
 }
 var mod_path=module.name.replace(/\./g,'/')
@@ -6612,6 +6613,7 @@ if(flag){break}
 }
 if(flag){break}
 }
+if(path_modified){path_list.splice(0,1)}
 if(!flag){
 throw __builtins__.ImportError("module "+module.name+" not found")
 }
@@ -6711,7 +6713,9 @@ module.name=parts.slice(0,i+1).join('.')
 if(__BRYTHON__.modules[module.name]===undefined){
 __BRYTHON__.modules[module.name]={__class__:$B.$ModuleDict}
 __BRYTHON__.imported[module.name]={__class__:$B.$ModuleDict}
-if(i<parts.length-1){module.package_only=true}
+if(i<parts.length-1){
+module.package_only=true
+}
 __BRYTHON__.modules[module.name]=$B.$import_single(module,origin)
 __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
 }
