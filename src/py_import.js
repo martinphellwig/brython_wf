@@ -132,7 +132,7 @@ $B.$import_module_search_path = function(module,origin){
 }
 
 $B.$import_module_search_path_list = function(module,path_list,origin){
-    var search = []
+    var search = [], path_modified=false
     if(origin!==undefined){
         // add path of origin script to list of paths to search
         var origin_path = __BRYTHON__.$py_module_path[origin]
@@ -141,11 +141,14 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
         origin_path = elts.join('/')
         if(path_list.indexOf(origin_path)==-1){
             path_list.splice(0,0,origin_path)
+            path_modified = true
         }
     }
     var mod_path = module.name.replace(/\./g,'/')
     if(mod_path.substr(0,2)=='$$'){mod_path=mod_path.substr(2)}
     if(!module.package_only){
+        // Attribute "package_only" is set for X in "import X.Y"
+        // In this case, we don't have to search a file "X.py"
         search.push(mod_path)
     }
     search.push(mod_path+'/__init__')
@@ -166,6 +169,8 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
         }
         if(flag){break}
     }
+    if(path_modified){path_list.splice(0,1)} // reset original path list
+
     if(!flag){
         throw __builtins__.ImportError("module "+module.name+" not found")
     }
@@ -291,8 +296,11 @@ $B.$import = function(mod_name,origin){
                 // this could be a recursive import, so lets set modules={}
                 __BRYTHON__.modules[module.name]={__class__:$B.$ModuleDict}
                 __BRYTHON__.imported[module.name]={__class__:$B.$ModuleDict}
-                // indicate if package only, or package or file
-                if(i<parts.length-1){module.package_only = true}
+                // Indicate if package only, or package or file
+                if(i<parts.length-1){
+                    // searching for X in "import X.Y"
+                    module.package_only = true
+                }
                 __BRYTHON__.modules[module.name] = $B.$import_single(module,origin)
                 __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
             }

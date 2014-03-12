@@ -4332,11 +4332,6 @@ function brython(options){
        }
     }
 
-    // Current script directory inserted in path for imports
-    if (!(__BRYTHON__.path.indexOf($script_dir) > -1)) {
-       __BRYTHON__.path.push($script_dir)
-    }
-
     // Get path of brython.js or py2js.js or brython_dist.js to determine 
     // brython_path, the url of the directory where this script stands
     // It will be used for imports :
@@ -4366,6 +4361,11 @@ function brython(options){
                 }
             }
         }
+    }
+
+    // Current script directory inserted in path for imports
+    if (!(__BRYTHON__.path.indexOf($script_dir) > -1)) {
+       __BRYTHON__.path.push($script_dir)
     }
 
     // Get all scripts with type = text/python or text/python3 and run them
