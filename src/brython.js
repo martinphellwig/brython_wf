@@ -6368,15 +6368,10 @@ $JSObjectDict.__getattribute__=function(obj,attr){
 if(attr.substr(0,2)=='$$'){attr=attr.substr(2)}
 if(obj.js===null){return $ObjectDict.__getattribute__(None,attr)}
 if(attr==='__class__'){return $JSObjectDict}
-if(obj['get_'+attr]!==undefined){
-var res=obj['get_'+attr]
-if(typeof res==='function'){
-return(function(obj){
-return function(){return obj['get_'+attr].apply(obj,arguments)}
-})(obj)
-}
-return obj['get_'+attr]
-}else if(obj.js[attr]!==undefined){
+if(attr=="bind" && obj.js[attr]===undefined &&
+obj.js['addEventListener']!==undefined){attr='addEventListener'}
+if(obj.js[attr]!==undefined){
+if(attr=="bind"){console.log('attr '+attr+' in js obj')}
 if(typeof obj.js[attr]=='function'){
 var res=function(){
 var args=[],arg
@@ -6460,7 +6455,7 @@ throw __builtins__.AttributeError(this+' has no attribute __len__')
 }
 }
 $JSObjectDict.__mro__=[$JSObjectDict,$ObjectDict]
-$JSObjectDict.__repr__=function(self){return self.js.toString()}
+$JSObjectDict.__repr__=function(self){return "<JSOject wraps "+self.js.toString()+">"}
 $JSObjectDict.__setattr__=function(self,attr,value){
 if(isinstance(value,JSObject)){
 self.js[attr]=value.js
@@ -6480,10 +6475,13 @@ return res
 }
 }
 if(klass!==undefined){return obj}
-return new $JSObject(obj)
+return{__class__:$JSObjectDict,
+js:obj
+}
 }
 JSObject.__class__=$B.$factory
 JSObject.$dict=$JSObjectDict
+$JSObjectDict.$factory=JSObject
 $B.JSObject=JSObject
 $B.$JSObject=$JSObject
 $B.JSConstructor=JSConstructor
@@ -8372,7 +8370,7 @@ var $FormattableString=function(format_string){
 this.format_string=format_string
 this._prepare=function(){
 var match=arguments[0]
-var p1=arguments[2]
+var p1='' + arguments[2]
 if(match=='%')return '%%'
 if(match.substring(0,1)==match.substring(match.length-1)){
 return match.substring(0, Math.floor(match.length/2))
@@ -8445,7 +8443,8 @@ throw __builtins__.ValueError("Empty attribute in format string")
 }
 var _rv=''
 if(_format_spec.indexOf('{')!=-1){
-_format_spec=this.format_sub_re.replace(_format_spec, this._prepare)
+_format_spec=_format_spec.replace(this.format_sub_re, this._prepare)
+console.log(_format_spec)
 _rv=[_name_parts, _conversion, _format_spec]
 if(this._nested[_name]===undefined){
 this._nested[_name]=[]

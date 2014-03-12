@@ -102,15 +102,11 @@ $JSObjectDict.__getattribute__ = function(obj,attr){
     if(attr.substr(0,2)=='$$'){attr=attr.substr(2)}
     if(obj.js===null){return $ObjectDict.__getattribute__(None,attr)}
     if(attr==='__class__'){return $JSObjectDict}
-    if(obj['get_'+attr]!==undefined){
-        var res = obj['get_'+attr]
-        if(typeof res==='function'){
-            return (function(obj){
-                return function(){return obj['get_'+attr].apply(obj,arguments)}
-              })(obj)
-        }
-        return obj['get_'+attr]
-    }else if(obj.js[attr] !== undefined){
+    if(attr=="bind" && obj.js[attr]===undefined &&
+        obj.js['addEventListener']!==undefined){attr='addEventListener'}
+        
+    if(obj.js[attr] !== undefined){
+        if(attr=="bind"){console.log('attr '+attr+' in js obj')}
         if(typeof obj.js[attr]=='function'){
             // If the attribute of a JSObject is a function F, it is converted to a function G
             // where the arguments passed to the Python function G are converted to Javascript
@@ -217,7 +213,7 @@ $JSObjectDict.__len__ = function(self){
 
 $JSObjectDict.__mro__ = [$JSObjectDict,$ObjectDict]
 
-$JSObjectDict.__repr__ = function(self){return self.js.toString()}
+$JSObjectDict.__repr__ = function(self){return "<JSOject wraps "+self.js.toString()+">"}
 
 $JSObjectDict.__setattr__ = function(self,attr,value){
     if(isinstance(value,JSObject)){
@@ -243,10 +239,13 @@ function JSObject(obj){
     }
     //if(obj.__class__!==undefined && (typeof obj!=='function')){return obj}
     if(klass!==undefined){return obj}
-    return new $JSObject(obj)
+    return {__class__:$JSObjectDict,
+        js:obj
+    }
 }
 JSObject.__class__ = $B.$factory
 JSObject.$dict = $JSObjectDict
+$JSObjectDict.$factory = JSObject
 
 $B.JSObject = JSObject
 $B.$JSObject = $JSObject
