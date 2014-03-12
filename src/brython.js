@@ -3773,11 +3773,13 @@ _mod.__name__='__main__'
 _mod.__file__=__BRYTHON__.$py_module_path['__main__']
 __BRYTHON__.imported['__main__']=_mod
 }catch($err){
+if(__BRYTHON__.debug>1){
 console.log('PY2JS '+$err)
 for(var attr in $err){
 console.log(attr+' : '+$err[attr])
 }
 console.log('line info '+__BRYTHON__.line_info)
+}
 if($err.py_error===undefined){
 $err=__BRYTHON__.builtins.RuntimeError($err+'')
 }
@@ -4370,6 +4372,7 @@ if($other_args!=null){$ns[$other_args]=__BRYTHON__.builtins.tuple($ns[$other_arg
 return $ns
 }
 $B.get_class=function(obj){
+if(obj==null){obj=$B.builtins.None}
 var klass=obj.__class__
 if(klass===undefined){
 if(typeof obj=='function'){return $B.$FunctionDict}
@@ -6286,11 +6289,6 @@ __builtins__['$$super']=$$super
 var __builtins__=$B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict=__builtins__.object.$dict
-function $applyToConstructor(constructor, argArray){
-var args=[null].concat(argArray)
-var factoryFunction=constructor.bind.apply(constructor, args)
-return new factoryFunction()
-}
 var $LocationDict={__class__:$B.$type,
 __name__:'Location'
 }
@@ -6318,6 +6316,11 @@ return obj
 }
 $LocationDict.$factory=$Location
 $Location.$dict=$LocationDict
+function $applyToConstructor(constructor, argArray){
+var args=[null].concat(argArray)
+var factoryFunction=constructor.bind.apply(constructor, args)
+return new factoryFunction()
+}
 var $JSConstructorDict={
 __class__:$B.$type,
 __name__:'JSConstructor'
@@ -6349,13 +6352,7 @@ js:obj
 }
 JSConstructor.__class__=$B.$factory
 JSConstructor.$dict=$JSConstructorDict
-function $JSObject(js){
-this.js=js
-this.$dict=js
-this.__class__=$JSObjectDict
-this.__str__=function(){return "<object 'JSObject' wraps "+this.js+">"}
-this.toString=this.__str__
-}
+$JSConstructorDict.$factory=JSConstructor
 var $JSObjectDict={
 __class__:$B.$type,
 __name__:'JSObject',
@@ -6466,24 +6463,17 @@ self.js[attr]=value
 $JSObjectDict.__setitem__=$JSObjectDict.__setattr__
 $JSObjectDict.__str__=$JSObjectDict.__repr__
 function JSObject(obj){
-if(obj===null){return new $JSObject(obj)}
 var klass=$B.get_class(obj)
-if(klass===__builtins__.list.$dict){
+if(klass===__builtins__.list.$dict && obj.__brython__){
 if(obj.__brython__){return obj}
-else{var res=new $JSObject(obj)
-return res
-}
 }
 if(klass!==undefined){return obj}
-return{__class__:$JSObjectDict,
-js:obj
-}
+return{__class__:$JSObjectDict,js:obj}
 }
 JSObject.__class__=$B.$factory
 JSObject.$dict=$JSObjectDict
 $JSObjectDict.$factory=JSObject
 $B.JSObject=JSObject
-$B.$JSObject=$JSObject
 $B.JSConstructor=JSConstructor
 })(__BRYTHON__)
 
@@ -9321,7 +9311,6 @@ __builtins__.frozenset=frozenset
 var __builtins__=$B.builtins
 for(var $py_builtin in __builtins__){eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}
 var $ObjectDict=object.$dict
-var $JSObject=__BRYTHON__.$JSObject
 var JSObject=__BRYTHON__.JSObject
 $B.events=__BRYTHON__.builtins.dict()
 function $getMouseOffset(target, ev){
@@ -9947,7 +9936,7 @@ DOMNode.getContext=function(self){
 if(!('getContext' in self.elt)){throw __builtins__.AttributeError(
 "object has no attribute 'getContext'")}
 var obj=self.elt
-return function(ctx){return new $JSObject(obj.getContext(ctx))}
+return function(ctx){return JSObject(obj.getContext(ctx))}
 }
 DOMNode.getSelectionRange=function(self){
 if(self.elt['getSelectionRange']!==undefined){
@@ -9992,7 +9981,7 @@ return function(){self.elt.reset()}
 DOMNode.style=function(self){
 self.elt.style.float=self.elt.style.cssFloat || self.style.styleFloat
 console.log('get style')
-return new $JSObject(self.elt.style)
+return JSObject(self.elt.style)
 }
 DOMNode.setSelectionRange=function(self){
 if(this['setSelectionRange']!==undefined){
@@ -10331,7 +10320,7 @@ _class_string=_c.replace(' '+name+' ', '')
 }
 this.__setattr('class', _class_string)
 }
-var win=new $JSObject(window)
+var win=JSObject(window)
 win.get_postMessage=function(msg,targetOrigin){
 if(isinstance(msg,dict)){
 var temp=new Object()
