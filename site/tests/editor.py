@@ -1,6 +1,7 @@
 import sys
 import time
 import traceback
+import dis
 
 from browser import doc
 from javascript import JSObject
