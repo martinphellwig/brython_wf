@@ -20,9 +20,9 @@ Solução
     
     <script type="text/python">
     from browser import doc,html
-    doc['zone'] <= html.H1("Introducing Brython")
-    doc['zone'] <= html.H4(html.I("Python in the browser"))
-    doc['zone'] <= html.B("Hello world !")
+    doc['zone'] <= html.H1("Apresentando Brython")
+    doc['zone'] <= html.H4(html.I("Python no navegador"))
+    doc['zone'] <= html.B("Olá mundo !")
     </script>
     
     </body>

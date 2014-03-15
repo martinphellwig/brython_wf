@@ -25,9 +25,9 @@ Solução
     </body>
     </html>
 
-<button onclick="fill_zone()">Test it</button>
+<button onclick="fill_zone()">Teste</button>
 </td>
-<td id="zone" style="background-color:#FF7400;text-align:center;">Initial content<p>
+<td id="zone" style="background-color:#FF7400;text-align:center;">Conteúdo inicial<p>
 </td>
 </tr>
 </table>
