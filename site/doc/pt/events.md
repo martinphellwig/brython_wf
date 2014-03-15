@@ -17,7 +17,9 @@ deve ser definida por esta sintaxe:
 
 >    btn.bind('click', show)
 
-O primeiro argumento de `bind` é um tipo de evento que o botão deve resolver; o segundo é uma função que toma um único argumento, uma instância da classe `DOMEvent`. Por exemplo:
+O primeiro argumento de `bind` é um tipo de evento que o botão deve
+resolver; o segundo é uma função que toma um único argumento, uma
+instância da classe `DOMEvent`. Por exemplo:
 
 >    def show(ev):
 >        print('ok !')
@@ -50,13 +52,13 @@ seguintes métodos:
 <code>elt.unbind(_evt\_name[, handler_])</code>
 
 > remove a associação da função _handler_ ao evento de nome
-  _evt\_name_. Se _handler_ for omitido, remove todas as associações
-  do elemento ao evento
+> _evt\_name_. Se _handler_ for omitido, remove todas as associações
+> do elemento ao evento
 
 Objetos `DOMEvent`
 ------------------
 
-(informação por Mozilla Contributors, encontrada em
+(Informação por Mozilla Contributors, encontrada em
 [https://developer.mozilla.org/en-US/docs/Web/API/event](https://developer.mozilla.org/en-US/docs/Web/API/event))
 
 Qualquer que seja o tipo de evento, instâncias da classe `DOMEvent`
@@ -94,9 +96,9 @@ doc['_cancelable'].bind('click',lambda ev:alert('cancelable : %s ' %ev.cancelabl
 <td>
 `currentTarget`
 > instância de `DOMNode`; identfica o alvo atual para o evento
-  conforme o evento atravessa o DOM. Sempre se refere ao elemento ao
-  qual o resolvedor do evento foi vinculado, diferente de event.target
-  que identifica o elemento no qual o evento ocorreu.
+> conforme o evento atravessa o DOM. Sempre se refere ao elemento ao
+> qual o resolvedor do evento foi vinculado, diferente de event.target
+> que identifica o elemento no qual o evento ocorreu.
 </td>
 <td>
 <button id="_currentTarget">test</button>
@@ -122,7 +124,9 @@ doc['_defaultPrevented'].bind('click',lambda ev:alert('defaultPrevented : %s ' %
 <tr>
 <td>
 `eventPhase`
-> inteiro, indica qual fase do [fluxo do evento](http://www.w3.org/TR/DOM-Level-3-Events/#event-flow) está sendo validada atualmente
+> inteiro, indica qual fase do
+> [fluxo do evento](http://www.w3.org/TR/DOM-Level-3-Events/#event-flow)
+> está sendo validada atualmente
 </td>
 <td>
 <button id="_eventPhase">test</button>
@@ -136,8 +140,8 @@ doc['_eventPhase'].bind('click',lambda ev:alert('eventPhase : %s ' %ev.eventPhas
 <td>
 `target`
 > instância de `DOMNode`; o objeto em que o evento foi disparado. É
-  diferente de `event.currentTarget` quando o resolvedor do evento é
-  chamado em fases de ascenção (bubbling) ou captura do evento
+> diferente de `event.currentTarget` quando o resolvedor do evento é
+> chamado em fases de ascenção (bubbling) ou captura do evento
 </td>
 <td>
 <button id="_target">test</button>
@@ -149,7 +153,7 @@ doc['_target'].bind('click',lambda ev:alert('target : %s ' %ev.target))
 
 <tr><td>`timeStamp`
 > inteiro, o tempo (em milisegundos desde 01/Jan/1970 às 0h) em que o
-  evento foi criado
+> evento foi criado
 </td>
 <td>
 <button id="_timeStamp">test</button>
@@ -180,7 +184,7 @@ e os seguintes métodos
 > **Exemplo**
 
 > Quando uma caixa de seleção é clicada, a ação padrão é mostrar ou
-  esconder um tique sobre ela:
+> esconder um tique sobre ela:
 
 >> caixa de seleção (comportamento padrão) <input type="checkbox">
 
@@ -216,7 +220,7 @@ exec(doc["disable_cbox"].text)
 </div>
 
 > os 3 elementos (a moldura externa amarela e os retângulos internos
-  azul e verde resolvem o evento "click".
+> azul e verde resolvem o evento "click".
 
 <blockquote>
 <div id="zzz_source">
@@ -238,22 +242,22 @@ exec(doc["disable_cbox"].text)
 <div id="zzz"></div>
 
 > Clicando na zona amarela dispara a chamada da função `show()`, a
-  qual imprime a mensagem "click on yellow"
+> qual imprime a mensagem "click on yellow"
 
 > Um clique na zona azul dispara a mensagem de alerta "click on
-  blue". Então, o evento propaga ao elemento pai, o retângulo
-  amarelo. Como este retângulo também resolve o evento "click", o
-  navegador chama a ação assiciada, a mesma função `show()`, e mostra
-  a mensagem "click on yellow" (note que o atributo `currentTarget` é
-  atualizado a medida que o evento se propaga).
+> blue". Então, o evento propaga ao elemento pai, o retângulo
+> amarelo. Como este retângulo também resolve o evento "click", o
+> navegador chama a ação assiciada, a mesma função `show()`, e mostra
+> a mensagem "click on yellow" (note que o atributo `currentTarget` é
+> atualizado a medida que o evento se propaga).
 
 > Clicar na zona verde faz a mensagem "click on green" aparecer. Este
-  evento é resolvido pela função `show_stop()`, a qual termina em:
+> evento é resolvido pela função `show_stop()`, a qual termina em:
 
 >>    ev.stopPropagation()
 
 > Então o evento não se propaga para o nível superior e a execução
-  termina sem a caixa de alerta "click on yellow"
+> termina sem a caixa de alerta "click on yellow"
 
 
 <script type="text/python">

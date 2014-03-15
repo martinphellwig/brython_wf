@@ -11,13 +11,13 @@ Ele define duas classes:
 > é uma classe cujas instâncias intermediam objetos Javascript
 
 > <code>JSObject(_jsobj_)</code> retorna um objeto *brobj* que
-  intermedia o objeto Javascript *jsobj*. Operações realizadas na
-  instância de `JSObject` impactam o objeto Javascript convertendo, o
-  mais precisamente possível, tipos Python em tipos Javascript.
+> intermedia o objeto Javascript *jsobj*. Operações realizadas na
+> instância de `JSObject` impactam o objeto Javascript convertendo, o
+> mais precisamente possível, tipos Python em tipos Javascript.
 
 > Se *jsobj* é uma função, os argumentos passados para *brobj* são
-  convertidos antes de serem passados para *jsobj* da seguinte
-  maneira:
+> convertidos antes de serem passados para *jsobj* da seguinte
+> maneira:
 
 > <table border='1'>
 <tr><th>Argumento na chamada da função em Brython</th><th>Argumento passado para a função Javascript</th></tr>
@@ -33,17 +33,18 @@ Ele define duas classes:
 </table>
 
 > O resultado é convertido para um objeto Brython usando operações
-  reversas.
+> reversas.
 
 **javascript**.`JSConstructor`
+
 > é uma classe cujas instâncias representam construtores Javascript,
-  (ex. funções usadas com a paravra-chave de Javascript `new`)
+> (ex. funções usadas com a paravra-chave de Javascript `new`)
 
 > <code>JSConstructor(_jsconstr_)</code> retorna um objeto
-  Brython. Este objeto é chamável; ele retorna uma instância de
-  `JSObject` representando o objeto Javascript obtido ao passar para o
-  construtor *jsconstr* os argumentos convertidos como indicado na
-  tabela acima
+> Brython. Este objeto é chamável; ele retorna uma instância de
+> `JSObject` representando o objeto Javascript obtido ao passar para o
+> construtor *jsconstr* os argumentos convertidos como indicado na
+> tabela acima
 
 Exemplos
 --------
@@ -58,7 +59,7 @@ Usando `JSObject` com a biblioteca jQuery:
 >    _jQuery.click(callback)
 
 > Veja [jQuery](../../gallery/jsobject_example.html) para uma
-  demonstração.
+> demonstração.
 
 
 Usando `JSConstructor` com a biblioteca three.js:
@@ -69,4 +70,4 @@ Usando `JSConstructor` com a biblioteca three.js:
 >    camera = cameraC( 75, 1, 1, 10000 )
 
 > Veja [three](../../gallery/three.html) para um exemplo totalmente
-  funcional.
+> funcional.

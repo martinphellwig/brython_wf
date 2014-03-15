@@ -12,7 +12,7 @@ Este objeto tem os seguintes atributos e métodos:
 `bind(`_evt,function_`)`
 
 > vincula a função _function_ ao evento _evt_. _evt_ é uma cadeia que
-  corresponde aos diferentes estados da requisição :
+> corresponde aos diferentes estados da requisição:
 
 - "uninitialized" : não inicializado
 - "loading" : conexão estabelecida
@@ -22,18 +22,18 @@ Este objeto tem os seguintes atributos e métodos:
 
 > A função _`function`_ toma um único argumento, o objeto `ajax`.
 
-Isso é equivalente a: _req.on_evt = func_
+Isso é equivalente a: _req.on\_evt_ = _function_
 
 `open(`_method, url, async_`)`
 
- > o método _method_ é o método HTTP usado para a requisição
-   (normalmente GET ou POST), _url_ é a url a chamar, _async_ é o
-   valor booleano que indica se a chamada é asíncrona ou não
+> o método _method_ é o método HTTP usado para a requisição
+> (normalmente GET ou POST), _url_ é a url a chamar, _async_ é o valor
+> booleano que indica se a chamada é asíncrona ou não.
 
 `readyState` 
 
-> um inteiro representando o estado da requisição (conforme a tabela
-abaixo)
+> Um inteiro representando o estado da requisição (conforme a tabela
+> abaixo):
 
 <blockquote>
 <table cellspacing=0 cellpadding=4 border=1>
@@ -51,12 +51,13 @@ request state
 </blockquote>
 
 `set_header(`_name, value_`)`
-> Estabelece o valor _value_ do cabeçalho _name_
+> Estabelece o valor _value_ do cabeçalho _name_.
 
 `set_timeout(`_duration, function_`)`
+
 > Se a consulta não retornar uma resposta durante dentro da duração
-  _duration_ em segundos, este método cancelará a consulta e executará
-  a função _function_. Esta função não pode ter argumentos.
+> _duration_ em segundos, este método cancelará a consulta e executará
+> a função _function_. Esta função não pode ter argumentos.
 
 `send()`
 > Envia (inicia) a requisição.
@@ -64,7 +65,7 @@ request state
 `status`
 
 > Um inteiro representando o status HTTP da requisição. Os mais usuais
-  são 200 (ok) e 404 (arquivo não encontrado).
+> são 200 (ok) e 404 (arquivo não encontrado).
 
 `text`
 > A resposta do servidor como uma cadeia de caracteres.

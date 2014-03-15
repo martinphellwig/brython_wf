@@ -27,11 +27,10 @@ sintaxe:
 Finalmente, todos os elementos na página têm um método `get()` que
 pode ser usado para buscar elementos:
 
- - `elt.get(name=N)` retorna uma lista de todos os elementos
-   descendentes de `elt` cujo atributo `name` é igual a `N`
-
- - `elt.get(selector=S)` retorna uma lista com todos os elementos
-   descendentes de `elt` cujo seletor CSS corresponde a `S`
+- `elt.get(name=N)` retorna uma lista de todos os elementos
+  descendentes de `elt` cujo atributo `name` é igual a `N`
+- `elt.get(selector=S)` retorna uma lista com todos os elementos
+  descendentes de `elt` cujo seletor CSS corresponde a `S`
 
 Alguns exemplos:
 

@@ -5,11 +5,11 @@ Para criar gráficos no formato SVG, suportado pela maioria dos
 navegadores, use o módulo **browser.svg**. Ele contém os nomes dos
 componentes disponíveis para desenhar formas e escrever texto.
 
-O módulo define os seguintes nomes: `a, altGlyph, altGlyphDef,
+O módulo define os seguintes nomes: <code>a, altGlyph, altGlyphDef,
 altGlyphItem, animate, animateColor, animateMotion, animateTransform,
 circle, clipPath, color_profile, cursor, defs, desc, ellipse, feBlend,
 g, image, line, linearGradient, marker, mask, path, pattern, polygon,
-polyline, radialGradient, rect, stop, svg, text, tref, tspan, use`.
+polyline, radialGradient, rect, stop, svg, text, tref, tspan, use</code>.
 
 Por exemplo, se o documento HTML tem uma zona de gráfico SVG definida
 por:
@@ -273,7 +273,6 @@ def run_svg5():
 
 </table>
 
-
-
 Para informações mais detalhadas sobre formas SVG, seus atributos etc
-veja a [Documentação de Formas SVG](http://www.w3.org/TR/SVG/shapes.html)
+veja a
+[Documentação de Formas SVG](http://www.w3.org/TR/SVG/shapes.html)

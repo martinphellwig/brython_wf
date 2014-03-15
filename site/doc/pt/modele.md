@@ -133,36 +133,22 @@ No tempo de execução, o script gerado pode usar:
 
 - as classes integradas definidas em _py\_object.js, py\_dict.js,
   py\_string.js, py\_list.js, py\_set.js, py\_dom.js_
-
 - funções internas, não acessíveis por Python (seus nomes sempre
   começam com $); a maioria delas é definida em _$py\_utils.js_. As
   mais importantes são:
-
  - _$JS2Py_: recebe um único argumento e retorna:
-
-  - o argumento não modificado se este for um tipo gerido por Brython
-    (p.ex. se tem um atributo _\_\_class\_\__)
-
-  - uma instância de DOMObject (respectivamente, DOMEvent) se o
-    argumento é um objeto DOM (respectivamente, evento DOM)
-
-  - uma instância de JSObject "encapsulando" o argumento em outros
-    casos
-
+  - o argumento não modificado se este for um tipo gerido por Brython, (p.ex. se tem um atributo _\_\_class\_\__)
+  - uma instância de DOMObject (respectivamente, DOMEvent) se o argumento é um objeto DOM (respectivamente, evento DOM)
+  - uma instância de JSObject "encapsulando" o argumento em outros casos
  - _$MakeArgs_ é chamada no início de cada função se sua assinatura
    tem pelo menos um argumento. Ela constrói um espaço de nomes
    baseado nos argumentos da função, chamando a função _$JS2Py_ em
    todos os argumentos
-
  - _$class\_constructor_ é chamada para definições de classe
-
  - _$list\_comp_ é chamada para copreensões de listas
-
  - _$lambda_ é chamada para funções anônimas definidas por `lambda`
-
  - _$test\_expr_ e _$test\_item_ são usadas na avaliação de condições
    combinadas por `and` ou `or`
-
 - as funções definidas no script _py\_import.js_ para gestão de
   _imports_
 

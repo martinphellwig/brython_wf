@@ -34,7 +34,7 @@ Ok, então *calculator.py* é
     print(anchors)
 
 Atualize a página no navegador e abra o console (Tools > Web developer
-> Web console). No console, você deve ver uma lista de elementos:
+\> Web console). No console, você deve ver uma lista de elementos:
 
     <DOMNode object type 'ELEMENT' name 'A'>
 
@@ -43,8 +43,9 @@ este atributo é mudando a última linha para:
 
     print(list(anchor.text for anchor in anchors))
 
-Isso imprime `['7', '8', '9', '÷', '4', '5', '6', '*', '1', '2', '3',
-'-', '.', '0', '=', '+']` no console.
+Isso imprime
+`['7', '8', '9', '÷', '4', '5', '6', '*', '1', '2', '3', '-', '.', '0', '=', '+']`
+no console.
 
 Para definir o que acontece quando o usuário clica em uma âncora,
 Brython usa a sintaxe:
@@ -71,8 +72,8 @@ tecla é impresso no console (o atributo _target_ do objeto `DOMEvent`
 
 Isso não é exatamente o que queremos: o texto devia aparecer no campo
 de entrada. Este campo de entrada tem id "entry", e Brython obtem uma
-referência para o campo com `document["entry"]`. A função de
-resposta deveria ser mudada para:
+referência para o campo com `document["entry"]`. A função de resposta
+deveria ser mudada para:
 
     def callback(ev):
         document["entry"].value += ev.target.text
