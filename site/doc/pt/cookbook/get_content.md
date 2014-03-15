@@ -1,7 +1,7 @@
 Problema
 --------
 
-Obter o conteúdo de um elemento de uma página web
+Obter o conteúdo de um elemento de uma página web.
 
 Solução
 -------
@@ -10,6 +10,7 @@ Solução
 <tr>
 <td style="width:50%;">
 
+    from browser import alert,doc
     # doc['zone'] é a célula colorida
     alert(doc['zone'].text)
 
@@ -32,6 +33,7 @@ Solução
 </table>
 
 <script type="text/python3">
+from browser import doc
 def show_text():
     src = doc.get(selector="pre.marked")[0].text
     exec(src)
@@ -44,10 +46,14 @@ def show_value():
 
 </script>    
 
-Cada elemento na página tem um atributo `text`, uma cadeia de caracteres com o texto mostrado no elemento
+Cada elemento na página tem um atributo `text`, uma cadeia de
+caracteres com o texto mostrado no elemento.
 
-Têm também um atributo `html`, uma cadeia de caracteres com o código HTML dentro do elemento
+Têm também um atributo `html`, uma cadeia de caracteres com o código
+HTML dentro do elemento.
 
-Campos de entrada (input) têm um atributo `value`, uma cadeia de caracteres com o valor atual do campo
+Campos de entrada (input) têm um atributo `value`, uma cadeia de
+caracteres com o valor atual do campo.
 
-`alert()` é uma função integrada que mostra seu argumento em uma janela popup
+`alert()` é uma função definida no módulo **browser** que mostra seu
+argumento em uma janela popup.
