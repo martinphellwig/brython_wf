@@ -1,9 +1,13 @@
-Building your own webapp : design
-=================================
+Construindo sua própria webapp: desenho
+=======================================
 
-To get started, the easiest is to copy the Memos application in another directory
+Para começar, o mais fácil é copiar a aplicação Memos em um outro
+diretório.
 
-We will take the example of a calculator, whose logic will be held in a Python script called *calculator.py*. The application screen will show a line for the entered value and the result, and buttons for digits and operators, something like
+Vamos usar o exemplo de uma calculadora cuja lógica estará em um
+script Python chamado *calculator.py*. A tela da aplicação vai mostrar
+uma linha para os valores de entrada e resultado, e botões para
+digitos e operadores. Algo assim:
 
     ---------------------
     |                   |
@@ -17,23 +21,42 @@ We will take the example of a calculator, whose logic will be held in a Python s
     | . | 2 | = | + |1/x|
     ---------------------
     
-First thing is to start the built-in server and point the browser to `http://localhost:8003` : it shows you the Memos application
+A primeira coisa é iniciar o servidor que vem com a aplicação e
+apontar o navegador para `http://localhost:8003`: ele mostra a
+aplicação Memos.
 
-Edit *manifest.webapp* to change the application name and description. Create an icon for the application to replace the one provided for the Memos application (*/icons/brython-memo.png*), and put the path to this new icon in the section _icons_ of *manifest.webapp*
+Edite *manifest.webapp* para mudar o nome e descrição da aplicação.
+Crie um ícone para a aplicação para substituir o fornecido para a
+aplicação Memos (*/icons/brython-memo.png*), e ponha o caminho para
+este novo ícone na seção _icons_ de *manifest.webapp*.
 
-Edit *index.html* to remove the line
+Edite *index.html* para remover a linha:
 
 >    <script type="text/python" src="memos.py"></script>
 
-To develop the application, you will need to get familiar with Firefox OS user interface. To get started, download the latest version of Firefox OS [Building Blocks](https://github.com/buildingfirefoxos/Building-Blocks) and open the file *app.html* in your browser. This will show you the HTML code used to generate common elements of the user interface : header, lists, fields, toolbar, etc. The source code of *app.html* is very useful to understand the tags used to build a page and the attributes you must set for each tag
+Para desenvolver a aplicação, você vai precisar se familiarizar com a
+interface do usuário do Firefox OS. Para começar, baixe a última
+versão do Firefox OS [Building
+Blocks](https://github.com/buildingfirefoxos/Building-Blocks) e abra o
+arquivo *app.html* em seu navegador. Isso irá mostrar o código HTML
+usado para gerar elementos comuns da interface do usuário: cabeçalho,
+listas, campos, barra de ferramentas, etc.O código fonte de *app.html*
+é muito útil para entender as etiquetas usadas para construir a página
+e os atributos que devem ser designados para cada etiqueta.
 
-Among all the elements presented in *app.html*, the one that looks the most like our calculator is the "Filters" page. In the source code of *app.html*, copy the code in section for Filter, id the part included in
+Dentre todos os elementos apresentados em *app.html*, o que mais se
+parece com nossa calculadora é a página "Filters". No código fonte de
+*app.html*, copie o código na seção para Filter, identifique a parte
+incluída em:
 
     <section id="filters" data-position="right">
 
-and paste it in the body of *index.html*. Pointing the browser to `localhost:8003` will now show you the same page as "Filters" in *app.html*
+e cole-a no corpo de *index.html*. Apontando o navegador para
+`localhost:8003` agora vai te mostrar a mesma página que "Filters" em
+*app.html*.
 
-Edit the code in *index.html* to get the design of your calculator to get the lines with the numbers : you will have something like
+Edite o código em *index.html* para obter o desenho da sua
+calculadora. Para obter as linhas com os números, você terá algo como:
 
       <section id="filters" data-position="right">
          <section role="region">
@@ -70,7 +93,12 @@ Edit the code in *index.html* to get the design of your calculator to get the li
         </section>
       </section>
 
-For the zone at the top of the screen, the one where you see what you have typed and where the result of an operation will be displayed when you press "=", you need something more like in the section "Input areas" in *app.html*. Again, copy and paste the interesting part of the section "Input areas" in the source code of *app.html* and adapt it in *index.html*. You will now get the basic layout of your application :
+Para a zona no topo da tela, onde você vê o que foi digitado e onde o
+resultado de uma operação aparece quando você aperta "=", você precisa
+de algo mais como na seção "Input areas" em *app.html*. De novo, copie
+e cole a parte interessante da seção "Input areas" no código fonte de
+*app.html* e adapte-a em *index.html*. Você tem agora o arranjo básico
+de sua aplicação:
 
     <section id="filters" data-position="right">
      <section role="region">
@@ -89,4 +117,7 @@ For the zone at the top of the screen, the one where you see what you have typed
      </section>
     </section>
 
-With this content in *index.html*, the application home page now looks like the calculator we had designed. But when you click on the buttons, nothing happens. For that, you must now write a program to handle the events on the page
+Com esse conteúdo de *index.html*, a página inicial da aplicação agora
+se parece com a calculadora que desenhamos. Mas quando você clica nos
+botões, nada acontece. Para isso, você deve agora escrever um programa
+que resolva os eventos na página.
