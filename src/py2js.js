@@ -1866,14 +1866,6 @@ function $ImportCtx(context){
             // for "import a.b.c" this object has attributes
             // "a", "a.b" and "a.b.c", values are the matching modules
             for(var j=0;j<parts.length;j++){
-                /*
-                if(j==0 && 
-                    ['def','class'].indexOf(scope.ntype)>-1){
-                    res += 'var '
-                }else if(j==0 && scope.ntype==="module" && scope.module !=="__main__"){
-                    res += 'var '
-                }
-                */
                 var key = parts.slice(0,j+1).join('.')
                 var alias = key
                 if(j==parts.length-1){alias = this.tree[i].alias}
