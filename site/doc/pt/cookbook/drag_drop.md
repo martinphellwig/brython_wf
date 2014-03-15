@@ -7,16 +7,33 @@ Arrastar e soltar um elemento na página web
 Solução
 -------
 
-Brython implementa uma API baseada na especificação de arrastar e soltar de HTML5. Na forma básica apresentada neste exemplo, ela consiste em definir funções de resposta para 3 eventos : 
-- _dragstart_ no elemento arrastável (quando o usuário começa a arrastá-lo)
-- _dragover_ na zona de destino (quando o elemento arrastável é movido sobre ele)
+Brython implementa uma API baseada na especificação de arrastar e
+soltar de HTML5. Na forma básica apresentada neste exemplo, ela
+consiste em definir funções de resposta para 3 eventos:
+
+- _dragstart_ no elemento arrastável (quando o usuário começa a
+  arrastá-lo)
+
+- _dragover_ na zona de destino (quando o elemento arrastável é movido
+  sobre ele)
+
 - _drop_ na zona de destino (quando o usuário libera o botão do mouse)
 
-Para vincular a função de resposta _callback_ a um evento _event_ em um elemento _element_, usamos o método _element_<code>.bind(_event,callback_)</code>
+Para vincular a função de resposta _callback_ a um evento _event_ em
+um elemento _element_, usamos o método
+_element_<code>.bind(_event,callback_)</code>
 
-As funções de resposta recebem um único argumento, uma innstância de `DOMEvent`. Para comunicar informação durante a operação de arrastar e soltar, o evento tem um atributo _data_ que recebe um valor na função de resposta associada a _dragstart_ ; este valor é usado na função de resposta associada com _drop_ para identificar o elemento que esta sendo solto
+As funções de resposta recebem um único argumento, uma instância de
+`DOMEvent`. Para comunicar informação durante a operação de arrastar e
+soltar, o evento tem um atributo _data_ que recebe um valor na função
+de resposta associada a _dragstart_; este valor é usado na função de
+resposta associada com _drop_ para identificar o elemento que esta
+sendo solto.
 
-No exemplo, quando o objeto arrastável tiver sido solto, ele não pode mais ser arrastado ; para isso, removemos os vínculos a um evento _event_ neste objeto usando o método _element_<code>.unbind(_event_)</code>
+No exemplo, quando o objeto arrastável tiver sido solto, ele não pode
+mais ser arrastado; para isso, removemos os vínculos a um evento
+_event_ neste objeto usando o método
+_element_<code>.unbind(_event_)</code>
 
 <div style="width:400px;height:150px;background-color:yellow" id="panel">
 <div id="dest" style="position:absolute;width:180px;height:80px;background-color:green;color:white;">destination zone</div>
@@ -24,6 +41,8 @@ No exemplo, quando o objeto arrastável tiver sido solto, ele não pode mais ser
 </div>
 
 <div id="py_source">
+    from browser import doc
+
     panel = doc["panel"] # zona amarela
     
     source = doc["source"] # zona vermelha
