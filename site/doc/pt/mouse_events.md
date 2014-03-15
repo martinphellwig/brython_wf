@@ -1,38 +1,40 @@
-Mouse events
-============
+Eventos do Mouse
+----------------
 
 <script type="text/python">
 from browser import doc, alert
 </script>
 
-The mouse-related events (movement, pressing a button) are
+Os eventos relacionados ao mouse (movimento, pressionar um botão) são:
 
 <table cellpadding=3 border=1>
 <tr>
 <td>*mouseenter*</td>
-<td>A pointing device is moved onto the element that has the listener attached</td>
+<td>Um dispositivo de apontamento é movido para o elemento que tem o auditor vinculado</td>
 </tr>
-<tr><td>*mouseleave*</td><td>a pointing device is moved off the element that has the listener attached</td></tr>
+<tr><td>*mouseleave*</td><td>um dispositivo de apontamento é movido para fora do elemento que tem o auditor vinculado</td></tr>
 
-<tr><td>*mouseover*</td><td>a pointing device is moved onto the element that has the listener attached or onto one of its children</td></tr>
-<tr><td>*mouseout*</td><td>a pointing device is moved off the element that has the listener attached or off one of its children</td></tr>
+<tr><td>*mouseover*</td><td>um dispositivo de apontamento é movido para o elemento que tem o auditor vinculado, ofusca este evento nos elementos filhos</td></tr>
+<tr><td>*mouseout*</td><td>um dispositivo de apontamento é movido para fora do elemento que tem o auditor vinculado, ofusca este evento nos elementos filhos</td></tr>
 
-<tr><td>*mousemove*</td><td>a pointing device is moved over an element</td></tr>
+<tr><td>*mousemove*</td><td>um dispositivo de apontemento é movido sobre o elemento que tem o auditor vinculado</td></tr>
 
-<tr><td>*mousedown*</td><td>a pointing device button (usually a mouse) is pressed on an element</td></tr>
-<tr><td>*mouseup*</td><td>a pointing device button is released over an element</td></tr>
+<tr><td>*mousedown*</td><td>o botão de um dispositivo de apontamento é pressionado em um elemento</td></tr>
+<tr><td>*mouseup*</td><td>o botão de um dispositivo de apontamento é solto sobre um elemento</td></tr>
 
-<tr><td>*click*</td><td>a pointing device button has been pressed and released on an element</td></tr>
-<tr><td>*dblclick*</td><td>a pointing device button is clicked twice on an element</td></tr>
+<tr><td>*click*</td><td>o botão de um dispositivo de apontamento é pressionado e solto em um elemento</td></tr>
+<tr><td>*dblclick*</td><td>o botão de um dispositivo de apontamento é clicado duas vezes em um elemento</td></tr>
 
 </table>
 
-Examples
+Exemplos
 --------
 
-*mouseenter* and *mouseleave*
+*mouseenter* e *mouseleave*
 
-> these events are triggered when the mouse enters or leaves an element. If an element includes other ones, the event is triggered every time the mouse enters or leaves a child element
+> Estes eventos são disparados quando o mouse entra ou sai de um
+  elemento. Se um elemento inclúi outros, o evento é disparado a cada
+  vez que o mouse entra ou sai de um elemento filho.
 
 <table>
 <tr>
@@ -66,9 +68,11 @@ Examples
 exec(doc["enter_leave"].text)
 </script>
 
-*mouseover* and *mouseout*
+*mouseover* e *mouseout*
 
-> the difference with *mouseenter* and *mouseleave* is that once the mouse entered an element, the event is not triggered on its children elements
+> A diferença para *mouseenter* e *mouseleave* é que, uma vez que o
+  mouse entra em um elemento, estes eventos não são disparados nos
+  elementos filhos.
 
 <table>
 <tr>
@@ -131,25 +135,29 @@ exec(doc["over_out"].text)
 exec(doc["move"].text)
 </script>
 
-`DOMEvent` instance attributes
-------------------------------
+Atributos de instâncias de `DOMEvent`
+-------------------------------------
 
-The instance of `DOMEvent` has the following attributes
+As instâncias de `DOMEvent` têm os seguintes atributos.
 
 <table cellpadding=3 border=1>
-<tr><td>*button*</td><td>indicates which button was pressed on the mouse to trigger the event</td></tr>
-<tr><td>*buttons*</td><td>indicates which buttons were pressed on the mouse to trigger the event.
+<tr><td>*button*</td><td>indica qual botão foi pressionado no mouse para disparar o evento.</td></tr>
+<tr><td>*buttons*</td><td>indica quais botões do mouse foram pressionados para disparar o evento.
 
-Each button that can be pressed is representd by a given number (1  : Left button, 2  : Right button, 4  : Wheel button). If more than one button is pressed, the value of the buttons is combined to produce a new number. For example, if the right button (2) and the wheel button (4) are pressed, the value is equal to 2|4, which is 6</td></tr>
+Cada botão que pode ser pressionado é representado por um dado número
+(1: botão esquerto, 2: botão direito, 4: botão da roda). Se mais de um
+botão for pressionado, o valor dos botões é combinado para produzir um
+novo número. Por exemplo, se o botão direito (2) e o botão da roda (4)
+forem pressionados, o valor é igual a 2+4, portanto 6.</td></tr>
 
-<tr><td>*x*</td><td>position of the mouse relatively to the left border of the window (in pixels)</td></tr>
-<tr><td>*y*</td><td>position of the mouse relatively to the upper border of the window (in pixels)</td></tr>
+<tr><td>*x*</td><td>posição do mouse relativamente à borda esquerda da janela (em pixels)</td></tr>
+<tr><td>*y*</td><td>posição do mouse relativamente à borda superior da janela (em pixels)</td></tr>
 
-<tr><td>*clientX*</td><td>the X coordinate of the mouse pointer in local (DOM content) coordinates</td></tr>
-<tr><td>*clientY*</td><td>the Y coordinate of the mouse pointer in local (DOM content) coordinates</td></tr>
+<tr><td>*clientX*</td><td>a coordenada X do ponteiro do mouse em coordenadas locais (conteúdo DOM) coordinates</td></tr>
+<tr><td>*clientY*</td><td>a coordenada Y do ponteiro do mouse em coordenadas locais (conteúdo DOM) coordinates</td></tr>
 
-<tr><td>*screenX*</td><td>the X coordinate of the mouse pointer in global (screen) coordinates</td></tr>
-<tr><td>*screenY*</td><td>the Y coordinate of the mouse pointer in global (screen) coordinates</td></tr>
+<tr><td>*screenX*</td><td>a coordenada X do ponteiro do mouse em coordenadas globais (tela)</td></tr>
+<tr><td>*screenY*</td><td>a coordenada Y do ponteiro do mouse em coordenadas globais (tela)</td></tr>
 
 </table>
 
