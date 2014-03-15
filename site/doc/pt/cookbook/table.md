@@ -1,25 +1,31 @@
 Problema
 --------
 
-Criar uma tabela HTML
+Criar uma tabela HTML.
 
 
 Solução
 -------
 
-Neste exemplo e no seguinte, mostraremos somente o script Python ; o código HTML que o cerca permanecerá o mesmo dos exemplos anteriores
+Neste exemplo e no seguinte, mostraremos somente o script Python; o
+código HTML que o cerca permanecerá o mesmo dos exemplos anteriores.
 
-Para criar uma tabela, usamos as etiquetas HTML : `TABLE` (a tabela),`TR` (uma linha da tabela),`TH` (uma célula de cabeçalho) e `TD` (uma célula)
+Para criar uma tabela, usamos as etiquetas HTML: `TABLE` (a
+tabela),`TR` (uma linha da tabela),`TH` (uma célula de cabeçalho) e
+`TD` (uma célula).
 
-A tabela é composta de linhas, cada linha é feita de células ; a primeira célula é geralmente feita de "células de cabeçalho" descrevendo o valor da coluna correspondente
+A tabela é composta de linhas, cada linha é feita de células; a
+primeira célula é geralmente feita de "células de cabeçalho"
+descrevendo o valor da coluna correspondente.
 
-Abaixo um exemplo simples : 
+Abaixo um exemplo simples:
 
 <table width="100%">
 <tr>
 <td style="width:50%;">
 
-    from html import TABLE,TR,TH,TD
+    from browser import doc
+    from browser.html import TABLE,TR,TH,TD
     table = TABLE()
     row = TR() # create a row
     # add header cells
@@ -51,9 +57,10 @@ def fill_zone():
     exec(src)
 </script>
 
-Note como o conteúdo inicial da célula foi apagado : simplesmente ajustando seu atributo `text` para a cadeia vazia
+Note como o conteúdo inicial da célula foi apagado: simplesmente
+ajustando seu atributo `text` para a cadeia vazia.
 
-Podemos construir uma tabela a partir de uma lista de listas : 
+Podemos construir uma tabela a partir de uma lista de listas:
 
 <table width="100%">
 <tr>

@@ -1,17 +1,21 @@
 Problema
 --------
 
-Mostrar informação quando o mouse estiver sobre uma área de uma imagem
+Mostrar informação quando o mouse estiver sobre uma área de uma
+imagem.
 
 
 Solução
 -------
 
-Usaremos o atributo `onmouseover` da etiqueta HTML `area`. Um texto será mostrado na tela dependendo da posição do mouse :
+Usaremos o atributo `onmouseover` da etiqueta HTML `area`. Um texto
+será mostrado na tela dependendo da posição do mouse:
 
 <table width="100%">
 <tr>
 <td style="width:40%;padding-right:10px;">
+
+    from browser import doc
 
     def writetext(txt):
         doc["description"].text = ""
@@ -39,6 +43,7 @@ Usaremos o atributo `onmouseover` da etiqueta HTML `area`. Um texto será mostra
 </table>
 
 <script type="text/python3">
+from browser import doc
 def writetext(txt):
     doc["description"].text = ""
     doc["description"] <= txt
