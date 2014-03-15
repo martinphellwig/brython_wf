@@ -40,12 +40,12 @@ atributos:
 `altKey`
 
 > `True` se a tecla Alt (ou Option, no Mac) estava ativa quando o
-  evento foi gerado.
+> evento foi gerado.
 
 > Este atributo não é definido para o evento *input*.
 
 > É normalmente usado com *keypress*, para poder testar se a
-  combinação Alt+&lt;tecla&gt; foi usada, ou apenas &lt;key&gt; 
+> combinação Alt+&lt;tecla&gt; foi usada, ou apenas &lt;key&gt;
 
 </td>
 
@@ -74,7 +74,9 @@ Digite um texto no campo abaixo, com ou sem pressionar a tecla Alt:
 
 > Este atributo é usado apenas pelo evento *keypress*.
 
-> É atribuído um valor diferente a ele se a tecla Shift é pressionada ou não.
+> É atribuído um valor diferente a ele se a tecla Shift é pressionada
+> ou não.
+
 </td>
 <td>
 #### Exemplo
@@ -105,7 +107,7 @@ ser lido por `ch(ev.charCode)`.
 > Este atributo não é definido para o evento *input*.
 
 > É normalmente usado com *keypress*, para poder testar se a
-  combinação Ctrl+&lt;tecla&gt; foi usada, ou apenas &lt;key&gt; 
+> combinação Ctrl+&lt;tecla&gt; foi usada, ou apenas &lt;key&gt;
 
 <td>
 #### Exemplo
@@ -138,13 +140,13 @@ padrão de alguns atalhos do navegador que usam a tecla Ctrl.
 `keyCode`
 
 > Um código numérico que depende do sistema e da implementaçao e
-  identifica o valor não modificado da tecla prassionada.
+> identifica o valor não modificado da tecla prassionada.
 
 > O valor não muda se as teclas Alt, Ctrl or Shift estiverem
-  pressionadas.
+> pressionadas.
 
 > Note que o resultado não é o mesmo dependendo do evento resolvido:
-  *keydown*, *keyup* or *keypress*
+> *keydown*, *keyup* ou *keypress*
 
 </td>
 <td>
@@ -186,7 +188,7 @@ com *keydown* <input id="keyCodeKeydown" value=""></input>
 > Este atributo não é definido para o evento *input*.
 
 > É normalmente usado com *keypress*, para poder testar se a
-  combinação Shift+&lt;tecla&gt; foi usada, ou apenas &lt;key&gt;
+> combinação Shift+&lt;tecla&gt; foi usada, ou apenas &lt;key&gt;
 
 </td>
 <td>
@@ -213,10 +215,10 @@ Digite um texto no campo abaixo, com ou sem pressionar a tecla Shift:
 <td>
 `which`
 > Um código numérico que depende do sistema e da implementaçao e
-  identifica o valor não modificado da tecla prassionada.
+> identifica o valor não modificado da tecla prassionada.
 
 > Note que o resultado não é o mesmo dependendo do evento resolvido:
-  *keydown*, *keyup* or *keypress*
+> *keydown*, *keyup* ou *keypress*
 
 </td>
 <td>

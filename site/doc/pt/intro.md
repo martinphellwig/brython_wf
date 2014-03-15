@@ -1,16 +1,16 @@
-Citação da [especificação do Modelo de Objetos de Documentos (DOM) do W3C](http://www.w3.org/DOM/) :
+Citação da [especificação do Modelo de Objetos de Documentos (DOM) do W3C](http://www.w3.org/DOM/):
 
 > _O que é o Modelo de Objetos de Documentos?_
 
-> _O Modelo de Objetos de Documentos é uma interface, independente de
-  plataforma ou __linguagem__, que permitirá programas e scripts
-  acessarem e atualizarem dinamicamente o conteúdo, a estrutura, e o
-  estilo dos documentos._
+> _O Modelo de Objetos de Documentos é uma interface, independente de_
+> _plataforma ou __linguagem__, que permitirá programas e scripts_
+> _acessarem e atualizarem dinamicamente o conteúdo, a estrutura, e o_
+> _estilo dos documentos._
 
 O objetivo de Brython é substituir Javascript por Python como a
 linguagem de scripting para navegadores web.
 
-Um exemplo simples :
+Um exemplo simples:
 
 <table>
 <tr>

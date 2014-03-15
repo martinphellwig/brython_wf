@@ -115,9 +115,11 @@ _float_ é uma função Javascript definnida em __py\_builtin\_functions.js__</t
 </td>
 <td>_$no\_break_ é um booleano usado se o laço `for` tiver uma cláusula `else`
 
-_$pop\_exc()_ é uma função interna que remove a última excessão da pilha de excessçoes
+_$pop\_exc()_ é uma função interna que remove a última excessão da
+pilha de excessçoes
 
-_$is\_exc(exc,classes)_ é uma função interna que verifica se a excessão _exc_ é uma instância de uma das _classes_
+_$is\_exc(exc,classes)_ é uma função interna que verifica se a
+excessão _exc_ é uma instância de uma das _classes_
 
 </td></tr>
 

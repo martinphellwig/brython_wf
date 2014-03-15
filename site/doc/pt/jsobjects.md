@@ -12,7 +12,7 @@ Por padrão, Brython expõe somente dois nomes no espaço de nomes
 > `brython()` : a função executada ao carregar a página.
 
 > `__BRYTHON__` : um objeto usado internamente por Brython para
-  guardar os objetos necessários à execução dos scripts
+> guardar os objetos necessários à execução dos scripts
 
 Consequentemente, por padrão, um programa Javascript não pode acessar
 objetos Brython. Por exemplo, para a função `echo()` definida em um
@@ -37,9 +37,9 @@ módulo **browser**:
     from browser import window
     window.echo = echo
 
-<strong>NOTA: Este método não é recomendado, pois ele cria um risco de
-conflito com nomes definidos em um programa ou biblioteca de
-Javascript usado na página.</strong>
+**NOTA: Este método não é recomendado, pois ele cria um risco de**
+**conflito com nomes definidos em um programa ou biblioteca de**
+**Javascript usado na página.**
 
 ### Objetos em programas Javascript
 
@@ -52,7 +52,7 @@ Para poder utilizá-los em um script Python, eles devem ser
 explicitamente transformados pela função `JSObject()` definida no
 módulo **javascript**.
 
-Por exemplo :
+Por exemplo:
 
     <script type="text/javascript">
     circle = {surface:function(r){return 3.14*r*r}}
@@ -74,10 +74,10 @@ módulo **javascript**.
 `JSConstructor(`_constr_`)`
 
 > retorna a função que, quando chamada com argumantos, retorna um
-  objeto Python que corresponde ao objeto Javascript construído pelo
-  construtor _constr_
+> objeto Python que corresponde ao objeto Javascript construído pelo
+> construtor _constr_
 
-Por exemplo :
+Por exemplo:
 
     <script type="text/javascript">
     function Rectangle(x0,y0,x1,y1){
@@ -99,7 +99,7 @@ Por exemplo :
 ### Exemplo jQuery
 
 Abaixo um exemplo mais completo de como você pode usar a popular
-biblioteca jQuery :
+biblioteca jQuery:
 
     <html>
     <head>

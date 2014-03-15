@@ -33,8 +33,8 @@ Exemplos
 *mouseenter* e *mouseleave*
 
 > Estes eventos são disparados quando o mouse entra ou sai de um
-  elemento. Se um elemento inclúi outros, o evento é disparado a cada
-  vez que o mouse entra ou sai de um elemento filho.
+> elemento. Se um elemento inclúi outros, o evento é disparado a cada
+> vez que o mouse entra ou sai de um elemento filho.
 
 <table>
 <tr>
@@ -71,8 +71,8 @@ exec(doc["enter_leave"].text)
 *mouseover* e *mouseout*
 
 > A diferença para *mouseenter* e *mouseleave* é que, uma vez que o
-  mouse entra em um elemento, estes eventos não são disparados nos
-  elementos filhos.
+> mouse entra em um elemento, estes eventos não são disparados nos
+> elementos filhos.
 
 <table>
 <tr>
@@ -138,7 +138,7 @@ exec(doc["move"].text)
 Atributos de instâncias de `DOMEvent`
 -------------------------------------
 
-As instâncias de `DOMEvent` têm os seguintes atributos.
+As instâncias de `DOMEvent` têm os seguintes atributos:
 
 <table cellpadding=3 border=1>
 <tr><td>*button*</td><td>indica qual botão foi pressionado no mouse para disparar o evento.</td></tr>

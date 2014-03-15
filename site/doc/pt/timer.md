@@ -11,10 +11,11 @@ deve tomar argumentos. Retorna um objeto utilizável na função
 serguinte.
 
 > Encapsula a função `setTimeout` de javascript. Documentação oficial
-  pode ser encontrada
-  [aqui](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-settimeout).
+> pode ser encontrada
+> [aqui](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-settimeout).
 
-> Neste exemplo simples, a cor do texto na caixa preta irá mudar após 3 segundos.
+> Neste exemplo simples, a cor do texto na caixa preta irá mudar após
+> 3 segundos.
 
 <div style="padding-left:50px;">
 <div id="st-example" style="background-color:#dddddd;">
@@ -48,15 +49,15 @@ exec(doc["st-example"].text)
 **`clear_timeout(`_timer_`)`**
 
 > Cancela a execução da função definida por `set_timeout()`. Ela toma
-  um argumento, o objeto `_timer_` retornado pela chamada de
-  `set_timeout()`.
+> um argumento, o objeto `_timer_` retornado pela chamada de
+> `set_timeout()`.
 
 > Encapsula a função `cancelTimeout` de javascript. Documentação
-  oficial pode ser encontrada
-  [aqui](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-cleartimeout).
+> oficial pode ser encontrada
+> [aqui](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-cleartimeout).
 
 > Vejamos o exemplo anterior. Agora você tem a possibilidade de parar
-  a execução da ação antes dos 3 segundos que postergam a execução.
+> a execução da ação antes dos 3 segundos que postergam a execução.
 
 <div style="padding-left:50px;">
 <div id="ct-example" style="background-color:#dddddd;">
@@ -101,12 +102,12 @@ exec(doc["ct-example"].text)
 **`set_interval(`_fonction,ms_`)`**
 
 > Inicia a execução repetida da função *function* a cada *ms*
-  milisegundos. Esta função retorna um objeto utilizável na função
-  seguinte.
+> milisegundos. Esta função retorna um objeto utilizável na função
+> seguinte.
 
 > Encapsula a função `setInterval` de javascript. Documentação oficial
-  pode ser encontrada
-  [aqui](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-setinterval).
+> pode ser encontrada
+> [aqui](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-setinterval).
 
 > Quando possível, você deveria evitar usar esta função e usar request_animation_frame (veja abaixo) como uma alternativa.
 
@@ -114,11 +115,11 @@ exec(doc["ct-example"].text)
 > Para a execução repetida da fução definida por `set_interval()`.
 
 > Encapsula a função `clearInterval` de javascript. Documantação
-  oficial pode ser encontrada
-  [aqui](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-clearinterval).
+> oficial pode ser encontrada
+> [aqui](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-clearinterval).
 
 > Aqui você pode ver um exemplo em que são usadas `set_interval` e
-  `cancel_interval`:
+> `cancel_interval`:
 
 <div style="padding-left:50px;">
 <div id="py-source" style="background-color:#dddddd;">
@@ -178,21 +179,21 @@ exec(doc['py-source'].text)
 > Executa a função *function* repetidamente deixando o navegador responsável por atualizar as chamadas. A função *function* usa um argumento falso.
 
 > Encapsula a função `requestAnimationFrame` de
-  javascript. Documentação oficial pode ser encontrada
-  [aqui](http://www.w3.org/TR/animation-timing/#dom-windowanimationtiming-requestanimationframe).
+> javascript. Documentação oficial pode ser encontrada
+> [aqui](http://www.w3.org/TR/animation-timing/#dom-windowanimationtiming-requestanimationframe).
 
 **`cancel_animation_frame(*id*)`**
 
 > Cancela a execução repetida da função definida por
-  *request_animation_frame()* e usa o valor retornado por
-  *request_animation_frame()* como um *id*.
+> *request_animation_frame()* e usa o valor retornado por
+> *request_animation_frame()* como um *id*.
 
 > Encapsula a função `cancelAnimationFrame` de
-  javascript. Documentação oficial podde ser encontrada
-  [aqui](http://www.w3.org/TR/animation-timing/#dom-windowanimationtiming-cancelanimationframe).
+> javascript. Documentação oficial podde ser encontrada
+> [aqui](http://www.w3.org/TR/animation-timing/#dom-windowanimationtiming-cancelanimationframe).
 
 > Aqui você pode ver um exemplo em que são usadas
-  `request_animation_frame` e `cancel_animation_frame`:
+> `request_animation_frame` e `cancel_animation_frame`:
 
 <div style="padding-left:50px;">
 <div id="raf-example" style="background-color:#dddddd;">

@@ -36,13 +36,14 @@ Edite *index.html* para remover a linha:
 
 Para desenvolver a aplicação, você vai precisar se familiarizar com a
 interface do usuário do Firefox OS. Para começar, baixe a última
-versão do Firefox OS [Building
-Blocks](https://github.com/buildingfirefoxos/Building-Blocks) e abra o
-arquivo *app.html* em seu navegador. Isso irá mostrar o código HTML
-usado para gerar elementos comuns da interface do usuário: cabeçalho,
-listas, campos, barra de ferramentas, etc.O código fonte de *app.html*
-é muito útil para entender as etiquetas usadas para construir a página
-e os atributos que devem ser designados para cada etiqueta.
+versão do Firefox OS
+[Building Blocks](https://github.com/buildingfirefoxos/Building-Blocks)
+e abra o arquivo *app.html* em seu navegador. Isso irá mostrar o
+código HTML usado para gerar elementos comuns da interface do usuário:
+cabeçalho, listas, campos, barra de ferramentas, etc.O código fonte de
+*app.html* é muito útil para entender as etiquetas usadas para
+construir a página e os atributos que devem ser designados para cada
+etiqueta.
 
 Dentre todos os elementos apresentados em *app.html*, o que mais se
 parece com nossa calculadora é a página "Filters". No código fonte de

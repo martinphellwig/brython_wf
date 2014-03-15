@@ -16,7 +16,8 @@ ser incluídos na página de dois modos diferentes :
 >    </body>
 >    </html>
 
-- ou escrevendo código Python usando o módulo integrado **browser.html**:
+- ou escrevendo código Python usando o módulo integrado
+  **browser.html**:
 
 >    <html>
 >    <body>

@@ -8,15 +8,15 @@ a Javascript: eles podem escrever aplicações para dispositivos móveis
 em Python.
 
 O passo inicial é configurar um ambiente para executar aplocações
-Firefox OS. O mais simples é instalar o [Simulador Firefox
-OS](https://developer.mozilla.org/en-US/docs/Tools/Firefox_OS_Simulator),
+Firefox OS. O mais simples é instalar o
+[Simulador Firefox OS](https://developer.mozilla.org/en-US/docs/Tools/Firefox_OS_Simulator),
 um plugin para o navegador Firefox. Escolha a versão mais recente do
 OS (no momento da elaboração deste texto é a versão 1.3).
 
 Quando a instalação estiver completa, você poderá gerenciar o
 simulador no navegador Firefox em Tools > Web Developer > App Manager
-(veja [Usando o App
-Manager](https://developer.mozilla.org/en-US/Firefox_OS/Using_the_App_Manager#Using_a_Firefox_OS_Simulator_Add-on))
+(veja
+[Usando o App Manager](https://developer.mozilla.org/en-US/Firefox_OS/Using_the_App_Manager#Using_a_Firefox_OS_Simulator_Add-on))
 
 A aplicação Memos
 -----------------
@@ -43,18 +43,18 @@ Os componentes da aplicação inclúem:
    de estilos (stylesheets) localizados no diretório raiz e nos
    subdiretórios *icons* e *style*. Todos estes arquivos CSS são
    fornecidos pelo time de desenvolvimento do Firefox OS; eles foram
-   obtidos no site de desenvolvimento [Building
-   Blocks](https://github.com/buildingfirefoxos/Building-Blocks).
+   obtidos no site de desenvolvimento
+   [Building Blocks](https://github.com/buildingfirefoxos/Building-Blocks).
 
 > *index.html* também carrega o programa Javascript
-  brython/brython_dist.js*. Este script permite o desenvolvimento de
-  scripts em Python em vez de Javascript. Ele expõe a função chamada
-  `brython` que é executada ao carregar a página.
+> brython/brython_dist.js*. Este script permite o desenvolvimento de
+> scripts em Python em vez de Javascript. Ele expõe a função chamada
+> `brython` que é executada ao carregar a página.
 
 >    <body role="application" onload="brython(1)">
 
 > Graças a Brython, a logica da aplicação é escrita em Python no
-script *memos.py*, que é carregado em *index.html* por:
+> script *memos.py*, que é carregado em *index.html* por:
 
 >    <script type="text/python" src="memos.py"></script>
 
@@ -65,4 +65,4 @@ script *memos.py*, que é carregado em *index.html* por:
    específicos agrupados no pacite **browser**.
 
 > Para informação sobre como usar Brython para desenvolvimento web,
-  veja a [Documentação](http://brython.info).
+> veja a [Documentação](http://brython.info).

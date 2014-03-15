@@ -1,9 +1,11 @@
 módulo **browser.local_storage** (armazenamento local)
 ------------------------------------------------------
 
-Este módulo usa o armazenamento local definido em HTML5. A especificação pode ser encontrada [neste link](http://dev.w3.org/html5/webstorage/#the-localstorage-attribute).
+Este módulo usa o armazenamento local definido em HTML5. A
+especificação pode ser encontrada
+[neste link](http://dev.w3.org/html5/webstorage/#the-localstorage-attribute).
 
-O que é **`HTML5 localStorage`**?: 
+O que é **`HTML5 localStorage`**?:
 
 - localStorage (armazenamento local) é um banco de dados de
   chave-valor no lado do cliente, ou seja, os dados são guardados no
@@ -12,11 +14,9 @@ O que é **`HTML5 localStorage`**?:
   que os dados guardados só estão disponíveis naquela máquina e
   naquele navegador. Lembre-se que `local_storage` é um para cada
   navegador, e não por computador.
-
 - Chaves e valores são cadeias de caractéres, então se você fornecer,
   por exemplo, uma lista, quando você tentar obter os valores de volta
   você vai obter uma cadeia e não a lista original. Lembre-se disso!!
-
 - Chaves e valores são armazenados persistentemente com um protocolo,
   domínio e porta específicos. Bancos de dados `local_storage` têm
   escopo de uma origem HTML5, basicamente a tupla (scheme, host, port,

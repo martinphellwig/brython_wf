@@ -9,17 +9,17 @@ O módulo define uma função:
 `websocket(`_host_`)`
 
 > _host_ é a localização de um servidor que suporta o protocolo
-WebSocket. Retorna um objeto `WebSocket`.
+> WebSocket. Retorna um objeto `WebSocket`.
 
 > Se o navegador não suporta WebSocket, um erro `NotImplementedError`
-será levantado.
+> será levantado.
 
 Objetos `WebSocket` têm os seguintes métodos:
 
-`bind(_evt,function_)`
+`bind(`_evt,function_`)`
 
 > Vincula a função _function_ ao evento _evt_. Os eventos e os
-  argumentos correspondentes da função são:
+> argumentos correspondentes da função são:
 
 <blockquote>
 <table border=1 cellpadding=5>
