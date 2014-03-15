@@ -1,32 +1,68 @@
-Writing a Webapp for Firefox OS in Python with Brython
-======================================================
+Escrevendo uma Webapp para Firefox OS em Python com Brython
+===========================================================
 
-Applications for Firefox OS are written with standard web technologies : HTML5, CSS, and a programming language for web clients. With [Brython](http://brython.info) developers are no longer limited to Javascript : they can write mobile applications in Python
+Aplicações para Firefox OS são escritas com tecnologias padrão da web:
+HTML5, CSS, e uma linguagem de programação para clientes web. Com
+[Brython](http://brython.info) desenvolvedores não são mais limitados
+a Javascript: eles podem escrever aplicações para dispositivos móveis
+em Python.
 
-The initial step is to set up an environment to run Firefox OS applications. The most simple is to install the [Firefox OS simulator](https://developer.mozilla.org/en-US/docs/Tools/Firefox_OS_Simulator), a plugin for the Firefox browser. Choose the latest version of the OS (at time of writing it's version 1.3)
+O passo inicial é configurar um ambiente para executar aplocações
+Firefox OS. O mais simples é instalar o [Simulador Firefox
+OS](https://developer.mozilla.org/en-US/docs/Tools/Firefox_OS_Simulator),
+um plugin para o navegador Firefox. Escolha a versão mais recente do
+OS (no momento da elaboração deste texto é a versão 1.3).
 
-When the installation is done, you will manage the simulator in the Firefox browser by Tools > Web Developer > App Manager (see [Using the App Manager](https://developer.mozilla.org/en-US/Firefox_OS/Using_the_App_Manager#Using_a_Firefox_OS_Simulator_Add-on))
+Quando a instalação estiver completa, você poderá gerenciar o
+simulador no navegador Firefox em Tools > Web Developer > App Manager
+(veja [Usando o App
+Manager](https://developer.mozilla.org/en-US/Firefox_OS/Using_the_App_Manager#Using_a_Firefox_OS_Simulator_Add-on))
 
-The Memos application
----------------------
-To get a first taste of webapps developed with Brython, download and unpack the [brython-firefoxOS-memo](https://bitbucket.org/brython/brython-firefoxos-memos) application and follow the instructions on how to install it for the Firefox OS simulator
+A aplicação Memos
+-----------------
 
-The components of the application include :
+Para ter um primeiro contato com webapps desenvolvidas com Brython,
+baixe e descompacte a aplicação
+[brython-firefoxOS-memo](https://bitbucket.org/brython/brython-firefoxos-memos)
+e siga as instruções de como instalar no simulador Firefox OS.
 
-- *server.py* : the built-in web server used to install and run the hosted application
+Os componentes da aplicação inclúem:
 
-- *manifest.webapp* : this file is read by the application manager when the hosted app is added to the simulator. It is a text file with a JSON object, providing Firefox OS with important information about the application : its name and description, the launch_path (ie the url of the application first screen), the path of the icons installed on the simulator home screen for the application
+- *server.py*: O servidor web integrado usado para instalar e executar
+   a aplicação.
 
-- *index.html* : the home page of the application. It loads a number of stylesheets located in the root directory and in subdirectories *icons* and *style*. All these CSS files are provided by the Firefox OS development team ; they are taken from the [Building Blocks](https://github.com/buildingfirefoxos/Building-Blocks) development site
+- *manifest.webapp*: Este arquivo é lido pelo gerenciador de
+   aplicações quando a aplicação hospedada (hosted) é adicionada ao
+   siulador. Ele é um arquivo de texto com um objeto JSON fornecendo
+   ao Firefox OS informações importantes sobre a aplicação: seu nome e
+   descrição, o caminho de lançamento (launch_path, a url da primeira
+   tela da aplicação), o caminho dos icones instalados na tela inicial
+   do simulador para a aplicação.
 
->*index.html* also loads the Javascript program *brython/brython_dist.js*. This script allows developing scripts in Python instead of Javascript. It exposes a function called `brython` which is run on page load
+- *index.html*: a página inicial da aplicação. Ela carrega um conjunto
+   de estilos (stylesheets) localizados no diretório raiz e nos
+   subdiretórios *icons* e *style*. Todos estes arquivos CSS são
+   fornecidos pelo time de desenvolvimento do Firefox OS; eles foram
+   obtidos no site de desenvolvimento [Building
+   Blocks](https://github.com/buildingfirefoxos/Building-Blocks).
+
+> *index.html* também carrega o programa Javascript
+  brython/brython_dist.js*. Este script permite o desenvolvimento de
+  scripts em Python em vez de Javascript. Ele expõe a função chamada
+  `brython` que é executada ao carregar a página.
 
 >    <body role="application" onload="brython(1)">
 
->Thanks to Brython, the application logic is written in Python in the script *memos.py*, which is loaded in *index.html* by
+> Graças a Brython, a logica da aplicação é escrita em Python no
+script *memos.py*, que é carregado em *index.html* por:
 
 >    <script type="text/python" src="memos.py"></script>
 
-- *memos.py* is a regular Python script, parsed, translated to Javascript and executed by Brython. Most of the Python 3 syntax and many of the modules in the standard distribution are supported by Brython. For the interface with the DOM, it provides specific modules grouped in the package **browser**
+- *memos.py* é um script Python comum, analisado, traduzido para
+   Javascript e executado por Brython. A maior parte da sintaxe de
+   Python 3 e muitos dos módulos da distribuição padrão são suportados
+   por Brython. Para interface com o DOM, ele fornece módulos
+   específicos agrupados no pacite **browser**.
 
->For information on how to use Brython for web development, see the [Documentation](http://brython.info)
+> Para informação sobre como usar Brython para desenvolvimento web,
+  veja a [Documentação](http://brython.info).

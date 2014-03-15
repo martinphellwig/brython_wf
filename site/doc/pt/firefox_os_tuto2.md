@@ -1,48 +1,59 @@
-Building your own webapp : application logic
-============================================
+Construindo sua própria webapp: lógica da aplicação
+===================================================
 
-Create a Python program called *calculator.py* ; in *index.html*, just after the `body` tag, add this line
+Crie um programa Python chamado *calculator.py*. Em *index.html*, logo
+após a etiqueta `body`, adicione esta linha:
 
     <script src="calculator.py" type="text/python3"></script>
 
-This will make the Brython engine load and run the script
+Isso fará o motor de Brython carregar e executar o script.
 
-The first lines of *calculator.py* will import the built-in Brython names used to interact with the application
+As primeiras linhas de *calculator.py* importarão os nomes usados em
+Brython para interagir com a aplicação:
 
     from browser import document
 
-All the keys in the keyboard are inside html anchors (tags `<a href="#">...</a>`). The object `document` can find all the anchors by :
+Todas as teclas no teclado estão dentro de âncoras html (etiquetas `<a
+href="#">...</a>`). O objeto `document` pode encontrar todas as
+âncoras com:
 
     anchors = document.get(selector='a')
 
-Since you are debugging the appliation, it is useful to control that you really get the anchors, so you can add the line
+Como você está depurando a aplicação, é útil garantir que você
+realmente pegou as âncoras, então você pode adicionar a linha:
 
     print(anchors)
 
-which will print the anchors list in the browser console
+que vai imprimir a lista de âncoras no console do navegador.
 
-Ok, so *calculator.py* is 
+Ok, então *calculator.py* é
 
     from browser import document
     
     anchors = document.get(selector="a")
     print(anchors)
 
-Reload the page in the browser and open the console (Tools > Web developer > Web console). In the console, you should see a list of elements
+Atualize a página no navegador e abra o console (Tools > Web developer
+> Web console). No console, você deve ver uma lista de elementos:
 
     <DOMNode object type 'ELEMENT' name 'A'>
 
-Each of the anchor object has an attribute _text_ ; you can see what this attribute is by changing the last line by
+Cada um dos objetos âncora tem um atributo _text_. Você pode ver o que
+este atributo é mudando a última linha para:
 
     print(list(anchor.text for anchor in anchors))
 
-This prints `['7', '8', '9', '÷', '4', '5', '6', '*', '1', '2', '3', '-', '.', '0', '=', '+']` in the console
+Isso imprime `['7', '8', '9', '÷', '4', '5', '6', '*', '1', '2', '3',
+'-', '.', '0', '=', '+']` no console.
 
-To define what happens when the user clicks on an anchor, Brython uses the syntax
+Para definir o que acontece quando o usuário clica em uma âncora,
+Brython usa a sintaxe:
 
     anchor.bind('click', callback)
 
-where _callback_ is a function taking a `DOMEvent` instance as argument. In this application, we will use the same callback function for all the keys
+onde _callback_ é a função que recebe uma instância de `DOMEvent` como
+argumento. Nesta aplicação, vamos usar a mesma função para todas as
+teclas:
 
     from browser import document
     
@@ -54,14 +65,21 @@ where _callback_ is a function taking a `DOMEvent` instance as argument. In this
     for anchor in anchors:
         anchor.bind('click', callback)
 
-With these bindings, when the user hits a key, the text on this key in printed in the console (the attribute _target_ of the `DOMEvent` object is the anchor itself)
+Com estes vínculos, quando o usuário apertar uma tecla, o texto nesta
+tecla é impresso no console (o atributo _target_ do objeto `DOMEvent`
+é a própria âncora).
 
-This is not exactly what we want : the text should be entered in the entry field. This entry field has the id "entry", and Brython gets a reference to the field by `document["entry"]`. The callback function can be changed to
+Isso não é exatamente o que queremos: o texto devia aparecer no campo
+de entrada. Este campo de entrada tem id "entry", e Brython obtem uma
+referência para o campo com `document["entry"]`. A função de
+resposta deveria ser mudada para:
 
     def callback(ev):
         document["entry"].value += ev.target.text
 
-This is ok for most keys, but we must handle those that are supposed to compute a result. The complete code of *calculator.py* below should be self-explanatory
+Isso está bom para a maioria das teclas, mas precisamos resolver
+aquelas que deveriam computar um resultado. O código completo de
+*calculator.py* abaixo deve ser auto-explicativo:
 
     from browser import document
     import math
