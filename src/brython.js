@@ -3692,8 +3692,14 @@ __BRYTHON__.$options=options
 __BRYTHON__.exception_stack=[]
 __BRYTHON__.call_stack=[]
 __BRYTHON__.vars={}
-if(options.py_tag===undefined){options.py_tag="script"}
-var $elts=document.getElementsByTagName(options.py_tag)
+if(options.ipy_id!==undefined){
+	 var $elts=[]
+	 for(var $i=0;$i<options.ipy_id.length;$i++){
+	 $elts.push(document.getElementById(options.ipy_id[$i]))
+	 }
+	 }else{
+	 var $elts=document.getElementsByTagName('script')
+}
 var $scripts=document.getElementsByTagName('script')
 var $href=window.location.href
 var $href_elts=$href.split('/')
@@ -6464,8 +6470,9 @@ $JSObjectDict.__setitem__=$JSObjectDict.__setattr__
 $JSObjectDict.__str__=$JSObjectDict.__repr__
 function JSObject(obj){
 var klass=$B.get_class(obj)
-if(klass===__builtins__.list.$dict && obj.__brython__){
+if(klass===__builtins__.list.$dict){
 if(obj.__brython__){return obj}
+else{return{__class__:$JSObjectDict,js:obj}}
 }
 if(klass!==undefined){return obj}
 return{__class__:$JSObjectDict,js:obj}
