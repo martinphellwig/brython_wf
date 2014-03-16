@@ -618,7 +618,7 @@ Array.prototype.indexOf = function(obj){
 // in case console is not defined
 try{console}
 catch(err){
-    var console = {'log':function(data){void(0)}}
+    //var console = {'log':function(data){void(0)}}
 }
 
 
