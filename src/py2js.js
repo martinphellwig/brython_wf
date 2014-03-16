@@ -4294,9 +4294,19 @@ function brython(options){
     // mapping the names defined in this block to their value
     __BRYTHON__.vars = {}
 
-    if(options.py_tag===undefined){options.py_tag="script"}
+    // Option to run code on demand and not all the scripts defined in a page
+    // The following lines are included to allow to run brython scripts in
+    // the IPython notebook using a cell magic. Have a look at
+    // https://github.com/kikocorreoso/brythonmagic for more info.
+    if(options.ipy_id!==undefined){
+	   var $elts = [];
+	   for(var $i=0;$i<options.ipy_id.length;$i++){
+	      $elts.push(document.getElementById(options.ipy_id[$i]));
+	   }
+	 }else{
+	    var $elts=document.getElementsByTagName('script')
+    }
     
-    var $elts = document.getElementsByTagName(options.py_tag)
     var $scripts = document.getElementsByTagName('script')
     
     // URL of the script where function brython() is called
