@@ -63,6 +63,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "marshal",
 "math",
 "time",
+"WS_FTP",
 "_ajax",
 "_browser",
 "_html",
@@ -4804,7 +4805,6 @@ return -1;
 }
 try{console}
 catch(err){
-var console={'log':function(data){void(0)}}
 }
 
 ;(function($B){
@@ -6267,7 +6267,8 @@ var builtin_names=['Ellipsis', 'False', 'None',
 'True', '_', '__build_class__', '__debug__', '__doc__', '__import__', '__name__', 
 '__package__', 'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'bytearray', 'bytes',
 'callable', 'chr', 'classmethod', 'compile', 'complex', 'copyright', 'credits',
-'delattr', 'dict', 'dir', 'divmod', 'enumerate', 'eval', 'exec', 'exit', 
+'delattr', 'dict', 'dir', 'divmod', 'enumerate', 
+'exec', 'exit', 
 'filter', '__builtins__.float', 'format', 'frozenset', 'getattr', 'globals', 'hasattr', 'hash', 
 'help', 'hex', 'id', 'input', '__builtins__.int', 'isinstance', 'issubclass', 'iter', 'len', 
 'license', 'list', 'locals', 'map', 'max', 'memoryview', 'min', 'next', 'object', 
@@ -9840,7 +9841,7 @@ for(var i=self.elt.childNodes.length-1;i>=0;i--){
 self.elt.removeChild(self.elt.childNodes[i])
 }
 }
-DOMNode.class=function(self){
+DOMNode.Class=function(self){
 if(self.elt.className !==undefined){return self.elt.className}
 else{return None}
 }
