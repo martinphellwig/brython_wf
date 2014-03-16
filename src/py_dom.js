@@ -622,7 +622,7 @@ DOMNode.clear = function(self){
     }    
 }
 
-DOMNode.class = function(self){
+DOMNode.Class = function(self){
     if(self.elt.className !== undefined){return self.elt.className}
     else{return None}
 }
