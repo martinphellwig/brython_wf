@@ -1,8 +1,12 @@
-## Atributos e métodos de elementos
+Atributos e métodos de elementos
+--------------------------------
 
-Os elementos em uma página têm atributos e métodos que dependem do tipo de elemento ; eles podem ser encontrados em muitos sites da Internet
+Os elementos em uma página têm atributos e métodos que dependem do
+tipo de elemento; eles podem ser encontrados em muitos sites da
+Internet.
 
-Como seus nomes podem variar dependendo do navegador, Brython define atributos adicionais que funcionam em todos os casos :
+Como seus nomes podem variar dependendo do navegador, Brython define
+atributos adicionais que funcionam em todos os casos:
 
 <table border=1 cellpadding=3>
 <tr>
@@ -27,25 +31,34 @@ Como seus nomes podem variar dependendo do navegador, Brython define atributos a
 <td>*class*</td><td>cadeia</td><td>o nome da classe do elemento (atributo *class* da etiqueta)</td><td>L/E</td>
 </tr>
 <tr>
+<td>*clear*</td><td>função</td><td><code>`elt.clear()`</code> remove todos os descendentes do elemento</td><td>L</td>
+</tr>
+<tr>
 <td>*remove*</td><td>função</td><td><code>remove(_filho_)</code> remove *filho* da lista de filhos do elemento</td><td>L</td>
 </tr>
 </table>
 
-Para adicionar um filho a um elemento, use o operador `<=` (pense nele como uma seta para a esquerda para designação)
+Para adicionar um filho a um elemento, use o operador `<=` (pense nele
+como uma seta para a esquerda para designação):
 
->    doc['zone'] <= INPUT(Id="data")
+>    from browser import doc, html
+>    doc['zone'] <= html.INPUT(Id="data")
 
-Iteração sobre os filhos de um elemento pode ser feita usando a sintaxe usual de Python :
+Iteração sobre os filhos de um elemento pode ser feita usando a
+sintaxe usual de Python:
+
 >    for child in element:
 >        (...)
 
-Para destruir um elemento, use a palavra-chave `del`
+Para destruir um elemento, use a palavra-chave `del`:
+
 >    zone = doc['zone']
 >    del zone
 
-A coleção `options` associada com um objeto SELECT tem uma interface de lista de Python :
+A coleção `options` associada com um objeto SELECT tem uma interface
+de lista de Python:
 
- - acesso a uma opção por seus índices : `option = elt.options[índice]`
- - inserção de uma opção na posição _índice_ : `elt.options.insert(índice,option)`
- - inserção de uma opção ao final de uma lista : `elt.options.append(option)`
+ - acesso a uma opção por seus índices: `option = elt.options[índice]`
+ - inserção de uma opção na posição _índice_ : `elt.options.insert(índice,opção)`
+ - inserção de uma opção ao final de uma lista : `elt.options.append(opção)`
  - excluindo uma opção : `del elt.options[índice]`

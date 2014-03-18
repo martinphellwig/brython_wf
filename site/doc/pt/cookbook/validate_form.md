@@ -1,18 +1,20 @@
 Problema
 --------
 
-Validar o conteúdo de um formulário antes de mandá-lo ao servidor
+Validar o conteúdo de um formulário antes de mandá-lo ao servidor.
 
 
 Solução
 -------
 
-No formulário abaixo nós queremos verificar se o usuário preencheu todos os campos marcados com um asterisco e que a data tem o formato DD/MM/YYYY
+No formulário abaixo nós queremos verificar se o usuário preencheu
+todos os campos marcados com um asterisco e que a data tem o formato
+DD/MM/YYYY.
 
 Para isso, nós usamos a função _validate()_ quando clcado em
 "Enviar". Se houver um erro, a função o reporta e continuamos na
-página ; caso contrário, o formulário é enviado para uma página que
-mostra os dados enviados usando _doc.query_
+página; caso contrário, o formulário é enviado para uma página que
+mostra os dados enviados usando _doc.query_.
 
 <table width="100%">
 <tr>
@@ -31,7 +33,7 @@ mostra os dados enviados usando _doc.query_
 <td><INPUT id="firstname" name="firstname"></td>
 </tr>
 <tr>
-<td>Birth date (DD/MM/YYYY) * </td>
+<td>Data de nascimento (DD/MM/YYYY) * </td>
 <td><INPUT id="date" name="date"></td>
 </tr>
 <tr>
@@ -50,6 +52,7 @@ mostra os dados enviados usando _doc.query_
 <td style="width:40%;padding-right:10px;" id="py_source">
 
     import re
+    from browser import doc, alert
     
     def validate():
         if not doc['name'].value:

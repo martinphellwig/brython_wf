@@ -224,9 +224,10 @@ $JSObjectDict.__str__ = $JSObjectDict.__repr__
 
 function JSObject(obj){
     var klass = $B.get_class(obj)
-    if(klass===__builtins__.list.$dict && obj.__brython__){
+    if(klass===__builtins__.list.$dict){
         // JS arrays not created by list() must be wrapped
         if(obj.__brython__){return obj}
+        else{return {__class__:$JSObjectDict,js:obj}}
     }
     // If obj is a Python object, return it unchanged
     if(klass!==undefined){return obj}

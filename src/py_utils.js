@@ -287,6 +287,190 @@ $B.$generator.__repr__ = function(){return "<class 'generator'>"}
 $B.$generator.__str__ = function(){return "<class 'generator'>"}
 $B.$generator.__class__ = __BRYTHON__.$type
 
+$B.set_data  = function(node){
+    var ctx_js = node.context.to_js()
+    if(ctx_js){ // empty for "global x"
+        node.data = ctx_js
+        for(var i=0;i<node.children.length;i++){
+            $B.set_data(node.children[i])
+        }
+    }
+}
+
+$B.gen_src = function(node, indent){
+    var res = node.data
+    indent = indent || 0
+    if(node.children.length){res += '{'}
+    for(var i=0;i<node.children.length;i++){
+        res += '\n'
+        for(var j=0;j<indent;j++){res += ' '}
+        res += $B.gen_src(node.children[i],indent+4)
+    }
+    if(node.children.length){
+        res += '\n'
+        for(var j=0;j<indent;j++){res += ' '}
+        res += '}'
+    }
+    return res
+}
+
+$B.make_node = function(node){
+    var ctx_js = node.context.to_js()
+    if(ctx_js){ // empty for "global x"
+        var new_node = new $B.genNode(ctx_js)
+        // keep track in the original node
+        node.ref = new_node
+        for(var i=0;i<node.children.length;i++){
+            new_node.addChild($B.make_node(node.children[i]))
+        }
+    }    
+    return new_node
+}
+
+$B.genNode = function(data, parent){
+    _indent = 4
+    this.data = data
+    console.log('data '+data)
+    this.parent = parent
+    this.children = []
+    if(parent===undefined){
+        this.nodes = {}
+        this.num = 0
+    }
+
+    this.addChild = function(child){
+        this.children.push(child)
+        child.parent = this
+        child.rank = this.children.length-1
+    }
+
+    this.clone = function(){
+        return new $B.genNode(this.data)
+        for(var i=0;i<this.children.length;i++){
+            res.addChild(this.children[i].clone())
+        }
+        return res
+    }
+
+    this.src = function(indent){
+        indent = indent || 0
+        indent_src = ''
+        for(var i=0;i<indent*_indent;i++){indent_src+=' '}
+        res = indent_src+this.data
+        if(this.children.length){res += '{'}
+        res += '\n'
+        for(var i=0;i<this.children.length;i++){
+            res += this.children[i].src(indent+1)
+        }
+        if(this.children.length){res+='\n'+indent_src+'}'}
+        return res
+    }
+    
+    this.toString = function(){return '<Node '+this.data+'>'}
+    
+}
+
+$B.$BRgenerator = function(func, def_id){
+
+    var def_ctx = __BRYTHON__.modules[def_id]
+    var func_name = def_ctx.name
+    var node = def_ctx.parent.node
+    console.log('ctx '+def_ctx)
+    
+    // identify the node with "try"
+    var try_node = node.children[1].children[0]
+    
+    var newnode = $B.make_node(node)
+    
+    var newtrynode = try_node.ref
+    console.log(newtrynode+'')
+    
+    var __builtins__ = __BRYTHON__.builtins
+    for(var $py_builtin in __builtins__){
+        eval("var "+$py_builtin+"=__builtins__[$py_builtin]")
+    }
+    
+    var src = newnode.src()+'\n)()'
+    console.log('initial func\n'+src)
+    eval(src)
+    var _next = eval('$'+func_name)
+    
+    var $BRGeneratorDict = {__class__:__BRYTHON__.$type,
+        __name__:'BRgenerator'
+    }
+    $BRGeneratorDict.__init__ = function(self){
+        // save arguments of function call
+    }
+    $BRGeneratorDict.__iter__ = function(self){return self}
+    $BRGeneratorDict.__next__ = function(self){
+        var res = self._next.call(null, self.args)
+        var yielded_value=res[0], def_id=res[1], rank=res[2]
+        // get node where yield was thrown
+        var exit_node = def_ctx.yields[rank].parent.node.ref
+        
+        console.log('exit node '+exit_node)
+        
+        // create root node of new function
+        var root = new $B.genNode(def_ctx.to_js())
+        root.addChild(newnode.children[0].clone())
+        fnode = newnode.children[1].clone()
+        root.addChild(fnode)
+        tnode = newnode.children[1].children[0].clone()
+        fnode.addChild(tnode)
+
+        var pnode = exit_node.parent
+        console.log('parent of exit node\n'+pnode)
+        for(var i=exit_node.rank+1;i<pnode.children.length;i++){
+            // add a clone of child : if we appended the child itself,
+            // it would change the original function tree
+            tnode.addChild(pnode.children[i].clone())
+        }
+        console.log('step 1 '+root.src())
+        // Then add all parents of exit node recursively, only keeping
+        // the part that starts at exit node
+        while(pnode!==newtrynode){
+            console.log('add remaining children of '+pnode.parent)
+            for(var i=pnode.rank;i<pnode.parent.children.length;i++){
+                tnode.addChild(pnode.parent.children[i].clone())
+                console.log('step x '+root.src())
+            }
+            pnode = pnode.parent
+        }
+        
+        for(var i=1;i<newnode.children[1].children.length;i++){
+            fnode.addChild(newnode.children[1].children[i].clone())
+        }
+
+        // Set self._next to the code of the function for next iteration
+        var next_src = root.src()+'\n)()'
+        eval(next_src)
+        self._next = eval('$'+func_name)
+
+        // Return the yielded value
+        return yielded_value
+    }
+    $BRGeneratorDict.__mro__ = [$BRGeneratorDict,__BRYTHON__.builtins.object.$dict]
+
+    var res = function(){
+        var args = []
+        for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+
+        var obj = {
+            __class__ : $BRGeneratorDict,
+            args:args,
+            func:func,
+            _next:_next
+        }
+        return obj
+    }
+    res.__repr__ = function(){return "<function "+func.__name__+">"}
+    return res
+}
+$B.$BRgenerator.__repr__ = function(){return "<class 'BRgenerator'>"}
+$B.$BRgenerator.__str__ = function(){return "<class 'BRgenerator'>"}
+$B.$BRgenerator.__class__ = __BRYTHON__.$type
+
+
 $B.$ternary = function(env,cond,expr1,expr2){
     // env is the environment to run the ternary expression
     // built-in names must be available to evaluate the expression
@@ -618,7 +802,7 @@ Array.prototype.indexOf = function(obj){
 // in case console is not defined
 try{console}
 catch(err){
-    var console = {'log':function(data){void(0)}}
+    //var console = {'log':function(data){void(0)}}
 }
 
 

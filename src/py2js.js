@@ -112,42 +112,31 @@ function $Node(type){
         }
         return res
    }
-    this.to_js = function(indent){
+    this.to_js = function(){
         this.res = []
         this.unbound = []
         if(this.type==='module'){
             for(var i=0;i<this.children.length;i++){
-                this.res.push(this.children[i].to_js(indent))
+                this.res.push(this.children[i].to_js())
                 this.children[i].js_index = this.res.length+0
             }
         }else{
-            indent = indent || 0
-            var ctx_js = this.context.to_js(indent)
+            var ctx_js = this.context.to_js()
             if(ctx_js){ // empty for "global x"
-                for(var i=0;i<indent;i++){this.res.push(' ')}
                 this.res.push(ctx_js)
                 this.js_index = this.res.length+0
                 if(this.children.length>0){this.res.push('{')}
                 this.res.push('\n')
                 for(var i=0;i<this.children.length;i++){
-                    this.res.push(this.children[i].to_js(indent+4))
+                    this.res.push(this.children[i].to_js())
                     this.children[i].js_index = this.res.length+0
                 }
                 if(this.children.length>0){
-                    for(var i=0;i<indent;i++){this.res.push(' ')}
                     this.res.push('}\n')
                 }
             }
         }
-        if(this.unbound.length>0){
-            console.log('unbound '+this.unbound+' res length '+this.res.length)
-            for(var i=0;i<this.res.length;i++){
-                console.log('['+i+'] '+this.res[i])
-            }
-        }
-        for(var i=0;i<this.unbound.length;i++){
-            console.log('  '+this.unbound[i]+' '+this.res[this.unbound[i]])
-        }
+
         return this.res.join('')
     }
     this.transform = function(rank){
@@ -1003,6 +992,7 @@ function $DefCtx(context){
     this.id = Math.random().toString(36).substr(2,8)
     __BRYTHON__.vars[this.id] = {} //this
     this.locals = []
+    this.yields = [] // list of nodes with "yield"
     context.tree.push(this)
 
     // store id of enclosing functions
@@ -1073,7 +1063,8 @@ function $DefCtx(context){
 
         var nodes = []
         // add lines of code to node children
-        var js = 'var $locals = __BRYTHON__.vars["'+this.id+'"]={}'
+        var js = 'var $locals = __BRYTHON__.vars["'+this.id+'"]'
+        if(this.type!=='BRgenerator'){ js += '={}'}
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
@@ -1228,10 +1219,36 @@ function $DefCtx(context){
         }
     }
 
+    this.add_BRgenerator_declaration = function(){
+        // if generator, add line 'foo = __BRYTHON__.$generator($foo)'
+        var scope = $get_scope(this)
+        var node = this.parent.node
+        if(this.type==='BRgenerator' && !this.declared){
+            var offset = 2
+            if(this.decorators !== undefined){offset++}
+            js = '__BRYTHON__.$BRgenerator('
+            if(scope.ntype==='class'){js += '$class.'}
+            js += '$'+this.name+',"'+this.id+'")'
+            // store a reference to function node, will be used in yield
+            __BRYTHON__.modules[this.id] = this
+            var gen_node = new $Node('expression')
+            var ctx = new $NodeCtx(gen_node)
+            var expr = new $ExprCtx(ctx,'id',false)
+            var name_ctx = new $IdCtx(expr,this.name)
+            var assign = new $AssignCtx(expr)
+            var expr1 = new $ExprCtx(assign,'id',false)
+            var js_ctx = new $NodeJSCtx(assign,js)
+            expr1.tree.push(js_ctx)
+            node.parent.insert(this.rank+offset,gen_node) 
+            this.declared = true
+        }
+    }
+
     this.to_js = function(){
         var scope = $get_scope(this)
         var name = this.name
         if(this.type==='generator'){name='$'+name}
+        if(this.type==='BRgenerator'){name='$'+name}
         if(scope.ntype==="module" || scope.ntype!=='class'){
             res = 'var '+name+'= (function ('
         }else{
@@ -1866,14 +1883,6 @@ function $ImportCtx(context){
             // for "import a.b.c" this object has attributes
             // "a", "a.b" and "a.b.c", values are the matching modules
             for(var j=0;j<parts.length;j++){
-                /*
-                if(j==0 && 
-                    ['def','class'].indexOf(scope.ntype)>-1){
-                    res += 'var '
-                }else if(j==0 && scope.ntype==="module" && scope.module !=="__main__"){
-                    res += 'var '
-                }
-                */
                 var key = parts.slice(0,j+1).join('.')
                 var alias = key
                 if(j==parts.length-1){alias = this.tree[i].alias}
@@ -2530,6 +2539,50 @@ function $YieldCtx(context){ // subscription or slicing
     }
 }
 
+function $BRYieldCtx(context){ // subscription or slicing
+    this.type = 'yield'
+    this.toString = function(){return '(yield) '+this.tree}
+    this.parent = context
+    this.tree = []
+    context.tree.push(this)
+
+    var scope = $get_scope(this)
+    // change type of function to BRgenerator
+    var def = scope.context.tree[0]
+    def.type = 'BRgenerator'
+    this.func_name = def.name
+    this.def_id = def.id
+    def.add_BRgenerator_declaration()
+    def.yields.push(this)
+    // this.rank will be returned in generator function
+    this.rank = def.yields.length-1
+
+    this.to_js = function(){
+        var scope = $get_scope(this)
+        var res = ''
+        if(scope.ntype==='generator'){
+            scope = $get_scope(scope.context.tree[0])
+            if(scope.ntype==='class'){res = '$class.'}
+        }
+        if(this.tree.length==1){
+            var res = 'return ['+$to_js(this.tree)+', "'
+            return res+this.def_id+'", '+this.rank+']'
+        }else{ // form "yield from <expr>" : <expr> is this.tree[1]
+            var indent = $ws($get_module(this).indent)
+            res += '$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
+            res += indent+'while(true){\n'+indent+$ws(4)
+            res += 'try{$'+this.func_name+'.$iter.push('
+            res += '$subiter'+$loop_num+'())}\n'
+            res += indent+$ws(4)+'catch($err'+$loop_num+'){\n'
+            res += indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===__builtins__.StopIteration)'
+            res += '{__BRYTHON__.$pop_exc();break}\n'
+            res += indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
+            $loop_num++
+            return res
+        }
+    }
+}
+
 
 // used in loops
 var $loop_num = 0
@@ -2729,7 +2782,7 @@ function $get_scope(context){
     var scope = null
     while(tree_node.parent && tree_node.parent.type!=='module'){
         var ntype = tree_node.parent.context.tree[0].type
-        if(['def','class','generator'].indexOf(ntype)>-1){
+        if(['def','class','generator','BRgenerator'].indexOf(ntype)>-1){
             scope = tree_node.parent
             scope.ntype = ntype
             scope.elt = scope.context.tree[0]
@@ -3570,6 +3623,9 @@ function $transition(context,token){
         else if(token==='yield'){
             var yield = new $YieldCtx(context)
             return new $AbstractExprCtx(yield,true)
+        }else if(token==='bryield'){ // experiment new generator implementation
+            var yield = new $BRYieldCtx(context)
+            return new $AbstractExprCtx(yield,true)
         }else if(token==='del'){return new $AbstractExprCtx(new $DelCtx(context),true)}
         else if(token==='@'){return new $DecoratorCtx(context)}
         else if(token==='eol'){
@@ -3791,7 +3847,8 @@ function $tokenize(src,module,parent){
         "for","lambda","try","finally","raise","def","from",
         "nonlocal","while","del","global","with",
         "as","elif","else","if","yield","assert","import",
-        "except","raise","in","not","pass","with"
+        "except","raise","in","not","pass","with",
+        "bryield" // temporary implementation of yield
         //"False","None","True","continue",
         // "and',"or","is"
         ]
@@ -4302,9 +4359,19 @@ function brython(options){
     // mapping the names defined in this block to their value
     __BRYTHON__.vars = {}
 
-    if(options.py_tag===undefined){options.py_tag="script"}
+    // Option to run code on demand and not all the scripts defined in a page
+    // The following lines are included to allow to run brython scripts in
+    // the IPython notebook using a cell magic. Have a look at
+    // https://github.com/kikocorreoso/brythonmagic for more info.
+    if(options.ipy_id!==undefined){
+       var $elts = [];
+       for(var $i=0;$i<options.ipy_id.length;$i++){
+          $elts.push(document.getElementById(options.ipy_id[$i]));
+       }
+     }else{
+        var $elts=document.getElementsByTagName('script')
+    }
     
-    var $elts = document.getElementsByTagName(options.py_tag)
     var $scripts = document.getElementsByTagName('script')
     
     // URL of the script where function brython() is called

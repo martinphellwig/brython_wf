@@ -8,7 +8,7 @@
 <script src="/src/brython.js"></script>
 
 <script type="text/python3">
-from browser import doc
+from browser import doc, window
 from ... import header
 header.show('../../')
 
@@ -17,6 +17,7 @@ import time
 
 def load(url,target):
     # fake query string to bypass browser cache
+    t0 = time.time()
     qs = '?foo=%s' %time.time()
     try:
         mk,scripts = markdown.mark(open(url+qs).read())
@@ -24,8 +25,11 @@ def load(url,target):
         doc[target].html = "Page %s not found" %url
         return False
     doc[target].html = mk
+    t1 = time.time()
+    print('markdown done in %s' %(t1-t0))
     for script in scripts:
         exec(script,globals())
+    print('exec scripts in %s' %(time.time()-t1))
     return False
 
 # put in global namespace, for inline callbacks
@@ -33,8 +37,6 @@ window.load = load
 
 language = "pt"
 </script>
-
-<script type="text/python3" src="../menu_doc.py"></script>
 
 </head>
 <body onLoad="brython(1);load('intro.md','content')">
@@ -52,27 +54,47 @@ language = "pt"
 
 <h4>Interface do navegador</h4>
 <div style="padding-left:10px;">
-<a class="navig" href="#" onClick="load('create.md','content')">Criando um documento</a>
+<a class="navig" href="#" onClick="load('dom_api.md','content')">Introdução - DOM API</a>
+<br><a class="navig" href="#" onClick="load('create.md','content')">Criando um documento</a>
 <br><a class="navig" href="#" onClick="load('access.md','content')">Acessando elementos</a>
 <br><a class="navig" href="#" onClick="load('attributes.md','content')">Atributos e métodos</a>
+<br>
 <br><a class="navig" href="#" onClick="load('events.md','content')">Eventos</a>
+<br><a class="navig" href="#" onClick="load('mouse_events.md','content')">Eventos do Mouse</a>
+<br><a class="navig" href="#" onClick="load('keyboard_events.md','content')">Eventos do Teclado</a>
+<br><a class="navig" href="#" onClick="load('focus_events.md','content')">Eventos de Foco</a>
+<br><a class="navig" href="#" onClick="load('drag_events.md','content')">Eventos de Arrasto</a>
+<br>
 <br><a class="navig" href="#" onClick="load('query.md','content')">Cadeia de consulta (query)</a>
 <br><a class="navig" href="#" onClick="load('jsobjects.md','content')">Usando objetos e bibliotecas Javascript</a>
-
-<h4>Bibliotecas</h4>
-<a class="navig" href="#" onClick="load('ajax.md','content')">ajax</a>
-<br><a class="navig" href="#" onClick="load('html.md','content')">html</a>
-<br><a class="navig" href="#" onClick="load('local_storage.md','content')">local_storage</a>
-<br><a class="navig" href="#" onClick="load('markdown.md','content')">markdown</a>
-<br><a class="navig" href="#" onClick="load('svg.md','content')">svg</a>
-<br><a class="navig" href="#" onClick="load('time.md','content')">time</a>
-<br><a class="navig" href="#" onClick="load('websockets.md','content')">websocket</a>
 </div>
+
+<h4>Módulos integrados de Brython</h4>
+<div style="padding-left:10px;">
+<a class="navig" href="#" onClick="load('browser.md','content')">browser</a>
+<br><a class="navig" href="#" onClick="load('ajax.md','content')">browser.ajax</a>
+<br><a class="navig" href="#" onClick="load('html.md','content')">browser.html</a>
+<br><a class="navig" href="#" onClick="load('local_storage.md','content')">browser.local_storage</a>
+<br><a class="navig" href="#" onClick="load('markdown.md','content')">browser.markdown</a>
+<br><a class="navig" href="#" onClick="load('svg.md','content')">browser.svg</a>
+<br><a class="navig" href="#" onClick="load('timer.md','content')">browser.timer</a>
+<br><a class="navig" href="#" onClick="load('websockets.md','content')">browser.websocket</a>
+<br><a class="navig" href="#" onClick="load('javascript.md','content')">javascript</a>
+</div>
+
 <h4>Trabalhando com Brython</h4>
 <div style="padding-left:10px;">
 <a class="navig" href="#" onClick="load('dev_env.md','content')">Instalando o ambiente de desenvolvimento</a>
 <br><a class="navig" href="#" onClick="load('test.md','content')">Teste e depuração</a>
-<br><a class="navig" href="#" onClick="load('deploy.md','content')">Implantando uma aplicação</a></div>
+<br><a class="navig" href="#" onClick="load('deploy.md','content')">Implantando uma aplicação</a>
+</div>
+
+<h4>Brython para Firefox OS</h4>
+<div style="padding-left:10px;">
+<a class="navig" href="#" onClick="load('firefox_os_intro.md','content')">Introdução</a>
+<br><a class="navig" href="#" onClick="load('firefox_os_tuto1.md','content')">WebApps : desenho</a>
+<br><a class="navig" href="#" onClick="load('firefox_os_tuto2.md','content')">WebApps : aplicação</a>
+</div>
 
 <h4>Livro de receitas</h4>
 <div style="padding-left:10px;">
