@@ -489,11 +489,9 @@ res +=right.to_js()+';None;'
 return res
 }
 }else if(scope.ntype==='class'){
-console.log('assign in class')
 left.is_left=true 
 var attr=left.to_js()
 left.in_class='$class.'+attr
-console.log('$class.'+attr+'='+right.to_js())
 return '$class.'+attr+'='+right.to_js()
 }
 }
@@ -1605,7 +1603,6 @@ new $StringCtx(this.parent,res+'}')
 }
 var scope=$get_scope(this)
 if(scope.ntype=='class' && this.in_class){
-console.log('return '+this.in_class)
 return this.in_class
 }
 if(scope.ntype==='class' && !this.is_left){
