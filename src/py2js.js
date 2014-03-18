@@ -440,7 +440,7 @@ function $AssignCtx(context){
                 }
                 res += '='+right.to_js()+';None;'
                 return res
-            }else if(scope.ntype==='def'||scope.ntype==="generator"){
+            }else if(scope.ntype==='def'||scope.ntype==="generator"||scope.ntype=="BRgenerator"){
                 // assignment in a function : depends if variable is local
                 // or global
                 if(scope.globals && scope.globals.indexOf(left.value)>-1){
@@ -1061,16 +1061,17 @@ function $DefCtx(context){
         if(required.length>0){required=required.substr(0,required.length-1)}
         //if(defaults.length>0){defaults=defaults.substr(0,defaults.length-1)}
 
-        var nodes = []
+        var nodes=[], js
+
         // add lines of code to node children
-        var js = 'var $locals = __BRYTHON__.vars["'+this.id+'"]'
+        js = 'var $locals = __BRYTHON__.vars["'+this.id+'"]'
         if(this.type!=='BRgenerator'){ js += '={}'}
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
 
         // initialize default variables
-        var js = 'for(var $var in $defaults){eval("var "+$var+"=$locals[$var]=$defaults[$var]")}'
+        js = 'for(var $var in $defaults){eval("var "+$var+"=$locals[$var]=$defaults[$var]")}'
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
@@ -1093,7 +1094,7 @@ function $DefCtx(context){
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
 
-        var js = 'for(var $var in $ns){eval("var "+$var+"=$ns[$var]");'
+        js = 'for(var $var in $ns){eval("var "+$var+"=$ns[$var]");'
         js += '$locals[$var]=$ns[$var]}'
         var new_node = new $Node('expression')
         new $NodeJSCtx(new_node,js)
@@ -1289,7 +1290,7 @@ function $DelCtx(context){
                 // remove name from dictionaries
                 if(scope.ntype==='module'){
                     js+='delete $globals["'+name+'"]'
-                }else if(scope.ntype==="def"||scope.ntype==="generator"){
+                }else if(scope.ntype==="def"||scope.ntype==="generator"||scope.ntype=="BRgenerator"){
                     if(scope.globals && scope.globals.indexOf(name)>-1){
                         // global variable
                         js+='delete $globals["'+name+'"]'
@@ -1454,8 +1455,8 @@ function $ForExpr(context){
         this.loop_num = $loop_num
         new_node.line_num = node.line_num
         new_node.module = node.module
-        var js = 'var $next'+$loop_num+'=getattr(iter('+iterable.to_js()
-        js += '),"__next__")'
+        var js = 'var $next'+$loop_num+'=$locals["$next'+$loop_num+'"]'
+        js += '=getattr(iter('+iterable.to_js()+'),"__next__")'
         new $NodeJSCtx(new_node,js)
         new_nodes.push(new_node)
 
@@ -1888,7 +1889,7 @@ function $ImportCtx(context){
                 if(j==parts.length-1){alias = this.tree[i].alias}
                 if(alias.search(/\./)==-1){res += 'var '}
                 res += alias
-                if(scope.ntype == 'def' || scope.ntype==="generator"){
+                if(scope.ntype == 'def' || scope.ntype==="generator"||scope.ntype=="BRgenerator"){
                     res += '=$locals["'+alias+'"]'
                 }else if(scope.ntype==="module"){
                     res += '=$globals["'+alias+'"]'
@@ -2069,6 +2070,8 @@ function $NodeCtx(node){
             this.tree.pop()
             node.add(new_node)
         }
+        var res = $to_js(this.tree)
+        if(res=='undefined'){console.log('undef '+this.tree[0])}
         return $to_js(this.tree)
     }
 }
@@ -2499,7 +2502,7 @@ function $WithCtx(context){
 }
 
 
-function $YieldCtx(context){ // subscription or slicing
+function $YieldCtx(context){
     this.type = 'yield'
     this.toString = function(){return '(yield) '+this.tree}
     this.parent = context
@@ -2539,7 +2542,7 @@ function $YieldCtx(context){ // subscription or slicing
     }
 }
 
-function $BRYieldCtx(context){ // subscription or slicing
+function $BRYieldCtx(context){ 
     this.type = 'yield'
     this.toString = function(){return '(yield) '+this.tree}
     this.parent = context
@@ -2565,8 +2568,7 @@ function $BRYieldCtx(context){ // subscription or slicing
             if(scope.ntype==='class'){res = '$class.'}
         }
         if(this.tree.length==1){
-            var res = 'return ['+$to_js(this.tree)+', "'
-            return res+this.def_id+'", '+this.rank+']'
+            return 'return ['+$to_js(this.tree)+', '+this.rank+']'
         }else{ // form "yield from <expr>" : <expr> is this.tree[1]
             var indent = $ws($get_module(this).indent)
             res += '$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
@@ -2740,7 +2742,7 @@ function $clear_ns(ctx){
     // If the list is in a function, the names defined in the display so far must 
     // be removed from the function namespace
     var scope = $get_scope(ctx)
-    if(scope.ntype=="def" || scope.ntype=="generator"){
+    if(scope.ntype=="def" || scope.ntype=="generator"||scope.ntype=="BRgenerator"){
         if(scope.var2node){
             for(var name in scope.var2node){
                 var remove = []
