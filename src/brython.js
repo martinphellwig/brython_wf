@@ -194,41 +194,29 @@ res+='}\n'
 }
 return res
 }
-this.to_js=function(indent){
+this.to_js=function(){
 this.res=[]
 this.unbound=[]
 if(this.type==='module'){
 for(var i=0;i<this.children.length;i++){
-this.res.push(this.children[i].to_js(indent))
+this.res.push(this.children[i].to_js())
 this.children[i].js_index=this.res.length+0
 }
 }else{
-indent=indent || 0
-var ctx_js=this.C.to_js(indent)
+var ctx_js=this.C.to_js()
 if(ctx_js){
-for(var i=0;i<indent;i++){this.res.push(' ')}
 this.res.push(ctx_js)
 this.js_index=this.res.length+0
 if(this.children.length>0){this.res.push('{')}
 this.res.push('\n')
 for(var i=0;i<this.children.length;i++){
-this.res.push(this.children[i].to_js(indent+4))
+this.res.push(this.children[i].to_js())
 this.children[i].js_index=this.res.length+0
 }
 if(this.children.length>0){
-for(var i=0;i<indent;i++){this.res.push(' ')}
 this.res.push('}\n')
 }
 }
-}
-if(this.unbound.length>0){
-console.log('unbound '+this.unbound+' res length '+this.res.length)
-for(var i=0;i<this.res.length;i++){
-console.log('['+i+'] '+this.res[i])
-}
-}
-for(var i=0;i<this.unbound.length;i++){
-console.log('  '+this.unbound[i]+' '+this.res[this.unbound[i]])
 }
 return this.res.join('')
 }
@@ -491,7 +479,7 @@ res +='=$globals["'+left.to_js()+'"]'
 }
 res +='='+right.to_js()+';None;'
 return res
-}else if(scope.ntype==='def'||scope.ntype==="generator"){
+}else if(scope.ntype==='def'||scope.ntype==="generator"||scope.ntype=="BRgenerator"){
 if(scope.globals && scope.globals.indexOf(left.value)>-1){
 return left.to_js()+'=$globals["'+left.to_js()+'"]='+right.to_js()
 }else{
@@ -501,9 +489,11 @@ res +=right.to_js()+';None;'
 return res
 }
 }else if(scope.ntype==='class'){
+console.log('assign in class')
 left.is_left=true 
 var attr=left.to_js()
 left.in_class='$class.'+attr
+console.log('$class.'+attr+'='+right.to_js())
 return '$class.'+attr+'='+right.to_js()
 }
 }
@@ -905,6 +895,7 @@ this.tree=[]
 this.id=Math.random().toString(36).substr(2,8)
 __BRYTHON__.vars[this.id]={}
 this.locals=[]
+this.yields=[]
 C.tree.push(this)
 this.enclosing=[]
 var scope=$get_scope(this)
@@ -961,12 +952,13 @@ this.args.push(arg.name)
 this.env=env
 this.defs=defs
 if(required.length>0){required=required.substr(0,required.length-1)}
-var nodes=[]
-var js='var $locals = __BRYTHON__.vars["'+this.id+'"]={}'
+var nodes=[], js
+js='var $locals = __BRYTHON__.vars["'+this.id+'"]'
+if(this.type!=='BRgenerator'){js +='={}'}
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
-var js='for(var $var in $defaults){eval("var "+$var+"=$locals[$var]=$defaults[$var]")}'
+js='for(var $var in $defaults){eval("var "+$var+"=$locals[$var]=$defaults[$var]")}'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
@@ -985,7 +977,7 @@ js +='['+defaults.join(',')+'],'+other_args+','+other_kw+',['+after_star.join(',
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
 nodes.push(new_node)
-var js='for(var $var in $ns){eval("var "+$var+"=$ns[$var]");'
+js='for(var $var in $ns){eval("var "+$var+"=$ns[$var]");'
 js +='$locals[$var]=$ns[$var]}'
 var new_node=new $Node('expression')
 new $NodeJSCtx(new_node,js)
@@ -1085,10 +1077,33 @@ node.parent.insert(this.rank+offset,gen_node)
 this.declared=true
 }
 }
+this.add_BRgenerator_declaration=function(){
+var scope=$get_scope(this)
+var node=this.parent.node
+if(this.type==='BRgenerator' && !this.declared){
+var offset=2
+if(this.decorators !==undefined){offset++}
+js='__BRYTHON__.$BRgenerator('
+if(scope.ntype==='class'){js +='$class.'}
+js +='$'+this.name+',"'+this.id+'")'
+__BRYTHON__.modules[this.id]=this
+var gen_node=new $Node('expression')
+var ctx=new $NodeCtx(gen_node)
+var expr=new $ExprCtx(ctx,'id',false)
+var name_ctx=new $IdCtx(expr,this.name)
+var assign=new $AssignCtx(expr)
+var expr1=new $ExprCtx(assign,'id',false)
+var js_ctx=new $NodeJSCtx(assign,js)
+expr1.tree.push(js_ctx)
+node.parent.insert(this.rank+offset,gen_node)
+this.declared=true
+}
+}
 this.to_js=function(){
 var scope=$get_scope(this)
 var name=this.name
 if(this.type==='generator'){name='$'+name}
+if(this.type==='BRgenerator'){name='$'+name}
 if(scope.ntype==="module" || scope.ntype!=='class'){
 res='var '+name+'= (function ('
 }else{
@@ -1126,7 +1141,7 @@ function del_name(scope,name){
 var js='delete '+name+';'
 if(scope.ntype==='module'){
 js+='delete $globals["'+name+'"]'
-}else if(scope.ntype==="def"||scope.ntype==="generator"){
+}else if(scope.ntype==="def"||scope.ntype==="generator"||scope.ntype=="BRgenerator"){
 if(scope.globals && scope.globals.indexOf(name)>-1){
 js+='delete $globals["'+name+'"]'
 }else{
@@ -1275,8 +1290,8 @@ var iterable=this.tree[1]
 this.loop_num=$loop_num
 new_node.line_num=node.line_num
 new_node.module=node.module
-var js='var $next'+$loop_num+'=getattr(iter('+iterable.to_js()
-js +='),"__next__")'
+var js='var $next'+$loop_num+'=$locals["$next'+$loop_num+'"]'
+js +='=getattr(iter('+iterable.to_js()+'),"__next__")'
 new $NodeJSCtx(new_node,js)
 new_nodes.push(new_node)
 new_node=new $Node('expression')
@@ -1590,6 +1605,7 @@ new $StringCtx(this.parent,res+'}')
 }
 var scope=$get_scope(this)
 if(scope.ntype=='class' && this.in_class){
+console.log('return '+this.in_class)
 return this.in_class
 }
 if(scope.ntype==='class' && !this.is_left){
@@ -1630,7 +1646,7 @@ var alias=key
 if(j==parts.length-1){alias=this.tree[i].alias}
 if(alias.search(/\./)==-1){res +='var '}
 res +=alias
-if(scope.ntype=='def' || scope.ntype==="generator"){
+if(scope.ntype=='def' || scope.ntype==="generator"||scope.ntype=="BRgenerator"){
 res +='=$locals["'+alias+'"]'
 }else if(scope.ntype==="module"){
 res +='=$globals["'+alias+'"]'
@@ -2207,6 +2223,44 @@ return res
 }
 }
 }
+function $BRYieldCtx(C){
+this.type='yield'
+this.toString=function(){return '(yield) '+this.tree}
+this.parent=C
+this.tree=[]
+C.tree.push(this)
+var scope=$get_scope(this)
+var def=scope.C.tree[0]
+def.type='BRgenerator'
+this.func_name=def.name
+this.def_id=def.id
+def.add_BRgenerator_declaration()
+def.yields.push(this)
+this.rank=def.yields.length-1
+this.to_js=function(){
+var scope=$get_scope(this)
+var res=''
+if(scope.ntype==='generator'){
+scope=$get_scope(scope.C.tree[0])
+if(scope.ntype==='class'){res='$class.'}
+}
+if(this.tree.length==1){
+return 'return ['+$to_js(this.tree)+', '+this.rank+']'
+}else{
+var indent=$ws($get_module(this).indent)
+res +='$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
+res +=indent+'while(true){\n'+indent+$ws(4)
+res +='try{$'+this.func_name+'.$iter.push('
+res +='$subiter'+$loop_num+'())}\n'
+res +=indent+$ws(4)+'catch($err'+$loop_num+'){\n'
+res +=indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===__builtins__.StopIteration)'
+res +='{__BRYTHON__.$pop_exc();break}\n'
+res +=indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
+$loop_num++
+return res
+}
+}
+}
 var $loop_num=0
 var $iter_num=0 
 function $add_line_num(node,rank){
@@ -2327,7 +2381,7 @@ return new $AbstractExprCtx(assign)
 }
 function $clear_ns(ctx){
 var scope=$get_scope(ctx)
-if(scope.ntype=="def" || scope.ntype=="generator"){
+if(scope.ntype=="def" || scope.ntype=="generator"||scope.ntype=="BRgenerator"){
 if(scope.var2node){
 for(var name in scope.var2node){
 var remove=[]
@@ -2363,7 +2417,7 @@ var tree_node=ctx_node.node
 var scope=null
 while(tree_node.parent && tree_node.parent.type!=='module'){
 var ntype=tree_node.parent.C.tree[0].type
-if(['def','class','generator'].indexOf(ntype)>-1){
+if(['def','class','generator','BRgenerator'].indexOf(ntype)>-1){
 scope=tree_node.parent
 scope.ntype=ntype
 scope.elt=scope.C.tree[0]
@@ -3089,6 +3143,9 @@ return new $AbstractExprCtx(ret,true)
 else if(token==='yield'){
 var yield=new $YieldCtx(C)
 return new $AbstractExprCtx(yield,true)
+}else if(token==='bryield'){
+var yield=new $BRYieldCtx(C)
+return new $AbstractExprCtx(yield,true)
 }else if(token==='del'){return new $AbstractExprCtx(new $DelCtx(C),true)}
 else if(token==='@'){return new $DecoratorCtx(C)}
 else if(token==='eol'){
@@ -3266,7 +3323,8 @@ var kwdict=["class","return","break",
 "for","lambda","try","finally","raise","def","from",
 "nonlocal","while","del","global","with",
 "as","elif","else","if","yield","assert","import",
-"except","raise","in","not","pass","with"
+"except","raise","in","not","pass","with",
+"bryield" 
 ]
 var unsupported=[]
 var $indented=['class','def','for','condition','single_kw','try','except','with']
@@ -3694,12 +3752,12 @@ __BRYTHON__.exception_stack=[]
 __BRYTHON__.call_stack=[]
 __BRYTHON__.vars={}
 if(options.ipy_id!==undefined){
-	 var $elts=[]
-	 for(var $i=0;$i<options.ipy_id.length;$i++){
-	 $elts.push(document.getElementById(options.ipy_id[$i]))
-	 }
-	 }else{
-	 var $elts=document.getElementsByTagName('script')
+var $elts=[]
+for(var $i=0;$i<options.ipy_id.length;$i++){
+$elts.push(document.getElementById(options.ipy_id[$i]))
+}
+}else{
+var $elts=document.getElementsByTagName('script')
 }
 var $scripts=document.getElementsByTagName('script')
 var $href=window.location.href
@@ -4543,6 +4601,160 @@ return res
 $B.$generator.__repr__=function(){return "<class 'generator'>"}
 $B.$generator.__str__=function(){return "<class 'generator'>"}
 $B.$generator.__class__=__BRYTHON__.$type
+$B.set_data=function(node){
+var ctx_js=node.C.to_js()
+if(ctx_js){
+node.data=ctx_js
+for(var i=0;i<node.children.length;i++){
+$B.set_data(node.children[i])
+}
+}
+}
+$B.gen_src=function(node, indent){
+var res=node.data
+indent=indent || 0
+if(node.children.length){res +='{'}
+for(var i=0;i<node.children.length;i++){
+res +='\n'
+for(var j=0;j<indent;j++){res +=' '}
+res +=$B.gen_src(node.children[i],indent+4)
+}
+if(node.children.length){
+res +='\n'
+for(var j=0;j<indent;j++){res +=' '}
+res +='}'
+}
+return res
+}
+$B.make_node=function(node){
+var ctx_js=node.C.to_js()
+if(ctx_js){
+var new_node=new $B.genNode(ctx_js)
+node.ref=new_node
+for(var i=0;i<node.children.length;i++){
+new_node.addChild($B.make_node(node.children[i]))
+}
+}
+return new_node
+}
+$B.genNode=function(data, parent){
+_indent=4
+this.data=data
+this.parent=parent
+this.children=[]
+this.has_child=false
+if(parent===undefined){
+this.nodes={}
+this.num=0
+}
+this.addChild=function(child){
+this.children.push(child)
+this.has_child=true
+child.parent=this
+child.rank=this.children.length-1
+}
+this.clone=function(){
+var res=new $B.genNode(this.data)
+res.has_child=this.has_child
+return res
+}
+this.clone_tree=function(){
+var res=new $B.genNode(this.data)
+res.has_child=this.has_child
+for(var i=0;i<this.children.length;i++){
+res.addChild(this.children[i].clone_tree())
+}
+return res
+}
+this.indent_src=function(indent){
+var res=''
+for(var i=0;i<indent*_indent;i++){res+=' '}
+return res
+}
+this.src=function(indent){
+indent=indent || 0
+res=this.indent_src(indent)+this.data
+if(this.has_child){res +='{'}
+res +='\n'
+for(var i=0;i<this.children.length;i++){
+res +=this.children[i].src(indent+1)
+}
+if(this.has_child){res+='\n'+this.indent_src(indent)+'}\n'}
+return res
+}
+this.toString=function(){return '<Node '+this.data+'>'}
+}
+$B.$BRgenerator=function(func, def_id){
+var def_ctx=__BRYTHON__.modules[def_id]
+var func_name=def_ctx.name
+var node=def_ctx.parent.node
+var try_node=node.children[1].children[0]
+var newnode=$B.make_node(node)
+var newtrynode=try_node.ref
+newtrynode.addChild(new $B.genNode('throw StopIteration("")'))
+var __builtins__=__BRYTHON__.builtins
+for(var $py_builtin in __builtins__){
+eval("var "+$py_builtin+"=__builtins__[$py_builtin]")
+}
+var src=newnode.src()+'\n)()'
+eval(src)
+var _next=eval('$'+func_name)
+var $BRGeneratorDict={__class__:__BRYTHON__.$type,
+__name__:'BRgenerator'
+}
+$BRGeneratorDict.__init__=function(self){
+}
+$BRGeneratorDict.__iter__=function(self){return self}
+$BRGeneratorDict.__next__=function(self){
+var res=self._next.apply(null, self.args)
+var yielded_value=res[0], rank=res[1]
+var exit_node=def_ctx.yields[rank].parent.node.ref
+var root=new $B.genNode(def_ctx.to_js())
+root.addChild(newnode.children[0].clone())
+fnode=newnode.children[1].clone()
+root.addChild(fnode)
+tnode=newnode.children[1].children[0].clone()
+fnode.addChild(tnode)
+var js='var $locals = __BRYTHON__.vars["'+def_id+'"]'
+tnode.addChild(new $B.genNode(js))
+js='for(var $var in $locals){eval("var "+$var+"=$locals[$var]")}'
+tnode.addChild(new $B.genNode(js))
+var pnode=exit_node.parent
+for(var i=exit_node.rank+1;i<pnode.children.length;i++){
+tnode.addChild(pnode.children[i].clone_tree())
+}
+while(pnode!==newtrynode){
+for(var i=pnode.rank;i<pnode.parent.children.length;i++){
+tnode.addChild(pnode.parent.children[i].clone_tree())
+}
+pnode=pnode.parent
+}
+for(var i=1;i<newnode.children[1].children.length;i++){
+fnode.addChild(newnode.children[1].children[i].clone_tree())
+}
+var next_src=root.src()+'\n)()'
+eval(next_src)
+self._next=eval('$'+func_name)
+return yielded_value
+}
+$BRGeneratorDict.__mro__=[$BRGeneratorDict,__BRYTHON__.builtins.object.$dict]
+var res=function(){
+var args=[]
+for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
+var obj={
+__class__ : $BRGeneratorDict,
+args:args,
+func:func,
+_next:_next
+}
+return obj
+}
+res.__repr__=function(){return "<function "+func.__name__+">"}
+return res
+}
+$B.$BRgenerator.__repr__=function(){return "<class 'BRgenerator'>"}
+$B.$BRgenerator.__str__=function(){return "<class 'BRgenerator'>"}
+$B.$BRgenerator.__class__=__BRYTHON__.$type
 $B.$ternary=function(env,cond,expr1,expr2){
 for(var $py_builtin in __BRYTHON__.builtins){eval("var "+$py_builtin+"=__BRYTHON__.builtins[$py_builtin]")}
 for(var attr in env){eval('var '+attr+'=env["'+attr+'"]')}
