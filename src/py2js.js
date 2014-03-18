@@ -2070,8 +2070,6 @@ function $NodeCtx(node){
             this.tree.pop()
             node.add(new_node)
         }
-        var res = $to_js(this.tree)
-        if(res=='undefined'){console.log('undef '+this.tree[0])}
         return $to_js(this.tree)
     }
 }
