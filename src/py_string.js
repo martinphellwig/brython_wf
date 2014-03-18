@@ -504,7 +504,7 @@ var $FormattableString=function(format_string) {
     this.format_string=format_string
 
     this._prepare = function() {
-       console.log('prepare')
+       //console.log('prepare')
        var match = arguments[0]
        //console.log('match1', match)
 
@@ -551,6 +551,7 @@ var $FormattableString=function(format_string) {
        //fix me
        //_name_parts=this.field_part(_literal)
        _name_parts=this.field_part.apply(null, [_literal])
+       //console.log(_name_parts)
        var _start=_literal.substring(0,1)
        var _name=''
        if (_start=='' || _start=='.' || _start == '[') {
@@ -579,12 +580,13 @@ var $FormattableString=function(format_string) {
 
        var _empty_attribute=false
 
+       //console.log('name', _name)
        var _k
        for (var i=0; i < _name_parts.length; i++) {
            _k = _name_parts[i][0]
            var _v = _name_parts[i][1]
            var _tail = _name_parts[i][2]
-           console.log('_v', _v)
+           //console.log('_v', _v)
            if (_v === '') {_empty_attribute = true}
            if (_tail !== '') {
               throw __builtins__.ValueError("Only '.' or '[' may follow ']' " +
@@ -605,7 +607,7 @@ var $FormattableString=function(format_string) {
        if (_format_spec.indexOf('{') != -1) {
           //_format_spec = this.format_sub_re.replace(_format_spec, this._prepare)
           _format_spec = _format_spec.replace(this.format_sub_re, this._prepare)
-          console.log(_format_spec)
+          //console.log(_format_spec)
           _rv = [_name_parts, _conversion, _format_spec]
           if (this._nested[_name] === undefined) {
              this._nested[_name]=[]
@@ -620,11 +622,12 @@ var $FormattableString=function(format_string) {
           }
           this._kwords[_name].push(_rv)
        }
+       //console.log('_rv', _rv)
        return '%(' + id(_rv) + ')s'
-    } // this.prepare
+    }  // this.prepare
 
     this.format=function() {
-       console.log('format')
+       //console.log('format')
        // same as str.format() and unicode.format in Python 2.6+
 
        var $ns=$B.$MakeArgs('format',arguments,[],[],'args','kwargs')
@@ -697,7 +700,7 @@ var $FormattableString=function(format_string) {
     }  // this.format
 
     this.format_field=function(value,parts,conv,spec,want_bytes) {
-       console.log('format_field')
+       //console.log('format_field')
 
        if (want_bytes === undefined) want_bytes = False
 
@@ -709,7 +712,7 @@ var $FormattableString=function(format_string) {
               if (!isNaN(_part)) {
                  value = value[parseInt(_part)]
               } else {
-                 value = value[_part]
+                 value = getattr(value, _part)
               }
            } else {
               value = value[_part]
@@ -732,10 +735,10 @@ var $FormattableString=function(format_string) {
     }
 
     this.strformat=function(value, format_spec) {
-       console.log('strformat')
+       //console.log('strformat')
        if (format_spec === undefined) format_spec = ''
-       console.log(value)
-       console.log(format_spec)
+       //console.log(value)
+       //console.log(format_spec)
        var _m = this.format_spec_re.test(format_spec)
 
        if (!_m) {
@@ -754,7 +757,7 @@ var $FormattableString=function(format_string) {
        var _is_numeric = isinstance(value, __builtins__.float)
        var _is_integer = isinstance(value, __builtins__.int)
 
-       console.log('match', _match)
+       //console.log('match', _match)
 
        if (_prefix != '' && ! _is_numeric) {
           if (_is_numeric) {
@@ -853,7 +856,7 @@ var $FormattableString=function(format_string) {
     }
 
     this.field_part=function(literal) {
-       console.log('field_part')
+       //console.log('field_part')
        if (literal.length == 0) { return [['','','']]}
 
        var _matches=[]
@@ -891,7 +894,7 @@ var $FormattableString=function(format_string) {
                 _middle += car
                 _pos++
                 car = literal.charAt(_pos)
-                console.log(car)
+                //console.log(car)
              }
              if (car == ']') _end=']'
              _matches.push([_start, _middle, _end])
@@ -904,7 +907,7 @@ var $FormattableString=function(format_string) {
                   while (_pos < literal.length &&
                          car !== '[' && 
                          car !== '.') {
-                      console.log(car)
+                      //console.log(car)
                       _middle += car
                       _pos++
                       car = literal.charAt(_pos)
@@ -913,7 +916,7 @@ var $FormattableString=function(format_string) {
                   _matches.push([_start, _middle, ''])
           }
        }
-       console.log(_matches)
+       //console.log(_matches)
        return _matches
     }
 

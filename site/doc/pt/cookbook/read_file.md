@@ -6,13 +6,16 @@ Ler o conteúdo de um arquivo
 Solução
 -------
 
-Usamos a função integrada `open()` para carregar o conteúdo do arquivo
+Usamos a função integrada `open()` para carregar o conteúdo do
+arquivo.
 
 <table width="100%">
 <tr>
 <td style="width:40%;padding-right:10px;">
 
     import time
+    from browser import doc
+
     fake_qs = '?foo=%s' %time.time()
     doc['zone'].value = open('cookbook/file.txt'+fake_qs).read()
 
@@ -32,11 +35,15 @@ def get_file():
 </script>
 
 
-Note que a cadeia de consulta tem um valor aleatório no final do nome do arquivo : ele é necessário para atualizar o resultado caso o arquivo fonte seja alterado entre duas chamadas
+Note que a cadeia de consulta tem um valor aleatório no final do nome
+do arquivo: ele é necessário para atualizar o resultado caso o arquivo
+fonte seja alterado entre duas chamadas.
 
-O próximo exemplo adiciona uma função de tempo limite para imprimir uma mensagem caso o arquivo não tenha sido encontrado após 4 segundos : 
+O próximo exemplo adiciona uma função de tempo limite para imprimir
+uma mensagem caso o arquivo não tenha sido encontrado após 4 segundos:
 
     import time
+    from browser import doc
 
     def on_complete(req):
         if req.status==200 or req.status==0:

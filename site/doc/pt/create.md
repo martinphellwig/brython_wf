@@ -1,10 +1,13 @@
-## Criando um documento
+Criando um documento
+--------------------
 
-Brython é feito para progrmar aplicações web, ou seja, páginas HTML com as quais o usuário pode interagir
+Brython é feito para progrmar aplicações web, ou seja, páginas HTML
+com as quais o usuário pode interagir.
 
-Uma página é feita de elementos (textos, imagens, sons...) que podem ser incluídos na página de dois modos diferentes :
+Uma página é feita de elementos (textos, imagens, sons...) que podem
+ser incluídos na página de dois modos diferentes :
 
-- escrevendo HTML com etiquetas, por exemplo
+- escrevendo HTML com etiquetas, por exemplo:
 
 >    <html>
 >    <body>
@@ -13,14 +16,15 @@ Uma página é feita de elementos (textos, imagens, sons...) que podem ser inclu
 >    </body>
 >    </html>
 
-- ou escrevendo código Python usando o módulo integrado `html` (descrito na seção Bibliotecas)
+- ou escrevendo código Python usando o módulo integrado
+  **browser.html**:
 
 >    <html>
 >    <body>
 >    <script type="text/python">
->    from html import A,B
+>    from browser.html import A,B
 >    doc <= B("Brython")+"é uma implementação de "
->    doc <= A("Python",href="http://www.python.org")+" para navegadores web"
+>    doc <= A("Python", href="http://www.python.org")+" para navegadores web"
 >    </script>
 >    </body>
 >    </html>

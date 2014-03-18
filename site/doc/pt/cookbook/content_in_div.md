@@ -18,6 +18,7 @@ Solução
     <body onload="brython()">
     
     <script type="text/python">
+    from browser import doc
     doc['zone'] <= "blah "
     </script>
     
@@ -32,9 +33,11 @@ Solução
 </table>
 
 <script type="text/python3">
+from browser import doc
 def fill_zone():
     doc["zone"] <= "blah "
 </script>
 
-`doc["zone"]` é o elemento na página web com id "zone" (a célula colorida da tabela)
+`doc["zone"]` é o elemento na página web com id "zone" (a célula
+colorida da tabela).
 

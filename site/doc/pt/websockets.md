@@ -1,14 +1,25 @@
-## módulo websocket
+módulo **browser.websocket**
+----------------------------
 
-Web sockets são uma forma de gerir a comunicação bi direcional entre cliente e servidor. Eles foram especificados em HTML5
+Web sockets, defiidos em HTML5, são uma forma de gerir a comunicação
+bi direcional entre cliente e servidor.
 
-A comunicação com o servidor é estabelecida utilizando o módulo `websocket` que expõe a função <code>websocket(_host_)</code> onde _host_ é a localização de um servidor que suporta o protocolo WebSocket
+O módulo define uma função:
 
-Se seu navegador não suporta WebSocket, um erro `NotImplementedError` será levantado
+`websocket(`_host_`)`
 
-Esta chamada retorna uma instância da classe `WebSocket`, ela tem os seguintes métodos :
+> _host_ é a localização de um servidor que suporta o protocolo
+> WebSocket. Retorna um objeto `WebSocket`.
 
-- <code>bind(_evt,function_)</code> vincula a função _function_ ao evento _evt_. Os eventos e os argumentos correspondentes da função são :
+> Se o navegador não suporta WebSocket, um erro `NotImplementedError`
+> será levantado.
+
+Objetos `WebSocket` têm os seguintes métodos:
+
+`bind(`_evt,function_`)`
+
+> Vincula a função _function_ ao evento _evt_. Os eventos e os
+> argumentos correspondentes da função são:
 
 <blockquote>
 <table border=1 cellpadding=5>
@@ -35,14 +46,17 @@ Esta chamada retorna uma instância da classe `WebSocket`, ela tem os seguintes 
 </table>
 </blockquote>
 
-- <code>send(_data_)</code> : envia a cadeia de caracteres _data_ para o servidor
-- `close()` : fecha a conexão
+`send(`_data_`)`
+> Envia a cadeia de caracteres _data_ para o servidor.
 
-Exemplo :
+`close()`
+> Fecha a conexão.
+
+Exemplo:
 <table>
 <tr>
 <td id="py_source">
-    import websocket
+    from browser import doc,alert,websocket
     
     def on_open(evt):
         doc['send_button'].disabled = False
@@ -50,12 +64,12 @@ Exemplo :
         doc['openbtn'].disabled = True
     
     def on_message(evt):
-        # mensagem recebida do servidor
-        alert("Mensagem recebida : %s" %evt.data)
+        # message reeived from server
+        alert("Message received : %s" %evt.data)
     
     def on_close(evt):
-        # websocket está fechado
-        alert("Conexão está fechada")
+        # websocket is closed
+        alert("Connection is closed")
         doc['openbtn'].disabled = False
         doc['closebtn'].disabled = True
         doc['send_button'].disabled = True
@@ -63,14 +77,14 @@ Exemplo :
     ws = None
     def _open():
         if not __BRYTHON__.has_websocket:
-            alert("WebSocket não é suportado por seu navegador")
+            alert("WebSocket is not supported by your browser")
             return
         global ws
-        # abre um websocket
+        # open a web socket
         ws = websocket.websocket("wss://echo.websocket.org")
-        # vincula funções aos eventos websocket
+        # bind functions to web socket events
         ws.bind('open',on_open)
-p        ws.bind('message',on_message)
+        ws.bind('message',on_message)
         ws.bind('close',on_close)
     
     def send():
