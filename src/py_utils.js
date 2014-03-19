@@ -316,8 +316,18 @@ $B.gen_src = function(node, indent){
 
 $B.make_node = function(node){
     var ctx_js = node.context.to_js()
+    var is_cond = false
+    if(node.context.type=='node'){
+        var ctx = node.context.tree[0]
+        var ctype = ctx.type
+        if((ctype=='condition' && ['if','elif'].indexOf(ctx.token)>-1) ||
+            (ctype=='single_kw' && ctx.token=='else')){
+            is_cond = true
+        }
+    }
     if(ctx_js){ // empty for "global x"
         var new_node = new $B.genNode(ctx_js)
+        new_node.is_cond = is_cond
         // keep track in the original node
         node.ref = new_node
         for(var i=0;i<node.children.length;i++){
@@ -351,11 +361,16 @@ $B.genNode = function(data, parent){
         return res
     }
 
-    this.clone_tree = function(){
+    this.clone_tree = function(exit_node){
         var res = new $B.genNode(this.data)
+        if(this===exit_node && this.parent.is_cond){
+            // If we have to clone the exit node and its parent was
+            // a condition, replace code by 'void(0)'
+            res = new $B.genNode('void(0)')
+        }
         res.has_child = this.has_child
         for(var i=0;i<this.children.length;i++){
-            res.addChild(this.children[i].clone_tree())
+            res.addChild(this.children[i].clone_tree(exit_node))
         }
         return res
     }
@@ -413,7 +428,13 @@ $B.$BRgenerator = function(func, def_id){
     }
     $BRGeneratorDict.__iter__ = function(self){return self}
     $BRGeneratorDict.__next__ = function(self){
+
         var res = self._next.apply(null, self.args)
+        if(res===undefined){
+            // The function may have ordinary "return" lines, in this case
+            // the iteration stops
+            throw StopIteration('')
+        }
         
         var yielded_value=res[0], rank=res[1]
         // get node where yield was thrown
@@ -435,17 +456,19 @@ $B.$BRgenerator = function(func, def_id){
 
         var pnode = exit_node.parent
 
+        // add the rest of the block after exit_node
         for(var i=exit_node.rank+1;i<pnode.children.length;i++){
             // add a clone of child : if we appended the child itself,
             // it would change the original function tree
-            tnode.addChild(pnode.children[i].clone_tree())
+            tnode.addChild(pnode.children[i].clone_tree(exit_node))
         }
-
+        
         // Then add all parents of exit node recursively, only keeping
         // the part that starts at exit node
         while(pnode!==newtrynode){
             for(var i=pnode.rank;i<pnode.parent.children.length;i++){
-                tnode.addChild(pnode.parent.children[i].clone_tree())
+                var child = pnode.parent.children[i]
+                tnode.addChild(pnode.parent.children[i].clone_tree(exit_node))
             }
             pnode = pnode.parent
         }
