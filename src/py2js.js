@@ -1141,6 +1141,28 @@ function $DefCtx(context){
         
         var offset = 2
         
+        // If function is a generator, add a line to build the generator
+        // function, based on the original function
+        if(this.type==='BRgenerator' && !this.declared){
+            js = '__BRYTHON__.$BRgenerator('
+            if(scope.ntype==='class'){js += '$class.'}
+            js += '$'+this.name+',"'+this.id+'")'
+            // store a reference to function node, will be used in yield
+            __BRYTHON__.modules[this.id] = this
+            var gen_node = new $Node('expression')
+            var ctx = new $NodeCtx(gen_node)
+            var expr = new $ExprCtx(ctx,'id',false)
+            var name_ctx = new $IdCtx(expr,this.name)
+            var assign = new $AssignCtx(expr)
+            var expr1 = new $ExprCtx(assign,'id',false)
+            var js_ctx = new $NodeJSCtx(assign,js)
+            expr1.tree.push(js_ctx)
+            node.parent.insert(rank+offset,gen_node) 
+            this.declared = true
+            offset++
+        }
+        
+        
         // add function name
         js = this.name+'.__name__'
         if(scope.ntype==='class'){
@@ -1207,31 +1229,6 @@ function $DefCtx(context){
             js = '__BRYTHON__.$generator('
             if(scope.ntype==='class'){js += '$class.'}
             js += '$'+this.name+')'
-            var gen_node = new $Node('expression')
-            var ctx = new $NodeCtx(gen_node)
-            var expr = new $ExprCtx(ctx,'id',false)
-            var name_ctx = new $IdCtx(expr,this.name)
-            var assign = new $AssignCtx(expr)
-            var expr1 = new $ExprCtx(assign,'id',false)
-            var js_ctx = new $NodeJSCtx(assign,js)
-            expr1.tree.push(js_ctx)
-            node.parent.insert(this.rank+offset,gen_node) 
-            this.declared = true
-        }
-    }
-
-    this.add_BRgenerator_declaration = function(){
-        // if generator, add line 'foo = __BRYTHON__.$generator($foo)'
-        var scope = $get_scope(this)
-        var node = this.parent.node
-        if(this.type==='BRgenerator' && !this.declared){
-            var offset = 2
-            if(this.decorators !== undefined){offset++}
-            js = '__BRYTHON__.$BRgenerator('
-            if(scope.ntype==='class'){js += '$class.'}
-            js += '$'+this.name+',"'+this.id+'")'
-            // store a reference to function node, will be used in yield
-            __BRYTHON__.modules[this.id] = this
             var gen_node = new $Node('expression')
             var ctx = new $NodeCtx(gen_node)
             var expr = new $ExprCtx(ctx,'id',false)
@@ -2548,12 +2545,16 @@ function $BRYieldCtx(context){
     context.tree.push(this)
 
     var scope = $get_scope(this)
+    if(scope.ntype!=='def'&&scope.ntype!=='BRgenerator'){
+        $_SyntaxError(context,["'yield' outside function"])
+    }else if(scope.has_return_with_arguments){
+        $_SyntaxError(context,["'return' with argument inside generator"])
+    }
     // change type of function to BRgenerator
     var def = scope.context.tree[0]
     def.type = 'BRgenerator'
     this.func_name = def.name
     this.def_id = def.id
-    def.add_BRgenerator_declaration()
     def.yields.push(this)
     // this.rank will be returned in generator function
     this.rank = def.yields.length-1
@@ -2566,7 +2567,7 @@ function $BRYieldCtx(context){
             if(scope.ntype==='class'){res = '$class.'}
         }
         if(this.tree.length==1){
-            return 'return ['+$to_js(this.tree)+', '+this.rank+']'
+            return 'return ['+$to_js(this.tree)+', '+this.rank+', __BRYTHON__.GeneratorToken]'
         }else{ // form "yield from <expr>" : <expr> is this.tree[1]
             var indent = $ws($get_module(this).indent)
             res += '$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
@@ -3687,6 +3688,18 @@ function $transition(context,token){
 
     }else if(context.type==='return'){
 
+        var no_args = context.tree[0].type=='abstract_expr'
+        // if 'return' has an agument inside a generator, raise a SyntaxError
+        if(!no_args){
+            var scope = $get_scope(context)
+            if(scope.ntype=='BRgenerator'){
+                $_SyntaxError(context,["'return' with argument inside generator"])
+            }
+            // If the function is a generator but no 'yield' has been handled
+            // yet, store the information that function has a return with 
+            // arguments, to throw the SyntaxError when the 'yield' is handled
+            scope.has_return_with_arguments = true
+        }
         return $transition(context.parent,token)
 
     }else if(context.type==='single_kw'){
