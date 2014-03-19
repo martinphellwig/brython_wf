@@ -440,7 +440,7 @@ function $AssignCtx(context){
                 }
                 res += '='+right.to_js()+';None;'
                 return res
-            }else if(scope.ntype==='def'||scope.ntype==="generator"||scope.ntype=="BRgenerator"){
+            }else if(scope.is_function){
                 // assignment in a function : depends if variable is local
                 // or global
                 if(scope.globals && scope.globals.indexOf(left.value)>-1){
@@ -997,9 +997,9 @@ function $DefCtx(context){
 
     // store id of enclosing functions
     this.enclosing = []
-    var scope = $get_scope(this)
+    var scope = this.scope = $get_scope(this)
     while(true){
-        if(scope.ntype=='def' || scope.ntype=='generator'){
+        if(scope.is_function){
             this.enclosing.push(scope.context.tree[0].id)
             scope = $get_scope(scope.context.tree[0])
         }else{break}
@@ -1010,7 +1010,7 @@ function $DefCtx(context){
         // if function is defined inside another function, add the name
         // to local names
         var scope = $get_scope(this)
-        if(scope.ntype=='def' || scope.ntype=='generator'){
+        if(scope.is_function){
             if(scope.context.tree[0].locals.indexOf(name)==-1){
                 scope.context.tree[0].locals.push(name)
             }
@@ -1062,6 +1062,19 @@ function $DefCtx(context){
         //if(defaults.length>0){defaults=defaults.substr(0,defaults.length-1)}
 
         var nodes=[], js
+
+        // If function is a generator, it will need the global variables
+        if(this.type=='BRgenerator'){
+            js = 'var $globals = __BRYTHON__.vars["'+this.scope.module+'"]'
+            var new_node = new $Node('expression')
+            new $NodeJSCtx(new_node,js)
+            nodes.push(new_node)
+
+            js = 'for(var $var in $globals){eval("var "+$var+"=$globals[$var]")}'
+            var new_node = new $Node('expression')
+            new $NodeJSCtx(new_node,js)
+            nodes.push(new_node)
+        }
 
         // add lines of code to node children
         js = 'var $locals = __BRYTHON__.vars["'+this.id+'"]'
@@ -1169,7 +1182,7 @@ function $DefCtx(context){
             js = '$class.'+this.name+'.__name__'
         }
         js += '="'+this.name+'"'
-        if(scope.ntype==='def'){
+        if(scope.is_function){
             // add to $locals
             js += ';$locals["'+this.name+'"]='+this.name
         }
@@ -1287,7 +1300,7 @@ function $DelCtx(context){
                 // remove name from dictionaries
                 if(scope.ntype==='module'){
                     js+='delete $globals["'+name+'"]'
-                }else if(scope.ntype==="def"||scope.ntype==="generator"||scope.ntype=="BRgenerator"){
+                }else if(scope.is_function){
                     if(scope.globals && scope.globals.indexOf(name)>-1){
                         // global variable
                         js+='delete $globals["'+name+'"]'
@@ -1295,7 +1308,7 @@ function $DelCtx(context){
                         js+='delete $locals["'+name+'"]'
                     }
                 }
-                return js+';'         
+                return js+';'
             }
             if(expr.type==='id'){return del_name(scope,expr.to_js())}
             else if(expr.type=='list_or_tuple'){
@@ -1886,7 +1899,7 @@ function $ImportCtx(context){
                 if(j==parts.length-1){alias = this.tree[i].alias}
                 if(alias.search(/\./)==-1){res += 'var '}
                 res += alias
-                if(scope.ntype == 'def' || scope.ntype==="generator"||scope.ntype=="BRgenerator"){
+                if(scope.is_function){
                     res += '=$locals["'+alias+'"]'
                 }else if(scope.ntype==="module"){
                     res += '=$globals["'+alias+'"]'
@@ -2545,7 +2558,7 @@ function $BRYieldCtx(context){
     context.tree.push(this)
 
     var scope = $get_scope(this)
-    if(scope.ntype!=='def'&&scope.ntype!=='BRgenerator'){
+    if(!scope.is_function){
         $_SyntaxError(context,["'yield' outside function"])
     }else if(scope.has_return_with_arguments){
         $_SyntaxError(context,["'return' with argument inside generator"])
@@ -2741,7 +2754,7 @@ function $clear_ns(ctx){
     // If the list is in a function, the names defined in the display so far must 
     // be removed from the function namespace
     var scope = $get_scope(ctx)
-    if(scope.ntype=="def" || scope.ntype=="generator"||scope.ntype=="BRgenerator"){
+    if(scope.is_function){
         if(scope.var2node){
             for(var name in scope.var2node){
                 var remove = []
@@ -2787,6 +2800,7 @@ function $get_scope(context){
             scope = tree_node.parent
             scope.ntype = ntype
             scope.elt = scope.context.tree[0]
+            scope.is_function = ntype!='class'
             return scope
         }
         tree_node = tree_node.parent

@@ -402,6 +402,7 @@ $B.$BRgenerator = function(func, def_id){
     var def_ctx = __BRYTHON__.modules[def_id]
     var func_name = def_ctx.name
     var node = def_ctx.parent.node
+    var module = node.module
     
     // identify the node with "try"
     var try_node = node.children[1].children[0]
@@ -448,12 +449,18 @@ $B.$BRgenerator = function(func, def_id){
         tnode = newnode.children[1].children[0].clone()
         fnode.addChild(tnode)
         
+        // add code to restore global variables
+        var js = 'var $globals = __BRYTHON__.vars["'+module+'"]'
+        tnode.addChild(new $B.genNode(js))
+        js = 'for(var $var in $globals){eval("var "+$var+"=$globals[$var]")}'
+        tnode.addChild(new $B.genNode(js))
+
         // add code to restore local variables
         var js = 'var $locals = __BRYTHON__.vars["'+def_id+'"]'
         tnode.addChild(new $B.genNode(js))
         js = 'for(var $var in $locals){eval("var "+$var+"=$locals[$var]")}'
         tnode.addChild(new $B.genNode(js))
-
+        
         var pnode = exit_node.parent
 
         // add the rest of the block after exit_node
