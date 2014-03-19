@@ -316,18 +316,25 @@ $B.gen_src = function(node, indent){
 
 $B.make_node = function(node){
     var ctx_js = node.context.to_js()
-    var is_cond = false
+    var is_cond = false, is_except = false
+    if(node.is_catch){is_except=true}
     if(node.context.type=='node'){
         var ctx = node.context.tree[0]
+        console.log('ctx '+ctx+' type '+ctx.type)
         var ctype = ctx.type
         if((ctype=='condition' && ['if','elif'].indexOf(ctx.token)>-1) ||
+            ctype=='except' ||
             (ctype=='single_kw' && ctx.token=='else')){
             is_cond = true
         }
+        if(ctype=='except'){is_except=true}
+    }else{
+        console.log('node '+node+' to js '+ctx_js)
     }
     if(ctx_js){ // empty for "global x"
         var new_node = new $B.genNode(ctx_js)
         new_node.is_cond = is_cond
+        new_node.is_except = is_except
         // keep track in the original node
         node.ref = new_node
         for(var i=0;i<node.children.length;i++){
@@ -363,6 +370,7 @@ $B.genNode = function(data, parent){
 
     this.clone_tree = function(exit_node){
         var res = new $B.genNode(this.data)
+        if(this===exit_node){console.log('exit node, parent is cond '+this.parent.is_cond)}
         if(this===exit_node && this.parent.is_cond){
             // If we have to clone the exit node and its parent was
             // a condition, replace code by 'void(0)'
@@ -430,7 +438,10 @@ $B.$BRgenerator = function(func, def_id){
     $BRGeneratorDict.__iter__ = function(self){return self}
     $BRGeneratorDict.__next__ = function(self){
 
+        console.log('_next\n'+self._next)
+
         var res = self._next.apply(null, self.args)
+        console.log('res '+res)
         if(res===undefined){
             // The function may have ordinary "return" lines, in this case
             // the iteration stops
@@ -473,7 +484,9 @@ $B.$BRgenerator = function(func, def_id){
         // Then add all parents of exit node recursively, only keeping
         // the part that starts at exit node
         while(pnode!==newtrynode){
-            for(var i=pnode.rank;i<pnode.parent.children.length;i++){
+            var rank = pnode.rank
+            while(pnode.parent.children[rank].is_except){rank--}
+            for(var i=rank;i<pnode.parent.children.length;i++){
                 var child = pnode.parent.children[i]
                 tnode.addChild(pnode.parent.children[i].clone_tree(exit_node))
             }
@@ -487,8 +500,14 @@ $B.$BRgenerator = function(func, def_id){
         // Set self._next to the code of the function for next iteration
         var next_src = root.src()+'\n)()'
         
-        eval(next_src)
+        console.log('ready to run next_src\n'+next_src)
+        
+        try{eval(next_src);console.log('next src done')}
+        catch(err){console.log('next src error '+err)}
+        
         self._next = eval('$'+func_name)
+        
+        console.log('return yielded value '+yielded_value)
 
         // Return the yielded value
         return yielded_value

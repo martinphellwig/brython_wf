@@ -2382,6 +2382,7 @@ function $TryCtx(context){
         // insert new 'catch' clause
         var catch_node = new $Node('expression')
         new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
+        catch_node.is_catch = true
         node.parent.insert(rank+1,catch_node)
         
         // fake line to start the 'else if' clauses
@@ -2425,7 +2426,7 @@ function $TryCtx(context){
                 node.parent.children.splice(pos,1)
             }else{break}
         }
-        if(!has_default){ 
+        if(!has_default){
             // if no default except: clause, add a line to throw the
             // exception if it was not caught
             var new_node = new $Node('expression')
@@ -2580,7 +2581,7 @@ function $BRYieldCtx(context){
             if(scope.ntype==='class'){res = '$class.'}
         }
         if(this.tree.length==1){
-            return 'return ['+$to_js(this.tree)+', '+this.rank+', __BRYTHON__.GeneratorToken]'
+            return 'return ['+$to_js(this.tree)+', '+this.rank+']'
         }else{ // form "yield from <expr>" : <expr> is this.tree[1]
             var indent = $ws($get_module(this).indent)
             res += '$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
