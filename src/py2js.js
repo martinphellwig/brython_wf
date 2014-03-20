@@ -1159,7 +1159,9 @@ function $DefCtx(context){
         if(this.type==='BRgenerator' && !this.declared){
             js = '__BRYTHON__.$BRgenerator('
             if(scope.ntype==='class'){js += '$class.'}
-            js += '$'+this.name+',"'+this.id+'")'
+            js += '$'+this.name+',"'+this.id+'"'
+            if(scope.ntype=='class'){js += ',$class'}
+            js += ')'
             // store a reference to function node, will be used in yield
             __BRYTHON__.modules[this.id] = this
             var gen_node = new $Node('expression')
@@ -2375,10 +2377,13 @@ function $TryCtx(context){
                 $_SyntaxError(context,"missing clause after 'try' 2")
             }
         }
+        
         // transform node into Javascript 'try' (necessary if
-        // "try" inside a "for" loop
+        // "try" inside a "for" loop)
         // add a boolean $failed, used to run the 'else' clause
         new $NodeJSCtx(node,'__BRYTHON__.$failed'+$loop_num+'=false;try')
+        node.is_try = true // used in generators
+        
         // insert new 'catch' clause
         var catch_node = new $Node('expression')
         new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
@@ -2576,12 +2581,14 @@ function $BRYieldCtx(context){
     this.to_js = function(){
         var scope = $get_scope(this)
         var res = ''
-        if(scope.ntype==='generator'){
+        if(scope.ntype==='BRgenerator'){
             scope = $get_scope(scope.context.tree[0])
             if(scope.ntype==='class'){res = '$class.'}
         }
         if(this.tree.length==1){
-            return 'return ['+$to_js(this.tree)+', '+this.rank+']'
+            res =  'try{return ['+$to_js(this.tree)+', '+this.rank+']}'
+            res += 'catch(err){return[$B.generator_error(err), '+this.rank+']}'
+            return res
         }else{ // form "yield from <expr>" : <expr> is this.tree[1]
             var indent = $ws($get_module(this).indent)
             res += '$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
@@ -3637,7 +3644,7 @@ function $transition(context,token){
             return new $AbstractExprCtx(ret,true)
         }else if(token==="with"){return new $AbstractExprCtx(new $WithCtx(context),false)}
         else if(token==='yield'){
-            var yield = new $YieldCtx(context)
+            var yield = new $BRYieldCtx(context)
             return new $AbstractExprCtx(yield,true)
         }else if(token==='bryield'){ // experiment new generator implementation
             var yield = new $BRYieldCtx(context)
