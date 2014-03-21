@@ -1,6 +1,7 @@
 var $module = {
     $$alert:__BRYTHON__._alert,
     confirm: function(message){return __BRYTHON__.JSObject(window.confirm(message))},
+    console:{log:function(data){window.console.log(data)}},
     $$document:__BRYTHON__.$DOMNode(document),
     doc: __BRYTHON__.$DOMNode(document),   //want to use document instead of doc
     DOMEvent:__BRYTHON__.DOMEvent,
