@@ -179,4 +179,23 @@ def f():
     yield 11
 assert list(f())==[1, 2, 4, 5, 8, 9, 10, 11]
 
+# The difference between yielding None and returning it.
 
+def g():
+     for i in range(3):
+         yield None
+     yield None
+     return
+assert list(g())==[None, None, None, None]
+
+# Ensure that explicitly raising StopIteration acts like any other exception
+# in try/except, not like a return.
+
+def g():
+     yield 1
+     try:
+         raise StopIteration
+     except:
+         yield 2
+     yield 3
+assert list(g())==[1, 2, 3]

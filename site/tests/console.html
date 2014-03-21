@@ -40,7 +40,6 @@ textarea {
 }
 </style>
 <script type="text/python3">
-from browser import doc,win
 from .. import header
 
 qs_lang,language = header.show('../')
@@ -63,7 +62,7 @@ qs_lang,language = header.show('../')
 import sys
 import traceback
 
-from browser import doc,win
+from browser import doc, win
 
 history = []
 current = 0
@@ -73,7 +72,7 @@ def write(data):
 
 sys.stdout.write = sys.stderr.write = write
 
-status = "main" # or "block" if typing inside a block
+_status = "main" # or "block" if typing inside a block
 
 def cursorToEnd(*args):
     pos = len(doc['code'].value)
@@ -88,57 +87,51 @@ def get_col(area):
     return sel
 
 def myKeyPress(event):
-    global status,current
-
-    if event.keyCode == 8: # backspace
-        src = doc['code'].value
-        lstart = src.rfind('\n')
-        if (lstart==-1 and len(src)<5) \
-            or (len(src)-lstart<6):
-                event.preventDefault()
-                event.stopPropagation()
-    elif event.keyCode == 9: # tab key
+    global _status,current
+    
+    if event.keyCode == 9: # tab key
         event.preventDefault()
         doc['code'].value += "    "
     elif event.keyCode == 13:    # return
         src = doc['code'].value
-        if status == "main":
+        if _status == "main":
             currentLine = src[src.rfind('>>>')+4:]
-        elif status == "3string":
+        elif _status == "3string":
             currentLine = src[src.rfind('>>>')+4:]
             currentLine = currentLine.replace('\n... ','\n')
         else:
             currentLine = src[src.rfind('...')+4:]
-        if status == 'main' and not currentLine.strip():
+
+        if _status == 'main' and not currentLine.strip():
             doc['code'].value += '\n>>> '
             event.preventDefault()
             return
         doc['code'].value+='\n'
         history.append(currentLine)
         current += 1
-        if status == "main" or status == "3string":
+        if _status == "main" or _status == "3string":
             try:
                 _ = exec(currentLine,globals())
                 if _ is not None:
                     print(repr(_))
                 doc['code'].value += '>>> '
-                status = "main"
+                _status = "main"
             except IndentationError:
                 doc['code'].value += '... '
-                status = "block"
+                _status = "block"
             except SyntaxError as msg:
                 if str(msg) == 'invalid syntax : triple string end not found' or\
                     str(msg).startswith('Unbalanced bracket'):
                     doc['code'].value += '... '
-                    status = "3string"
+                    _status = "3string"
                 else:
                     traceback.print_exc()
                     doc['code'].value += '>>> '
-                    status = "main"
+                    _status = "main"
             except:
                 traceback.print_exc()
                 doc['code'].value += '>>> '
-                status = "main"
+                _status = "main"
         elif currentLine == "": # end of block
             block = src[src.rfind('>>>')+4:].splitlines()
             block = [block[0]]+[b[4:] for b in block[1:]]
@@ -150,14 +143,16 @@ def myKeyPress(event):
             except:
                 traceback.print_exc()
             doc['code'].value += '>>> '
-            status = "main"
+            _status = "main"
         else:
             doc['code'].value += '... '        
         cursorToEnd()
         event.preventDefault()
+        #event.stopPropagation()
 
 def myKeyDown(event):
-    global status,current
+    global _status,current
+    
     if event.keyCode == 37: # left arrow
         sel = get_col(doc['code'])
         if sel<5:
@@ -186,10 +181,17 @@ def myKeyDown(event):
             current += 1
             doc['code'].value += history[current]
         event.preventDefault()
+    elif event.keyCode == 8: # backspace
+        src = doc['code'].value
+        lstart = src.rfind('\n')
+        if (lstart==-1 and len(src)<5) \
+            or (len(src)-lstart<6):
+                event.preventDefault()
+                event.stopPropagation()
 
-doc['code'].onkeypress = myKeyPress
-doc['code'].onkeydown = myKeyDown
-doc['code'].onclick = cursorToEnd
+doc['code'].bind('keypress', myKeyPress)
+doc['code'].bind('keydown', myKeyDown)
+doc['code'].bind('click', cursorToEnd)
 v = sys.implementation.version
     
 doc['code'].value = "Brython %s.%s [%s] on %s %s\n>>> " %(v[0],v[1],v[2],
@@ -197,11 +199,17 @@ doc['code'].value = "Brython %s.%s [%s] on %s %s\n>>> " %(v[0],v[1],v[2],
 doc['code'].focus()
 cursorToEnd()
 
+def show_status(ev):
+    alert(_status)
+
+doc['show_status'].bind('click', show_status)
+
 </script>
 <p>The console can be embedded in a web page by adding
 <blockquote>
 <pre>
 &lt;iframe src="http://brython.info/console.html" width=800 height=400&gt;&lt;/iframe&gt;
 </pre></blockquote>
+<button id="show_status">status</button>
 </body>
 </html>
