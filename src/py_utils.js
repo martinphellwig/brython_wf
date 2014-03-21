@@ -304,29 +304,45 @@ $B.gen_src = function(node, indent){
     return res
 }
 
-$B.make_node = function(node){
+$B.make_node = function(top_node, node){
     var ctx_js = node.context.to_js()
-    var is_cond = false, is_except = false
+    var is_cond = false, is_except = false,is_else=false
+    
+    if(node.locals_def){
+        // the node where local namespace is reset
+        ctx_js = 'var $locals = __BRYTHON__.vars["'+top_node.iter_id+'"]'
+    }
+    
     if(node.is_catch){is_except=true;is_cond=true}
     if(node.context.type=='node'){
         var ctx = node.context.tree[0]
         var ctype = ctx.type
+        
         if((ctype=='condition' && ['if','elif'].indexOf(ctx.token)>-1) ||
             ctype=='except' || ctype=='single_kw'){
             is_cond = true
         }
+        if(ctype=='condition' && ctx.token=='elif'){is_else=true}
+        if(ctype=='single_kw' && ctx.token=='else'){is_else=true}
         if(ctype=='except'||
             (ctype=='single_kw'&&ctx.token=="finally")){is_except=true}
     }
     if(ctx_js){ // empty for "global x"
         var new_node = new $B.genNode(ctx_js)
+        if(ctype=='yield'){
+            var rank = top_node.yields.length
+            res =  'try{return ['+ctx_js+', '+rank+']}'
+            res += 'catch(err){return[$B.generator_error(err), '+rank+']}'
+            new_node.data = res
+            top_node.yields.push(new_node)
+        }
         new_node.is_cond = is_cond
         new_node.is_except = is_except
         new_node.is_try = node.is_try
-        // keep track in the original node
-        node.ref = new_node
+        new_node.is_else = is_else
+
         for(var i=0;i<node.children.length;i++){
-            new_node.addChild($B.make_node(node.children[i]))
+            new_node.addChild($B.make_node(top_node, node.children[i]))
         }
     }
     return new_node
@@ -353,6 +369,10 @@ $B.genNode = function(data, parent){
     this.clone = function(){
         var res = new $B.genNode(this.data)
         res.has_child = this.has_child
+        res.is_cond = this.is_cond
+        res.is_except = this.is_except
+        res.is_try = this.is_try
+        res.is_else = this.is_else
         return res
     }
 
@@ -362,8 +382,13 @@ $B.genNode = function(data, parent){
             // If we have to clone the exit node and its parent was
             // a condition, replace code by 'void(0)'
             res = new $B.genNode('void(0)')
+            //console.log('replace '+this.data)
         }
         res.has_child = this.has_child
+        res.is_cond = this.is_cond
+        res.is_except = this.is_except
+        res.is_try = this.is_try
+        res.is_else = this.is_else
         for(var i=0;i<this.children.length;i++){
             res.addChild(this.children[i].clone_tree(exit_node))
         }
@@ -402,31 +427,22 @@ $B.generator_error = function(err){
 $B.$BRgenerator = function(func, def_id, $class){
 
     var def_ctx = __BRYTHON__.modules[def_id]
+    //console.log('generator from id '+def_id)
 
     var func_name = '$'+def_ctx.name
     if($class!==undefined){func_name = '$class.'+func_name}
 
-    var node = def_ctx.parent.node
-    var module = node.module
+    var def_node = def_ctx.parent.node
+    var module = def_node.module
     
     // identify the node with "try"
-    var try_node = node.children[1].children[0]
-    
-    var func_root = $B.make_node(node)
-    
-    var newtrynode = try_node.ref
-    newtrynode.addChild(new $B.genNode('throw StopIteration("")'))
-    
+    var try_node = def_node.children[1].children[0]
+
+    // builtins will be needed to eval() the function
     var __builtins__ = __BRYTHON__.builtins
     for(var $py_builtin in __builtins__){
         eval("var "+$py_builtin+"=__builtins__[$py_builtin]")
     }
-    
-    var src = func_root.src()+'\n)()'
-    try{eval(src)}
-    catch(err){console.log("cant eval\n"+src+'\n'+err);throw err}
-    
-    var _next = eval(func_name)
     
     var $BRGeneratorDict = {__class__:__BRYTHON__.$type,
         __name__:'BRgenerator'
@@ -440,10 +456,16 @@ $B.$BRgenerator = function(func, def_id, $class){
         if(self.gi_running){
             throw $B.builtins.ValueError("ValueError: generator already executing")
         }
-
+        //console.log('_next\n'+self._next)
+        
         self.gi_running = true
         try{
             var res = self._next.apply(null, self.args)
+        }catch(err){
+            if(isinstance(err,$B.builtins.StopIteration)){
+                self._next = function(){throw StopIteration('from yield')}
+            }
+            throw err
         }finally{
             self.gi_running = false
         }
@@ -451,19 +473,21 @@ $B.$BRgenerator = function(func, def_id, $class){
         if(res===undefined){
             // The function may have ordinary "return" lines, in this case
             // the iteration stops
-            throw StopIteration('')
+            throw $B.builtins.StopIteration('')
         }
         
-        var yielded_value=res[0], rank=res[1]
-        
+        var yielded_value=res[0], yield_rank=res[1]
+        //console.log('yield '+yielded_value+' rank '+yield_rank+' from '+self.iter_id)
         // get node where yield was thrown
-        var exit_node = def_ctx.yields[rank].parent.node.ref
+        var exit_node = self.func_root.yields[yield_rank]
+        
+        if(yield_rank==2){var before_ln = self._next.toString().length}
 
         if(yielded_value.__class__==$GeneratorError){
             // in case of exception the next function is the same as current
             // function, with the exit node replaced by "raise StopIteration"
             var root = self.next_root
-            exit_node.parent.children[exit_node.rank] = new $B.genNode('throw StopIteration("")')
+            exit_node.parent.children[exit_node.rank] = new $B.genNode('throw StopIteration("from yield")')
             self.next_root = root
             var next_src = eval(root.src()+'\n)()')
             try{eval(next_src)}
@@ -472,13 +496,13 @@ $B.$BRgenerator = function(func, def_id, $class){
             throw yielded_value.err
         }
 
-
         // create root node of new function
         var root = new $B.genNode(def_ctx.to_js())
-        root.addChild(func_root.children[0].clone())
-        fnode = func_root.children[1].clone()
+        root.addChild(self.func_root.children[0].clone())
+        fnode = self.func_root.children[1].clone()
         root.addChild(fnode)
-        tnode = func_root.children[1].children[0].clone()
+        trynode = self.func_root.children[1].children[0]
+        tnode = trynode.clone()
         fnode.addChild(tnode)
         
         // add code to restore global variables
@@ -488,13 +512,13 @@ $B.$BRgenerator = function(func, def_id, $class){
         tnode.addChild(new $B.genNode(js))
 
         // add code to restore local variables
-        var js = 'var $locals = __BRYTHON__.vars["'+def_id+'"]'
+        var js = 'var $locals = __BRYTHON__.vars["'+self.iter_id+'"]'
         tnode.addChild(new $B.genNode(js))
         js = 'for(var $var in $locals){eval("var "+$var+"=$locals[$var]")}'
         tnode.addChild(new $B.genNode(js))
         
         var pnode = exit_node.parent
-        
+
         if(pnode.is_except || pnode.is_try){
         
             // If the exit node was inside a "try" or "except" block, 
@@ -519,18 +543,19 @@ $B.$BRgenerator = function(func, def_id, $class){
         
         // Then add all parents of exit node recursively, only keeping
         // the part that starts at exit node
-        while(pnode!==newtrynode){
+        while(pnode!==trynode){
             var rank = pnode.rank
             while(pnode.parent.children[rank].is_except){rank--}
+            while(pnode.parent.children[rank].is_else){rank--}
+
             for(var i=rank;i<pnode.parent.children.length;i++){
-                var child = pnode.parent.children[i]
                 tnode.addChild(pnode.parent.children[i].clone_tree(exit_node))
             }
             pnode = pnode.parent
         }
         
-        for(var i=1;i<func_root.children[1].children.length;i++){
-            fnode.addChild(func_root.children[1].children[i].clone_tree())
+        for(var i=1;i<self.func_root.children[1].children.length;i++){
+            fnode.addChild(self.func_root.children[1].children[i].clone_tree())
         }
 
         // Set self._next to the code of the function for next iteration
@@ -541,7 +566,7 @@ $B.$BRgenerator = function(func, def_id, $class){
         catch(err){console.log('error '+err+'\n'+next_src)}
         
         self._next = eval(func_name)
-
+        
         // Return the yielded value
         return yielded_value
     }
@@ -551,14 +576,41 @@ $B.$BRgenerator = function(func, def_id, $class){
         var args = []
         for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
 
+        // create an id for the iterator
+        var iter_id = def_id+'-'+Math.random().toString(36).substr(2,8)
+        // initialise its namespace
+        __BRYTHON__.vars[iter_id] = {}
+
+        // Create a tree structure based on the generator tree
+        // iter_id is used in the node where the iterator resets local
+        // namespace
+        var func_root = new $B.genNode(def_node.context.to_js())
+        func_root.yields = []
+        func_root.iter_id = iter_id
+        for(var i=0;i<def_node.children.length;i++){
+            func_root.addChild($B.make_node(func_root, def_node.children[i]))
+        }
+        var trynode = func_root.children[1].children[0]
+        trynode.addChild(new $B.genNode('throw StopIteration("")'))
+        
+        var src = func_root.src()+'\n)()'
+        try{eval(src)}
+        catch(err){console.log("cant eval\n"+src+'\n'+err);throw err}
+        
+        var _next = eval(func_name)
+        
         var obj = {
             __class__ : $BRGeneratorDict,
             args:args,
             func:func,
+            func_root:func_root,
             _next:_next,
+            trynode:trynode,
             next_root:func_root,
-            gi_running:false
+            gi_running:false,
+            iter_id:iter_id
         }
+        
         return obj
     }
     res.__repr__ = function(){return "<function "+func.__name__+">"}
@@ -567,7 +619,6 @@ $B.$BRgenerator = function(func, def_id, $class){
 $B.$BRgenerator.__repr__ = function(){return "<class 'BRgenerator'>"}
 $B.$BRgenerator.__str__ = function(){return "<class 'BRgenerator'>"}
 $B.$BRgenerator.__class__ = __BRYTHON__.$type
-
 
 $B.$ternary = function(env,cond,expr1,expr2){
     // env is the environment to run the ternary expression

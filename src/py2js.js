@@ -111,8 +111,14 @@ function $Node(type){
             }
         }
         return res
-   }
-    this.to_js = function(){
+    }
+    this.indent_str = function(indent){
+        var res = ''
+        for(var i=0;i<indent;i++){res+=' '}
+        return res
+    }
+
+    this.to_js = function(indent){
         this.res = []
         this.unbound = []
         if(this.type==='module'){
@@ -121,17 +127,20 @@ function $Node(type){
                 this.children[i].js_index = this.res.length+0
             }
         }else{
+            indent = indent || 0
             var ctx_js = this.context.to_js()
             if(ctx_js){ // empty for "global x"
+                this.res.push(this.indent_str(indent))
                 this.res.push(ctx_js)
                 this.js_index = this.res.length+0
                 if(this.children.length>0){this.res.push('{')}
                 this.res.push('\n')
                 for(var i=0;i<this.children.length;i++){
-                    this.res.push(this.children[i].to_js())
+                    this.res.push(this.children[i].to_js(indent+4))
                     this.children[i].js_index = this.res.length+0
                 }
                 if(this.children.length>0){
+                    this.res.push(this.indent_str(indent))
                     this.res.push('}\n')
                 }
             }
@@ -989,8 +998,7 @@ function $DefCtx(context){
     this.name = null
     this.parent = context
     this.tree = []
-    this.id = Math.random().toString(36).substr(2,8)
-    __BRYTHON__.vars[this.id] = {} //this
+
     this.locals = []
     this.yields = [] // list of nodes with "yield"
     context.tree.push(this)
@@ -1007,6 +1015,9 @@ function $DefCtx(context){
         
     this.set_name = function(name){
         this.name = name
+        this.id = context.node.module+'-'+name+'-'
+        this.id += Math.random().toString(36).substr(2,8)
+        __BRYTHON__.vars[this.id] = {}
         // if function is defined inside another function, add the name
         // to local names
         var scope = $get_scope(this)
@@ -1063,23 +1074,30 @@ function $DefCtx(context){
 
         var nodes=[], js
 
-        // If function is a generator, it will need the global variables
-        if(this.type=='BRgenerator'){
-            js = 'var $globals = __BRYTHON__.vars["'+this.scope.module+'"]'
-            var new_node = new $Node('expression')
-            new $NodeJSCtx(new_node,js)
-            nodes.push(new_node)
+        // set the the global variables
+        js = 'var $globals = __BRYTHON__.vars["'+this.scope.module+'"]'
+        var new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        nodes.push(new_node)
 
-            js = 'for(var $var in $globals){eval("var "+$var+"=$globals[$var]")}'
-            var new_node = new $Node('expression')
-            new $NodeJSCtx(new_node,js)
-            nodes.push(new_node)
-        }
+        js = 'for(var $var in $globals){eval("var "+$var+"=$globals[$var]")}'
+        var new_node = new $Node('expression')
+        new $NodeJSCtx(new_node,js)
+        nodes.push(new_node)
 
         // add lines of code to node children
-        js = 'var $locals = __BRYTHON__.vars["'+this.id+'"]'
-        if(this.type!=='BRgenerator'){ js += '={}'}
+        
+        // declare object holding local variables
+        if(this.type=='def'){
+            // for functions, use the same namespace for all function calls
+            js = 'var $locals = __BRYTHON__.vars["'+this.id+'"]={}'
+        }else{
+            // for generators, a specific namespace will be created for each
+            // call, ie for each iterator
+            js = 'var $locals = __BRYTHON__.vars["'+this.id+'"]'
+        }
         var new_node = new $Node('expression')
+        new_node.locals_def = true
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
 
@@ -2588,6 +2606,7 @@ function $BRYieldCtx(context){
         if(this.tree.length==1){
             res =  'try{return ['+$to_js(this.tree)+', '+this.rank+']}'
             res += 'catch(err){return[$B.generator_error(err), '+this.rank+']}'
+            res = $to_js(this.tree)
             return res
         }else{ // form "yield from <expr>" : <expr> is this.tree[1]
             var indent = $ws($get_module(this).indent)
