@@ -1074,17 +1074,6 @@ function $DefCtx(context){
 
         var nodes=[], js
 
-        // set the the global variables
-        js = 'var $globals = __BRYTHON__.vars["'+this.scope.module+'"]'
-        var new_node = new $Node('expression')
-        new $NodeJSCtx(new_node,js)
-        nodes.push(new_node)
-
-        js = 'for(var $var in $globals){eval("var "+$var+"=$globals[$var]")}'
-        var new_node = new $Node('expression')
-        new $NodeJSCtx(new_node,js)
-        nodes.push(new_node)
-
         // add lines of code to node children
         
         // declare object holding local variables
