@@ -208,7 +208,7 @@ $JSObjectDict.__len__ = function(self){
 
 $JSObjectDict.__mro__ = [$JSObjectDict,$ObjectDict]
 
-$JSObjectDict.__repr__ = function(self){return "<JSOject wraps "+self.js.toString()+">"}
+$JSObjectDict.__repr__ = function(self){return "<JSObject wraps "+self.js.toString()+">"}
 
 $JSObjectDict.__setattr__ = function(self,attr,value){
     if(isinstance(value,JSObject)){
