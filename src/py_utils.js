@@ -443,7 +443,12 @@ $B.$BRgenerator = function(func, def_id, $class){
     for(var $py_builtin in __builtins__){
         eval("var "+$py_builtin+"=__builtins__[$py_builtin]")
     }
-    
+
+    // global variables
+    for(var $attr in __BRYTHON__.vars[module]){
+        eval("var "+$attr+"=__BRYTHON__.vars[module][$attr]")
+    }
+        
     var $BRGeneratorDict = {__class__:__BRYTHON__.$type,
         __name__:'BRgenerator'
     }
@@ -452,11 +457,25 @@ $B.$BRgenerator = function(func, def_id, $class){
 
     $BRGeneratorDict.__next__ = function(self){
 
+        // Inject global variables in local namespace
+        for(var $attr in __BRYTHON__.vars[module]){
+            eval("var "+$attr+"=__BRYTHON__.vars[module][$attr]")
+        }
+
+        if(self._next===undefined){
+            // First iteration : run function to initialise the iterator
+            var src = self.func_root.src()+'\n)()'
+            
+            try{eval(src)}
+            catch(err){console.log("cant eval\n"+src+'\n'+err);throw err}
+            
+            self._next = eval(func_name)
+        }        
+
         // cannot resume a generator already running
         if(self.gi_running){
             throw $B.builtins.ValueError("ValueError: generator already executing")
         }
-        //console.log('_next\n'+self._next)
         
         self.gi_running = true
         try{
@@ -478,6 +497,7 @@ $B.$BRgenerator = function(func, def_id, $class){
         
         var yielded_value=res[0], yield_rank=res[1]
         //console.log('yield '+yielded_value+' rank '+yield_rank+' from '+self.iter_id)
+
         // get node where yield was thrown
         var exit_node = self.func_root.yields[yield_rank]
         
@@ -592,19 +612,12 @@ $B.$BRgenerator = function(func, def_id, $class){
         }
         var trynode = func_root.children[1].children[0]
         trynode.addChild(new $B.genNode('throw StopIteration("")'))
-        
-        var src = func_root.src()+'\n)()'
-        try{eval(src)}
-        catch(err){console.log("cant eval\n"+src+'\n'+err);throw err}
-        
-        var _next = eval(func_name)
-        
+
         var obj = {
             __class__ : $BRGeneratorDict,
             args:args,
             func:func,
             func_root:func_root,
-            _next:_next,
             trynode:trynode,
             next_root:func_root,
             gi_running:false,

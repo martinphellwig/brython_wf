@@ -13,7 +13,7 @@ version = [3,3,0,"alpha",0]
 implementation = [2, 0, 0, 'final', 2]
 
 try:
-  import slimit 
+  import slimit
   minify=slimit.minify
 except ImportError:
   minify=None

@@ -959,14 +959,6 @@ this.env=env
 this.defs=defs
 if(required.length>0){required=required.substr(0,required.length-1)}
 var nodes=[], js
-js='var $globals = __BRYTHON__.vars["'+this.scope.module+'"]'
-var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,js)
-nodes.push(new_node)
-js='for(var $var in $globals){eval("var "+$var+"=$globals[$var]")}'
-var new_node=new $Node('expression')
-new $NodeJSCtx(new_node,js)
-nodes.push(new_node)
 if(this.type=='def'){
 js='var $locals = __BRYTHON__.vars["'+this.id+'"]={}'
 }else{
@@ -4760,11 +4752,23 @@ var __builtins__=__BRYTHON__.builtins
 for(var $py_builtin in __builtins__){
 eval("var "+$py_builtin+"=__builtins__[$py_builtin]")
 }
+for(var $attr in __BRYTHON__.vars[module]){
+eval("var "+$attr+"=__BRYTHON__.vars[module][$attr]")
+}
 var $BRGeneratorDict={__class__:__BRYTHON__.$type,
 __name__:'BRgenerator'
 }
 $BRGeneratorDict.__iter__=function(self){return self}
 $BRGeneratorDict.__next__=function(self){
+for(var $attr in __BRYTHON__.vars[module]){
+eval("var "+$attr+"=__BRYTHON__.vars[module][$attr]")
+}
+if(self._next===undefined){
+var src=self.func_root.src()+'\n)()'
+try{eval(src)}
+catch(err){console.log("cant eval\n"+src+'\n'+err);throw err}
+self._next=eval(func_name)
+}
 if(self.gi_running){
 throw $B.builtins.ValueError("ValueError: generator already executing")
 }
@@ -4854,16 +4858,11 @@ func_root.addChild($B.make_node(func_root, def_node.children[i]))
 }
 var trynode=func_root.children[1].children[0]
 trynode.addChild(new $B.genNode('throw StopIteration("")'))
-var src=func_root.src()+'\n)()'
-try{eval(src)}
-catch(err){console.log("cant eval\n"+src+'\n'+err);throw err}
-var _next=eval(func_name)
 var obj={
 __class__ : $BRGeneratorDict,
 args:args,
 func:func,
 func_root:func_root,
-_next:_next,
 trynode:trynode,
 next_root:func_root,
 gi_running:false,
