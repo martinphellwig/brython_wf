@@ -110,6 +110,7 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
     var ph = [] // placeholders for replacements
 
     function format(s){
+        //console.log('format:', s)
         var conv_flags = '([#\\+\\- 0])*'
         //var conv_types = '[diouxXeEfFgGcrsa%]'
         //var re = new RegExp('\\%(\\(.+?\\))*'+conv_flags+'(\\*|\\d*)(\\.\\*|\\.\\d*)*(h|l|L)*('+conv_types+'){1}')
@@ -144,10 +145,12 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
             return res
         }
         this.format = function(src){
+            //console.log(src)
             if(this.mapping_key!==null){
                 if(!isinstance(src,__builtins__.dict)){throw __builtins__.TypeError("format requires a mapping")}
                 src=getattr(src,'__getitem__')(this.mapping_key)
             }
+          
             if(this.type=="s"){
                 var res = str(src)
                 if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
@@ -231,8 +234,8 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                     else{res = '0X'+res}
                 }
                 return res
-            }else if(this.type=="i" || this.type=="d"){
-                this._number_check(src)
+            }else if((this.type=="i" || this.type=="d") && isinstance(src, __builtins__.int)){
+                //this._number_check(src)
 
                 var num = parseInt(src)
                 num=num.toPrecision()
@@ -248,8 +251,8 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                     while(res.length<width){res=pad+res}
                 }
                 return res
-            }else if(this.type=="f" || this.type=="F"){
-                this._number_check(src)
+            }else if((this.type=="f" || this.type=="F") && isinstance(src, __builtins__.float)){
+                //this._number_check(src)
                 //if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
                 //    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseFloat(src)
@@ -277,7 +280,13 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 res = src.toString(2)
                 if(this.flag==='#') return '0b' + res
                 return res
-            }else { // consider this 'type' invalid
+            }else {
+                //if (hasattr(src, '__format__')) {
+                //   console.log(this.type)
+                //   //console.log(getattr(src, '__format__')(this.type))
+                //   return getattr(src, '__format__')(this.type)
+                //}
+                // consider this 'type' invalid
                 var _msg="unsupported format character '" + this.type
                     _msg+= "' (0x" + this.type.charCodeAt(0).toString(16) + ") at index "
                     _msg+= (self.valueOf().indexOf('%' + this.type)+1)
@@ -527,7 +536,13 @@ var $FormattableString=function(format_string) {
          _repl = match.substring(1)
        }
 
-       var _out = p1.split(':')
+       var _i = p1.indexOf(':')
+       var _out
+       if (_i > -1) {
+         _out = [p1.slice(0,_i), p1.slice(_i+1)]
+         //var _out = p1.split(':')   // only want to split on first ':'
+       } else { _out=[p1]}
+  
        var _field=_out[0] || ''
        var _format_spec=_out[1] || ''
 
@@ -588,20 +603,22 @@ var $FormattableString=function(format_string) {
            var _tail = _name_parts[i][2]
            //console.log('_v', _v)
            if (_v === '') {_empty_attribute = true}
+           //console.log(_tail)
            if (_tail !== '') {
               throw __builtins__.ValueError("Only '.' or '[' may follow ']' " +
                                "in format field specifier")
            }
        }
 
-       if (_name_parts && _k == '[' && ! 
+         if (_name_parts && _k == '[' && ! 
           _literal.substring(_literal.length) == ']') {
           throw __builtins__.ValueError("Missing ']' in format string")
-       }
+         }
 
-       if (_empty_attribute) {
+         if (_empty_attribute) {
           throw __builtins__.ValueError("Empty attribute in format string")
-       }
+         }
+       //}
 
        var _rv=''
        if (_format_spec.indexOf('{') != -1) {
@@ -662,11 +679,11 @@ var $FormattableString=function(format_string) {
                var _conv = _items[j][1]
                var _spec = _items[j][2]
 
+               console.log('legacy_format:', _spec, _params)
+               //_spec=$legacy_format(_spec, _params)
+
                var _f=this.format_field.apply(null, [_value, _parts,_conv,_spec,_want_bytes])
                getattr(_params,'__setitem__')(id(_items[j]).toString(), _f)
-                                           //   this.format_field(_value, _parts, 
-                                           //                     _conv, _spec, 
-                                           //                     _want_bytes))
            }
        }
 
@@ -687,15 +704,14 @@ var $FormattableString=function(format_string) {
                var _conv = _items[j][1]
                var _spec = _items[j][2]
 
+               console.log('legacy_format:', _spec, _params)
                _spec=$legacy_format(_spec, _params)
 
                var _f=this.format_field.apply(null, [_value, _parts,_conv,_spec,_want_bytes])
                getattr(_params,'__setitem__')(id(_items[j]).toString(), _f)
-                                            //  this.format_field(_value, _parts, 
-                                            //                    _conv, _spec, 
-                                            //                    _want_bytes))
            }
        }
+       //console.log('legacy_format:', this._string, _params)
        return $legacy_format(this._string, _params)
     }  // this.format
 
@@ -721,6 +737,7 @@ var $FormattableString=function(format_string) {
 
        if (conv) {
           // fix me
+          //console.log('legacy_format:', conv, value)
           value = $legacy_format((conv == 'r') && '%r' || '%s', value)
        }
 
@@ -737,8 +754,11 @@ var $FormattableString=function(format_string) {
     this.strformat=function(value, format_spec) {
        //console.log('strformat')
        if (format_spec === undefined) format_spec = ''
-       //console.log(value)
-       //console.log(format_spec)
+       console.log(value)
+       console.log(format_spec)
+       if (hasattr(value, '__format__')) {
+          return getattr(value, '__format__')(format_spec)
+       }
        var _m = this.format_spec_re.test(format_spec)
 
        if (!_m) {
@@ -795,7 +815,8 @@ var $FormattableString=function(format_string) {
 
        var _rv
        if (_conversion != '' && ((_is_numeric && _conversion == 's') || 
-          (! _is_integer && 'cdoxX'.indexOf(_conversion) != -1))) {
+          (! _is_integer && 'coxX'.indexOf(_conversion) != -1))) {
+          console.log(_conversion)
           throw __builtins__.ValueError('Fix me')
        }
 
@@ -805,6 +826,8 @@ var $FormattableString=function(format_string) {
     
        // fix me
        _rv='%' + _prefix + _precision + (_conversion || 's')
+
+       console.log('legacy_format', _rv, value)
        _rv = $legacy_format(_rv, value)
 
        if (_sign != '-' && value >= 0) {
@@ -837,7 +860,7 @@ var $FormattableString=function(format_string) {
           _rv = getattr(_rv, 'center')(_width, _fill)
        } else if (_align == '=' || (_zero && ! _align)) {
           if (! _is_numeric) {
-             throw __builtins__.ValueError("'=' alignment not allowd in string format specifier")
+             throw __builtins__.ValueError("'=' alignment not allowed in string format specifier")
           }
           if (_value < 0 || _sign != '-') {
              _rv = _rv.substring(0,1) + getattr(_rv.substring(1),'rjust')(_width - 1, _fill)
@@ -854,6 +877,13 @@ var $FormattableString=function(format_string) {
 
        return _rv
     }
+
+    //earney
+    //  _field_part_re = re.compile(
+    //    r'(?:(\[)|\.|^)'            # start or '.' or '['
+    //    r'((?(1)[^]]*|[^.[]*))'     # part
+    //    r'(?(1)(?:\]|$)([^.[]+)?)'  # ']' and invalid tail
+    //  )
 
     this.field_part=function(literal) {
        //console.log('field_part')
@@ -872,6 +902,7 @@ var $FormattableString=function(format_string) {
               //console.log(literal.charAt(_pos))
               arg_name += literal.charAt(_pos)
               _pos++
+            //  console.log(_pos)
        }
 
        // todo.. need to work on code below, but this takes cares of most
@@ -886,6 +917,7 @@ var $FormattableString=function(format_string) {
        //look for attribute_name and element_index
        while (_pos < literal.length) {
           var car = literal.charAt(_pos)
+          //console.log(_pos, car)
 
           if (car == '[') { // element_index
              _start='['
@@ -896,12 +928,13 @@ var $FormattableString=function(format_string) {
                 car = literal.charAt(_pos)
                 //console.log(car)
              }
-             if (car == ']') _end=']'
+             if (car == ']') _end=']'   // fix me
+             _pos++
              _matches.push([_start, _middle, _end])
           
           } else if (car == '.') { // attribute_name
                   _middle=''
-                  _start='.'
+                  //_start='.'
                   _pos++
                   car = literal.charAt(_pos)
                   while (_pos < literal.length &&
@@ -913,7 +946,7 @@ var $FormattableString=function(format_string) {
                       car = literal.charAt(_pos)
                   }
 
-                  _matches.push([_start, _middle, ''])
+                  _matches.push(['.', _middle, ''])
           }
        }
        //console.log(_matches)
