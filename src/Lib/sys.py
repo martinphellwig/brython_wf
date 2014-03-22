@@ -71,8 +71,7 @@ class __version_info(object):
         self.version_info = version_info
         self.major = version_info[0]
         self.minor = version_info[1]
-        #self.micro = version_info[2]
-        self.micro = 0
+        self.micro = version_info[2]
         self.releaselevel = version_info[3]
         self.serial = version_info[4]
 
