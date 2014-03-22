@@ -1,4 +1,4 @@
-from browser import doc,win
+from browser import doc, win, alert
 from browser.html import *
 
 # globals #########################
@@ -27,7 +27,7 @@ def navi(pos):
         doc["maparea"] <= img
 
 def nonavi(error):
-    log(error)
+    print(error)
 
 def navirefresh(ev):
     global refr, watchid
@@ -43,6 +43,6 @@ def navirefresh(ev):
 if geo:
     geo.getCurrentPosition(navi, nonavi)
     doc["switch"].className = "switch"
-    doc["switch"].onclick = navirefresh
+    doc["switch"].bind('click', navirefresh)
 else:
     alert('geolocation not supported')
