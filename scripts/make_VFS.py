@@ -1,6 +1,6 @@
+import os
 
 def process(filename):
-  import os
   import sys
   import json
 
