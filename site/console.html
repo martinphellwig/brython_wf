@@ -119,6 +119,7 @@ def myKeyPress(event):
             block = src[src.rfind('>>>')+4:].splitlines()
             block = [block[0]]+[b[4:] for b in block[1:]]
             block_src = '\n'.join(block)
+            _status = "main"
             try:
                 _ = exec(block_src,globals())
                 if _ is not None:
@@ -126,7 +127,6 @@ def myKeyPress(event):
             except:
                 traceback.print_exc()
             doc['code'].value += '>>> '
-            _status = "main"
         else:
             doc['code'].value += '... '        
         cursorToEnd()
