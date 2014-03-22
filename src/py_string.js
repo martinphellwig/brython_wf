@@ -148,6 +148,7 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                 if(!isinstance(src,__builtins__.dict)){throw __builtins__.TypeError("format requires a mapping")}
                 src=getattr(src,'__getitem__')(this.mapping_key)
             }
+          
             if(this.type=="s"){
                 var res = str(src)
                 if(this.precision){res = res.substr(0,parseInt(this.precision.substr(1)))}
@@ -231,8 +232,27 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                     else{res = '0X'+res}
                 }
                 return res
+            }else if (this.type=="Y") {
+                if (hasattr(src, 'year')) {
+                   return getattr(src, 'year')
+                }
+
+                // throw an error!
+                throw ValueError('object is not a date/datetime')
+            }else if (this.type=="m") {
+                if (hasattr(src, 'month')) {
+                   return getattr(src, 'month')
+                }
+
+                // throw an error!
+                throw ValueError('object is not a date/datetime')
             }else if(this.type=="i" || this.type=="d"){
-                this._number_check(src)
+                console.log(src)
+                if (this.type == 'd' && hasattr(src, 'day')) { // if src contains a _day attribute, lets assume this is a date
+                   return getattr(src, 'day')
+                } else {
+                  this._number_check(src)
+                }
 
                 var num = parseInt(src)
                 num=num.toPrecision()
@@ -795,7 +815,8 @@ var $FormattableString=function(format_string) {
 
        var _rv
        if (_conversion != '' && ((_is_numeric && _conversion == 's') || 
-          (! _is_integer && 'cdoxX'.indexOf(_conversion) != -1))) {
+          (! _is_integer && 'coxX'.indexOf(_conversion) != -1))) {
+          console.log(_conversion)
           throw __builtins__.ValueError('Fix me')
        }
 
@@ -837,7 +858,7 @@ var $FormattableString=function(format_string) {
           _rv = getattr(_rv, 'center')(_width, _fill)
        } else if (_align == '=' || (_zero && ! _align)) {
           if (! _is_numeric) {
-             throw __builtins__.ValueError("'=' alignment not allowd in string format specifier")
+             throw __builtins__.ValueError("'=' alignment not allowed in string format specifier")
           }
           if (_value < 0 || _sign != '-') {
              _rv = _rv.substring(0,1) + getattr(_rv.substring(1),'rjust')(_width - 1, _fill)
