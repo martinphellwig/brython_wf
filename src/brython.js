@@ -63,7 +63,6 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "marshal",
 "math",
 "time",
-"WS_FTP",
 "_ajax",
 "_browser",
 "_html",
@@ -6795,7 +6794,7 @@ throw __builtins__.AttributeError(this+' has no attribute __len__')
 }
 }
 $JSObjectDict.__mro__=[$JSObjectDict,$ObjectDict]
-$JSObjectDict.__repr__=function(self){return "<JSOject wraps "+self.js.toString()+">"}
+$JSObjectDict.__repr__=function(self){return "<JSObject wraps "+self.js.toString()+">"}
 $JSObjectDict.__setattr__=function(self,attr,value){
 if(isinstance(value,JSObject)){
 self.js[attr]=value.js
