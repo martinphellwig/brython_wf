@@ -14,8 +14,7 @@ assert 'Coordinates: {latitude}, {longitude}'.format(**coord) == 'Coordinates: 3
 
 #accessing arguments' items:
 coord = (3, 5)
-#brython fix me
-#assert 'X: {0[0]};  Y: {0[1]}'.format(coord) == 'X: 3;  Y: 5'
+assert 'X: {0[0]};  Y: {0[1]}'.format(coord) == 'X: 3;  Y: 5'
 
 assert "repr() shows quotes: {!r}; str() doesn't: {!s}".format('test1', 'test2') == "repr() shows quotes: 'test1'; str() doesn't: test2"
 
