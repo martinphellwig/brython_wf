@@ -62,8 +62,9 @@ class StringIO:
     """
     def __init__(self, buf = ''):
         # Force self.buf to be a string or unicode
-        if not isinstance(buf, basestring):
-            buf = str(buf)
+        # fix me brython
+        #if not isinstance(buf, basestring):
+        #    buf = str(buf)
         self.buf = buf
         self.len = len(buf)
         self.buflist = []
@@ -222,8 +223,9 @@ class StringIO:
         _complain_ifclosed(self.closed)
         if not s: return
         # Force s to be a string or unicode
-        if not isinstance(s, basestring):
-            s = str(s)
+        #fix me brython
+        #if not isinstance(s, basestring):
+        #    s = str(s)
         spos = self.pos
         slen = self.len
         if spos == slen:

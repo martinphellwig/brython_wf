@@ -54,10 +54,10 @@ Richard Chamberlain, for the first implementation of textdoc.
 import builtins
 import imp
 import importlib.machinery
-import inspect
+#import inspect
 import io
 import os
-import pkgutil
+#import pkgutil
 import platform
 import re
 import sys
@@ -66,7 +66,8 @@ import tokenize
 import warnings
 from collections import deque
 from reprlib import Repr
-from traceback import extract_tb, format_exception_only
+#fix me brython
+#from traceback import extract_tb, format_exception_only
 
 
 # --------------------------------------------------------- common routines
@@ -85,6 +86,8 @@ def pathdirs():
 
 def getdoc(object):
     """Get the doc string or comments for an object."""
+    #earney fix me
+    print(object)
     result = inspect.getdoc(object) or inspect.getcomments(object)
     return result and re.sub('^ *\n', '', result.rstrip()) or ''
 
@@ -1774,8 +1777,13 @@ class Helper:
         self._input = input
         self._output = output
 
-    input  = property(lambda self: self._input or sys.stdin)
-    output = property(lambda self: self._output or sys.stdout)
+        #fix me brython
+        self.input = self._input or sys.stdin 
+        self.output = self._output or sys.stdout 
+
+    #fix me brython
+    #input  = property(lambda self: self._input or sys.stdin)
+    #output = property(lambda self: self._output or sys.stdout)
 
     def __repr__(self):
         if inspect.stack()[1][3] == '?':
