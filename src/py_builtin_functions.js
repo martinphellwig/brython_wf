@@ -562,6 +562,12 @@ function hash(obj){
 
 function help(obj){
     if(typeof obj=='string'){
+      __BRYTHON__.$import("pydoc");
+      var pydoc=__BRYTHON__.vars["pydoc"]
+      getattr(getattr(pydoc,"help"),"__call__")(obj)
+      return
+    }
+    if(typeof obj=='string'){
         try{var obj = eval(obj)}
         catch(err){throw NameError("name '"+obj+"' is not defined")}
     }

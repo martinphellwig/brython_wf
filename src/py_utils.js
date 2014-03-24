@@ -864,6 +864,12 @@ $B.stdout = {
     flush:function(){}
 }
 
+$B.stdin = {
+    __class__:$io,
+    //fix me
+    read: function(size){return ''}
+}
+
 function pyobject2jsobject(obj) {
     if($B.builtins.isinstance(obj,$B.builtins.dict)){
         var temp = new Object()
