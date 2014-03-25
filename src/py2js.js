@@ -2549,48 +2549,7 @@ function $WithCtx(context){
     }
 }
 
-
-function $YieldCtx(context){
-    this.type = 'yield'
-    this.toString = function(){return '(yield) '+this.tree}
-    this.parent = context
-    this.tree = []
-    context.tree.push(this)
-    this.transform = function(node,rank){
-        if(this.transformed!==undefined){return}
-        var scope = $get_scope(node.context.tree[0])
-        // change type of function to generator
-        scope.context.tree[0].type = 'generator'
-        this.transformed = true
-        this.func_name = scope.context.tree[0].name
-        scope.context.tree[0].add_generator_declaration()
-    }
-    this.to_js = function(){
-        var scope = $get_scope(this)
-        var res = ''
-        if(scope.ntype==='generator'){
-            scope = $get_scope(scope.context.tree[0])
-            if(scope.ntype==='class'){res = '$class.'}
-        }
-        if(this.tree.length==1){
-            return res+'$'+this.func_name+'.$iter.push('+$to_js(this.tree)+')'
-        }else{ // form "yield from <expr>" : <expr> is this.tree[1]
-            var indent = $ws($get_module(this).indent)
-            res += '$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
-            res += indent+'while(true){\n'+indent+$ws(4)
-            res += 'try{$'+this.func_name+'.$iter.push('
-            res += '$subiter'+$loop_num+'())}\n'
-            res += indent+$ws(4)+'catch($err'+$loop_num+'){\n'
-            res += indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===__builtins__.StopIteration)'
-            res += '{__BRYTHON__.$pop_exc();break}\n'
-            res += indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
-            $loop_num++
-            return res
-        }
-    }
-}
-
-function $BRYieldCtx(context){ 
+function $YieldCtx(context){ 
     this.type = 'yield'
     this.toString = function(){return '(yield) '+this.tree}
     this.parent = context
@@ -3679,10 +3638,7 @@ function $transition(context,token){
             return new $AbstractExprCtx(ret,true)
         }else if(token==="with"){return new $AbstractExprCtx(new $WithCtx(context),false)}
         else if(token==='yield'){
-            var yield = new $BRYieldCtx(context)
-            return new $AbstractExprCtx(yield,true)
-        }else if(token==='bryield'){ // experiment new generator implementation
-            var yield = new $BRYieldCtx(context)
+            var yield = new $YieldCtx(context)
             return new $AbstractExprCtx(yield,true)
         }else if(token==='del'){return new $AbstractExprCtx(new $DelCtx(context),true)}
         else if(token==='@'){return new $DecoratorCtx(context)}
