@@ -1,6 +1,3 @@
-import datetime
-d = datetime.date(2010, 9, 7)
-
 #accessing arguments by position
 assert '{0}, {1}, {2}'.format('a', 'b', 'c') == 'a, b, c'
 assert '{}, {}, {}'.format('a', 'b', 'c')  == 'a, b, c'
@@ -17,8 +14,7 @@ assert 'Coordinates: {latitude}, {longitude}'.format(**coord) == 'Coordinates: 3
 
 #accessing arguments' items:
 coord = (3, 5)
-#brython fix me
-#assert 'X: {0[0]};  Y: {0[1]}'.format(coord) == 'X: 3;  Y: 5'
+assert 'X: {0[0]};  Y: {0[1]}'.format(coord) == 'X: 3;  Y: 5'
 
 assert "repr() shows quotes: {!r}; str() doesn't: {!s}".format('test1', 'test2') == "repr() shows quotes: 'test1'; str() doesn't: test2"
 
@@ -49,17 +45,17 @@ total = 22
 #brython fix me
 #assert 'Correct answers: {:.2%}'.format(points/total) == 'Correct answers: 88.64%'
 
-import datetime
-d = datetime.datetime(2010, 7, 4, 12, 15, 58)
-#brython fix me
-#assert '{:%Y-%m-%d %H:%M:%S}'.format(d) == '2010-07-04 12:15:58'
-
 assert "The year is {}".format(2010) == 'The year is 2010'
-#this isn't even valid in python3
-#assert "The year is {0.year}".format(year=2010,month=9,day=7) == "The year is 2010"
-
 
 #brython fix me
 #assert "{0:{width}.{precision}s}".format('hello world', width=8, precision=5) == 'hello   '
-#assert "The year is {0.year}".format(d) == "The year is 2010"
-#assert "Tested on {0:%Y-%m-%d}".format(d) == "Tested on 2010-09-07"
+
+import datetime
+d = datetime.date(2010, 9, 7)
+
+assert "The year is {0.year}".format(d) == "The year is 2010"
+assert "Tested on {0:%Y-%m-%d}".format(d) == "Tested on 2010-09-07"
+
+import datetime
+d = datetime.datetime(2010, 7, 4, 12, 15, 58)
+assert '{:%Y-%m-%d %H:%M:%S}'.format(d) == '2010-07-04 12:15:58'
