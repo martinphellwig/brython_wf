@@ -887,6 +887,14 @@ function $ConditionCtx(context,token){
     if(token==='while'){this.loop_num=$loop_num;$loop_num++}
     context.tree.push(this)
     this.toString = function(){return this.token+' '+this.tree}
+    this.transform = function(node,rank){
+        if(this.token=="while"){
+            var scope = $get_scope(this)
+            if(scope.ntype=='BRgenerator'){
+                this.parent.node.loop_start = this.loop_num
+            }
+        }            
+    }
     this.to_js = function(){
         var tok = this.token
         if(tok==='elif'){tok='else if'}
@@ -1466,6 +1474,7 @@ function $ForExpr(context){
     this.toString = function(){return '(for) '+this.tree}
     this.transform = function(node,rank){
         var new_nodes = []
+        var scope = $get_scope(this)
         
         // node to create a temporary variable set to iter(iterable)
         var new_node = new $Node('expression')
@@ -1474,7 +1483,8 @@ function $ForExpr(context){
         this.loop_num = $loop_num
         new_node.line_num = node.line_num
         new_node.module = node.module
-        var js = 'var $next'+$loop_num+'=$locals["$next'+$loop_num+'"]'
+        
+        js = 'var $next'+$loop_num+'=$locals["$next'+$loop_num+'"]'
         js += '=getattr(iter('+iterable.to_js()+'),"__next__")'
         new $NodeJSCtx(new_node,js)
         new_nodes.push(new_node)
@@ -1483,6 +1493,10 @@ function $ForExpr(context){
         var js = 'var $no_break'+$loop_num+'=true;while(true)'
         new $NodeJSCtx(new_node,js)
         new_node.context.loop_num = $loop_num // used for "else" clauses
+        if(scope.ntype=='BRgenerator'){
+            // used in generators to signal a loop start
+            new_node.loop_start = $loop_num
+        }
         new_nodes.push(new_node)
 
         // save original node children
@@ -1508,10 +1522,15 @@ function $ForExpr(context){
         try_node.add(iter_node)
 
         var catch_node = new $Node('expression')
-        var js = 'catch($err){if(__BRYTHON__.is_exc($err,[__builtins__.StopIteration])){__BRYTHON__.$pop_exc();break}'
-        js += 'else{throw($err)}}'
+
+        var js = 'catch($err){if(__BRYTHON__.is_exc($err,[__builtins__.StopIteration]))'
+        js += '{__BRYTHON__.$pop_exc();break}'
+        js += 'else{throw($err)}}'        
+
         new $NodeJSCtx(catch_node,js)
         node.insert(1,catch_node)
+        
+        // used in generators
 
         // set new loop children
         node.parent.children[rank+1].children = children
@@ -2227,7 +2246,15 @@ function $ReturnCtx(context){ // subscription or slicing
     this.parent = context
     this.tree = []
     context.tree.push(this)
-    this.to_js = function(){return 'return '+$to_js(this.tree)}
+    this.to_js = function(){
+        var scope = $get_scope(this)
+        if(scope.ntype=='BRgenerator'){
+            var res = 'return [__BRYTHON__.generator_return('
+            res += $to_js(this.tree)+')]'
+            return res
+        }
+        return 'return '+$to_js(this.tree)
+    }
 }
 
 function $SingleKwCtx(context,token){ // used for finally,else
@@ -4308,6 +4335,8 @@ __BRYTHON__.py2js = function(src,module,parent){
     // parent = the name of the "calling" module, eg for a list comprehension (string)
     // Returns a tree structure representing the Python source code
 
+    var t0 = new Date().getTime()
+    
     // Normalise line ends and script end
     var src = src.replace(/\r\n/gm,'\n')
     while (src.length>0 && (src.charAt(0)=="\n" || src.charAt(0)=="\r")){
@@ -4349,6 +4378,11 @@ __BRYTHON__.py2js = function(src,module,parent){
         
     if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
     __BRYTHON__.modules[module] = root
+    
+    if(__BRYTHON__.debug>=0){
+        var t1 = new Date().getTime()
+        console.log('module '+module+' translated in '+(t1 - t0)+' ms')
+    }
     return root
 }
 
