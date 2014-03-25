@@ -402,10 +402,20 @@ $B.genNode = function(data, parent){
 
     this.clone_tree = function(exit_node){
         var res = new $B.genNode(this.data)
-        if(this===exit_node && this.parent.is_cond){
+        if(this.replaced && !in_loop(this)){
+            // cloning a node that was already replaced by 'void(0)'
+            res.data = 'void(0)'
+        }
+        if(this===exit_node && (this.parent.is_cond || !in_loop(this))){
             // If we have to clone the exit node and its parent was
             // a condition, replace code by 'void(0)'
-            res = new $B.genNode('void(0)')
+            if(!exit_node.replaced){
+                //alert('replace exit node '+exit_node+' by void')
+                res = new $B.genNode('void(0)')
+            }else{
+                res = new $B.genNode(exit_node.data)
+            }
+            exit_node.replaced = true
         }
         res.has_child = this.has_child
         res.is_cond = this.is_cond
@@ -510,8 +520,7 @@ $B.$BRgenerator = function(func, def_id, $class){
         }
         self.num++
 
-        //console.log('run '+self.iter_id+' args '+self.args+' iteration '+self.num)
-        //console.log(''+self._next)
+        //alert('run '+self.iter_id+' args '+self.args+' iteration '+self.num+'\n'+self._next)
 
         // cannot resume a generator already running
         if(self.gi_running){
@@ -537,6 +546,8 @@ $B.$BRgenerator = function(func, def_id, $class){
 
         // get node where yield was thrown
         var exit_node = self.func_root.yields[yield_rank]
+        //alert('exit node '+exit_node)
+        exit_node.replaced = false
         
         if(yielded_value.__class__==$GeneratorError){
             // in case of exception the next function is the same as current
@@ -573,12 +584,12 @@ $B.$BRgenerator = function(func, def_id, $class){
         tnode.addChild(new $B.genNode(js))
         
         var pnode = exit_node.parent
-        
+  
         if(pnode.is_except || pnode.is_try){
         
             // If the exit node was inside a "try" or "except" block, 
             // the exit node is replaced by "pass"
-            pnode.children[exit_node.rank] = new $B.genNode('void(0)')
+            //pnode.children[exit_node.rank] = new $B.genNode('void(0)')
 
             // the next function starts with the uppermost enclosing "try" block
             while(pnode.parent.is_except || pnode.parent.is_try){
@@ -632,7 +643,7 @@ $B.$BRgenerator = function(func, def_id, $class){
         
         self._next = eval(func_name)
         
-        //console.log('after iteration '+self.num+' '+self.iter_id+' yielding '+yielded_value+'\n'+self._next)
+        //alert('after iteration '+self.num+' '+self.iter_id+' yielding '+yielded_value+'\n'+self._next)
         
         // Return the yielded value
         return yielded_value
