@@ -1,8 +1,12 @@
 <html>
 <head>
 <meta charset="iso-8859-1">
-<link rel="stylesheet" href="../brython.css">
+<link rel="stylesheet" href="../doc/doc_brython.css">
 
+<style>
+body{margin:100px;}
+
+</style>
 <script>
 function log(data){
     document.getElementById('console_js').value += data+'\n'
@@ -23,22 +27,14 @@ function run_js(){
 </script>
 </head>
 <body>
-<center>
-<table id="banner" cellpadding=0 cellspacing=0>
-<tr>
-<td><a class="banner" href="/index.html">Home</a></td>
-<td><a class="banner" href="/tests/console_en.html">Console</a></td>
-<td><a class="banner" href="/gallery/gallery_en.html">Gallery</a></td>
-<td><a class="banner" href="/doc/en/index.html">Documentation</a>
-<td><a class="banner" href="http://code.google.com/p/brython/downloads/list" target="_blank">Download</a></td>
-<td><a class="banner" href="http://code.google.com/p/brython/" target="_blank">Development</a></td>
-<td><a class="banner" href="/groups_en.html" target="_blank">Groups</a></td>
-</tr>
-</table>
 
-<div style="text-align:center">
-<img src="../brython.png"></img><br><b>browser python</b>
-</div>
+<a href="../index.html">Home</a>
+
+<p>This page runs Javascript code and measures execution time. The scripts can use the function <code>log(<i>data</i>)</code> to print results in the textarea on the right
+
+<p>Its purpose is to compare the execution speed of native Javascript to the equivalent with Brython
+
+<center>
 
 <table width=80%>
 <tr><td style="text-align:center"><b>Javascript</b>
@@ -46,14 +42,11 @@ function run_js(){
 <td>&nbsp;</td>
 </tr>
 <tr>
-<td><textarea id="src_js" cols=60 rows=10>function inspect(elt){
- var attrs = []
- for(var attr in elt){attrs.push([attr,elt[attr]])}
- attrs.sort()
- for(var i=0;i<attrs.length;i++){log(attrs[i])}
+<td><textarea id="src_js" cols=60 rows=10>var N = 100000
+var a=0
+for(var i=0;i<N;i++){
+    a += 1
 }
-log(document.body.tagName)
-log(Node)
 </textarea></td>
 <td><button onClick="run_js()">run</button>
 <td><textarea id="console_js" cols=70 rows=10></textarea></td>
