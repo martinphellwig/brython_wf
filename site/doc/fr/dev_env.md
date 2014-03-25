@@ -30,3 +30,4 @@ Pointez le navigateur sur _http://localhost:8000/test/index.html_ : bingo ! vous
 
 Utilisez cet environnement pour le test et le développement. Faites simplement attention à donner le bon chemin pour le script _brython.js_ relativement au répertoire dans lequel se trouve la page HTML qui l'appelle
 
+

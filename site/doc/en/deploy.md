@@ -7,3 +7,11 @@ In the [downloads page](https://bitbucket.org/olemis/brython/downloads), choose 
 
 This packages only holds the Brython distribution : __brython.js__ and the built-in libraries in directories __libs__ and __Lib__
 
+Deploying without installing
+----------------------------
+
+An even more straightforward solution is to install nothing on the server, but to call all the Python environment from the site brython.info :
+
+    <script src="http://brython.info/src/brython_dist.js"></script>
+
+The drawback of this method is the relatively important size of the distribution, which includes the standard library
