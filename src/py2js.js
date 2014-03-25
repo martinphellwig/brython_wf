@@ -4379,7 +4379,7 @@ __BRYTHON__.py2js = function(src,module,parent){
     if(__BRYTHON__.debug>0){$add_line_num(root,null,module)}
     __BRYTHON__.modules[module] = root
     
-    if(__BRYTHON__.debug>=0){
+    if(__BRYTHON__.debug>=2){
         var t1 = new Date().getTime()
         console.log('module '+module+' translated in '+(t1 - t0)+' ms')
     }
