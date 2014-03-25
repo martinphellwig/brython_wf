@@ -76,13 +76,16 @@ function $download_module(module,url){
             if($xmlhttp.status==200 || $xmlhttp.status==0){res=$xmlhttp.responseText}
             else{
                 // don't throw an exception here, it will not be caught (issue #30)
+            console.log('Error '+$xmlhttp.status+' means that Python module '+module+' was not found at url '+url)
                 res = __builtins__.FileNotFoundError("No module named '"+module+"'")
             }
         }
       }
     }
     if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
+
     $xmlhttp.send()
+
     if(res.constructor===Error){throw res} // module not found
     return res
 }
