@@ -2220,44 +2220,6 @@ this.toString=function(){return '(yield) '+this.tree}
 this.parent=C
 this.tree=[]
 C.tree.push(this)
-this.transform=function(node,rank){
-if(this.transformed!==undefined){return}
-var scope=$get_scope(node.C.tree[0])
-scope.C.tree[0].type='generator'
-this.transformed=true
-this.func_name=scope.C.tree[0].name
-scope.C.tree[0].add_generator_declaration()
-}
-this.to_js=function(){
-var scope=$get_scope(this)
-var res=''
-if(scope.ntype==='generator'){
-scope=$get_scope(scope.C.tree[0])
-if(scope.ntype==='class'){res='$class.'}
-}
-if(this.tree.length==1){
-return res+'$'+this.func_name+'.$iter.push('+$to_js(this.tree)+')'
-}else{
-var indent=$ws($get_module(this).indent)
-res +='$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
-res +=indent+'while(true){\n'+indent+$ws(4)
-res +='try{$'+this.func_name+'.$iter.push('
-res +='$subiter'+$loop_num+'())}\n'
-res +=indent+$ws(4)+'catch($err'+$loop_num+'){\n'
-res +=indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===__builtins__.StopIteration)'
-res +='{__BRYTHON__.$pop_exc();break}\n'
-res +=indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
-$loop_num++
-return res
-}
-}
-}
-function $BRYieldCtx(C){
-this.type='yield'
-this.toString=function(){return '(yield) '+this.tree}
-this.parent=C
-this.tree=[]
-C.tree.push(this)
 var scope=$get_scope(this)
 if(!scope.is_function){
 $_SyntaxError(C,["'yield' outside function"])
@@ -3178,10 +3140,7 @@ var ret=new $ReturnCtx(C)
 return new $AbstractExprCtx(ret,true)
 }else if(token==="with"){return new $AbstractExprCtx(new $WithCtx(C),false)}
 else if(token==='yield'){
-var yield=new $BRYieldCtx(C)
-return new $AbstractExprCtx(yield,true)
-}else if(token==='bryield'){
-var yield=new $BRYieldCtx(C)
+var yield=new $YieldCtx(C)
 return new $AbstractExprCtx(yield,true)
 }else if(token==='del'){return new $AbstractExprCtx(new $DelCtx(C),true)}
 else if(token==='@'){return new $DecoratorCtx(C)}
@@ -4602,80 +4561,6 @@ var $js=$root.to_js()
 $B.vars[$mod_name]=$env
 eval($js)
 return eval($res)
-}
-$B.$generator=function(func){
-var $GeneratorDict={__class__:__BRYTHON__.$type,
-__name__:'generator'
-}
-$GeneratorDict.__iter__=function(self){return self}
-$GeneratorDict.__next__=function(self){
-self.$iter++
-if(self.$iter<self.func.$iter.length){
-if(self.output[self.$iter]!==undefined){
-for(var i=0;i<self.output[self.$iter].length;i++){
-$B.stdout.write(self.output[self.$iter][i])
-}
-}
-return self.func.$iter[self.$iter]
-}
-else{throw $B.builtins.StopIteration("")}
-}
-$GeneratorDict.__mro__=[$GeneratorDict,__BRYTHON__.builtins.object.$dict]
-var res=function(){
-func.$iter=[]
-var save_stdout=$B.stdout
-var output={}
-$B.stdout=$B.JSObject({
-write : function(data){
-var loop_num=func.$iter.length
-if(output[loop_num]===undefined){
-output[loop_num]=[data]
-}else{
-output[loop_num].push(data)
-}
-}
-})
-func.apply(this,arguments)
-$B.stdout=save_stdout
-var obj={
-__class__ : $GeneratorDict,
-func:func,
-output:output,
-$iter:-1
-}
-return obj
-}
-res.__repr__=function(){return "<function "+func.__name__+">"}
-return res
-}
-$B.$generator.__repr__=function(){return "<class 'generator'>"}
-$B.$generator.__str__=function(){return "<class 'generator'>"}
-$B.$generator.__class__=__BRYTHON__.$type
-$B.gen_src=function(node, indent){
-var res=node.data
-indent=indent || 0
-if(node.children.length){res +='{'}
-for(var i=0;i<node.children.length;i++){
-res +='\n'
-for(var j=0;j<indent;j++){res +=' '}
-res +=$B.gen_src(node.children[i],indent+4)
-}
-if(node.children.length){
-res +='\n'
-for(var j=0;j<indent;j++){res +=' '}
-res +='}'
-}
-return res
-}
-function $loops(node, loop_num){
-var res=[]
-if(node.loop_num==loop_num){
-res.push(node)
-}
-for(var i=0;i<node.children.length;i++){
-res=res.concat($loops(node.children[i],loop_num))
-}
-return res
 }
 $B.make_node=function(top_node, node){
 var ctx_js=node.C.to_js()
