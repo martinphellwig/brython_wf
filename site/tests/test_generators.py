@@ -265,4 +265,68 @@ def sieve(ints):
 primes = sieve(intsfrom(2))
 assert firstn(primes, 20) == [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71]
 
+def f():
+    try:
+        try:
+            yield 12
+            1//0
+        except ZeroDivisionError:
+            yield 666
+        except:
+            try:
+                x = 12
+            finally:
+                yield 12
+    except:
+        return
+assert list(f())==[12, 666]
+
+def f(x,y):
+    yield x+1,y+2
+
+assert list(f(3,9))==[(4, 11)]
+
+import time
+
+def get_data():
+    """Return 3 random integers between 0 and 9"""
+    x = list(range(10))
+    res = []
+    while len(res)<4:
+        t = int(str(time.time())[-1])
+        if t<len(x):
+            res.append(x[t])
+            del x[t]
+    return res
+
+def consume():
+    """Displays a running average across lists of integers sent to it"""
+    running_sum = 0
+    data_items_seen = 0
+
+    while True:
+        data = yield
+        data_items_seen += len(data)
+        running_sum += sum(data)
+        print('The running average is {}'.format(running_sum / float(data_items_seen)))
+
+def produce(consumer):
+    """Produces a set of values and forwards them to the pre-defined consumer
+    function"""
+    while True:
+        data = get_data()
+        print('Produced {}'.format(data))
+        consumer.send(data)
+        yield
+
+if __name__ == '__main__':
+    consumer = consume()
+    consumer.send(None)
+    producer = produce(consumer)
+
+    for _ in range(10):
+        print('Producing...')
+        next(producer)
+
+
 print('passed all tests...')

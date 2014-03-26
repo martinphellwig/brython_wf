@@ -79,6 +79,7 @@ for($op in $operators){
 function $Node(type){
     this.type = type
     this.children=[]
+    this.yield_atoms = []
     this.add = function(child){
         this.children.push(child)
         child.parent = this
@@ -149,6 +150,63 @@ function $Node(type){
         return this.res.join('')
     }
     this.transform = function(rank){
+        // Apply transformations to each node recursively
+        
+        if(this.yield_atoms.length>0){
+            // If the node contains 'yield' atoms, we must split the node into
+            // several nodes
+            // The line 'a = yield X' is transformed into 3 lines :
+            //     $yield_value0 = X
+            //     yield $yield_value0
+            //     $yield_value0 = <value sent to generator > or None
+            //     a = $yield_value
+
+            // remove original line
+            this.parent.children.splice(rank,1)
+            var offset = 0
+            for(var i=0;i<this.yield_atoms.length;i++){
+
+                // create a line to store the yield expression in a
+                // temporary variable
+                var temp_node = new $Node('expression')
+                var js = '$yield_value'+$loop_num
+                js += '='+(this.yield_atoms[i].to_js() || 'None')
+                new $NodeJSCtx(temp_node,js)
+                this.parent.insert(rank+offset, temp_node)
+                
+                // create a node to yield the yielded value
+                var yield_node = new $Node('expression')
+                this.parent.insert(rank+offset+1, yield_node)
+                var yield_expr = new $YieldCtx(new $NodeCtx(yield_node))
+                new $StringCtx(yield_expr,'$yield_value'+$loop_num)
+
+                // create a node to set the yielded value to the last
+                // value sent to the generator, if any
+                var set_yield = new $Node('expression')
+                set_yield.is_set_yield_value=true
+                
+                // the JS code will be set in py_utils.$B.make_node
+                js = $loop_num
+                new $NodeJSCtx(set_yield,js)
+                this.parent.insert(rank+offset+2, set_yield)
+                
+                // in the original node, replace yield atom by None   
+                this.yield_atoms[i].to_js = (function(x){
+                    return function(){return '$yield_value'+x}
+                    })($loop_num)
+
+                $loop_num++
+                offset += 3
+            }
+            // insert the original node after the yield nodes
+            this.parent.insert(rank+offset, this)
+            this.yield_atoms = []
+            
+            // Because new nodes were inserted in node parent, return the 
+            // offset for iteration on parent's children
+            return offset+1
+        }
+
         var res = ''
         if(this.type==='module'){
             // module doc string
@@ -156,8 +214,8 @@ function $Node(type){
             var i=0
             while(i<this.children.length){
                 var node = this.children[i]
-                this.children[i].transform(i)
-                i++
+                var offset = this.children[i].transform(i)
+                i += offset || 1
             }
         }else{
             var elt=this.context.tree[0]
@@ -166,8 +224,8 @@ function $Node(type){
             }
             var i=0
             while(i<this.children.length){
-                this.children[i].transform(i)
-                i++
+                var offset = this.children[i].transform(i)
+                i += offset || 1
             }
         }
     }
@@ -2556,12 +2614,31 @@ function $YieldCtx(context){
     this.tree = []
     context.tree.push(this)
 
+    // Syntax control : 'yield' can start a 'yield expression'
+    if(context.type=='node'){}
+    
+    // or start a 'yield atom'
+    // a 'yield atom' without enclosing "(" and ")" is only allowed as the
+    // right-hand side of an assignment
+
+    else if((context.type=='list_or_tuple' && context.real=="tuple")
+        || context.type=="assign"){
+        
+        // mark the node as containing a yield atom
+        var ctx = context
+        while(ctx.parent){ctx=ctx.parent}
+        ctx.node.yield_atoms.push(this)
+
+    // else it is a SyntaxError
+    }else{$_SyntaxError(context,'yield atom must be inside ()')}
+
     var scope = $get_scope(this)
     if(!scope.is_function){
         $_SyntaxError(context,["'yield' outside function"])
     }else if(scope.has_return_with_arguments){
         $_SyntaxError(context,["'return' with argument inside generator"])
     }
+    
     // change type of function to BRgenerator
     var def = scope.context.tree[0]
     def.type = 'BRgenerator'
@@ -2579,10 +2656,7 @@ function $YieldCtx(context){
             if(scope.ntype==='class'){res = '$class.'}
         }
         if(this.tree.length==1){
-            res =  'try{return ['+$to_js(this.tree)+', '+this.rank+']}'
-            res += 'catch(err){return[$B.generator_error(err), '+this.rank+']}'
-            res = $to_js(this.tree)
-            return res
+            return $to_js(this.tree) || 'None'
         }else{ // form "yield from <expr>" : <expr> is this.tree[1]
             var indent = $ws($get_module(this).indent)
             res += '$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
@@ -2896,7 +2970,7 @@ function $transition(context,token){
 
     if(context.type==='abstract_expr'){
     
-        if($expr_starters.indexOf(token)>-1){
+        if($expr_starters.indexOf(token)>-1 || token=='yield'){
             context.parent.tree.pop() // remove abstract expression
             var commas = context.with_commas
             context = context.parent
@@ -2935,6 +3009,8 @@ function $transition(context,token){
             }else{$_SyntaxError(context,'token '+token+' after '+context)}
         }else if(token=='='){
             $_SyntaxError(context,token)
+        }else if(token=="yield"){
+            return new $AbstractExprCtx(new $YieldCtx(context),false)
         }else if([')',','].indexOf(token)>-1 && 
             ['list_or_tuple','call_arg','op'].indexOf(context.parent.type)==-1){
             console.log('err token '+token+' type '+context.parent.type)
@@ -3638,8 +3714,7 @@ function $transition(context,token){
             return new $AbstractExprCtx(ret,true)
         }else if(token==="with"){return new $AbstractExprCtx(new $WithCtx(context),false)}
         else if(token==='yield'){
-            var yield = new $YieldCtx(context)
-            return new $AbstractExprCtx(yield,true)
+            return new $AbstractExprCtx(new $YieldCtx(context),true)
         }else if(token==='del'){return new $AbstractExprCtx(new $DelCtx(context),true)}
         else if(token==='@'){return new $DecoratorCtx(context)}
         else if(token==='eol'){
