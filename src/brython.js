@@ -160,6 +160,7 @@ $first_op_letter.push($op.charAt(0))
 function $Node(type){
 this.type=type
 this.children=[]
+this.yield_atoms=[]
 this.add=function(child){
 this.children.push(child)
 child.parent=this
@@ -228,14 +229,42 @@ this.res.push('}\n')
 return this.res.join('')
 }
 this.transform=function(rank){
+if(this.yield_atoms.length>0){
+this.parent.children.splice(rank,1)
+var offset=0
+for(var i=0;i<this.yield_atoms.length;i++){
+var temp_node=new $Node('expression')
+var js='$yield_value'+$loop_num
+js +='='+(this.yield_atoms[i].to_js()|| 'None')
+new $NodeJSCtx(temp_node,js)
+this.parent.insert(rank+offset, temp_node)
+var yield_node=new $Node('expression')
+this.parent.insert(rank+offset+1, yield_node)
+var yield_expr=new $YieldCtx(new $NodeCtx(yield_node))
+new $StringCtx(yield_expr,'$yield_value'+$loop_num)
+var set_yield=new $Node('expression')
+set_yield.is_set_yield_value=true
+js=$loop_num
+new $NodeJSCtx(set_yield,js)
+this.parent.insert(rank+offset+2, set_yield)
+this.yield_atoms[i].to_js=(function(x){
+return function(){return '$yield_value'+x}
+})($loop_num)
+$loop_num++
+offset +=3
+}
+this.parent.insert(rank+offset, this)
+this.yield_atoms=[]
+return offset+1
+}
 var res=''
 if(this.type==='module'){
 this.doc_string=$get_docstring(this)
 var i=0
 while(i<this.children.length){
 var node=this.children[i]
-this.children[i].transform(i)
-i++
+var offset=this.children[i].transform(i)
+i +=offset || 1
 }
 }else{
 var elt=this.C.tree[0]
@@ -244,8 +273,8 @@ elt.transform(this,rank)
 }
 var i=0
 while(i<this.children.length){
-this.children[i].transform(i)
-i++
+var offset=this.children[i].transform(i)
+i +=offset || 1
 }
 }
 }
@@ -2220,6 +2249,13 @@ this.toString=function(){return '(yield) '+this.tree}
 this.parent=C
 this.tree=[]
 C.tree.push(this)
+if(C.type=='node'){}
+else if((C.type=='list_or_tuple' && C.real=="tuple")
+|| C.type=="assign"){
+var ctx=C
+while(ctx.parent){ctx=ctx.parent}
+ctx.node.yield_atoms.push(this)
+}else{$_SyntaxError(C,'yield atom must be inside ()')}
 var scope=$get_scope(this)
 if(!scope.is_function){
 $_SyntaxError(C,["'yield' outside function"])
@@ -2240,10 +2276,7 @@ scope=$get_scope(scope.C.tree[0])
 if(scope.ntype==='class'){res='$class.'}
 }
 if(this.tree.length==1){
-res='try{return ['+$to_js(this.tree)+', '+this.rank+']}'
-res +='catch(err){return[$B.generator_error(err), '+this.rank+']}'
-res=$to_js(this.tree)
-return res
+return $to_js(this.tree)|| 'None'
 }else{
 var indent=$ws($get_module(this).indent)
 res +='$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
@@ -2500,7 +2533,7 @@ return ctx
 }
 function $transition(C,token){
 if(C.type==='abstract_expr'){
-if($expr_starters.indexOf(token)>-1){
+if($expr_starters.indexOf(token)>-1 || token=='yield'){
 C.parent.tree.pop()
 var commas=C.with_commas
 C=C.parent
@@ -2535,6 +2568,8 @@ return new $AbstractExprCtx(op_expr,false)
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(token=='='){
 $_SyntaxError(C,token)
+}else if(token=="yield"){
+return new $AbstractExprCtx(new $YieldCtx(C),false)
 }else if([')',','].indexOf(token)>-1 && 
 ['list_or_tuple','call_arg','op'].indexOf(C.parent.type)==-1){
 console.log('err token '+token+' type '+C.parent.type)
@@ -3140,8 +3175,7 @@ var ret=new $ReturnCtx(C)
 return new $AbstractExprCtx(ret,true)
 }else if(token==="with"){return new $AbstractExprCtx(new $WithCtx(C),false)}
 else if(token==='yield'){
-var yield=new $YieldCtx(C)
-return new $AbstractExprCtx(yield,true)
+return new $AbstractExprCtx(new $YieldCtx(C),true)
 }else if(token==='del'){return new $AbstractExprCtx(new $DelCtx(C),true)}
 else if(token==='@'){return new $DecoratorCtx(C)}
 else if(token==='eol'){
@@ -4589,21 +4623,18 @@ var res='try{return ['+ctx_js+', '+rank+']}'
 res +='catch(err){return[$B.generator_error(err), '+rank+']}'
 new_node.data=res
 top_node.yields.push(new_node)
+}else if(node.is_set_yield_value){
+var js='$yield_value'+ctx_js+'=__BRYTHON__.modules["'
+js +=top_node.iter_id+'"].sent_value || None;'
+js +='__BRYTHON__.modules["'+top_node.iter_id+'"].sent_value=None'
+new_node.data=js 
 }
 new_node.is_cond=is_cond
 new_node.is_except=is_except
 new_node.is_try=node.is_try
 new_node.is_else=is_else
 new_node.loop_start=node.loop_start
-if(node.loop_num){
-var js='catch($err){if(__BRYTHON__.is_exc($err,[__builtins__.StopIteration]))'
-js +='{__BRYTHON__.gen_loop_end('+node.loop_num+',"'+top_node.iter_id+'");'
-js +='__BRYTHON__.$pop_exc();break}'
-js +='else{throw($err)}}'
-new_node.data=js
-top_node.loop_ends[node.loop_num]=new_node
-new_node.loop_num=node.loop_num
-}
+new_node.is_set_yield_value=node.is_set_yield_value
 for(var i=0;i<node.children.length;i++){
 new_node.addChild($B.make_node(top_node, node.children[i]))
 }
@@ -4801,6 +4832,10 @@ self._next=eval(func_name)
 return yielded_value
 }
 $BRGeneratorDict.__mro__=[$BRGeneratorDict,__BRYTHON__.builtins.object.$dict]
+$BRGeneratorDict.send=function(self, value){
+self.sent_value=value
+return $BRGeneratorDict.__next__(self)
+}
 var res=function(){
 var args=[]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
