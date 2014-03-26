@@ -3,8 +3,33 @@
 <meta charset="iso-8859-1">
 <head>
 <style>
-body,td,th{font-family:sans-serif}
-a.sort_link{margin-left:10px;text-decoration:none}
+body,td,th{
+    font-family:sans-serif;
+    font-size:12px;
+}
+td {
+    border-style:solid;
+    border-width: 0px 0px 1px 0px;
+    border-color: #000;
+    padding:3px;
+}
+
+th {
+    border-style:solid;
+    border-width: 1px;
+    border-color: #000;
+    background-color: #61D7A4;
+    padding: 4px;
+}
+
+span{font-size:15px;
+    margin-left:10px;}
+a.sort_link{
+    margin-left:10px;
+    font-size: 15px;
+    text-decoration:none;
+}
+
 </style>
 
 <script type="text/javascript" src="../../src/brython_builtins.js"></script>
@@ -29,14 +54,12 @@ a.sort_link{margin-left:10px;text-decoration:none}
 </head>
 <body onLoad="brython(2)">
 <script id="ascript" type="text/python">
-from browser import doc,html
+from browser import window,doc,html
 import time
 
 t0 = time.time()
 
 orders = {}
-
-doc <= html.IMG(src="../brython.png")
 
 def sort_by_col(evt,numeric=False):
     cell = evt.target
@@ -104,12 +127,13 @@ lines = ['Allemagne','Berlin',357026,81.8,
 
 doc <= html.H2("Pays d'Europe")
 
-table = html.TABLE()
+table = html.TABLE(cellspacing=0)
 t = html.TBODY()
 title = html.TR()
-link = html.BUTTON('\u2191\u2193')
+link = html.A('\u2191\u2193', href="#", Class="sort_link")
 link.bind('click',sort_by_col)
-link_num = html.BUTTON('\u2191\u2193')
+
+link_num = html.A('\u2191\u2193', href="#", Class="sort_link")
 link_num.bind('click',lambda ev:sort_by_col(ev,True))
 link1 = link.clone()
 title <= html.TH('Pays'+link)
