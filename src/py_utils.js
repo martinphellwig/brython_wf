@@ -259,21 +259,18 @@ $B.make_node = function(top_node, node){
             res += 'catch(err){return[$B.generator_error(err), '+rank+']}'
             new_node.data = res
             top_node.yields.push(new_node)
+        }else if(node.is_set_yield_value){
+            var js = '$yield_value'+ctx_js+'=__BRYTHON__.modules["'
+            js += top_node.iter_id+'"].sent_value || None;'
+            js += '__BRYTHON__.modules["'+top_node.iter_id+'"].sent_value=None'
+            new_node.data = js            
         }
         new_node.is_cond = is_cond
         new_node.is_except = is_except
         new_node.is_try = node.is_try
         new_node.is_else = is_else
         new_node.loop_start = node.loop_start
-        if(node.loop_num){
-            var js = 'catch($err){if(__BRYTHON__.is_exc($err,[__builtins__.StopIteration]))'
-            js += '{__BRYTHON__.gen_loop_end('+node.loop_num+',"'+top_node.iter_id+'");'
-            js += '__BRYTHON__.$pop_exc();break}'
-            js += 'else{throw($err)}}'
-            new_node.data = js
-            top_node.loop_ends[node.loop_num] = new_node
-            new_node.loop_num = node.loop_num
-        }
+        new_node.is_set_yield_value = node.is_set_yield_value
 
         for(var i=0;i<node.children.length;i++){
             new_node.addChild($B.make_node(top_node, node.children[i]))
@@ -561,7 +558,13 @@ $B.$BRgenerator = function(func, def_id, $class){
         // Return the yielded value
         return yielded_value
     }
+    
     $BRGeneratorDict.__mro__ = [$BRGeneratorDict,__BRYTHON__.builtins.object.$dict]
+
+    $BRGeneratorDict.send = function(self, value){
+        self.sent_value = value
+        return $BRGeneratorDict.__next__(self)
+    }
 
     var res = function(){
         var args = []
