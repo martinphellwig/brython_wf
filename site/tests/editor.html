@@ -37,7 +37,7 @@
 <script type="text/python3" src="editor.py"></script>
 
 <script type="text/python3">
-from browser import doc
+from browser import doc, html
 from .. import header
 
 qs_lang,language = header.show('../')
@@ -76,6 +76,34 @@ doc['set_debug'].bind('change',set_debug)
 doc['show_js'].bind('click',show_js)
 doc['run'].bind('click',run)
 doc['show_console'].bind('click',show_console)
+
+# erase "main" div
+def clear_main(ev):
+    doc['main'].text = ''
+
+main_content = 'Zone with id="main" ; use it to test interaction with DOM elements'
+
+# add "main" div
+def add_main(ev):
+    global main_content
+    try:
+        # if "main" div already exists, save content and erase container
+        main_content = doc["main"].html
+        doc["main_container"].html = ""
+        doc["add_main"].text = 'Show "main" div'
+    except KeyError:
+        t = html.TABLE()
+        row = html.TR()
+        b = html.BUTTON('Clear')
+        b.bind('click', clear_main)
+        row <= html.TD(b)+html.TD(html.DIV(Id="main"))
+        t <= row
+        doc["main_container"] <= t
+        doc["main"].html = main_content
+        doc["add_main"].text = 'Hide "main" div'
+
+doc["add_main"].bind('click', add_main)
+
 </script>
 
 <script>
@@ -95,6 +123,8 @@ function run_js(){
 <tr id="banner_row">
 </tr>
 </table>
+
+<div id="main_container"></div>
 
 <div style="text-align:center">
 <br>Brython version: <span id="version"></span>
@@ -139,6 +169,8 @@ Theme: <select id="ace_theme">
 <option value="ace/theme/vibrant_ink">Vibrant Ink</option>
 </optgroup>
 </select> 
+<button id="add_main">Add "main" div</button>
+
 </div>
   <div id="editor"></div>
 </div>
