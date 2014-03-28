@@ -1,5 +1,20 @@
 // global object with brython built-ins
-var __BRYTHON__ = {}
+var __BRYTHON__ = __BRYTHON__ || {}   //just in case __BRYTHON__ is already
+                                      //defined (ie, isa_web_worker=true, etc
+
+if (__BRYTHON__.isa_web_worker==true) {
+  // we need to emulate a window and document variables/functions for
+  // web workers, since they don't exists. (this is much better than,
+  // having a bunch of tests throughout code, making the code more complex) 
+
+  window = {}
+  window.XMLHttpRequest = XMLHttpRequest 
+  window.navigator={}
+  window.navigator.userLanguage=window.navigator.language="fixme"
+
+  window.clearTimeout=function(timer) {clearTimeout(timer)}
+}
+
 // Python __builtins__
 __BRYTHON__.builtins = {
     __repr__:function(){return "<module 'builtins>'"},
