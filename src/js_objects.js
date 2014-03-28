@@ -66,7 +66,7 @@ $JSConstructorDict.__call__ = function(self){
     }
     var res = $applyToConstructor(self.js,args)
     // res is a Javascript object
-    return JSObject(res)
+    return $B.$JS2Py(res)
 }
 
 $JSConstructorDict.__mro__ = [$JSConstructorDict,$ObjectDict]
