@@ -83,16 +83,21 @@ function $download_module(module,url){
       }
     }
     if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
-
     $xmlhttp.send()
 
+    //sometimes chrome doesn't set res correctly, so if res == null, assume no module found
+    if(res == null) throw __builtins__.FileNotFoundError("No module named '"+module+"' (res is null)")
+
+    //console.log('res', res)
     if(res.constructor===Error){throw res} // module not found
     return res
 }
 
+$B.$download_module=$download_module
+
 $B.$import_js = function(module){
-    var name = module.name
-    if(name.substr(0,2)=='$$'){name = name.substr(2)}
+   var name = module.name
+   if(name.substr(0,2)=='$$'){name = name.substr(2)}
    var filepath=__BRYTHON__.brython_path+'libs/' + name
    return $B.$import_js_generic(module,filepath)
 }
@@ -130,7 +135,7 @@ $B.$import_js_module = function(module,filepath,module_contents){
 
 $B.$import_module_search_path = function(module,origin){
   // this module is needed by $import_from, so don't remove
-  var path_list = __BRYTHON__.path.slice()
+  //var path_list = __BRYTHON__.path.slice()
   return $B.$import_module_search_path_list(module,__BRYTHON__.path,origin);
 }
 
@@ -163,11 +168,16 @@ $B.$import_module_search_path_list = function(module,path_list,origin){
            var path = path_list[i]
            if(path.charAt(path.length-1)!='/'){path += "/"}
            path += modpath
+           //console.log(path)
            try {
                var mod = $B.$import_py(module,path)
                flag = true
                if(j==search.length-1){mod.$package=true}
-           }catch(err){if(err.__name__!=="FileNotFoundError"){flag=true;throw err}}
+           }catch(err){
+              //console.log(err)
+              if(err.__name__!=="FileNotFoundError"){
+                       flag=true;throw err}
+           }
            if(flag){break}
         }
         if(flag){break}

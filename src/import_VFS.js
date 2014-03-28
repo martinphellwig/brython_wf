@@ -71,7 +71,7 @@ $B.$import_single=function (module,origin){
         try{
             return import_funcs[j](module,origin)
         } catch(err){
-            if(err.name!=="FileNotFoundError"){
+            if(err.__name__==="FileNotFoundError"){
                if (j===import_funcs.length-1) {
                  __BRYTHON__.imported[module.name] = undefined
                  __BRYTHON__.modules[module.name] = undefined
