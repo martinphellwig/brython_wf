@@ -3,7 +3,14 @@
 // implementation [2, 0, 0, 'final', 2]
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
-var __BRYTHON__={}
+var __BRYTHON__=__BRYTHON__ ||{}
+if(__BRYTHON__.isa_web_worker==true){
+window={}
+window.XMLHttpRequest=XMLHttpRequest 
+window.navigator={}
+window.navigator.userLanguage=window.navigator.language="fixme"
+window.clearTimeout=function(timer){clearTimeout(timer)}
+}
 __BRYTHON__.builtins={
 __repr__:function(){return "<module 'builtins>'"},
 __str__:function(){return "<module 'builtins'>"}, 
@@ -62,6 +69,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "json",
 "marshal",
 "math",
+"multiprocessing",
 "time",
 "_ajax",
 "_browser",
@@ -6687,7 +6695,7 @@ args.push(obj)
 }else{args.push(arg)}
 }
 var res=$applyToConstructor(self.js,args)
-return JSObject(res)
+return $B.$JS2Py(res)
 }
 $JSConstructorDict.__mro__=[$JSConstructorDict,$ObjectDict]
 function JSConstructor(obj){
@@ -6888,9 +6896,11 @@ res=__builtins__.FileNotFoundError("No module named '"+module+"'")
 }
 if('overrideMimeType' in $xmlhttp){$xmlhttp.overrideMimeType("text/plain")}
 $xmlhttp.send()
+if(res==null)throw __builtins__.FileNotFoundError("No module named '"+module+"' (res is null)")
 if(res.constructor===Error){throw res}
 return res
 }
+$B.$download_module=$download_module
 $B.$import_js=function(module){
 var name=module.name
 if(name.substr(0,2)=='$$'){name=name.substr(2)}
@@ -6924,7 +6934,6 @@ $module.__file__=filepath
 return $module
 }
 $B.$import_module_search_path=function(module,origin){
-var path_list=__BRYTHON__.path.slice()
 return $B.$import_module_search_path_list(module,__BRYTHON__.path,origin)
 }
 $B.$import_module_search_path_list=function(module,path_list,origin){
@@ -6956,7 +6965,10 @@ try{
 var mod=$B.$import_py(module,path)
 flag=true
 if(j==search.length-1){mod.$package=true}
-}catch(err){if(err.__name__!=="FileNotFoundError"){flag=true;throw err}}
+}catch(err){
+if(err.__name__!=="FileNotFoundError"){
+flag=true;throw err}
+}
 if(flag){break}
 }
 if(flag){break}
