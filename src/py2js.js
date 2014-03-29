@@ -3012,7 +3012,7 @@ function $transition(context,token){
         }else if(token=="yield"){
             return new $AbstractExprCtx(new $YieldCtx(context),false)
         }else if([')',','].indexOf(token)>-1 && 
-            ['list_or_tuple','call_arg','op'].indexOf(context.parent.type)==-1){
+            ['list_or_tuple','call_arg','op','yield'].indexOf(context.parent.type)==-1){
             console.log('err token '+token+' type '+context.parent.type)
             $_SyntaxError(context,token)
         }else{return $transition(context.parent,token,arguments[2])}
