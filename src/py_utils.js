@@ -260,10 +260,13 @@ $B.make_node = function(top_node, node){
             new_node.data = res
             top_node.yields.push(new_node)
         }else if(node.is_set_yield_value){
-            var js = '$yield_value'+ctx_js+'=__BRYTHON__.modules["'
+            var js = '$sent'+ctx_js+'=__BRYTHON__.modules["'
             js += top_node.iter_id+'"].sent_value || None;'
+            js += 'if($sent'+ctx_js+'.__class__===__BRYTHON__.$GeneratorSendError)'
+            js += '{throw $sent'+ctx_js+'.err("")};'
+            js += '$yield_value'+ctx_js+'=$sent'+ctx_js+';'
             js += '__BRYTHON__.modules["'+top_node.iter_id+'"].sent_value=None'
-            new_node.data = js            
+            new_node.data = js
         }
         new_node.is_cond = is_cond
         new_node.is_except = is_except
@@ -369,6 +372,8 @@ $B.generator_error = function(err){
     return {__class__:$GeneratorError, err:err}
 }
 
+$B.$GeneratorSendError = {}
+
 $GeneratorReturn = {}
 $B.generator_return = function(){return {__class__:$GeneratorReturn}}
 
@@ -456,7 +461,7 @@ $B.$BRgenerator = function(func, def_id, $class){
 
         // get node where yield was thrown
         var exit_node = self.func_root.yields[yield_rank]
-        //alert('exit node '+exit_node)
+        //console.log('exit node '+exit_node+' in loop '+in_loop(exit_node)+' in try '+exit_node.parent.is_try)
         exit_node.replaced = false
         
         if(yielded_value.__class__==$GeneratorError){
@@ -496,10 +501,26 @@ $B.$BRgenerator = function(func, def_id, $class){
         var pnode = exit_node.parent
   
         if(pnode.is_except || pnode.is_try){
-        
-            // If the exit node was inside a "try" or "except" block, 
-            // the exit node is replaced by "pass"
-            //pnode.children[exit_node.rank] = new $B.genNode('void(0)')
+
+            if(pnode.is_try){
+                // if exit node is in a "try" block, the rest of the block 
+                // after exit_node must be run in the same try/except block
+
+                var pnode2 = pnode.clone() // clone 'try' node
+                
+                // add the rest of the 'try' block after exit_node
+                for(var i=exit_node.rank+1;i<pnode.children.length;i++){
+                    pnode2.addChild(pnode.children[i].clone_tree())
+                }
+
+                // start new function with this new try/except block
+                tnode.addChild(pnode2)
+                
+                for(var i=pnode.rank+1;i<pnode.parent.children.length;i++){
+                    tnode.addChild(pnode.parent.children[i].clone_tree())
+                }
+
+            }
 
             // the next function starts with the uppermost enclosing "try" block
             while(pnode.parent.is_except || pnode.parent.is_try){
@@ -563,6 +584,11 @@ $B.$BRgenerator = function(func, def_id, $class){
 
     $BRGeneratorDict.send = function(self, value){
         self.sent_value = value
+        return $BRGeneratorDict.__next__(self)
+    }
+
+    $BRGeneratorDict.$$throw = function(self, value){
+        self.sent_value = {__class__:$B.$GeneratorSendError,err:value}
         return $BRGeneratorDict.__next__(self)
     }
 
