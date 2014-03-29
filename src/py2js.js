@@ -2642,11 +2642,16 @@ function $YieldCtx(context){
     // change type of function to BRgenerator
     var def = scope.context.tree[0]
     def.type = 'BRgenerator'
-    this.func_name = def.name
-    this.def_id = def.id
+
+    // add to list of "yields" in function
     def.yields.push(this)
-    // this.rank will be returned in generator function
-    this.rank = def.yields.length-1
+    
+    this.transform = function(node, rank){
+        var node = new $Node('expression')
+        new $NodeJSCtx(node,'// placeholder for generator sent value')
+        node.set_yield_value = true
+        node.insert(rank+1,node)
+    }
 
     this.to_js = function(){
         var scope = $get_scope(this)

@@ -286,6 +286,20 @@ def f(x,y):
 
 assert list(f(3,9))==[(4, 11)]
 
+# test "throw"
+def f():
+    while True:
+        try:
+            print((yield))
+        except ValueError as v:
+            assert str(v)=="test"
+import sys
+g = f()
+next(g)
+
+g.throw(ValueError('test')) # type only
+
+
 import time
 
 def get_data():
@@ -319,14 +333,32 @@ def produce(consumer):
         consumer.send(data)
         yield
 
-if __name__ == '__main__':
-    consumer = consume()
-    consumer.send(None)
-    producer = produce(consumer)
+consumer = consume()
+consumer.send(None)
+producer = produce(consumer)
 
-    for _ in range(10):
-        print('Producing...')
-        next(producer)
+for _ in range(10):
+    print('Producing...')
+    next(producer)
 
+# test "close"
+def f():
+    try: yield
+    except GeneratorExit:
+        print("exiting")
+
+g = f()
+print(next(g))
+g.close()
+#exiting
+g.close()  # should be no-op now
+
+f().close()  # close on just-opened generator should be fine
+
+def f(): yield      # an even simpler generator
+f().close()         # close before opening
+g = f()
+next(g)
+g.close()           # close normally
 
 print('passed all tests...')

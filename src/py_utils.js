@@ -263,7 +263,7 @@ $B.make_node = function(top_node, node){
             var js = '$sent'+ctx_js+'=__BRYTHON__.modules["'
             js += top_node.iter_id+'"].sent_value || None;'
             js += 'if($sent'+ctx_js+'.__class__===__BRYTHON__.$GeneratorSendError)'
-            js += '{throw $sent'+ctx_js+'.err("")};'
+            js += '{throw $sent'+ctx_js+'.err};'
             js += '$yield_value'+ctx_js+'=$sent'+ctx_js+';'
             js += '__BRYTHON__.modules["'+top_node.iter_id+'"].sent_value=None'
             new_node.data = js
@@ -503,23 +503,32 @@ $B.$BRgenerator = function(func, def_id, $class){
         if(pnode.is_except || pnode.is_try){
 
             if(pnode.is_try){
+
                 // if exit node is in a "try" block, the rest of the block 
                 // after exit_node must be run in the same try/except block
 
-                var pnode2 = pnode.clone() // clone 'try' node
+                var pnode2 = pnode.clone() // clone the original 'try' node
                 
-                // add the rest of the 'try' block after exit_node
+                // add the rest of the original 'try' block after exit_node
                 for(var i=exit_node.rank+1;i<pnode.children.length;i++){
                     pnode2.addChild(pnode.children[i].clone_tree())
                 }
 
-                // start new function with this new try/except block
-                tnode.addChild(pnode2)
+                // to do : if the 'try' block with the exit node is itself 
+                // in a 'try' block
+                
+                // build the try/except sequence to insert at the top of the
+                // new function
+                var children = [pnode2]
                 
                 for(var i=pnode.rank+1;i<pnode.parent.children.length;i++){
-                    tnode.addChild(pnode.parent.children[i].clone_tree())
+                    children.push(pnode.parent.children[i].clone_tree())
                 }
-
+                
+                for(var i=0;i<children.length;i++){
+                    tnode.addChild(children[i])
+                }
+                
             }
 
             // the next function starts with the uppermost enclosing "try" block
@@ -582,12 +591,24 @@ $B.$BRgenerator = function(func, def_id, $class){
     
     $BRGeneratorDict.__mro__ = [$BRGeneratorDict,__BRYTHON__.builtins.object.$dict]
 
+    $BRGeneratorDict.close = function(self, value){
+        self.sent_value = $B.builtins.GeneratorExit()
+        try{
+            var res = $BRGeneratorDict.__next__(self)
+            if(res!==None){throw RuntimeError("closed generator returned a value")}
+        }catch(err){
+            if($B.is_exc(err, [StopIteration, GeneratorExit])){return None}
+            throw err
+        }
+    }
+
     $BRGeneratorDict.send = function(self, value){
         self.sent_value = value
         return $BRGeneratorDict.__next__(self)
     }
 
     $BRGeneratorDict.$$throw = function(self, value){
+        if(isinstance(value,type)){value=value()}
         self.sent_value = {__class__:$B.$GeneratorSendError,err:value}
         return $BRGeneratorDict.__next__(self)
     }
