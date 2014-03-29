@@ -2272,10 +2272,13 @@ $_SyntaxError(C,["'return' with argument inside generator"])
 }
 var def=scope.C.tree[0]
 def.type='BRgenerator'
-this.func_name=def.name
-this.def_id=def.id
 def.yields.push(this)
-this.rank=def.yields.length-1
+this.transform=function(node, rank){
+var node=new $Node('expression')
+new $NodeJSCtx(node,'// placeholder for generator sent value')
+node.set_yield_value=true
+node.insert(rank+1,node)
+}
 this.to_js=function(){
 var scope=$get_scope(this)
 var res=''
@@ -2579,7 +2582,7 @@ $_SyntaxError(C,token)
 }else if(token=="yield"){
 return new $AbstractExprCtx(new $YieldCtx(C),false)
 }else if([')',','].indexOf(token)>-1 && 
-['list_or_tuple','call_arg','op'].indexOf(C.parent.type)==-1){
+['list_or_tuple','call_arg','op','yield'].indexOf(C.parent.type)==-1){
 console.log('err token '+token+' type '+C.parent.type)
 $_SyntaxError(C,token)
 }else{return $transition(C.parent,token,arguments[2])}
@@ -4632,10 +4635,13 @@ res +='catch(err){return[$B.generator_error(err), '+rank+']}'
 new_node.data=res
 top_node.yields.push(new_node)
 }else if(node.is_set_yield_value){
-var js='$yield_value'+ctx_js+'=__BRYTHON__.modules["'
+var js='$sent'+ctx_js+'=__BRYTHON__.modules["'
 js +=top_node.iter_id+'"].sent_value || None;'
+js +='if($sent'+ctx_js+'.__class__===__BRYTHON__.$GeneratorSendError)'
+js +='{throw $sent'+ctx_js+'.err};'
+js +='$yield_value'+ctx_js+'=$sent'+ctx_js+';'
 js +='__BRYTHON__.modules["'+top_node.iter_id+'"].sent_value=None'
-new_node.data=js 
+new_node.data=js
 }
 new_node.is_cond=is_cond
 new_node.is_except=is_except
@@ -4724,6 +4730,7 @@ $GeneratorError={}
 $B.generator_error=function(err){
 return{__class__:$GeneratorError, err:err}
 }
+$B.$GeneratorSendError={}
 $GeneratorReturn={}
 $B.generator_return=function(){return{__class__:$GeneratorReturn}}
 function in_loop(node){
@@ -4806,6 +4813,19 @@ js='for(var $var in $locals){eval("var "+$var+"=$locals[$var]")}'
 tnode.addChild(new $B.genNode(js))
 var pnode=exit_node.parent
 if(pnode.is_except || pnode.is_try){
+if(pnode.is_try){
+var pnode2=pnode.clone()
+for(var i=exit_node.rank+1;i<pnode.children.length;i++){
+pnode2.addChild(pnode.children[i].clone_tree())
+}
+var children=[pnode2]
+for(var i=pnode.rank+1;i<pnode.parent.children.length;i++){
+children.push(pnode.parent.children[i].clone_tree())
+}
+for(var i=0;i<children.length;i++){
+tnode.addChild(children[i])
+}
+}
 while(pnode.parent.is_except || pnode.parent.is_try){
 pnode=pnode.parent
 }
@@ -4840,8 +4860,23 @@ self._next=eval(func_name)
 return yielded_value
 }
 $BRGeneratorDict.__mro__=[$BRGeneratorDict,__BRYTHON__.builtins.object.$dict]
+$BRGeneratorDict.close=function(self, value){
+self.sent_value=$B.builtins.GeneratorExit()
+try{
+var res=$BRGeneratorDict.__next__(self)
+if(res!==None){throw RuntimeError("closed generator returned a value")}
+}catch(err){
+if($B.is_exc(err,[StopIteration, GeneratorExit])){return None}
+throw err
+}
+}
 $BRGeneratorDict.send=function(self, value){
 self.sent_value=value
+return $BRGeneratorDict.__next__(self)
+}
+$BRGeneratorDict.$$throw=function(self, value){
+if(isinstance(value,type)){value=value()}
+self.sent_value={__class__:$B.$GeneratorSendError,err:value}
 return $BRGeneratorDict.__next__(self)
 }
 var res=function(){
