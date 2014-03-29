@@ -1,6 +1,6 @@
 // brython.js www.brython.info
 // version [3, 3, 0, 'alpha', 0]
-// implementation [2, 0, 0, 'final', 2]
+// implementation [2, 1, 0, 'rc', 1]
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__=__BRYTHON__ ||{}
@@ -60,7 +60,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.implementation=[2, 0, 0, 'final', 2]
+__BRYTHON__.implementation=[2, 1, 0, 'rc', 1]
 __BRYTHON__.version_info=[3, 3, 0, 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
@@ -4742,8 +4742,8 @@ return false
 }
 $B.$BRgenerator=function(func, def_id, $class){
 var def_ctx=__BRYTHON__.modules[def_id]
-var counter=0
-var func_name='$'+def_ctx.name
+var counter=0 
+var func_name='$'+def_ctx.name 
 if($class!==undefined){func_name='$class.'+func_name}
 var def_node=def_ctx.parent.node
 var module=def_node.module
@@ -4751,9 +4751,6 @@ var try_node=def_node.children[1].children[0]
 var __builtins__=__BRYTHON__.builtins
 for(var $py_builtin in __builtins__){
 eval("var "+$py_builtin+"=__builtins__[$py_builtin]")
-}
-for(var $attr in __BRYTHON__.vars[module]){
-eval("var "+$attr+"=__BRYTHON__.vars[module][$attr]")
 }
 var $BRGeneratorDict={__class__:__BRYTHON__.$type,
 __name__:'BRgenerator'
@@ -4882,7 +4879,7 @@ return $BRGeneratorDict.__next__(self)
 var res=function(){
 var args=[]
 for(var i=0;i<arguments.length;i++){args.push(arguments[i])}
-var iter_id=def_id+'-'+counter 
+var iter_id=def_id+'-'+counter
 counter++
 __BRYTHON__.vars[iter_id]={}
 var func_root=new $B.genNode(def_node.C.to_js())
@@ -4915,7 +4912,9 @@ $B.$BRgenerator.__repr__=function(){return "<class 'BRgenerator'>"}
 $B.$BRgenerator.__str__=function(){return "<class 'BRgenerator'>"}
 $B.$BRgenerator.__class__=__BRYTHON__.$type
 $B.$ternary=function(env,cond,expr1,expr2){
-for(var $py_builtin in __BRYTHON__.builtins){eval("var "+$py_builtin+"=__BRYTHON__.builtins[$py_builtin]")}
+for(var $py_builtin in __BRYTHON__.builtins){
+eval("var "+$py_builtin+"=__BRYTHON__.builtins[$py_builtin]")
+}
 for(var attr in env){eval('var '+attr+'=env["'+attr+'"]')}
 var res='if (bool('+cond+')){\n'
 res +='    var $res = '+unescape(expr1)+'\n}else{\n'
