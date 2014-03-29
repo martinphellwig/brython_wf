@@ -5,7 +5,8 @@ self.addEventListener('message', function(e) {
     __BRYTHON__={isa_web_worker:true}
 
     //importScripts('brython.js')
-    importScripts('/src/brython_builtins.js', '/src/version_info.js', '/src/py2js.js',
+    importScripts('/src/brython_builtins.js', '/src/version_info.js', 
+                  '/src/py2js.js',
                 '/src/py_object.js', '/src/py_type.js', '/src/py_utils.js',
                 '/src/py_builtin_functions.js', '/src/py_set.js', '/src/js_objects.js',
                 '/src/py_import.js', '/src/py_int.js', '/src/py_float.js', 
@@ -46,8 +47,18 @@ self.addEventListener('message', function(e) {
     // mapping the names defined in this block to their value
     __BRYTHON__.vars = {}
 
-    eval("e.data.target+'('+e.data.args+')'")
+    // capture all standard output
+    var output = []
+    __BRYTHON__.stdout = {write:function(data){output.push(data)}}
 
-    self.postMessage()
+    // insert already defined builtins
+    for(var $py_builtin in __BRYTHON__.builtins){
+       eval("var "+$py_builtin+"=__BRYTHON__.builtins[$py_builtin]")
+    }
+
+    var $defaults={}
+    eval('('+e.data.target+')('+e.data.args+')')
+
+    self.postMessage({stdout: output.join('')})
 
 }, false);

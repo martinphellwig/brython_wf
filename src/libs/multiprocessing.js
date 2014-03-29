@@ -19,13 +19,20 @@ $ProcessDict.__repr__ = function(self){
 $ProcessDict.__str__ = $ProcessDict.toString = $ProcessDict.__repr__
 
 $ProcessDict.is_alive = function(self){
-   return self.alive
+   return self.$alive
 }
 
 $ProcessDict.join = function(self, timeout){
    // need to block until process is complete
    // could probably use a addEventListener to execute all existing code
    // after this join statement
+
+   self.$worker.addEventListener('message', function (e) {
+        var data=e.data
+        if (data.stdout != '') { // output stdout from process
+           $B.stdout.write(data.stdout)
+        }
+   }, false);
 }
 
 $ProcessDict.run = function(self){
@@ -33,17 +40,22 @@ $ProcessDict.run = function(self){
 }
 
 $ProcessDict.start = function(self){
-   console.log(self.$target+'')
-   self.$worker.postMessage({target: self.$target+'', 
-                             args: self.$args.join(','),
+   var _args=[]
+   for(var i=0; i < self.$args.length; i++) {
+      var _a=self.$args[i]
+      if(isinstance(_a, str)){_args.push("'"+_a+"'")} else {_args.push(_a)} 
+   }
+   self.$worker.postMessage({target: self.$target, 
+                             args: _args.join(','),
                           //   kwargs: self.$kwargs
                            })
-   self.alive=true
+   self.$worker.addEventListener('error', function(e) { throw e})
+   self.$alive=true
 }
 
 $ProcessDict.terminate = function(self){
    self.$worker.terminate()
-   self.alive=false
+   self.$alive=false
 }
 
 // variables
@@ -54,11 +66,12 @@ $ProcessDict.terminate = function(self){
 
 function Process(){
     //arguments group=None, target=None, name=None, args=(), kwargs=()
-    // MakeArgs
-    var $ns=$B.$MakeArgs('Process',arguments,[],[],'args','kw')
+
+    var $ns=$B.$MakeArgs('Process',arguments,[],[],null,'kw')
     var kw=$ns['kw']
 
-    var target=getattr(kw,'get')('target',undefined)
+    var target=__builtins__.dict.$dict.get($ns['kw'],'target',None)
+    var args=__builtins__.dict.$dict.get($ns['kw'],'args',tuple())
 
     var worker = new Worker('/src/web_workers/multiprocessing.js')
 
@@ -66,9 +79,10 @@ function Process(){
         __class__:$ProcessDict,
         $worker: worker,
         name: $ns['name'] || None,
-        $target: target || self.run,
-        $args: $ns['args'] || [],
-        $kwargs: $ns['kwargs']
+        $target: target+'',
+        $args: args,
+        //$kwargs: $ns['kw'],
+        $alive: false
     }
     return res
 }
