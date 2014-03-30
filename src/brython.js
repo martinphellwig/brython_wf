@@ -69,6 +69,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "json",
 "marshal",
 "math",
+"module9",
 "modulefinder",
 "multiprocessing",
 "time",
@@ -2274,11 +2275,31 @@ $_SyntaxError(C,["'return' with argument inside generator"])
 var def=scope.C.tree[0]
 def.type='BRgenerator'
 def.yields.push(this)
+this.toString=function(){return '(yield) '+(this.from ? '(from) ' : '')+this.tree}
 this.transform=function(node, rank){
-var node=new $Node('expression')
-new $NodeJSCtx(node,'// placeholder for generator sent value')
-node.set_yield_value=true
-node.insert(rank+1,node)
+if(this.from===true){
+var new_node=new $Node('expression')
+node.parent.children.splice(rank,1)
+node.parent.insert(rank, new_node)
+var for_ctx=new $ForExpr(new $NodeCtx(new_node))
+new $IdCtx(new $ExprCtx(for_ctx,'id',false),'$temp'+$loop_num)
+for_ctx.tree[1]=this.tree[0]
+this.tree[0].parent=for_ctx
+var yield_node=new $Node('expression')
+new_node.add(yield_node)
+new $IdCtx(new $YieldCtx(new $NodeCtx(yield_node)),'$temp'+$loop_num)
+var ph_node=new $Node('expression')
+new $NodeJSCtx(ph_node,'// placeholder for generator sent value')
+ph_node.set_yield_value=true
+new_node.add(ph_node)
+for_ctx.transform(new_node, rank)
+$loop_num++
+}else{
+var new_node=new $Node('expression')
+new $NodeJSCtx(new_node,'// placeholder for generator sent value')
+new_node.set_yield_value=true
+node.parent.insert(rank+1,new_node)
+}
 }
 this.to_js=function(){
 var scope=$get_scope(this)
@@ -2287,11 +2308,15 @@ if(scope.ntype==='BRgenerator'){
 scope=$get_scope(scope.C.tree[0])
 if(scope.ntype==='class'){res='$class.'}
 }
-if(this.tree.length==1){
+if(this.from===undefined){
 return $to_js(this.tree)|| 'None'
 }else{
+console.log('yield from expression '+this)
+var res=$to_js(this.tree)
+console.log('code '+res)
+return res
 var indent=$ws($get_module(this).indent)
-res +='$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
+res +='$subiter'+$loop_num+'=getattr(iter('+this.tree[0].to_js()+'),"__next__")\n'
 res +=indent+'while(true){\n'+indent+$ws(4)
 res +='try{$'+this.func_name+'.$iter.push('
 res +='$subiter'+$loop_num+'())}\n'
@@ -3353,7 +3378,12 @@ return C
 }else{$_SyntaxError(C,'token '+token+' after '+C.expect)}
 }else if(C.type==='yield'){
 if(token=='from'){
-return new $AbstractExprCtx(C,true)
+if(C.tree[0].type!='abstract_expr'){
+$_SyntaxError(C,"'from' must follow 'yield'")
+}
+C.from=true
+C.tree=[]
+return new $AbstractExprCtx(C, true)
 }
 return $transition(C.parent,token)
 }
@@ -4734,6 +4764,8 @@ return{__class__:$GeneratorError, err:err}
 $B.$GeneratorSendError={}
 $GeneratorReturn={}
 $B.generator_return=function(){return{__class__:$GeneratorReturn}}
+$SubGenerator={}
+$B.sub_generator=function(expr){return{__class__:$SubGenerator, expr: expr}}
 function in_loop(node){
 while(node){
 if(node.loop_start!==undefined){return true}

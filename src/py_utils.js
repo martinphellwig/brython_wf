@@ -253,12 +253,15 @@ $B.make_node = function(top_node, node){
     }
     if(ctx_js){ // empty for "global x"
         var new_node = new $B.genNode(ctx_js)
+
         if(ctype=='yield'){
             var rank = top_node.yields.length
             var res =  'try{return ['+ctx_js+', '+rank+']}'
             res += 'catch(err){return[$B.generator_error(err), '+rank+']}'
             new_node.data = res
             top_node.yields.push(new_node)
+
+        
         }else if(node.is_set_yield_value){
             var js = '$sent'+ctx_js+'=__BRYTHON__.modules["'
             js += top_node.iter_id+'"].sent_value || None;'
@@ -384,8 +387,10 @@ $B.$GeneratorSendError = {}
 
 // Class used for "return" inside a generator function
 $GeneratorReturn = {}
-
 $B.generator_return = function(){return {__class__:$GeneratorReturn}}
+
+$SubGenerator = {}
+$B.sub_generator = function(expr){return {__class__:$SubGenerator, expr: expr}}
 
 function in_loop(node){
 
