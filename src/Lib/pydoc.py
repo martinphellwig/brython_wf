@@ -54,9 +54,11 @@ Richard Chamberlain, for the first implementation of textdoc.
 import builtins
 import imp
 import importlib.machinery
+#brython fix me
 #import inspect
 import io
 import os
+#brython fix me
 #import pkgutil
 import platform
 import re
