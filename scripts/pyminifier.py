@@ -116,6 +116,7 @@ def remove_comments_and_docstrings(source):
             pass
         # This series of conditionals removes docstrings:
         elif token_type == tokenize.STRING:
+            flag = False
             if prev_toktype != tokenize.INDENT:
         # This is likely a docstring; double-check we're not inside an operator:
                 if prev_toktype != tokenize.NEWLINE:
@@ -128,6 +129,7 @@ def remove_comments_and_docstrings(source):
                     if start_col > 0:
                         # Unlabelled indentation means we're inside an operator
                         out += token_string
+                        flag = True
                     # Note regarding the INDENT token: The tokenize module does
                     # not label indentation inside of an operator (parens,
                     # brackets, and curly braces) as actual indentation.
@@ -137,6 +139,15 @@ def remove_comments_and_docstrings(source):
                     #     test = [
                     #         "The spaces before this string do not get a token"
                     #     ]
+            if not flag:
+                # an empty string must be kept, for contructs like
+                #
+                # def f():
+                #     """this function only has a docstring"""
+                #
+                # removing the docstring would result in an indentation error
+                
+                out += '""'
         else:
             out += token_string
         prev_toktype = token_type

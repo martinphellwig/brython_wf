@@ -2646,11 +2646,44 @@ function $YieldCtx(context){
     // add to list of "yields" in function
     def.yields.push(this)
     
+    this.toString = function(){return '(yield) '+(this.from ? '(from) ' : '')+this.tree}
+    
     this.transform = function(node, rank){
-        var node = new $Node('expression')
-        new $NodeJSCtx(node,'// placeholder for generator sent value')
-        node.set_yield_value = true
-        node.insert(rank+1,node)
+        if(this.from===true){
+        
+            // replace "yield from X" by "for $temp in X: yield $temp"
+
+            var new_node = new $Node('expression')
+            node.parent.children.splice(rank,1)
+            node.parent.insert(rank, new_node)
+
+            var for_ctx = new $ForExpr(new $NodeCtx(new_node))
+            new $IdCtx(new $ExprCtx(for_ctx,'id',false),'$temp'+$loop_num)
+            for_ctx.tree[1] = this.tree[0]
+            this.tree[0].parent = for_ctx
+
+            var yield_node = new $Node('expression')
+            new_node.add(yield_node)
+            new $IdCtx(new $YieldCtx(new $NodeCtx(yield_node)),'$temp'+$loop_num)
+
+            var ph_node = new $Node('expression')
+            new $NodeJSCtx(ph_node,'// placeholder for generator sent value')
+            ph_node.set_yield_value = true
+            new_node.add(ph_node)
+            
+            // apply "transform" to the newly created "for"
+            for_ctx.transform(new_node, rank)
+            
+            $loop_num++
+            
+        }else{
+        
+            var new_node = new $Node('expression')
+            new $NodeJSCtx(new_node,'// placeholder for generator sent value')
+            new_node.set_yield_value = true
+            node.parent.insert(rank+1,new_node)
+            
+        }
     }
 
     this.to_js = function(){
@@ -2660,11 +2693,15 @@ function $YieldCtx(context){
             scope = $get_scope(scope.context.tree[0])
             if(scope.ntype==='class'){res = '$class.'}
         }
-        if(this.tree.length==1){
+        if(this.from===undefined){
             return $to_js(this.tree) || 'None'
-        }else{ // form "yield from <expr>" : <expr> is this.tree[1]
+        }else{ // form "yield from <expr>" : <expr> is this.tree[0]
+            console.log('yield from expression '+this)
+            var res = $to_js(this.tree)
+            console.log('code '+res)
+            return res
             var indent = $ws($get_module(this).indent)
-            res += '$subiter'+$loop_num+'=getattr(iter('+this.tree[1].to_js()+'),"__next__")\n'
+            res += '$subiter'+$loop_num+'=getattr(iter('+this.tree[0].to_js()+'),"__next__")\n'
             res += indent+'while(true){\n'+indent+$ws(4)
             res += 'try{$'+this.func_name+'.$iter.push('
             res += '$subiter'+$loop_num+'())}\n'
@@ -3930,7 +3967,13 @@ function $transition(context,token){
     }else if(context.type==='yield'){
 
         if(token=='from'){ // form "yield from <expr>"
-            return new $AbstractExprCtx(context,true)
+            if(context.tree[0].type!='abstract_expr'){
+                // 'from' must follow immediately "from"
+                $_SyntaxError(context,"'from' must follow 'yield'")
+            }
+            context.from = true
+            context.tree = []
+            return new $AbstractExprCtx(context, true)
         }
         return $transition(context.parent,token)
 
