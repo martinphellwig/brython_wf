@@ -361,4 +361,27 @@ g = f()
 next(g)
 g.close()           # close normally
 
+# yield from
+def get_list_values_as_int(lst):
+    for value in lst:
+        yield int(value)
+        
+def get_list_values_as_str(lst):
+    for value in lst:
+        yield str(value)
+
+def get_list_values_as_float(lst):
+    for value in lst:
+        yield float(value)
+
+
+def get_list_values(lst):
+  for sub in [get_list_values_as_int, 
+              get_list_values_as_str, 
+              get_list_values_as_float]:
+    yield from sub(lst)
+
+assert list(get_list_values(["12",6,20.4])) == [12, 
+    6, 20, '12', '6', '20.4', 12.0, 6.0, 20.4]
+
 print('passed all tests...')
