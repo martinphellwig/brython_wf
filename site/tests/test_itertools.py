@@ -154,6 +154,14 @@ assert next(a) == 4
 a = itertools.filterfalse(lambda x: x == 'p', 'pbprpyptphpopnp')
 assert list(a) == ['b','r','y','t','h','o','n']
 
+#######################
+## Tests for groupby ##
+#######################
+a = [k for k, g in itertools.groupby('AAAABBBCCDAABBB')]
+assert a == ['A', 'B', 'C', 'D', 'A', 'B']
+a = [list(g) for k, g in itertools.groupby('AAAABBBCCD')]
+assert a == [['A', 'A', 'A', 'A'], ['B', 'B', 'B'], ['C', 'C'], ['D']]
+
 ######################
 ## Tests for islice ##
 ######################
