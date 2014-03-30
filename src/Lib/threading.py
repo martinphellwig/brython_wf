@@ -1,7 +1,9 @@
 """Thread module emulating a subset of Java's threading model."""
 
 import sys as _sys
-import _thread
+#brython fix..
+import _dummy_thread as _thread
+#import _thread
 
 from time import sleep as _sleep
 try:
@@ -736,14 +738,10 @@ _dangling = WeakSet()
 
 # Main class for threads
 
-class Thread:
-    """A class that represents a thread of control.
+# brython note: using "brython's" Processing moudle as Thread
+import multiprocessing.process as process
 
-    This class can be safely subclassed in a limited fashion. There are two ways
-    to specify the activity: by passing a callable object to the constructor, or
-    by overriding the run() method in a subclass.
-
-    """
+class Thread(process.Process):
 
     __initialized = False
     # Need to store a reference to sys.exc_info for printing
@@ -757,38 +755,19 @@ class Thread:
 
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs=None, *, daemon=None):
-        """This constructor should always be called with keyword arguments. Arguments are:
-
-        *group* should be None; reserved for future extension when a ThreadGroup
-        class is implemented.
-
-        *target* is the callable object to be invoked by the run()
-        method. Defaults to None, meaning nothing is called.
-
-        *name* is the thread name. By default, a unique name is constructed of
-        the form "Thread-N" where N is a small decimal number.
-
-        *args* is the argument tuple for the target invocation. Defaults to ().
-
-        *kwargs* is a dictionary of keyword arguments for the target
-        invocation. Defaults to {}.
-
-        If a subclass overrides the constructor, it must make sure to invoke
-        the base class constructor (Thread.__init__()) before doing anything
-        else to the thread.
-
-        """
+        process.Process(group=group,target=target,name=name,
+                        args=args,kwargs=kwargs, daemon=daemon)
         assert group is None, "group argument must be None for now"
-        if kwargs is None:
-            kwargs = {}
-        self._target = target
-        self._name = str(name or _newname())
-        self._args = args
-        self._kwargs = kwargs
-        if daemon is not None:
-            self._daemonic = daemon
-        else:
-            self._daemonic = current_thread().daemon
+        #if kwargs is None:
+        #    kwargs = {}
+        #self._target = target
+        #self._name = str(name or _newname())
+        #self._args = args
+        #self._kwargs = kwargs
+        #if daemon is not None:
+        #    self._daemonic = daemon
+        #else:
+        #    self._daemonic = current_thread().daemon
         self._ident = None
         self._started = Event()
         self._stopped = False
@@ -799,319 +778,10 @@ class Thread:
         self._stderr = _sys.stderr
         _dangling.add(self)
 
-    def _reset_internal_locks(self):
-        # private!  Called by _after_fork() to reset our internal locks as
-        # they may be in an invalid state leading to a deadlock or crash.
-        if hasattr(self, '_block'):  # DummyThread deletes _block
-            self._block.__init__()
-        self._started._reset_internal_locks()
-
-    def __repr__(self):
-        assert self._initialized, "Thread.__init__() was not called"
-        status = "initial"
-        if self._started.is_set():
-            status = "started"
-        if self._stopped:
-            status = "stopped"
-        if self._daemonic:
-            status += " daemon"
-        if self._ident is not None:
-            status += " %s" % self._ident
-        return "<%s(%s, %s)>" % (self.__class__.__name__, self._name, status)
-
-    def start(self):
-        """Start the thread's activity.
-
-        It must be called at most once per thread object. It arranges for the
-        object's run() method to be invoked in a separate thread of control.
-
-        This method will raise a RuntimeError if called more than once on the
-        same thread object.
-
-        """
-        if not self._initialized:
-            raise RuntimeError("thread.__init__() not called")
-
-        if self._started.is_set():
-            raise RuntimeError("threads can only be started once")
-        with _active_limbo_lock:
-            _limbo[self] = self
-        try:
-            _start_new_thread(self._bootstrap, ())
-        except Exception:
-            with _active_limbo_lock:
-                del _limbo[self]
-            raise
-        self._started.wait()
-
-    def run(self):
-        """Method representing the thread's activity.
-
-        You may override this method in a subclass. The standard run() method
-        invokes the callable object passed to the object's constructor as the
-        target argument, if any, with sequential and keyword arguments taken
-        from the args and kwargs arguments, respectively.
-
-        """
-        try:
-            if self._target:
-                self._target(*self._args, **self._kwargs)
-        finally:
-            # Avoid a refcycle if the thread is running a function with
-            # an argument that has a member that points to the thread.
-            del self._target, self._args, self._kwargs
-
-    def _bootstrap(self):
-        # Wrapper around the real bootstrap code that ignores
-        # exceptions during interpreter cleanup.  Those typically
-        # happen when a daemon thread wakes up at an unfortunate
-        # moment, finds the world around it destroyed, and raises some
-        # random exception *** while trying to report the exception in
-        # _bootstrap_inner() below ***.  Those random exceptions
-        # don't help anybody, and they confuse users, so we suppress
-        # them.  We suppress them only when it appears that the world
-        # indeed has already been destroyed, so that exceptions in
-        # _bootstrap_inner() during normal business hours are properly
-        # reported.  Also, we only suppress them for daemonic threads;
-        # if a non-daemonic encounters this, something else is wrong.
-        try:
-            self._bootstrap_inner()
-        except:
-            if self._daemonic and _sys is None:
-                return
-            raise
-
     def _set_ident(self):
         self._ident = get_ident()
 
-    def _bootstrap_inner(self):
-        try:
-            self._set_ident()
-            self._started.set()
-            with _active_limbo_lock:
-                _active[self._ident] = self
-                del _limbo[self]
 
-            if _trace_hook:
-                _sys.settrace(_trace_hook)
-            if _profile_hook:
-                _sys.setprofile(_profile_hook)
-
-            try:
-                self.run()
-            except SystemExit:
-                pass
-            except:
-                # If sys.stderr is no more (most likely from interpreter
-                # shutdown) use self._stderr.  Otherwise still use sys (as in
-                # _sys) in case sys.stderr was redefined since the creation of
-                # self.
-                if _sys:
-                    _sys.stderr.write("Exception in thread %s:\n%s\n" %
-                                      (self.name, _format_exc()))
-                else:
-                    # Do the best job possible w/o a huge amt. of code to
-                    # approximate a traceback (code ideas from
-                    # Lib/traceback.py)
-                    exc_type, exc_value, exc_tb = self._exc_info()
-                    try:
-                        print((
-                            "Exception in thread " + self.name +
-                            " (most likely raised during interpreter shutdown):"), file=self._stderr)
-                        print((
-                            "Traceback (most recent call last):"), file=self._stderr)
-                        while exc_tb:
-                            print((
-                                '  File "%s", line %s, in %s' %
-                                (exc_tb.tb_frame.f_code.co_filename,
-                                    exc_tb.tb_lineno,
-                                    exc_tb.tb_frame.f_code.co_name)), file=self._stderr)
-                            exc_tb = exc_tb.tb_next
-                        print(("%s: %s" % (exc_type, exc_value)), file=self._stderr)
-                    # Make sure that exc_tb gets deleted since it is a memory
-                    # hog; deleting everything else is just for thoroughness
-                    finally:
-                        del exc_type, exc_value, exc_tb
-            finally:
-                # Prevent a race in
-                # test_threading.test_no_refcycle_through_target when
-                # the exception keeps the target alive past when we
-                # assert that it's dead.
-                #XXX self.__exc_clear()
-                pass
-        finally:
-            with _active_limbo_lock:
-                self._stop()
-                try:
-                    # We don't call self._delete() because it also
-                    # grabs _active_limbo_lock.
-                    del _active[get_ident()]
-                except:
-                    pass
-
-    def _stop(self):
-        self._block.acquire()
-        self._stopped = True
-        self._block.notify_all()
-        self._block.release()
-
-    def _delete(self):
-        "Remove current thread from the dict of currently running threads."
-
-        # Notes about running with _dummy_thread:
-        #
-        # Must take care to not raise an exception if _dummy_thread is being
-        # used (and thus this module is being used as an instance of
-        # dummy_threading).  _dummy_thread.get_ident() always returns -1 since
-        # there is only one thread if _dummy_thread is being used.  Thus
-        # len(_active) is always <= 1 here, and any Thread instance created
-        # overwrites the (if any) thread currently registered in _active.
-        #
-        # An instance of _MainThread is always created by 'threading'.  This
-        # gets overwritten the instant an instance of Thread is created; both
-        # threads return -1 from _dummy_thread.get_ident() and thus have the
-        # same key in the dict.  So when the _MainThread instance created by
-        # 'threading' tries to clean itself up when atexit calls this method
-        # it gets a KeyError if another Thread instance was created.
-        #
-        # This all means that KeyError from trying to delete something from
-        # _active if dummy_threading is being used is a red herring.  But
-        # since it isn't if dummy_threading is *not* being used then don't
-        # hide the exception.
-
-        try:
-            with _active_limbo_lock:
-                del _active[get_ident()]
-                # There must not be any python code between the previous line
-                # and after the lock is released.  Otherwise a tracing function
-                # could try to acquire the lock again in the same thread, (in
-                # current_thread()), and would block.
-        except KeyError:
-            if 'dummy_threading' not in _sys.modules:
-                raise
-
-    def join(self, timeout=None):
-        """Wait until the thread terminates.
-
-        This blocks the calling thread until the thread whose join() method is
-        called terminates -- either normally or through an unhandled exception
-        or until the optional timeout occurs.
-
-        When the timeout argument is present and not None, it should be a
-        floating point number specifying a timeout for the operation in seconds
-        (or fractions thereof). As join() always returns None, you must call
-        isAlive() after join() to decide whether a timeout happened -- if the
-        thread is still alive, the join() call timed out.
-
-        When the timeout argument is not present or None, the operation will
-        block until the thread terminates.
-
-        A thread can be join()ed many times.
-
-        join() raises a RuntimeError if an attempt is made to join the current
-        thread as that would cause a deadlock. It is also an error to join() a
-        thread before it has been started and attempts to do so raises the same
-        exception.
-
-        """
-        if not self._initialized:
-            raise RuntimeError("Thread.__init__() not called")
-        if not self._started.is_set():
-            raise RuntimeError("cannot join thread before it is started")
-        if self is current_thread():
-            raise RuntimeError("cannot join current thread")
-
-        self._block.acquire()
-        try:
-            if timeout is None:
-                while not self._stopped:
-                    self._block.wait()
-            else:
-                deadline = _time() + timeout
-                while not self._stopped:
-                    delay = deadline - _time()
-                    if delay <= 0:
-                        break
-                    self._block.wait(delay)
-        finally:
-            self._block.release()
-
-    @property
-    def name(self):
-        """A string used for identification purposes only.
-
-        It has no semantics. Multiple threads may be given the same name. The
-        initial name is set by the constructor.
-
-        """
-        assert self._initialized, "Thread.__init__() not called"
-        return self._name
-
-    @name.setter
-    def name(self, name):
-        assert self._initialized, "Thread.__init__() not called"
-        self._name = str(name)
-
-    @property
-    def ident(self):
-        """Thread identifier of this thread or None if it has not been started.
-
-        This is a nonzero integer. See the thread.get_ident() function. Thread
-        identifiers may be recycled when a thread exits and another thread is
-        created. The identifier is available even after the thread has exited.
-
-        """
-        assert self._initialized, "Thread.__init__() not called"
-        return self._ident
-
-    def is_alive(self):
-        """Return whether the thread is alive.
-
-        This method returns True just before the run() method starts until just
-        after the run() method terminates. The module function enumerate()
-        returns a list of all alive threads.
-
-        """
-        assert self._initialized, "Thread.__init__() not called"
-        return self._started.is_set() and not self._stopped
-
-    isAlive = is_alive
-
-    @property
-    def daemon(self):
-        """A boolean value indicating whether this thread is a daemon thread.
-
-        This must be set before start() is called, otherwise RuntimeError is
-        raised. Its initial value is inherited from the creating thread; the
-        main thread is not a daemon thread and therefore all threads created in
-        the main thread default to daemon = False.
-
-        The entire Python program exits when no alive non-daemon threads are
-        left.
-
-        """
-        assert self._initialized, "Thread.__init__() not called"
-        return self._daemonic
-
-    @daemon.setter
-    def daemon(self, daemonic):
-        if not self._initialized:
-            raise RuntimeError("Thread.__init__() not called")
-        if self._started.is_set():
-            raise RuntimeError("cannot set daemon status of active thread");
-        self._daemonic = daemonic
-
-    def isDaemon(self):
-        return self.daemon
-
-    def setDaemon(self, daemonic):
-        self.daemon = daemonic
-
-    def getName(self):
-        return self.name
-
-    def setName(self, name):
-        self.name = name
 
 # The timer class was contributed by Itamar Shtull-Trauring
 

@@ -57,8 +57,15 @@ self.addEventListener('message', function(e) {
     }
 
     var $defaults={}
-    eval('('+e.data.target+')('+e.data.args+')')
+    eval('var _result=('+e.data.target+')('+e.data.args+')')
 
-    self.postMessage({stdout: output.join('')})
+    if (e.data.pos !== undefined) {  // allows parent to know where this individual
+                                     // result belongs in the result list
+      self.postMessage({stdout: output.join(''), 
+                        result:_result,
+                        pos: e.data.pos})
+    } else {
+      self.postMessage({stdout: output.join(''), result:_result.toString()})
+    }
 
 }, false);

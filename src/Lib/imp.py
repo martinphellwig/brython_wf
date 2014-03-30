@@ -109,7 +109,8 @@ class _HackedGetData:
 class _LoadSourceCompatibility(_HackedGetData, _bootstrap.SourceFileLoader):
 
     """Compatibility support for implementing load_source()."""
-
+    #brython fix me
+    pass
 
 def load_source(name, pathname, file=None):
     msg = ('imp.load_source() is deprecated; use '
@@ -128,7 +129,8 @@ class _LoadCompiledCompatibility(_HackedGetData,
         _bootstrap.SourcelessFileLoader):
 
     """Compatibility support for implementing load_compiled()."""
-
+    #brython fix me
+    pass
 
 def load_compiled(name, pathname, file=None):
     msg = ('imp.load_compiled() is deprecated; use '
