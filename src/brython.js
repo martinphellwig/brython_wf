@@ -1899,7 +1899,7 @@ this.to_js=function(){return '!bool('+$to_js(this.tree)+')'}
 function $OpCtx(C,op){
 this.type='op'
 this.op=op
-this.toString=function(){return '(op '+this.op+')'+this.tree}
+this.toString=function(){return '(op '+this.op+') ['+this.tree+']'}
 this.parent=C.parent
 this.tree=[C]
 C.parent.tree.pop()
@@ -2942,7 +2942,7 @@ C.parent.tree.pop()
 return new $AbstractExprCtx(new $OpCtx(C.parent,'not_in'),false)
 }else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='for'){
-if(token==='in'){return new $AbstractExprCtx(C,true)}
+if(token==='in'){return new $AbstractExprCtx(new $ExprCtx(C,'target list', true),false)}
 else if(token===':'){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='from'){
@@ -3323,6 +3323,8 @@ if(token===':'){return $BodyCtx(C)}
 else{$_SyntaxError(C,'token '+token+' after '+C)}
 }else if(C.type==='unary'){
 if(['int','float'].indexOf(token)>-1){
+var expr=C.parent
+console.log('unary, parent '+expr.type+' '+expr.parent.type)
 C.parent.parent.tree.pop()
 var value=arguments[2]
 if(C.op==='-'){value="-"+value}

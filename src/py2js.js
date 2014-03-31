@@ -2210,7 +2210,7 @@ function $NotCtx(context){
 function $OpCtx(context,op){ // context is the left operand
     this.type = 'op'
     this.op = op
-    this.toString = function(){return '(op '+this.op+')'+this.tree}
+    this.toString = function(){return '(op '+this.op+') ['+this.tree+']'}
     this.parent = context.parent
     this.tree = [context]
     // operation replaces left operand
@@ -3454,7 +3454,7 @@ function $transition(context,token){
         
     }else if(context.type==='for'){
     
-        if(token==='in'){return new $AbstractExprCtx(context,true)}
+        if(token==='in'){return new $AbstractExprCtx(new $ExprCtx(context,'target list', true),false)}
         else if(token===':'){return $BodyCtx(context)}
         else{$_SyntaxError(context,'token '+token+' after '+context)}
 
@@ -3794,6 +3794,13 @@ function $transition(context,token){
                 context.parent = t
                 return t
             }
+            
+            /*
+            context.parent.tree.pop()
+            var uexpr = new $UnaryCtx(context, '-')
+            return $transition(uexpr, token, arguments[2])
+            console.log('unary op '+context+' token '+token)
+            */
         }
         if($expr_starters.indexOf(token)>-1){
             return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
@@ -3905,6 +3912,8 @@ function $transition(context,token){
             // we remove the $ExprCtx and trigger a transition 
             // from the $AbstractExpCtx with an integer or float
             // of the correct value
+            var expr = context.parent
+            console.log('unary, parent '+expr.type+' '+expr.parent.type)
             context.parent.parent.tree.pop()
             var value = arguments[2]
             if(context.op==='-'){value="-"+value}
