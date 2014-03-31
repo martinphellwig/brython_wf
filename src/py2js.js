@@ -398,54 +398,75 @@ function $AssignCtx(context){
             }
             $loop_num++
         }else{ // form x,y=a
+            
             // evaluate right argument (it might be a function call)
             var new_node = new $Node('expression')
-            var js = 'var $right'+$loop_num+'=iter('+right.to_js()+');'
-            js += 'var $counter'+$loop_num+'=-1'
+            
+            // set attribute line_num for debugging
+            new_node.line_num = node.line_num
+
+            var js = 'var $right'+$loop_num+'=getattr(iter('+right.to_js()+'),"__next__");'
             new $NodeJSCtx(new_node,js)
             var new_nodes = [new_node]
             
-            var try_node = new $Node('expression')
-            // we must set line_num and module to generate __BRYTHON__.line_info
-            try_node.line_num = node.parent.children[rank].line_num
-            try_node.module = node.parent.children[rank].module
-            new $NodeJSCtx(try_node,'try')
-            new_nodes.push(try_node)
-                
+            var rlist_node = new $Node('expression')
+            js = 'var $rlist'+$loop_num+'=[];'
+            js += 'while(true){try{$rlist'+$loop_num+'.push($right'
+            js += $loop_num+'())}catch(err){__BRYTHON__.$pop_exc();break}};'
+            new $NodeJSCtx(rlist_node, js)
+            new_nodes.push(rlist_node)
+            
+            // If there is a packed tuple in the list of left items, store
+            // its rank in the liste
+            packed = null
             for(var i=0;i<left_items.length;i++){
-                var new_node = new $Node('expression')
-                new $NodeJSCtx(new_node,'$counter'+$loop_num+'++')
-                try_node.add(new_node)
-                
+                var expr = left_items[i]
+                if(expr.type=='expr' && expr.tree[0].type=='packed'){
+                    packed = i
+                    break
+                }
+            }
+            
+            // Test if there were enough values in the right part
+            var check_node = new $Node('expression')
+            var min_length = left_items.length
+            if(packed!==null){min_length--}
+            js = 'if($rlist'+$loop_num+'.length<'+min_length+')'
+            js += '{throw ValueError("need more than "+$rlist'+$loop_num
+            js += '.length+" values to unpack")}'
+            new $NodeJSCtx(check_node,js)
+            new_nodes.push(check_node)
+
+            // Test if there were enough variables in the left part
+            if(packed==null){
+                var check_node = new $Node('expression')
+                var min_length = left_items.length
+                js = 'if($rlist'+$loop_num+'.length>'+min_length+')'
+                js += '{throw ValueError("too many values to unpack '
+                js += '(expected '+left_items.length+')")}'
+                new $NodeJSCtx(check_node,js)
+                new_nodes.push(check_node)
+            }
+
+            var j=0
+            for(var i=0;i<left_items.length;i++){
+
                 var new_node = new $Node('expression')
                 var context = new $NodeCtx(new_node) // create ordinary node
                 left_items[i].parent = context
                 var assign = new $AssignCtx(left_items[i]) // assignment to left operand
-                assign.tree[1] = new $JSCode('__builtins__.next($right'+$loop_num+')')
-                try_node.add(new_node)
+                var js = '$rlist'+$loop_num
+                if(packed==null || i<packed){
+                    js += '['+i+']'
+                }else if(i==packed){
+                    js += '.slice('+i+',$rlist'+$loop_num+'.length-'
+                    js += (left_items.length-i-1)+')'
+                }else{
+                    js += '[$rlist'+$loop_num+'.length-'+(left_items.length-i)+']'
+                }
+                assign.tree[1] = new $JSCode(js) // right part of the assignment
+                new_nodes.push(new_node)
             }
-
-            var catch_node = new $Node('expression')
-            new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
-            new_nodes.push(catch_node)
-            
-            var catch_node1 = new $Node('expression')
-            var js = 'if($err'+$loop_num+'.__name__=="StopIteration")'
-            js += '{__BRYTHON__.$pop_exc();throw ValueError("need more than "+'
-            js += '$counter'+$loop_num+'+" value"+'
-            js += '($counter'+$loop_num+'>1 ? "s" : "")+" to unpack")}else{throw $err'+$loop_num+'};'
-            new $NodeJSCtx(catch_node1,js)
-            catch_node.add(catch_node1)
-            
-            // add a test to see if iterator is exhausted
-            var exhausted = new $Node('expression')
-            js = 'var $exhausted'+$loop_num+'=true;try{__builtins__.next($right'+$loop_num
-            js += ');$exhausted'+$loop_num+'=false}'
-            js += 'catch(err){if(err.__name__=="StopIteration"){__BRYTHON__.$pop_exc()}}'
-            js += 'if(!$exhausted'+$loop_num+'){throw ValueError('
-            js += '"too many values to unpack (expected "+($counter'+$loop_num+'+1)+")")}'
-            new $NodeJSCtx(exhausted,js)
-            new_nodes.push(exhausted)
             
             node.parent.children.splice(rank,1) // remove original line
             for(var i=new_nodes.length-1;i>=0;i--){
@@ -2258,6 +2279,28 @@ function $OpCtx(context,op){ // context is the left operand
     }
 }
 
+function $PackedCtx(context){
+    // used for packed tuples in expressions, eg 
+    //     a, *b, c = [1, 2, 3, 4}
+    this.type = 'packed'
+    if(context.parent.type=='list_or_tuple'){
+        for(var i=0;i<context.parent.tree.length;i++){
+            var child = context.parent.tree[i]
+            if(child.type=='expr' && child.tree.length>0 
+              && child.tree[0].type=='packed'){
+                $_SyntaxError(context,
+              ["two starred expressions in assignment"])
+            }
+        }
+    }
+    this.toString = function(){return '(packed) '+this.tree}
+    this.parent = context
+    this.tree = []
+    context.tree.push(this)
+    this.to_js = function(){return $to_js(this.tree)}
+}
+
+
 function $PassCtx(context){
     this.type = 'pass'
     this.toString = function(){return '(pass)'}
@@ -3039,6 +3082,12 @@ function $transition(context,token){
             var tg = arguments[2]
             // ignore unary +
             if(tg=='+'){return context}
+            if(tg=='*'){
+                context.parent.tree.pop() // remove abstract expression
+                var commas = context.with_commas
+                context = context.parent
+                return new $PackedCtx(new $ExprCtx(context,'expr',commas))
+            }
             if('-~'.search(tg)>-1){ // unary -, bitwise ~
                 // create a left argument for operator "unary"
                 context.parent.tree.pop()
@@ -3730,6 +3779,9 @@ function $transition(context,token){
         if($expr_starters.indexOf(token)>-1){
             var expr = new $AbstractExprCtx(context,true)
             return $transition(expr,token,arguments[2])
+        }else if(token==="op" && arguments[2]=='*'){
+            var expr = new $AbstractExprCtx(context,true)
+            return $transition(expr,token,arguments[2])
         }else if(token==="op" && '+-~'.search(arguments[2])>-1){
             var expr = new $AbstractExprCtx(context,true)
             return $transition(expr,token,arguments[2])
@@ -3794,19 +3846,17 @@ function $transition(context,token){
                 context.parent = t
                 return t
             }
-            
-            /*
-            context.parent.tree.pop()
-            var uexpr = new $UnaryCtx(context, '-')
-            return $transition(uexpr, token, arguments[2])
-            console.log('unary op '+context+' token '+token)
-            */
         }
         if($expr_starters.indexOf(token)>-1){
             return $transition(new $AbstractExprCtx(context,false),token,arguments[2])
         }else if(token==='op' && '+-~'.search(arguments[2])>-1){
             return new $UnaryCtx(context,arguments[2])
         }else{return $transition(context.parent,token)}
+
+    }else if(context.type==='packed'){ 
+
+        if(token==='id'){new $IdCtx(context,arguments[2]);return context.parent}
+        else{$_SyntaxError(context,'token '+token+' after '+context)}
 
     }else if(context.type==='pass'){ 
 
@@ -3913,7 +3963,6 @@ function $transition(context,token){
             // from the $AbstractExpCtx with an integer or float
             // of the correct value
             var expr = context.parent
-            console.log('unary, parent '+expr.type+' '+expr.parent.type)
             context.parent.parent.tree.pop()
             var value = arguments[2]
             if(context.op==='-'){value="-"+value}
