@@ -635,6 +635,21 @@ assert 'Coordinates: {latitude}, {b}'.format(latitude='2', b='4')=='Coordinates:
 def foo(a=2,):
     print(a)
 
+# issue 236 : packing
+a,*b,c = [1, 2, 3, 4, 5]
+assert a==1
+assert b==[2,3,4]
+assert c==5
+
+*a,b = [1, 2, 3, 4, 5]
+assert a==[1, 2, 3, 4]
+assert b==5
+
+a,b,*c = [1, 2, 3, 4, 5, 6]
+assert a==1
+assert b==2
+assert c==[3, 4, 5, 6]
+
 # issue 237
 res = []
 for i in -1,0,1:
