@@ -375,7 +375,7 @@ $B.genNode = function(data, parent){
     
 }
 
-$GeneratorError = {}
+var $GeneratorError = {}
 $B.generator_error = function(err){
     // If the evaluation of the yielded value raises an error, the return value
     // is [$B.generator_error, rank]
@@ -386,11 +386,8 @@ $B.generator_error = function(err){
 $B.$GeneratorSendError = {}
 
 // Class used for "return" inside a generator function
-$GeneratorReturn = {}
+var $GeneratorReturn = {}
 $B.generator_return = function(){return {__class__:$GeneratorReturn}}
-
-$SubGenerator = {}
-$B.sub_generator = function(expr){return {__class__:$SubGenerator, expr: expr}}
 
 function in_loop(node){
 
