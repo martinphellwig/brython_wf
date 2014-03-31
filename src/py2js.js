@@ -418,7 +418,7 @@ function $AssignCtx(context){
             
             // If there is a packed tuple in the list of left items, store
             // its rank in the liste
-            packed = null
+            var packed = null
             for(var i=0;i<left_items.length;i++){
                 var expr = left_items[i]
                 if(expr.type=='expr' && expr.tree[0].type=='packed'){
@@ -1602,7 +1602,7 @@ function $ForExpr(context){
 
         var catch_node = new $Node('expression')
 
-        var js = 'catch($err){if(__BRYTHON__.is_exc($err,[__builtins__.StopIteration]))'
+        var js = 'catch($err){if(__BRYTHON__.is_exc($err,[StopIteration]))'
         js += '{__BRYTHON__.$pop_exc();break}'
         js += 'else{throw($err)}}'        
 
@@ -2749,7 +2749,7 @@ function $YieldCtx(context){
             res += 'try{$'+this.func_name+'.$iter.push('
             res += '$subiter'+$loop_num+'())}\n'
             res += indent+$ws(4)+'catch($err'+$loop_num+'){\n'
-            res += indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===__builtins__.StopIteration)'
+            res += indent+$ws(8)+'if($err'+$loop_num+'.__class__.$factory===StopIteration)'
             res += '{__BRYTHON__.$pop_exc();break}\n'
             res += indent+$ws(8)+'else{throw $err'+$loop_num+'}\n}\n}'
             $loop_num++
