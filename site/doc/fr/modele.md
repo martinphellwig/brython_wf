@@ -11,11 +11,13 @@ Compilation et exécution
 
 Si le code est dans un fichier externe, il est récupéré par un appel Ajax
 
-  Cette fonction crée les variables d'environnement suivantes :
-- `document.$py_src` : objet indexé par les noms de module, contenant le code source du module
-- `document.$debug` : le niveau de débogage
-- `document.$exc_stack` : une liste avec les erreurs générées en cours d'analyse ou d'exécution
-
+  Cette fonction crée notamment les variables d'environnement suivantes :
+  - `__BRYTHON__.$py_src` : objet indexé par les noms de module, contenant le code source du module
+  - `__BRYTHON__.debug` : le niveau de débogage
+  - `__BRYTHON__.exception_stack` : une liste avec les erreurs générées en cours d'analyse ou d'exécution
+  -`__BRYTHON__.imported` : objet Javascript, fait correspondre les noms des modules importés aux objets modules
+  -`__BRYTHON__.modules` : objet Javascript, fait correspondre les noms de modules aux objets module
+  -`__BRYTHON__.vars` : objet Javascript, fait correspondre les noms de modules au dictionnaire des variables définies dans le module
 </td>
 </tr>
 
@@ -61,18 +63,17 @@ exécution du code Javascript
 
 Le fichier __brython.js__ est généré par compilation de plusieurs scripts :
 
-'brython_builtins','py2js','py_utils','py_object',
-    'py_builtin_functions','js_objects','py_import',
-    'py_float','py_int','py_dict','py_list','py_string','py_set','py_dom'
 
 - __brython\_builtins.js.js__ : définit l'objet `__BRYTHON__` qui sert de passerelle entre les objets natifs Javascript (`Date, RegExp, Storage`...) et Brython
+- __version\_info.js__ : généré automatiquement par le script make_dist.py, contient le numéro de la version courante de Brython
 - __py2js.js__ : opère la conversion entre le code Python et le code Javascript
 - __py\_utils.js__ : fonctions utilitaires (conversion de types entre Javascript et Python)
-- __py\_object.js__ : implémentation de la classe object
-- __py\_builtin\_function.js__ : fonctions intégrées Python
+- __py\_object.js__ : implémentation de la classe **object**
+- __py\_type.js__ : implémentation de la classe **type**
+- __py\_builtin\_function.js__ : les fonctions intégrées Python
 - __js\_object.js__ : implémentation de `JSObject` et `JSConstructor` pour l'interaction avec les objets Javascript
 - __py\_import.js__ : implémentation du mot-clé `import`
-- __py\_float.js__, __py\_int.js__, __py\_dict.js__, __py\_list.js__, __py\_string.js__, __py\_set.js__ : implémentation des classes Python correspondantes
+- __py\_float.js__, __py\_int.js__, __py\_complex.js__, __py\_dict.js__, __py\_list.js__, __py\_string.js__, __py\_set.js__ : implémentation des classes Python correspondantes
 - __py\_dom.js__ : interaction avec le document HTML (DOM)
 
 ###Compléments sur la traduction et l'exécution
@@ -99,7 +100,7 @@ Pour chaque jeton, un appel est réalisé à la fonction _$transition()_ qui ren
 
 A chaque instruction du code source correspond un noeud dans l'arbre (instance de la classe _$Node_). Si une ligne comporte plusieurs instructions séparées par ":" (`def foo(x):return x`) ou par ";" (`x=1;print(x)`), plusieurs noeuds sont créés pour cette ligne
 
-A chaque élément de syntaxe (identifiant, appel de fonction, expression, opérateur...) correspond une classe décrivant le contexte de cet élément (voir dans le code source de __py2js.js__ entre `function $AbstractExprCtx` et `function $UnaryCtx`)
+A chaque élément de syntaxe (identifiant, appel de fonction, expression, opérateur...) correspond une classe décrivant le contexte de cet élément (voir dans le code source de __py2js.js__ entre `function $AbstractExprCtx` et `function $YieldCtx`)
 
 Dans cette étape, des erreurs peuvent être signalées : 
 - erreur de syntaxe
