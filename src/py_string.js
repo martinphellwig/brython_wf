@@ -145,7 +145,6 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
             return res
         }
         this.format = function(src){
-            //console.log(src)
             if(this.mapping_key!==null){
                 if(!isinstance(src,__builtins__.dict)){throw __builtins__.TypeError("format requires a mapping")}
                 src=getattr(src,'__getitem__')(this.mapping_key)
@@ -234,10 +233,10 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                     else{res = '0X'+res}
                 }
                 return res
-            }else if((this.type=="i" || this.type=="d") && isinstance(src, __builtins__.int)){
+            }else if(this.type=="i" || this.type=="d"){
                 //this._number_check(src)
-
-                var num = parseInt(src)
+                
+                var num = __builtins__.int(src)
                 num=num.toPrecision()
                 res = num+''
                 if(this.flag===' '){res = ' '+res}
