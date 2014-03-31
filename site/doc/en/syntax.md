@@ -1,4 +1,5 @@
-### Syntax
+Syntax
+------
 
 Brython follows the Python syntax:
 
@@ -23,7 +24,8 @@ Brython follows the Python syntax:
  -`from foo import X as Y`
  -`from foo import *`
 
-## Keywords and built-in functions
+Keywords and built-in functions
+-------------------------------
 
 Brython supports most keywords and functions of Python 3 :
 - keywords : `as, assert, break, class, continue, def, del, elif, else, except, False, finally, for, from, global, if, import, is, lambda, None, pass, return, True, try, while, with, yield`
