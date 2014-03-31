@@ -119,8 +119,8 @@ This module also defines an exception 'error'.
 """
 
 import sys
-import sre_compile
-import sre_parse
+from . import sre_compile
+from . import sre_parse
 import functools
 
 # public symbols
