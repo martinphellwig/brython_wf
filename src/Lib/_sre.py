@@ -11,9 +11,9 @@ MAXREPEAT = 2147483648
 
 #import array
 import operator, sys
-from .sre_constants import ATCODES, OPCODES, CHCODES
-from .sre_constants import SRE_INFO_PREFIX, SRE_INFO_LITERAL
-from .sre_constants import SRE_FLAG_UNICODE, SRE_FLAG_LOCALE
+from sre_constants import ATCODES, OPCODES, CHCODES
+from sre_constants import SRE_INFO_PREFIX, SRE_INFO_LITERAL
+from sre_constants import SRE_FLAG_UNICODE, SRE_FLAG_LOCALE
 
 
 import sys
