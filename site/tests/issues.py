@@ -635,4 +635,15 @@ assert 'Coordinates: {latitude}, {b}'.format(latitude='2', b='4')=='Coordinates:
 def foo(a=2,):
     print(a)
 
+# issue 237
+res = []
+for i in -1,0,1:
+    res.append(i)
+
+y = 2
+for i in -3*y,2*y:
+    res.append(i)
+
+assert res==[-1, 0, 1, -6, 4]
+
 print('passed all tests')
