@@ -112,6 +112,10 @@ import sys
 import _jsre
 _pymdl = [None]
 
+if not _jsre._is_valid():
+   print("importing from pyre")
+   from pyre import *
+
 # public symbols
 __all__ = [ "match", "search", "sub", "subn", "split", "findall",
     "compile", "purge", "template", "escape", "A", "I", "L", "M", "S", "X",
@@ -250,4 +254,3 @@ def escape(pattern):
     """
     # FIXME: Do not load _re module
     return _pyre().escape(pattern)
-

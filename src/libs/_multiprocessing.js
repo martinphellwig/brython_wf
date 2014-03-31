@@ -20,6 +20,21 @@ var $convert_args=function(args) {
    return _list.join(',')
 }
 
+/*
+var $sleep=function(time) {
+   var imp=$importer() 
+   var $xmlhttp = imp[0], timer=imp[2]
+
+   $xmlhttp.open('GET', '/brython_sleep', false)
+
+   var timer = setTimeout(function() {
+       $xmlhttp.abort()
+   }, time)
+
+   $xmlhttp.send()
+}
+*/
+
 $ProcessDict.__mro__ = [$ProcessDict, __builtins__.object.$dict]
 
 $ProcessDict.__repr__ = function(self){
@@ -126,13 +141,98 @@ $PoolDict.map = function(self){
    var func=$ns['func']
    var fargs=$ns['fargs']
 
+
    var _results=[]
 
    fargs=iter(fargs)
 
    var _pos=0
+   console.log(self.$processes)
+   _workers=[]
    for(var i=0; i < self.$processes; i++) {
-       var worker = new Worker('/src/web_workers/multiprocessing.js')
+       _workers[i] = new Worker('/src/web_workers/multiprocessing.js')
+       var arg
+
+       try{ 
+          arg=getattr(fargs, '__next__')()
+       } catch(err) {
+          if (err.__name__ == 'StopIteration') {
+             __BRYTHON__.$pop_exc()
+          } else {
+             throw err
+          }
+       }
+       console.log(arg)
+       _workers[i].finished=false
+       _workers[i].postMessage({target: func+'', pos: _pos,
+                             args: $convert_args([arg])})
+       _pos++
+
+       _workers[i].addEventListener('message', function(e) {
+           _results[e.data.pos]=e.data.result
+           if (_results.length == args.length) return _results
+
+           try {
+               arg=getattr(fargs, '__next__')()
+               e.currentTarget.postMessage({target: func+'', pos: _pos,
+                                            args: $convert_args([arg])})
+               _pos++
+           } catch(err) {
+               if (err.__name__ != 'StopIteration') throw err
+               this.finished=true
+           }
+       }, false);
+   }
+
+ //  setTimeout(function() { console.log(_results)}, 1000)
+}
+
+
+// http://blog.jeffscudder.com/2012/07/waitfor-javascript.html
+function waitFor(condition, callback) {
+  function waiter(condition, callback) {
+    return function() {
+      var condMet = false;
+      try {
+        condMet = condition(); 
+      } catch (e) {}
+
+      if (condMet) {
+        callback();
+      } else {
+        setTimeout(waiter(condition, callback), 5);
+      }
+    };
+  }
+
+  waiter(condition, callback)();
+}
+
+
+$PoolDict.apply_async = function(self){
+   var args = []
+   for(var i=1;i<arguments.length;i++){args.push(arguments[i])}
+
+   var $ns=$B.$MakeArgs('apply_async',args,['func', 'fargs'],[],'args','kw')
+   var func=$ns['func']
+   var fargs=$ns['fargs']
+
+   fargs=iter(fargs)
+
+
+   async_result = {}
+   async_result.get=function(timeout){
+                      console.log(results)
+                      console.log(fargs)
+                      return waitFor(this.results.length==fargs.length,
+                                     function() {return this.results})}
+   async_result.results=[]
+
+   var _pos=0
+
+   _workers=[]
+   for(var i=0; i < self.$processes; i++) {
+       _workers[i] = new Worker('/src/web_workers/multiprocessing.js')
        var arg
 
        try{ 
@@ -145,13 +245,14 @@ $PoolDict.map = function(self){
           }
        }
        //console.log(arg)
-       worker.postMessage({target: func+'', pos: _pos,
+       //_workers[i].finished=false
+       _workers[i].postMessage({target: func+'', pos: _pos,
                              args: $convert_args([arg])})
        _pos++
 
-       worker.addEventListener('message', function(e) {
-           _results[e.data.pos]=e.data.result
-           if (_results.length == args.length) return 
+       _workers[i].addEventListener('message', function(e) {
+           async_result.results[e.data.pos]=e.data.result
+           //if (_results.length == args.length) return _results
 
            try {
                arg=getattr(fargs, '__next__')()
@@ -160,21 +261,35 @@ $PoolDict.map = function(self){
                _pos++
            } catch(err) {
                if (err.__name__ != 'StopIteration') throw err
+               this.finished=true
            }
        }, false);
    }
 
-   return _results
+   console.log("return", async_result)
+   return async_result
 }
 
+
+
 function Pool(){
+    console.log("pool")
+    console.log(arguments)
+    var $ns=$B.$MakeArgs('Pool',arguments,[],['processes'],'args','kw')
+    //var kw=$ns['kw']
 
-    var $ns=$B.$MakeArgs('Pool',arguments,[],[],null,'kw')
-    var kw=$ns['kw']
-
-    var processes=__builtins__.dict.$dict.get($ns['kw'],'processes',None)
+    var processes=$ns['processes']
     //var args=__builtins__.dict.$dict.get($ns['kw'],'args',tuple())
 
+    if (processes == None) {
+       // look to see if we have stored cpu_count in local storage
+       // maybe we should create a brython config file with settings,etc..??
+
+       // if not there use a tool such as Core Estimator to calculate number of cpu's
+       // http://eligrey.com/blog/post/cpu-core-estimation-with-javascript
+    }
+
+    console.log(processes)
     var res = {
         __class__:$PoolDict,
         $processes:processes
