@@ -1386,6 +1386,10 @@ $BoolDict.__eq__ = function(self,other){
     if(self.valueOf()){return !!other}else{return !other}
 }
 
+$BoolDict.__ne__ = function(self,other){
+    if(self.valueOf()){return !other}else{return !!other}
+}
+
 $BoolDict.__ge__ = function(self,other){
     return __builtins__.int.$dict.__ge__($BoolDict.__hash__(self),other)
 }
