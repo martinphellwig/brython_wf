@@ -299,6 +299,22 @@ next(g)
 
 g.throw(ValueError('test')) # type only
 
+# yield inside a loop inside a if/else
+
+def f(n=0):
+    i = 0
+    if n==1:
+        while i<10:
+            yield i
+            i += 4
+    else:
+        while i<10:
+            yield 2*i
+            i += 3
+    yield 'fini'
+
+assert list(f())==[0, 6, 12, 18, 'fini']
+assert list(f(1))==[0, 4, 8, 'fini']
 
 import time
 

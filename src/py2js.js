@@ -589,7 +589,6 @@ function $BreakCtx(context){
     // if the loop exits with a break, this flag is set to true
     // so that the "else" clause of the loop, if present, is executed
     
-    
     this.type = 'break'
     this.toString = function(){return 'break '}
     this.parent = context
