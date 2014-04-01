@@ -19,7 +19,7 @@ var $module = (function($B){
         if (__BRYTHON__.$options.re=='pyre') return false  //force use of python's re module
         if (__BRYTHON__.$options.re=='jsre') return true   //force use of brythons re module
         // FIXME: Improve
-        return false
+
         if (!isinstance(pattern, str)) {
            // this is probably a SRE_PATTERN, so return false, and let
            // python's re module handle this.

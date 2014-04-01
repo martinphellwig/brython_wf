@@ -42,46 +42,46 @@ doc['container'].style.height='%dpx' % (_height-_top-10)
 <script type="text/python">
 sys.path.append("test")
 
-def write(data):
-    doc["console"].text += str(data)
+#def write(data):
+#    doc["console"].text += str(data)
 
-sys.stderr.write=write
-sys.stdout.write=write
+def errorwrite(data):
+    doc["errorconsole"].text += str(data)
 
-doc["console"].text=''
 
-# run_all doesn't print all error messages, just 'invalid syntax'
-def run_all():
-    try:
-      import test_grammar
-      test_grammar.test_main()
-    except BaseException as e:
-      print(e.args)
+sys.stderr.write=errorwrite
 
-    try:
-      import test_math
-      test_math.test_main()
-    except BaseException as e:
-      print(e.args)
+_iframe= doc.createElement('iframe')
+_iframe.style.width="100%"
+_iframe.style.height="90%"
 
-#run_all()
+doc["container"] <= _iframe
+
+sys.stdout=_iframe.contentDocument   #write standard out to iframe
+
+#create pre tag to hold stderr info
+_stderr=doc.createElement('pre')
+_stderr.id="errorconsole"
+doc["container"] <= _stderr
+
 
 #the code below works, but doesn't direct the output to the textarea
 # the exec function is probably causing problems..
 def choose_test(event):
-    doc["console"].text=''
+    #doc["console"].text=''
+    doc["errorconsole"].text=''
     module=event.target.value
 
     if module == '':
        return
 
     import unittest
-    #import HTMLTestRunner
+    import HTMLTestRunner
     exec("""
       import %s
       _suite=unittest.TestLoader().loadTestsFromModule(%s)
-      unittest.TextTestRunner(sys.stdout, verbosity=5).run(_suite)
-      #HTMLTestRunner.HTMLTestRunner(sys.stdout, verbosity=2).run(_suite)
+      #unittest.TextTestRunner(sys.stdout, verbosity=5).run(_suite)
+      HTMLTestRunner.HTMLTestRunner(sys.stdout, verbosity=2).run(_suite)
 """ % (module, module))
 
 window.choose_test=choose_test
@@ -89,7 +89,7 @@ window.choose_test=choose_test
 
 </head>
 
-<body onload="brython({debug:1, cache:'none', re:'jsre',
+<body onload="brython({debug:1, cache:'version', re:'jsre',
                        open: $local_storage_open})">
 
 <div style="width:100%">
@@ -147,7 +147,6 @@ Brython version: <span id="version"></span>
 </div>
 
 <div id="container" style="clear:both; width:100%">
-<pre id="console"></pre>
 </div>
 
 </body>

@@ -113,7 +113,6 @@ import _jsre
 _pymdl = [None]
 
 if not _jsre._is_valid():
-   print("importing from pyre")
    from pyre import *
 
 # public symbols
