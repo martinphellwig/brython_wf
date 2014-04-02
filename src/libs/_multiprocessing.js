@@ -20,21 +20,6 @@ var $convert_args=function(args) {
    return _list.join(',')
 }
 
-/*
-var $sleep=function(time) {
-   var imp=$importer() 
-   var $xmlhttp = imp[0], timer=imp[2]
-
-   $xmlhttp.open('GET', '/brython_sleep', false)
-
-   var timer = setTimeout(function() {
-       $xmlhttp.abort()
-   }, time)
-
-   $xmlhttp.send()
-}
-*/
-
 $ProcessDict.__mro__ = [$ProcessDict, __builtins__.object.$dict]
 
 $ProcessDict.__repr__ = function(self){
@@ -141,7 +126,6 @@ $PoolDict.map = function(self){
    var func=$ns['func']
    var fargs=$ns['fargs']
 
-
    var _results=[]
 
    fargs=iter(fargs)
@@ -183,31 +167,7 @@ $PoolDict.map = function(self){
            }
        }, false);
    }
-
- //  setTimeout(function() { console.log(_results)}, 1000)
 }
-
-
-// http://blog.jeffscudder.com/2012/07/waitfor-javascript.html
-function waitFor(condition, callback) {
-  function waiter(condition, callback) {
-    return function() {
-      var condMet = false;
-      try {
-        condMet = condition(); 
-      } catch (e) {}
-
-      if (condMet) {
-        callback();
-      } else {
-        setTimeout(waiter(condition, callback), 5);
-      }
-    };
-  }
-
-  waiter(condition, callback)();
-}
-
 
 $PoolDict.apply_async = function(self){
    var args = []
@@ -219,13 +179,11 @@ $PoolDict.apply_async = function(self){
 
    fargs=iter(fargs)
 
-
    async_result = {}
    async_result.get=function(timeout){
                       console.log(results)
                       console.log(fargs)
-                      return waitFor(this.results.length==fargs.length,
-                                     function() {return this.results})}
+                      return this.results}
    async_result.results=[]
 
    var _pos=0
