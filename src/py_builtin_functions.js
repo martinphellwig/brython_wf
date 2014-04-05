@@ -846,7 +846,7 @@ function pow() {
 }
 
 function $print(){
-    var end='\n',sep=' '
+    var end='\n',sep=' ',file=undefined
     var $ns=$B.$MakeArgs('print',arguments,[],['end','sep','file'],'args', null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     var res = ''
