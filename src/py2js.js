@@ -218,15 +218,16 @@ function $Node(type){
                 i += offset || 1
             }
         }else{
-            var elt=this.context.tree[0]
+            var elt=this.context.tree[0], ctx_offset
             if(elt.transform !== undefined){
-                elt.transform(this,rank)
+                ctx_offset = elt.transform(this,rank)
             }
             var i=0
             while(i<this.children.length){
                 var offset = this.children[i].transform(i)
                 i += offset || 1
             }
+            return ctx_offset || 1
         }
     }
     this.get_ctx = function(){return this.context}
@@ -971,7 +972,14 @@ function $ConditionCtx(context,token){
             if(scope.ntype=='BRgenerator'){
                 this.parent.node.loop_start = this.loop_num
             }
-        }            
+            var new_node = new $Node('expression')
+            var js = '$no_break'+this.loop_num+'=$locals["$no_break'
+            js += $loop_num+'"]=true'
+            new $NodeJSCtx(new_node,js)
+            node.parent.insert(rank, new_node)
+            // because a node was inserted, return 2 to avoid infinite loop
+            return 2
+        }
     }
     this.to_js = function(){
         var tok = this.token
@@ -980,10 +988,12 @@ function $ConditionCtx(context,token){
         // if the loop exits with a "break" this flag will be set to
         // true so that an optional "else" clause will not be run
         if(tok==='while'){tok = 'var $no_break'+this.loop_num+'=true;'+tok}
+        var res = tok+'(bool('
+        if(tok=='while'){res += '$no_break'+this.loop_num+' && '}
         if(this.tree.length==1){
-            var res = tok+'(bool('+$to_js(this.tree)+'))'
+            res += $to_js(this.tree)+'))'
         }else{ // syntax "if cond : do_something" in the same line
-            var res = tok+'(bool('+this.tree[0].to_js()+'))'
+            res += this.tree[0].to_js()+'))'
             if(this.tree[1].tree.length>0){
                 res += '{'+this.tree[1].to_js()+'}'
             }
@@ -1568,7 +1578,13 @@ function $ForExpr(context){
         new_nodes.push(new_node)
 
         new_node = new $Node('expression')
-        var js = 'var $no_break'+$loop_num+'=true;while(true)'
+        var js = 'var $no_break'+$loop_num
+        js += '=$locals["$no_break'+$loop_num+'"]=true'
+        new $NodeJSCtx(new_node,js)
+        new_nodes.push(new_node)
+
+        new_node = new $Node('expression')
+        var js = 'while($no_break'+$loop_num+')'
         new $NodeJSCtx(new_node,js)
         new_node.context.loop_num = $loop_num // used for "else" clauses
         if(scope.ntype=='BRgenerator'){
@@ -1611,7 +1627,7 @@ function $ForExpr(context){
         // used in generators
 
         // set new loop children
-        node.parent.children[rank+1].children = children
+        node.parent.children[rank+2].children = children
         $loop_num++
     }
     this.to_js = function(){

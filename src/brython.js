@@ -275,15 +275,16 @@ var offset=this.children[i].transform(i)
 i +=offset || 1
 }
 }else{
-var elt=this.C.tree[0]
+var elt=this.C.tree[0], ctx_offset
 if(elt.transform !==undefined){
-elt.transform(this,rank)
+ctx_offset=elt.transform(this,rank)
 }
 var i=0
 while(i<this.children.length){
 var offset=this.children[i].transform(i)
 i +=offset || 1
 }
+return ctx_offset || 1
 }
 }
 this.get_ctx=function(){return this.C}
@@ -887,16 +888,24 @@ var scope=$get_scope(this)
 if(scope.ntype=='BRgenerator'){
 this.parent.node.loop_start=this.loop_num
 }
+var new_node=new $Node('expression')
+var js='$no_break'+this.loop_num+'=$locals["$no_break'
+js +=$loop_num+'"]=true'
+new $NodeJSCtx(new_node,js)
+node.parent.insert(rank, new_node)
+return 2
 }
 }
 this.to_js=function(){
 var tok=this.token
 if(tok==='elif'){tok='else if'}
 if(tok==='while'){tok='var $no_break'+this.loop_num+'=true;'+tok}
+var res=tok+'(bool('
+if(tok=='while'){res +='$no_break'+this.loop_num+' && '}
 if(this.tree.length==1){
-var res=tok+'(bool('+$to_js(this.tree)+'))'
+res +=$to_js(this.tree)+'))'
 }else{
-var res=tok+'(bool('+this.tree[0].to_js()+'))'
+res +=this.tree[0].to_js()+'))'
 if(this.tree[1].tree.length>0){
 res +='{'+this.tree[1].to_js()+'}'
 }
@@ -1363,7 +1372,12 @@ js +='=getattr(iter('+iterable.to_js()+'),"__next__")'
 new $NodeJSCtx(new_node,js)
 new_nodes.push(new_node)
 new_node=new $Node('expression')
-var js='var $no_break'+$loop_num+'=true;while(true)'
+var js='var $no_break'+$loop_num
+js +='=$locals["$no_break'+$loop_num+'"]=true'
+new $NodeJSCtx(new_node,js)
+new_nodes.push(new_node)
+new_node=new $Node('expression')
+var js='while($no_break'+$loop_num+')'
 new $NodeJSCtx(new_node,js)
 new_node.C.loop_num=$loop_num 
 if(scope.ntype=='BRgenerator'){
@@ -1391,7 +1405,7 @@ js +='{__BRYTHON__.$pop_exc();break}'
 js +='else{throw($err)}}' 
 new $NodeJSCtx(catch_node,js)
 node.insert(1,catch_node)
-node.parent.children[rank+1].children=children
+node.parent.children[rank+2].children=children
 $loop_num++
 }
 this.to_js=function(){
@@ -4775,7 +4789,9 @@ exit_node.replaced=true
 }
 if(head && this.is_break){
 console.log('break in head')
-res.data='console.log("i found a break in head")'
+res.data='console.log("i found a break in head");'
+res.data +='$no_break'+this.loop_num+'=true;'
+res.data +='throw Error("break")'
 }
 res.has_child=this.has_child
 res.is_cond=this.is_cond
@@ -4843,6 +4859,9 @@ throw $B.builtins.ValueError("ValueError: generator already executing")
 self.gi_running=true
 try{
 var res=self._next.apply(null, self.args)
+}catch(err){
+console.log('erreur dans _next '+err)
+throw err
 }finally{
 self.gi_running=false
 }
@@ -4869,33 +4888,34 @@ tnode.addChild(new $B.genNode(js))
 js='for(var $var in $locals){eval("var "+$var+"=$locals[$var]")}'
 tnode.addChild(new $B.genNode(js))
 var pnode=exit_node.parent
-if(pnode.is_except || pnode.is_try){
-if(pnode.is_try){
-var pnode2=pnode.clone()
+var rest=[]
 for(var i=exit_node.rank+1;i<pnode.children.length;i++){
-pnode2.addChild(pnode.children[i].clone_tree(null, false))
+rest.push(pnode.children[i].clone_tree())
 }
-var children=[pnode2]
-for(var i=pnode.rank+1;i<pnode.parent.children.length;i++){
-children.push(pnode.parent.children[i].clone_tree(null, false))
+var prest=exit_node.parent
+while(prest!==trynode){
+if(yielded_value>8){console.log('parent of '+yielded_value+' is '+prest+' try '+prest.is_try+' except '+prest.is_except)}
+if(prest.is_except){
+var catch_node=prest
+if(prest.parent.is_except){catch_node=prest.parent}
+var rank=catch_node.rank
+while(rank<catch_node.parent.children.length && catch_node.parent.children[rank].is_except){rank++}
+for(var i=rank;i<catch_node.parent.children.length;i++){
+rest.push(catch_node.parent.children[i].clone_tree())
 }
-for(var i=0;i<children.length;i++){
-tnode.addChild(children[i])
+prest=catch_node
+}
+else if(prest.is_try){
+var rest2=prest.clone()
+for(var i=0;i<rest.length;i++){rest2.addChild(rest[i])}
+rest=[rest2]
+for(var i=prest.rank+1;i<prest.parent.children.length;i++){
+rest.push(prest.parent.children[i].clone_tree())
 }
 }
-while(pnode.parent.is_except || pnode.parent.is_try){
-pnode=pnode.parent
+prest=prest.parent
 }
-var rank=pnode.rank
-while(pnode.parent.children[rank].is_except){rank--}
-for(var i=rank;i<pnode.parent.children.length;i++){
-tnode.addChild(pnode.parent.children[i].clone_tree(exit_node))
-}
-}else{
-for(var i=exit_node.rank+1;i<pnode.children.length;i++){
-tnode.addChild(pnode.children[i].clone_tree(exit_node, true))
-}
-}
+for(var i=0;i<rest.length;i++){tnode.addChild(rest[i])}
 var last_pnode
 while(pnode!==trynode && in_loop(pnode)){
 var rank=pnode.rank
