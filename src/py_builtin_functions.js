@@ -847,7 +847,7 @@ function pow() {
 
 function $print(){
     var end='\n',sep=' '
-    var $ns=$B.$MakeArgs('print',arguments,[],['end','sep'],'args', null)
+    var $ns=$B.$MakeArgs('print',arguments,[],['end','sep','file'],'args', null)
     for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
     var res = ''
     for(var i=0;i<args.length;i++){
@@ -855,7 +855,11 @@ function $print(){
         if(i<args.length-1){res += sep}
     }
     res += end
-    getattr($B.stdout,'write')(res)
+    if (file === undefined) {
+       getattr($B.stdout,'write')(res)
+    } else {
+       getattr(file,'write')(res)
+    }
 }
 $print.__name__ = 'print'
 
