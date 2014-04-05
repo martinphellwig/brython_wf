@@ -345,7 +345,7 @@ def produce(consumer):
     function"""
     while True:
         data = get_data()
-        print('Produced {}'.format(data))
+        #print('Produced {}'.format(data))
         consumer.send(data)
         yield
 
@@ -354,7 +354,7 @@ consumer.send(None)
 producer = produce(consumer)
 
 for _ in range(10):
-    print('Producing...')
+    #print('Producing...')
     next(producer)
 
 # test "close"

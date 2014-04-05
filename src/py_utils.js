@@ -340,7 +340,9 @@ $B.genNode = function(data, parent){
         if(head && this.is_break){
             // FIX ME
             console.log('break in head')
-            res.data = 'console.log("i found a break in head")'
+            res.data = 'console.log("i found a break in head");'
+            res.data += '$no_break'+this.loop_num+'=true;'
+            res.data += 'throw Error("break")'
             //console.log('res '+res)
         }
         res.has_child = this.has_child
@@ -445,6 +447,9 @@ $BRGeneratorDict.__next__ = function(self){
     // Call the function _next to yield a value
     try{
         var res = self._next.apply(null, self.args)
+    }catch(err){
+        console.log('erreur dans _next '+err)
+        throw err
     }finally{
         self.gi_running = false
     }
@@ -460,6 +465,8 @@ $BRGeneratorDict.__next__ = function(self){
     // yielded value and a reference to the node where the function exited
     
     var yielded_value=res[0], yield_rank=res[1]
+    
+    //console.log('--- yielded '+yielded_value)
     
     // Get node where yield was thrown
     var exit_node = self.func_root.yields[yield_rank]
@@ -498,66 +505,43 @@ $BRGeneratorDict.__next__ = function(self){
 
     // Parent of exit node    
     var pnode = exit_node.parent
-
-    if(pnode.is_except || pnode.is_try){
-
-        if(pnode.is_try){
-
-            // If exit node is in a "try" block, the rest of the block 
-            // after exit_node must be run in the same try/except block
-
-            // Create a clone of the original "try" node
-            var pnode2 = pnode.clone()
-            
-            // Add the rest of the original 'try' block after exit_node
-            for(var i=exit_node.rank+1;i<pnode.children.length;i++){
-                pnode2.addChild(pnode.children[i].clone_tree(null, false))
-            }
-
-            // to do : if the 'try' block with the exit node is itself 
-            // in a 'try' block
-            
-            // Build the try/except sequence to insert at the top of the
-            // new function
-            
-            var children = [pnode2]
-            
-            for(var i=pnode.rank+1;i<pnode.parent.children.length;i++){
-                children.push(pnode.parent.children[i].clone_tree(null, false))
-            }
-            
-            for(var i=0;i<children.length;i++){
-                tnode.addChild(children[i])
-            }
-            
-        }
-
-        // The next function starts with the uppermost enclosing "try" block
-        while(pnode.parent.is_except || pnode.parent.is_try){
-            pnode = pnode.parent
-        }
-        
-        // Add the try block
-        var rank = pnode.rank
-        while(pnode.parent.children[rank].is_except){rank--}
-        for(var i=rank;i<pnode.parent.children.length;i++){
-            tnode.addChild(pnode.parent.children[i].clone_tree(exit_node))
-        }
-
-    }else{
     
-        // Add the rest of the block after exit_node
-
-        for(var i=exit_node.rank+1;i<pnode.children.length;i++){
-            
-            // Add a clone of child : if we appended the child itself,
-            // it would change the original function tree
-            
-            tnode.addChild(pnode.children[i].clone_tree(exit_node, true))
-
-        }
-        
+    // Rest of the block after exit_node
+    var rest = []
+    for(var i=exit_node.rank+1;i<pnode.children.length;i++){
+        rest.push(pnode.children[i].clone_tree())
     }
+    
+    // If exit_node was in an arborescence of "try" clauses, the "rest" must
+    // run in the same arborescence
+    var prest = exit_node.parent
+    while(prest!==trynode){
+        if(yielded_value>8){console.log('parent of '+yielded_value+' is '+prest+' try '+prest.is_try+' except '+prest.is_except)}
+        if(prest.is_except){
+            var catch_node = prest
+            if(prest.parent.is_except){catch_node=prest.parent}
+            var rank = catch_node.rank
+            while(rank<catch_node.parent.children.length && catch_node.parent.children[rank].is_except){rank++}
+            for(var i=rank;i<catch_node.parent.children.length;i++){
+                rest.push(catch_node.parent.children[i].clone_tree())
+            }
+            prest = catch_node
+        }
+        else if(prest.is_try){
+            var rest2 = prest.clone()
+            for(var i=0;i<rest.length;i++){rest2.addChild(rest[i])}
+            rest = [rest2]
+            for(var i=prest.rank+1;i<prest.parent.children.length;i++){
+                rest.push(prest.parent.children[i].clone_tree())
+            }
+        }
+        prest = prest.parent
+    }
+    
+    // add rest of block to new function
+    for(var i=0;i<rest.length;i++){tnode.addChild(rest[i])}
+    
+    //console.log('after yielding '+yielded_value+' and adding rest\n'+tnode.src())
     
     // While the parent of exit_node is in a loop, add it, only keeping the
     // part that starts at exit node
@@ -606,7 +590,7 @@ $BRGeneratorDict.__next__ = function(self){
     catch(err){console.log('error '+err+'\n'+next_src)}
     
     self._next = eval(self.func_name)
-    
+        
     // Return the yielded value
     return yielded_value
 
