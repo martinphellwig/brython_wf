@@ -117,8 +117,7 @@ class OperatorTestCase(unittest.TestCase):
     def test_bitwise_and(self):
         self.assertRaises(TypeError, operator.and_)
         self.assertRaises(TypeError, operator.and_, None, None)
-        #fix me brython
-        #self.assertTrue(operator.and_(0xf, 0xa) == 0xa)
+        self.assertTrue(operator.and_(0xf, 0xa) == 0xa)
 
     def test_concat(self):
         self.assertRaises(TypeError, operator.concat)
@@ -197,8 +196,7 @@ class OperatorTestCase(unittest.TestCase):
     def test_bitwise_or(self):
         self.assertRaises(TypeError, operator.or_)
         self.assertRaises(TypeError, operator.or_, None, None)
-        #fix me brython
-        #self.assertTrue(operator.or_(0xa, 0x5) == 0xf)
+        self.assertTrue(operator.or_(0xa, 0x5) == 0xf)
 
     def test_pos(self):
         self.assertRaises(TypeError, operator.pos)
@@ -256,23 +254,23 @@ class OperatorTestCase(unittest.TestCase):
     def test_bitwise_xor(self):
         self.assertRaises(TypeError, operator.xor)
         self.assertRaises(TypeError, operator.xor, None, None)
-        #fix me brython
-        #self.assertTrue(operator.xor(0xb, 0xc) == 0x7)
-    """
+        self.assertTrue(operator.xor(0xb, 0xc) == 0x7)
+    
     def test_is(self):
         a = b = 'xyzpdq'
         c = a[:3] + b[3:]
         self.assertRaises(TypeError, operator.is_)
         self.assertTrue(operator.is_(a, b))
         self.assertFalse(operator.is_(a,c))
-
-    def test_is_not(self):
-        a = b = 'xyzpdq'
-        c = a[:3] + b[3:]
-        self.assertRaises(TypeError, operator.is_not)
-        self.assertFalse(operator.is_not(a, b))
-        self.assertTrue(operator.is_not(a,c))
-    """
+    
+    #brython fix me  (syntax error)
+    #def test_is_not(self):
+    #    a = b = 'xyzpdq'
+    #    c = a[:3] + b[3:]
+    #    self.assertRaises(TypeError, operator.is_not)
+    #    self.assertFalse(operator.is_not(a, b))
+    #    self.assertTrue(operator.is_not(a,c))
+    
     def test_attrgetter(self):
         class A:
             pass
