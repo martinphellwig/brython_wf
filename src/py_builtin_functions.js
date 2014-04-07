@@ -433,7 +433,8 @@ function format(value, format_spec) {
 
 function getattr(obj,attr,_default){
     var klass = $B.get_class(obj)
-    //if(attr=='alert'){console.log('-- getattr '+attr+' of obj '+obj+' native '+klass.$native)}
+    //if(attr=='from_keys'){console.log('-- getattr '+attr+' of obj '+obj+' klass '+
+    //    klass.__name__+' is class '+klass.is_class+' native '+klass.$native)}
     if(klass===undefined){
         // for native JS objects used in Python code
         if(obj[attr]!==undefined){return obj[attr]}
@@ -528,7 +529,9 @@ function getattr(obj,attr,_default){
     if(res!==undefined){return res}
     if(_default !==undefined){return _default}
     else{
-        throw __builtins__.AttributeError("'"+klass.__name__+"' object has no attribute '"+attr+"'")
+        var cname = klass.__name__
+        if(is_class){cname=obj.__name__}
+        throw __builtins__.AttributeError("'"+cname+"' object has no attribute '"+attr+"'")
     }
 }
 getattr.__name__ = 'getattr'
@@ -693,7 +696,7 @@ $MapDict.__mro__ = [$MapDict,$ObjectDict]
 $MapDict.__iter__ = function (self){return self}
 
 function map(){
-    var func = arguments[0]
+    var func = getattr(arguments[0],'__call__')
     var iter_args = []
     for(var i=1;i<arguments.length;i++){iter_args.push(iter(arguments[i]))}
     var __next__ = function(){

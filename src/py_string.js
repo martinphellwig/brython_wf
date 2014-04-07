@@ -23,6 +23,7 @@ $StringDict.__contains__ = function(self,item){
     if(!(typeof item==="string")){throw __builtins__.TypeError(
          "'in <string>' requires string as left operand, not "+item.__class__)}
     var nbcar = item.length
+    if(nbcar==0){return self.length==0}
     for(var i=0;i<self.length;i++){
         if(self.substr(i,nbcar)==item){return True}
     }

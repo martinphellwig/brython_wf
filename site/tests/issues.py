@@ -661,4 +661,21 @@ for i in -3*y,2*y:
 
 assert res==[-1, 0, 1, -6, 4]
 
+# issue 238
+import operator
+
+# example used in the docs
+inventory = [('apple', 3), ('banana', 2), ('pear', 5), ('orange', 1)]
+getcount = operator.itemgetter(1)
+
+assert list(map(getcount, inventory)) == [3, 2, 5, 1]
+assert sorted(inventory, key=getcount) == [('orange', 1), ('banana', 2), ('apple', 3), ('pear', 5)]
+
+# issue 239
+assert '' in ''
+
+# issue 240
+d = dict.fromkeys(['a','b'],3)
+assert d=={'a':3, 'b':3}
+
 print('passed all tests')
