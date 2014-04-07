@@ -447,9 +447,6 @@ $BRGeneratorDict.__next__ = function(self){
     // Call the function _next to yield a value
     try{
         var res = self._next.apply(null, self.args)
-    }catch(err){
-        console.log('erreur dans _next '+err)
-        throw err
     }finally{
         self.gi_running = false
     }
@@ -516,12 +513,12 @@ $BRGeneratorDict.__next__ = function(self){
     // run in the same arborescence
     var prest = exit_node.parent
     while(prest!==trynode){
-        if(yielded_value>8){console.log('parent of '+yielded_value+' is '+prest+' try '+prest.is_try+' except '+prest.is_except)}
         if(prest.is_except){
             var catch_node = prest
             if(prest.parent.is_except){catch_node=prest.parent}
             var rank = catch_node.rank
-            while(rank<catch_node.parent.children.length && catch_node.parent.children[rank].is_except){rank++}
+            while(rank<catch_node.parent.children.length && 
+                catch_node.parent.children[rank].is_except){rank++}
             for(var i=rank;i<catch_node.parent.children.length;i++){
                 rest.push(catch_node.parent.children[i].clone_tree())
             }
