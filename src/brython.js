@@ -6019,8 +6019,8 @@ return Math.pow(a,b)%c
 }
 }
 function $print(){
-var end='\n',sep=' '
-var $ns=$B.$MakeArgs('print',arguments,[],['end','sep'],'args', null)
+var end='\n',sep=' ',file=undefined
+var $ns=$B.$MakeArgs('print',arguments,[],['end','sep','file'],'args', null)
 for(var attr in $ns){eval('var '+attr+'=$ns[attr]')}
 var res=''
 for(var i=0;i<args.length;i++){
@@ -6028,7 +6028,11 @@ res +=__builtins__.str(args[i])
 if(i<args.length-1){res +=sep}
 }
 res +=end
+if(file===undefined){
 getattr($B.stdout,'write')(res)
+}else{
+getattr(file,'write')(res)
+}
 }
 $print.__name__='print'
 function $prompt(text,fill){return prompt(text,fill || '')}
