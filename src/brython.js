@@ -4755,8 +4755,8 @@ js +='$yield_value'+ctx_js+'=$sent'+ctx_js+';'
 js +='__BRYTHON__.modules["'+top_node.iter_id+'"].sent_value=None'
 new_node.data=js
 }else if(ctype=='break'){
-console.log('break '+in_loop(node))
 new_node.is_break=true
+new_node.loop_num=node.C.tree[0].loop_ctx.loop_num
 }
 new_node.is_cond=is_cond
 new_node.is_except=is_except
@@ -4812,10 +4812,9 @@ res=new $B.genNode(exit_node.data)
 exit_node.replaced=true
 }
 if(head && this.is_break){
-console.log('break in head')
-res.data='console.log("i found a break in head");'
-res.data +='$no_break'+this.loop_num+'=true;'
-res.data +='throw Error("break")'
+res.data='$no_break'+this.loop_num+'=false;'
+res.data +='var err = new Error("break");'
+res.data +='err.__class__=__BRYTHON__.GeneratorBreak;throw err;'
 }
 res.has_child=this.has_child
 res.is_cond=this.is_cond
@@ -4824,8 +4823,10 @@ res.is_try=this.is_try
 res.is_else=this.is_else
 res.loop_num=this.loop_num
 res.loop_start=this.loop_start
+res.no_break=true
 for(var i=0;i<this.children.length;i++){
 res.addChild(this.children[i].clone_tree(exit_node, head))
+if(this.children[i].is_break){res.no_break=false}
 }
 return res
 }
@@ -4847,6 +4848,7 @@ return res
 }
 this.toString=function(){return '<Node '+this.data+'>'}
 }
+$B.GeneratorBreak={}
 $B.$GeneratorSendError={}
 var $GeneratorReturn={}
 $B.generator_return=function(){return{__class__:$GeneratorReturn}}
@@ -4910,8 +4912,11 @@ js='for(var $var in $locals){eval("var "+$var+"=$locals[$var]")}'
 tnode.addChild(new $B.genNode(js))
 var pnode=exit_node.parent
 var rest=[]
+var no_break=true
 for(var i=exit_node.rank+1;i<pnode.children.length;i++){
-rest.push(pnode.children[i].clone_tree())
+var clone=pnode.children[i].clone_tree(null,true)
+rest.push(clone)
+if(!clone.no_break){no_break=false}
 }
 var prest=exit_node.parent
 while(prest!==trynode){
@@ -4922,7 +4927,7 @@ var rank=catch_node.rank
 while(rank<catch_node.parent.children.length && 
 catch_node.parent.children[rank].is_except){rank++}
 for(var i=rank;i<catch_node.parent.children.length;i++){
-rest.push(catch_node.parent.children[i].clone_tree())
+rest.push(catch_node.parent.children[i].clone_tree(null,true))
 }
 prest=catch_node
 }
@@ -4931,12 +4936,22 @@ var rest2=prest.clone()
 for(var i=0;i<rest.length;i++){rest2.addChild(rest[i])}
 rest=[rest2]
 for(var i=prest.rank+1;i<prest.parent.children.length;i++){
-rest.push(prest.parent.children[i].clone_tree())
+rest.push(prest.parent.children[i].clone_tree(null,true))
 }
 }
 prest=prest.parent
 }
+if(no_break){
 for(var i=0;i<rest.length;i++){tnode.addChild(rest[i])}
+}else{
+var rest_try=new $B.genNode('try')
+for(var i=0;i<rest.length;i++){rest_try.addChild(rest[i])}
+tnode.addChild(rest_try)
+var catch_test='catch(err)'
+catch_test +='{if(err.__class__!==__BRYTHON__.GeneratorBreak)'
+catch_test +='{throw err}}'
+tnode.addChild(new $B.genNode(catch_test))
+}
 var last_pnode
 while(pnode!==trynode && in_loop(pnode)){
 var rank=pnode.rank
