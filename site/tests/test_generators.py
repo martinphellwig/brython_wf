@@ -316,6 +316,19 @@ def f(n=0):
 assert list(f())==[0, 6, 12, 18, 'fini']
 assert list(f(1))==[0, 4, 8, 'fini']
 
+
+# yield with a "break" inside a loop
+def f():
+    i = 0
+    while True:
+        yield i
+        if i>5:
+            break
+        i += 1
+    yield 'end'
+
+assert list(f())==[0, 1, 2, 3, 4, 5, 6, 'end']
+
 import time
 
 def get_data():
