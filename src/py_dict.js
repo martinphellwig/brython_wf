@@ -218,6 +218,26 @@ $DictDict.items = function(self){
     return $B.$iterator(items,$dict_itemsDict)
 }
 
+$DictDict.fromkeys = function(keys,value){
+    // class method
+    if(value===undefined){value=__builtins__.None}
+    var res = dict()
+    var keys_iter = __builtins__.iter(keys)
+    while(true){
+        try{
+            var key = __builtins__.next(keys_iter)
+            $DictDict.__setitem__(res,key,value)
+        }catch(err){
+            if($B.is_exc(err,[__builtins__.StopIteration])){
+                $B.$pop_exc()
+                return res
+            }else{
+                throw err
+            }
+        }
+    }
+}
+
 var $dict_keysDict = $B.$iterator_class('dict_keys')
 
 $DictDict.keys = function(self){

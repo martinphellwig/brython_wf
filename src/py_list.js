@@ -366,7 +366,7 @@ $ListDict.sort = function(self){
     for(var i=1;i<arguments.length;i++){
         var arg = arguments[i]
         if(arg.__class__==__BRYTHON__.$KwDict){
-            if(arg.name==='key'){func=arg.value}
+            if(arg.name==='key'){func=getattr(arg.value,'__call__')}
             else if(arg.name==='reverse'){reverse=arg.value}
         }
     }

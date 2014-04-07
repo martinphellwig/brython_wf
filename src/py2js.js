@@ -77,6 +77,7 @@ for($op in $operators){
 }
 
 function $Node(type){
+    //if(type===undefined){console.log('type undefined !')}
     this.type = type
     this.children=[]
     this.yield_atoms = []
@@ -168,21 +169,21 @@ function $Node(type){
 
                 // create a line to store the yield expression in a
                 // temporary variable
-                var temp_node = new $Node('expression')
+                var temp_node = new $Node()
                 var js = '$yield_value'+$loop_num
                 js += '='+(this.yield_atoms[i].to_js() || 'None')
                 new $NodeJSCtx(temp_node,js)
                 this.parent.insert(rank+offset, temp_node)
                 
                 // create a node to yield the yielded value
-                var yield_node = new $Node('expression')
+                var yield_node = new $Node()
                 this.parent.insert(rank+offset+1, yield_node)
                 var yield_expr = new $YieldCtx(new $NodeCtx(yield_node))
                 new $StringCtx(yield_expr,'$yield_value'+$loop_num)
 
                 // create a node to set the yielded value to the last
                 // value sent to the generator, if any
-                var set_yield = new $Node('expression')
+                var set_yield = new $Node()
                 set_yield.is_set_yield_value=true
                 
                 // the JS code will be set in py_utils.$B.make_node
@@ -269,7 +270,7 @@ function $AssertCtx(context){
         var not_ctx = new $NotCtx(new_ctx)
         not_ctx.tree = [condition]
         node.context = new_ctx
-        var new_node = new $Node('expression')
+        var new_node = new $Node()
         var js = 'throw AssertionError("AssertionError")'
         if(message !== null){
             js = 'throw AssertionError(str('+message.to_js()+'))'
@@ -335,7 +336,7 @@ function $AssignCtx(context){
             // chained assignment : x=y=z
             // transform current node to "y=z"
             // and add a new node "x=y"
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             var node_ctx = new $NodeCtx(new_node)
             node_ctx.tree = [left]
             node.parent.insert(rank+1,new_node)
@@ -371,22 +372,22 @@ function $AssignCtx(context){
             var new_nodes = []
             // replace original line by dummy line : the next one might also
             // be a multiple assignment
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             new $NodeJSCtx(new_node,'void(0)')
             new_nodes.push(new_node)
             
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             new $NodeJSCtx(new_node,'var $temp'+$loop_num+'=[]')
             new_nodes.push(new_node)
 
             for(var i=0;i<right_items.length;i++){
                 var js = '$temp'+$loop_num+'.push('+right_items[i].to_js()+')'
-                var new_node = new $Node('expression')
+                var new_node = new $Node()
                 new $NodeJSCtx(new_node,js)
                 new_nodes.push(new_node)
             }
             for(var i=0;i<left_items.length;i++){
-                var new_node = new $Node('expression')
+                var new_node = new $Node()
                 var context = new $NodeCtx(new_node) // create ordinary node
                 left_items[i].parent = context
                 var assign = new $AssignCtx(left_items[i]) // assignment to left operand
@@ -401,7 +402,7 @@ function $AssignCtx(context){
         }else{ // form x,y=a
             
             // evaluate right argument (it might be a function call)
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             
             // set attribute line_num for debugging
             new_node.line_num = node.line_num
@@ -410,7 +411,7 @@ function $AssignCtx(context){
             new $NodeJSCtx(new_node,js)
             var new_nodes = [new_node]
             
-            var rlist_node = new $Node('expression')
+            var rlist_node = new $Node()
             js = 'var $rlist'+$loop_num+'=[];'
             js += 'while(true){try{$rlist'+$loop_num+'.push($right'
             js += $loop_num+'())}catch(err){__BRYTHON__.$pop_exc();break}};'
@@ -429,7 +430,7 @@ function $AssignCtx(context){
             }
             
             // Test if there were enough values in the right part
-            var check_node = new $Node('expression')
+            var check_node = new $Node()
             var min_length = left_items.length
             if(packed!==null){min_length--}
             js = 'if($rlist'+$loop_num+'.length<'+min_length+')'
@@ -440,7 +441,7 @@ function $AssignCtx(context){
 
             // Test if there were enough variables in the left part
             if(packed==null){
-                var check_node = new $Node('expression')
+                var check_node = new $Node()
                 var min_length = left_items.length
                 js = 'if($rlist'+$loop_num+'.length>'+min_length+')'
                 js += '{throw ValueError("too many values to unpack '
@@ -452,7 +453,7 @@ function $AssignCtx(context){
             var j=0
             for(var i=0;i<left_items.length;i++){
 
-                var new_node = new $Node('expression')
+                var new_node = new $Node()
                 var context = new $NodeCtx(new_node) // create ordinary node
                 left_items[i].parent = context
                 var assign = new $AssignCtx(left_items[i]) // assignment to left operand
@@ -579,7 +580,7 @@ function $BodyCtx(context){
     var ctx_node = context.parent
     while(ctx_node.type!=='node'){ctx_node=ctx_node.parent}
     var tree_node = ctx_node.node
-    var body_node = new $Node('expression')
+    var body_node = new $Node()
     tree_node.insert(0,body_node)
     return new $NodeCtx(body_node)
 }
@@ -608,6 +609,7 @@ function $BreakCtx(context){
             var ctx = loop_node.context.tree[0]
             if(ctx.type==='for' || (ctx.type==='condition' && ctx.token==='while')){
                 this.loop_ctx = ctx
+                ctx.has_break = true
                 break
             }else if(['def','generator','class'].indexOf(ctx.type)>-1){
                 // "break" must not be inside a def or class, even if they are
@@ -732,7 +734,7 @@ function $CallCtx(context){
             
             // the names defined inside the anonymous function must be visible outside
             // so we add a node after current one
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             var set_ns = ';for(var $attr in __BRYTHON__.vars["'+_name+'"]){\n'
             // check that $attr is a valid identifier
             set_ns += '    if($attr.search(/[\.]/)>-1){continue}\n    '
@@ -823,33 +825,33 @@ function $ClassCtx(context){
         this.doc_string = $get_docstring(node)
 
         // insert "$class = new Object"
-        var instance_decl = new $Node('expression')
+        var instance_decl = new $Node()
         var js = 'var $class={}'
         if(__BRYTHON__.debug>0){js = 'var $class = {$def_line:__BRYTHON__.line_info}'}
         new $NodeJSCtx(instance_decl,js)
         node.insert(0,instance_decl)
 
         // return $class at the end of class definition
-        var ret_obj = new $Node('expression')
+        var ret_obj = new $Node()
         new $NodeJSCtx(ret_obj,'return $class')
         node.insert(node.children.length,ret_obj) 
        
         // close function and run it
-        var run_func = new $Node('expression')
+        var run_func = new $Node()
         new $NodeJSCtx(run_func,')()')
         node.parent.insert(rank+1,run_func)
 
         // add doc string
         rank++
         js = '$'+this.name+'.__doc__='+(this.doc_string || 'None')
-        var ds_node = new $Node('expression')
+        var ds_node = new $Node()
         new $NodeJSCtx(ds_node,js)
         node.parent.insert(rank+1,ds_node)       
 
         // add attribute __module__
         rank++
         js = '$'+this.name+'.__module__="'+$get_module(this).module+'"'
-        var mod_node = new $Node('expression')
+        var mod_node = new $Node()
         new $NodeJSCtx(mod_node,js)
         node.parent.insert(rank+1,mod_node)  
 
@@ -887,7 +889,7 @@ function $ClassCtx(context){
             js += ',tuple([]),[],[]'
         }
         js += ')'
-        var cl_cons = new $Node('expression')
+        var cl_cons = new $Node()
         new $NodeJSCtx(cl_cons,js)
         node.parent.insert(rank+2,cl_cons)
         
@@ -895,13 +897,13 @@ function $ClassCtx(context){
         if(scope.ntype==='module'){
             js = '__BRYTHON__.vars["'+scope.module+'"]["'
             js += this.name+'"]='+this.name
-            var w_decl = new $Node('expression')
+            var w_decl = new $Node()
             new $NodeJSCtx(w_decl,js)
             node.parent.insert(rank+3,w_decl)
             rank++
         }
         // end by None for interactive interpreter
-        var end_node = new $Node('expression')
+        var end_node = new $Node()
         new $NodeJSCtx(end_node,'None;')
         node.parent.insert(rank+3,end_node)
 
@@ -972,9 +974,9 @@ function $ConditionCtx(context,token){
             if(scope.ntype=='BRgenerator'){
                 this.parent.node.loop_start = this.loop_num
             }
-            var new_node = new $Node('expression')
-            var js = '$no_break'+this.loop_num+'=$locals["$no_break'
-            js += $loop_num+'"]=true'
+            var new_node = new $Node()
+            var js = 'var $no_break'+this.loop_num+'=$locals["$no_break'
+            js += this.loop_num+'"]=true'
             new $NodeJSCtx(new_node,js)
             node.parent.insert(rank, new_node)
             // because a node was inserted, return 2 to avoid infinite loop
@@ -984,10 +986,9 @@ function $ConditionCtx(context,token){
     this.to_js = function(){
         var tok = this.token
         if(tok==='elif'){tok='else if'}
-        // in a "while" loop, insert a flag initially set to false
-        // if the loop exits with a "break" this flag will be set to
-        // true so that an optional "else" clause will not be run
-        if(tok==='while'){tok = 'var $no_break'+this.loop_num+'=true;'+tok}
+        // In a "while" loop, the flag "$no_break" is initially set to false.
+        // If the loop exits with a "break" this flag will be set to "true",
+        // so that an optional "else" clause will not be run.
         var res = tok+'(bool('
         if(tok=='while'){res += '$no_break'+this.loop_num+' && '}
         if(this.tree.length==1){
@@ -1076,7 +1077,7 @@ function $DecoratorCtx(context){
         }
         res += (scope.ntype ==='class' ? '$class.' : '')
         res += obj.name+tail
-        var decor_node = new $Node('expression')
+        var decor_node = new $Node()
         new $NodeJSCtx(decor_node,res)
         node.parent.insert(func_rank+1,decor_node)
         this.decorators = decorators
@@ -1181,38 +1182,38 @@ function $DefCtx(context){
             // call, ie for each iterator
             js = 'var $locals = __BRYTHON__.vars["'+this.id+'"]'
         }
-        var new_node = new $Node('expression')
+        var new_node = new $Node()
         new_node.locals_def = true
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
 
         // initialize default variables
         js = 'for(var $var in $defaults){eval("var "+$var+"=$locals[$var]=$defaults[$var]")}'
-        var new_node = new $Node('expression')
+        var new_node = new $Node()
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
         
         for(var i=this.enclosing.length-1;i>=0;i--){
             var js = 'var $ns=__BRYTHON__.vars["'+this.enclosing[i]+'"]'
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             new $NodeJSCtx(new_node,js)
             nodes.push(new_node)
 
             var js = 'for(var $var in $ns){$locals[$var]=$ns[$var]}'
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             new $NodeJSCtx(new_node,js)
             nodes.push(new_node)
         }
 
         var js = 'var $ns=__BRYTHON__.$MakeArgs("'+this.name+'",arguments,['+required+'],'
         js += '['+defaults.join(',')+'],'+other_args+','+other_kw+',['+after_star.join(',')+'])'
-        var new_node = new $Node('expression')
+        var new_node = new $Node()
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
 
         js = 'for(var $var in $ns){eval("var "+$var+"=$ns[$var]");'
         js += '$locals[$var]=$ns[$var]}'
-        var new_node = new $Node('expression')
+        var new_node = new $Node()
         new $NodeJSCtx(new_node,js)
         nodes.push(new_node)
 
@@ -1220,11 +1221,11 @@ function $DefCtx(context){
             node.children.splice(0,0,nodes[i])
         }
 
-        var def_func_node = new $Node('expression')
+        var def_func_node = new $Node()
         new $NodeJSCtx(def_func_node,'return function()')
 
         // wrap function body in a try/catch
-        var try_node = new $Node('expression')
+        var try_node = new $Node()
         new $NodeJSCtx(try_node,'try')
 
         for(var i=0;i<node.children.length;i++){
@@ -1233,7 +1234,7 @@ function $DefCtx(context){
 
         def_func_node.add(try_node)
 
-        var catch_node = new $Node('expression')
+        var catch_node = new $Node()
         var js = 'catch(err'+$loop_num+')'
         js += '{throw __BRYTHON__.exception(err'+$loop_num+')}'
         new $NodeJSCtx(catch_node,js)
@@ -1242,7 +1243,7 @@ function $DefCtx(context){
         
         node.add(def_func_node)
 
-        var ret_node = new $Node('expression')
+        var ret_node = new $Node()
         var txt = ')('
         for(var i=0;i<this.env.length;i++){
             if(scope.ntype=='class'){
@@ -1267,7 +1268,7 @@ function $DefCtx(context){
             js += ')'
             // store a reference to function node, will be used in yield
             __BRYTHON__.modules[this.id] = this
-            var gen_node = new $Node('expression')
+            var gen_node = new $Node()
             var ctx = new $NodeCtx(gen_node)
             var expr = new $ExprCtx(ctx,'id',false)
             var name_ctx = new $IdCtx(expr,this.name)
@@ -1291,7 +1292,7 @@ function $DefCtx(context){
             // add to $locals
             js += ';$locals["'+this.name+'"]='+this.name
         }
-        var name_decl = new $Node('expression')
+        var name_decl = new $Node()
         new $NodeJSCtx(name_decl,js)
         node.parent.insert(rank+offset,name_decl)
         offset++
@@ -1300,7 +1301,7 @@ function $DefCtx(context){
         if(scope.ntype==='module'){
             js = '$globals["'+this.name+'"]='+this.name
             js += ';'+this.name+".$type='function'"
-            new_node = new $Node('expression')
+            new_node = new $Node()
             new $NodeJSCtx(new_node,js)
             node.parent.insert(rank+offset,new_node)
             offset++
@@ -1310,14 +1311,14 @@ function $DefCtx(context){
         var prefix = scope.ntype=='class' ? '$class.' : ''
         
         js = prefix+this.name+'.__module__ = "'+module.module+'"'
-        new_node = new $Node('expression')
+        new_node = new $Node()
         new $NodeJSCtx(new_node,js)
         node.parent.insert(rank+offset,new_node)
         offset++
         
         // if doc string, add it as attribute __doc__
         js = prefix+this.name+'.__doc__='+(this.doc_string || 'None')
-        new_node = new $Node('expression')
+        new_node = new $Node()
         new $NodeJSCtx(new_node,js)
         node.parent.insert(rank+offset,new_node)
         offset++
@@ -1325,13 +1326,13 @@ function $DefCtx(context){
         // add attribute __code__
         js = prefix+this.name+'.__code__= {__class__:__BRYTHON__.$CodeDict}'
         js += ';None;' // end with None for interactive interpreter
-        new_node = new $Node('expression')
+        new_node = new $Node()
         new $NodeJSCtx(new_node,js)
         node.parent.insert(rank+offset,new_node)
         offset++
 
         // define default values
-        var default_node = new $Node('expression')
+        var default_node = new $Node()
         new $NodeJSCtx(default_node,'var $defaults = {'+defs1.join(',')+'}')
         node.insert(0,default_node)
                 
@@ -1347,7 +1348,7 @@ function $DefCtx(context){
             js = '__BRYTHON__.$generator('
             if(scope.ntype==='class'){js += '$class.'}
             js += '$'+this.name+')'
-            var gen_node = new $Node('expression')
+            var gen_node = new $Node()
             var ctx = new $NodeCtx(gen_node)
             var expr = new $ExprCtx(ctx,'id',false)
             var name_ctx = new $IdCtx(expr,this.name)
@@ -1565,26 +1566,36 @@ function $ForExpr(context){
         var scope = $get_scope(this)
         
         // node to create a temporary variable set to iter(iterable)
-        var new_node = new $Node('expression')
+        var new_node = new $Node()
         var target = this.tree[0]
         var iterable = this.tree[1]
         this.loop_num = $loop_num
         new_node.line_num = node.line_num
         new_node.module = node.module
         
-        js = 'var $next'+$loop_num+'=$locals["$next'+$loop_num+'"]'
+        var js = 'var $next'+$loop_num+'=$locals["$next'+$loop_num+'"]'
         js += '=getattr(iter('+iterable.to_js()+'),"__next__")'
         new $NodeJSCtx(new_node,js)
         new_nodes.push(new_node)
 
-        new_node = new $Node('expression')
-        var js = 'var $no_break'+$loop_num
-        js += '=$locals["$no_break'+$loop_num+'"]=true'
-        new $NodeJSCtx(new_node,js)
-        new_nodes.push(new_node)
+        // rank of the node that will hold the body of the "for" loop
+        var new_rank = rank+1
 
-        new_node = new $Node('expression')
-        var js = 'while($no_break'+$loop_num+')'
+        if(this.has_break){
+            // If there is a "break" in the loop, add a boolean
+            // used if there is an "else" clause and in generators
+            new_node = new $Node()
+            var js = 'var $no_break'+$loop_num
+            js += '=$locals["$no_break'+$loop_num+'"]=true'
+            new $NodeJSCtx(new_node,js)
+            new_nodes.push(new_node)
+            // Because of this line, new_rank is incremented
+            new_rank++
+        }
+
+        new_node = new $Node()
+        if(this.has_break){js = 'while($no_break'+$loop_num+')'}
+        else{js='while(true)'}
         new $NodeJSCtx(new_node,js)
         new_node.context.loop_num = $loop_num // used for "else" clauses
         if(scope.ntype=='BRgenerator'){
@@ -1603,11 +1614,11 @@ function $ForExpr(context){
 
         // add lines to get next item in iterator, or exit the loop
         // if __next__ raises StopIteration
-        var try_node = new $Node('expression')
+        var try_node = new $Node()
         new $NodeJSCtx(try_node,'try')
         node.insert(0,try_node)
 
-        var iter_node = new $Node('expression')
+        var iter_node = new $Node()
         var context = new $NodeCtx(iter_node) // create ordinary node
         var target_expr = new $ExprCtx(context,'left',true)
         target_expr.tree = target.tree
@@ -1615,7 +1626,7 @@ function $ForExpr(context){
         assign.tree[1] = new $JSCode('$next'+$loop_num+'()')
         try_node.add(iter_node)
 
-        var catch_node = new $Node('expression')
+        var catch_node = new $Node()
 
         var js = 'catch($err){if(__BRYTHON__.is_exc($err,[StopIteration]))'
         js += '{__BRYTHON__.$pop_exc();break}'
@@ -1623,11 +1634,9 @@ function $ForExpr(context){
 
         new $NodeJSCtx(catch_node,js)
         node.insert(1,catch_node)
-        
-        // used in generators
 
         // set new loop children
-        node.parent.children[rank+2].children = children
+        node.parent.children[new_rank].children = children
         $loop_num++
     }
     this.to_js = function(){
@@ -2195,7 +2204,7 @@ function $NodeCtx(node){
     this.toString = function(){return 'node '+this.tree}
     this.to_js = function(){
         if(this.tree.length>1){
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             var ctx = new $NodeCtx(new_node)
             ctx.tree = [this.tree[1]]
             new_node.indent = node.indent+4
@@ -2379,7 +2388,31 @@ function $SingleKwCtx(context,token){ // used for finally,else
     this.parent = context
     this.tree = []
     context.tree.push(this)
+
+    // If token is "else" inside a "for" loop, set the flag "has_break"
+    // on the loop, to force the creation of a boolean "$no_break"
+    if(token=="else"){
+        var node = context.node
+        var pnode = node.parent
+        for(var rank=0;rank<pnode.children.length;rank++){
+            if(pnode.children[rank]===node){break}
+        }
+        var pctx = pnode.children[rank-1]
+        if(pctx.context.type=='node_js'){
+            console.log('llop num '+pctx.context.loop_num)
+            pctx.context.has_break = true
+        }
+        else{
+            var elt = pctx.context.tree[0]
+            if(elt.type=='for' ||
+                (elt.type=='condition' && elt.token=='while')){
+                pctx.context.tree[0].has_break = true
+            }
+        }
+    }
+
     this.toString = function(){return this.token}
+    
     this.to_js = function(){
         if(this.token==='finally'){return this.token}
         // For "else" we must check if the previous block was a loop
@@ -2393,11 +2426,11 @@ function $SingleKwCtx(context,token){ // used for finally,else
             if(parent.children[i]===tree_node){
                 if(i==0){$_SyntaxError(context,"block begins with 'else'")}
                 var pctx = parent.children[i-1].context
-                // get loop num : for a 'for' loop the previous node is a node_js
+                // Get loop num : for a 'for' loop the previous node is a node_js
                 if(pctx.type==='node_js'){var loop = pctx.loop_num}
-                // for a 'while' loop it is a normal node
+                // For a 'while' loop it is a normal node
                 else{var loop=pctx.tree[0].loop_num}
-                // if 'else' inside a loop, translate it into a condition
+                // If 'else' inside a loop, translate it into a condition
                 // on the 'no break' variable associated with the loop
                 if(loop!==undefined){return 'if ($no_break'+loop+')'}
                 else{break}
@@ -2535,13 +2568,13 @@ function $TryCtx(context){
         node.is_try = true // used in generators
         
         // insert new 'catch' clause
-        var catch_node = new $Node('expression')
+        var catch_node = new $Node()
         new $NodeJSCtx(catch_node,'catch($err'+$loop_num+')')
         catch_node.is_catch = true
         node.parent.insert(rank+1,catch_node)
         
         // fake line to start the 'else if' clauses
-        var new_node = new $Node('expression')
+        var new_node = new $Node()
         // set the boolean $failed to true
         new $NodeJSCtx(new_node,'__BRYTHON__.$failed'+$loop_num+'=true;if(false){void(0)}')
         catch_node.insert(0,new_node)
@@ -2559,7 +2592,7 @@ function $TryCtx(context){
                 if(ctx.tree.length>0 && ctx.tree[0].alias!==null
                     && ctx.tree[0].alias!==undefined){
                     // syntax "except ErrorName as Alias"
-                    var new_node = new $Node('expression')
+                    var new_node = new $Node()
                     var js = 'var '+ctx.tree[0].alias+'=__BRYTHON__.exception($err'+$loop_num+')'
                     new $NodeJSCtx(new_node,js)
                     node.parent.children[pos].insert(0,new_node)
@@ -2584,12 +2617,12 @@ function $TryCtx(context){
         if(!has_default){
             // if no default except: clause, add a line to throw the
             // exception if it was not caught
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             new $NodeJSCtx(new_node,'else{throw $err'+$loop_num+'}')
             catch_node.insert(catch_node.children.length,new_node)
         }
         if(has_else){
-            var else_node = new $Node('expression')
+            var else_node = new $Node()
             new $NodeJSCtx(else_node,'if(!__BRYTHON__.$failed'+$loop_num+')')
             for(var i=0;i<else_body.children.length;i++){
                 else_node.add(else_body.children[i])
@@ -2628,9 +2661,9 @@ function $WithCtx(context){
     this.transform = function(node,rank){
         if(this.transformed){return} // used if inside a for loop
         if(this.tree[0].alias===null){this.tree[0].alias = '$temp'}
-        var new_node = new $Node('expression')
+        var new_node = new $Node()
         new $NodeJSCtx(new_node,'catch($err'+$loop_num+')')
-        var fbody = new $Node('expression')
+        var fbody = new $Node()
         var js = 'if(!$ctx_manager_exit($err'+$loop_num+'.type,'
         js += '$err'+$loop_num+'.value,$err'+$loop_num+'.traceback))'
         js += '{throw $err'+$loop_num+'}'
@@ -2638,9 +2671,9 @@ function $WithCtx(context){
         new_node.add(fbody)
         node.parent.insert(rank+1,new_node)
         $loop_num++
-        var new_node = new $Node('expression')
+        var new_node = new $Node()
         new $NodeJSCtx(new_node,'finally')
-        var fbody = new $Node('expression')
+        var fbody = new $Node()
         new $NodeJSCtx(fbody,'$ctx_manager_exit(None,None,None)')
         new_node.add(fbody)
         node.parent.insert(rank+2,new_node)
@@ -2711,7 +2744,7 @@ function $YieldCtx(context){
         
             // replace "yield from X" by "for $temp in X: yield $temp"
 
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             node.parent.children.splice(rank,1)
             node.parent.insert(rank, new_node)
 
@@ -2720,11 +2753,11 @@ function $YieldCtx(context){
             for_ctx.tree[1] = this.tree[0]
             this.tree[0].parent = for_ctx
 
-            var yield_node = new $Node('expression')
+            var yield_node = new $Node()
             new_node.add(yield_node)
             new $IdCtx(new $YieldCtx(new $NodeCtx(yield_node)),'$temp'+$loop_num)
 
-            var ph_node = new $Node('expression')
+            var ph_node = new $Node()
             new $NodeJSCtx(ph_node,'// placeholder for generator sent value')
             ph_node.set_yield_value = true
             new_node.add(ph_node)
@@ -2736,7 +2769,7 @@ function $YieldCtx(context){
             
         }else{
         
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             new $NodeJSCtx(new_node,'// placeholder for generator sent value')
             new_node.set_yield_value = true
             node.parent.insert(rank+1,new_node)
@@ -2811,7 +2844,7 @@ function $add_line_num(node,rank){
             if(node.module===undefined){console.log('tiens, module undef !')}
             // add a trailing None for interactive mode
             js += 'None;'
-            var new_node = new $Node('expression')
+            var new_node = new $Node()
             new $NodeJSCtx(new_node,js)
             node.parent.insert(rank,new_node)
             offset = 2
@@ -2846,7 +2879,7 @@ function $augmented_assign(context,op){
     // replace current node by "$temp = <placeholder>"
     // at the end of $aumented_assign, control will be
     // passed to the <placeholder> expression
-    var new_node = new $Node('expression')
+    var new_node = new $Node()
     var new_ctx = new $NodeCtx(new_node)
     var new_expr = new $ExprCtx(new_ctx,'id',false)
     var _id = new $IdCtx(new_expr,'$temp')
@@ -2871,7 +2904,7 @@ function $augmented_assign(context,op){
     // insert shortcut node if op is += and both args are numbers
     var offset = 1
     if(prefix){
-        var new_node = new $Node('expression')
+        var new_node = new $Node()
         var js = 'if(typeof $temp=="number" && '
         js += 'typeof '+context.to_js()+'=="number"){'
         js += context.to_js()+op+'$temp'
@@ -2882,7 +2915,7 @@ function $augmented_assign(context,op){
         offset++
     }
     // insert node 'if(!hasattr(foo,"__iadd__"))
-    var new_node = new $Node('expression')
+    var new_node = new $Node()
     var js = ''
     if(prefix){js += 'else '}
     js += 'if(!hasattr('+context.to_js()+',"'+func+'"))'
@@ -2891,7 +2924,7 @@ function $augmented_assign(context,op){
     offset ++
 
     // create node for "foo = foo + bar"
-    var aa1 = new $Node('expression')
+    var aa1 = new $Node()
     var ctx1 = new $NodeCtx(aa1)
     var expr1 = new $ExprCtx(ctx1,'clone',false)
     expr1.tree = context.tree
@@ -2908,12 +2941,12 @@ function $augmented_assign(context,op){
     new_node.add(aa1)
     
     // create node for "else"
-    var aa2 = new $Node('expression')
+    var aa2 = new $Node()
     new $NodeJSCtx(aa2,'else')
     parent.insert(rank+offset,aa2)
 
     // create node for "foo.__iadd__(bar)    
-    var aa3 = new $Node('expression')
+    var aa3 = new $Node()
     var js3 = context.to_js()
     if(prefix){js3 += '='+prefix+'["'+context.to_js()+'"]'}
     js3 += '=getattr('+context.to_js()
@@ -4094,7 +4127,7 @@ function $tokenize(src,module,parent){
     root.module = module
     root.parent = parent
     root.indent = -1
-    var new_node = new $Node('expression')
+    var new_node = new $Node()
     var current = root
     var name = ""
     var _type = null
@@ -4510,21 +4543,21 @@ __BRYTHON__.py2js = function(src,module,parent){
     js += 'var __builtins__ = __BRYTHON__.builtins;\n'
     js += 'for(var $py_builtin in __builtins__)'
     js += '{eval("var "+$py_builtin+"=__builtins__[$py_builtin]")}\n'
-    var new_node = new $Node('expression')
+    var new_node = new $Node()
     new $NodeJSCtx(new_node,js)
     root.insert(0,new_node)
     // module doc string
-    var ds_node = new $Node('expression')
+    var ds_node = new $Node()
     new $NodeJSCtx(ds_node,'var __doc__=$globals["__doc__"]='+root.doc_string)
     root.insert(1,ds_node)
     // name
-    var name_node = new $Node('expression')
+    var name_node = new $Node()
     var lib_module = module
     if(module.substr(0,9)=='__main__,'){lib_module='__main__'}
     new $NodeJSCtx(name_node,'var __name__=$globals["__name__"]="'+lib_module+'"')
     root.insert(2,name_node)
     // file
-    var file_node = new $Node('expression')
+    var file_node = new $Node()
     new $NodeJSCtx(file_node,'var __file__=$globals["__file__"]="'+__BRYTHON__.$py_module_path[module]+'"')
     root.insert(3,file_node)
         
