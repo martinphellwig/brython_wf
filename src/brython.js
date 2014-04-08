@@ -71,6 +71,7 @@ __BRYTHON__.builtin_module_names=["posix","builtins",
 "math",
 "modulefinder",
 "time",
+"WS_FTP",
 "_ajax",
 "_browser",
 "_html",
@@ -1592,9 +1593,15 @@ break
 }else{
 while(ctx.parent){ctx=ctx.parent}
 var ctx_node=ctx.node
+var pnode=ctx_node.parent
+for(var rank=0;rank<pnode.children.length;rank++){
+if(pnode.children[rank]===ctx_node){break}
+}
+var new_node=new $Node()
 var js='throw UnboundLocalError("local variable '+"'"
 js +=varname+"'"+' referenced before assignment")'
-new $NodeJSCtx(ctx_node,js)
+new $NodeJSCtx(new_node,js)
+pnode.insert(rank,new_node)
 }
 }
 }
