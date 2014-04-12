@@ -94,8 +94,52 @@ out.write(',\n    '+',\n    '.join(['"%s"' %f for f in brython_py_builtins]))
 out.write(']\n')
 out.close()
 
+
+# Create file stdlib_paths.js : static mapping between module names and paths
+# in the standard library
+
+libfolder = os.path.join(os.path.dirname(os.getcwd()),'src')
+out = open(os.path.join(libfolder,'stdlib_paths.js'),'w')
+out.write(';(function(){\n')
+out.write('    var stdlib = [\n')
+
+jspath = os.path.join(libfolder,'libs')
+for dirpath, dirnames, filenames in os.walk(jspath):
+    for filename in filenames:
+        mod_name = os.path.splitext(filename)[0]
+        mod_path = '/'.join(os.path.join(dirpath,mod_name)[len(libfolder):].split(os.sep))
+        out.write('        ["%s","%s","js"],\n' %(mod_name,mod_path))
+
+pypath = os.path.join(libfolder,'Lib')
+for dirpath, dirnames, filenames in os.walk(pypath):
+    for filename in filenames:
+        mod_name, ext = os.path.splitext(filename)
+        if ext != '.py':
+            continue
+        path = dirpath[len(pypath)+len(os.sep):].split(os.sep)+[mod_name]
+        if not path[0]:
+            path = path[1:]
+        mod_name = '.'.join(path).lstrip('.')
+        if filename=='__init__.py':
+            mod_name = '.'.join(path[:-1]).lstrip('.')
+        mod_path = 'Lib/'+'/'.join(path)
+        out.write('        ["%s","%s","py",%s],\n' %(mod_name,mod_path,str(filename=='__init__.py').lower()))
+
+out.write("""    ]
+    __BRYTHON__.stdlib = {}
+    for(var i=0;i<stdlib.length;i++){
+        var mod = stdlib[i]
+        __BRYTHON__.stdlib[mod[0]]=mod.slice(1)
+    }
+})()
+""")
+out.close()
+
+print('static stdlib mapping ok')
+
+# build brython.js from base Javascript files
 sources = ['brython_builtins','version_info','py2js','py_object','py_type',
-    'py_utils','py_builtin_functions','js_objects','py_import',
+    'py_utils','py_builtin_functions','js_objects','stdlib_paths','py_import',
     'py_float','py_int','py_complex','py_dict','py_list','py_string','py_set',
     'py_dom']
 
