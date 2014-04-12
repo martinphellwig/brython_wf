@@ -14,16 +14,16 @@ Solução
     # doc['zone'] é a célula colorida
     alert(doc['zone'].text)
 
-<button onclick="show_text()">Mostrar texto</button>
+<button id="show_text">Mostrar texto</button>
 
     alert(doc['zone'].html)
 
-<br><button onclick="show_html()">Mostrar html</button>
+<br><button id="show_html">Mostrar html</button>
 
     # doc['entry'] é o campo de entrada
     alert(doc['entry'].value)
 
-<br><button onclick="show_value()">Mostrar entrada</button>
+<br><button id="show_value">Mostrar entrada</button>
 </td>
 <td id="zone" style="background-color:#FF7400;text-align:center;">
 <B>Conteúdo da célula</B><p>
@@ -34,16 +34,19 @@ Solução
 
 <script type="text/python3">
 from browser import doc
-def show_text():
+def show_text(ev):
     src = doc.get(selector="pre.marked")[0].text
     exec(src)
-def show_html():
+def show_html(ev):
     src = doc.get(selector="pre.marked")[1].text
     exec(src)
-def show_value():
+def show_value(ev):
     src = doc.get(selector="pre.marked")[2].text
     exec(src)
 
+doc['show_text'].bind('click', show_text)
+doc['show_html'].bind('click', show_html)
+doc['show_value'].bind('click', show_value)
 </script>    
 
 Cada elemento na página tem um atributo `text`, uma cadeia de

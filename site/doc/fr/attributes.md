@@ -49,8 +49,9 @@ Pour détruire un élément, utiliser le mot-clé `del`
 >    del zone
 
 La collection `options` associée à un objet SELECT a l'interface d'une liste Python :
- - accès à une option par son index : `option = elt.options[index]`
- - insertion d'une option à la position _index_ : `elt.options.insert(index,option)`
- - insertion d'une option en fin de liste : `elt.options.append(option)`
- - suppression d'une option : `del elt.options[index]`
+
+- accès à une option par son index : `option = elt.options[index]`
+- insertion d'une option à la position _index_ : `elt.options.insert(index,option)`
+- insertion d'une option en fin de liste : `elt.options.append(option)`
+- suppression d'une option : `del elt.options[index]`
 

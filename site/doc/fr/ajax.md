@@ -19,7 +19,7 @@ Cet objet possède les attributs et méthodes suivants :
 
 > La _fonction_ prend un seul argument, qui est l'objet `ajax`
 
-C'est équivalent à: _req.on_evt = func_
+C'est équivalent à: _req.on\_evt = func_
 
 `open(`_methode,url,async_`)`
 > _methode_ est la méthode HTTP utilisée pour la requête (habituellement GET ou POST)

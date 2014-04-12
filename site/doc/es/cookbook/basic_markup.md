@@ -28,7 +28,7 @@ Soluci&oacute;n
     </body>
     </html>
 
-<button onclick="fill_zone()">Pru&eacute;balo</button>
+<button id="fill_zone">Pru&eacute;balo</button>
 </td>
 <td id="zone" style="background-color:#FF7400;text-align:center;">Contenido inicial<p>
 </td>
@@ -36,11 +36,13 @@ Soluci&oacute;n
 </table>
 
 <script type="text/python3">
-def fill_zone():
+def fill_zone(ev):
     frmo browser import doc,html
     doc['zone'] <= html.H1("Presentando a Brython")
     doc['zone'] <= html.H4(html.I("Python en el navegador"))
     doc['zone'] <= html.B("Hola mundo !")
+
+doc['fill_zone'].bind('click', fill_zone)
 </script>
 
 `B` es una función definida en el módulo `browser.html`, que coincide con la etiqueta HTML `<B>` (bold)

@@ -47,9 +47,9 @@ For this, we use the function _validate()_ when clicking on "Send". If there is 
 <td style="width:40%;padding-right:10px;" id="py_source">
 
     import re
-    from browser import doc,alert
+    from browser import doc, alert, window
     
-    def validate():
+    def validate(ev):
         if not doc['name'].value:
             alert('Please enter the name')
             doc['name'].focus()
@@ -62,7 +62,8 @@ For this, we use the function _validate()_ when clicking on "Send". If there is 
             alert("The date is not at the right format")
             doc['date'].focus()
             return False
-            
+
+    window.validate = validate
 </td>
 </tr>
 </table>

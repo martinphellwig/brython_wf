@@ -44,4 +44,5 @@ from browser import doc
 def writetext(txt):
     doc["description"].text = ""
     doc["description"] <= txt
+window.writetext = writetext
 </script>

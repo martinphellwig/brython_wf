@@ -28,7 +28,7 @@ Exemple
     def show():
         doc['_timer'].text = '%.2f' %(time.time()-counter)
     
-    def start_timer():
+    def start_timer(ev):
         global _timer,counter
         if _timer is None:
             counter = time.time()
@@ -44,13 +44,16 @@ Exemple
             _timer = 'hold'
             doc['start'].text = 'Redémarrer'
     
-    def stop_timer():
+    def stop_timer(ev):
         global _timer
         timer.clear_interval(_timer)
         _timer = None
         t = 0
         doc['_timer'].text = '%.2f' %0
         doc['start'].text = 'Départ'
+
+    doc['start'].bind('click', start_timer)
+    doc['stop'].bind('click', stop_timer)
 
 </div>
 
@@ -61,8 +64,8 @@ exec(doc['py_source'].text)
 <table cellpadding=10>
 <tr>
 <td style="width:100px;">
-<button id="start" onclick="start_timer()">Départ</button>
-<br><button id="stop" onclick="stop_timer()">Arrêt</button>
+<button id="start"">Départ</button>
+<br><button id="stop"">Arrêt</button>
 </td>
 <td>
 <div id="_timer" style="background-color:black;color:#0F0;padding:15px;font-family:courier;font-weight:bold;font-size:23px;">0.00</div>

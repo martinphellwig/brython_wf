@@ -3,7 +3,7 @@ module **browser.timer**
 
 Implements methods to allow differed or repetitive execution of functions :
 
-**`set_timeout(_function,ms_)`**
+`set_timeout(`_function,ms_`)`
 > runs the *function* after *ms* milliseconds. *function* takes no argument. Returns an object usable in the following function
 
 > It is a wrapper of the `setTimeout` function in javascript. Official docs can be found [here](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-settimeout).
@@ -39,7 +39,7 @@ exec(doc["st-example"].text)
 </table>
 </div>
 
-**`clear_timeout(`_timer_`)`**
+`clear_timeout(`_timer_`)`
 > cancels the execution of the function defined by `set_timeout()`. It receives an argument, the `id` value returned by the `set_timeout()` call. 
 
 > It is a wrapper of the `cancelTimeout` function in javascript. Official docs can be found [here](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-cleartimeout).
@@ -86,14 +86,14 @@ exec(doc["ct-example"].text)
 </table>
 </div>
 
-**`set_interval(`_fonction,ms_`)`**
+`set_interval(`_fonction,ms_`)`
 > launches repeated execution of the *function* every *ms* milliseconds. This function returns an object usable in the following function
 
 > It is a wrapper of the `setInterval` function in javascript. Official docs can be found [here](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-setinterval).
 
 > When possible, you should avoid the use of this function and use request_animation_frame (see below) as an alternative. 
 
-**`clear_interval(`_timer_`)`**
+`clear_interval(`_timer_`)`
 > stops the repeated execution of the function defined by `set_interval()`
 
 > It is a wrapper of the `clearInterval` function in javascript. Official docs can be found [here](http://www.w3.org/TR/2011/WD-html5-20110525/timers.html#dom-windowtimers-clearinterval).
@@ -111,7 +111,7 @@ exec(doc["ct-example"].text)
     def show():
         doc['_timer'].text = '%.2f' %(time.time()-counter)
     
-    def start_timer():
+    def start_timer(ev):
         global _timer,counter
         if _timer is None:
             counter = time.time()
@@ -127,7 +127,7 @@ exec(doc["ct-example"].text)
             _timer = 'hold'
             doc['start'].text = 'Restart'
     
-    def stop_timer():
+    def stop_timer(ev):
         global _timer
         timer.clear_interval(_timer)
         _timer = None
@@ -135,6 +135,8 @@ exec(doc["ct-example"].text)
         doc['_timer'].text = '%.2f' %0
         doc['start'].text = 'Start'
 
+    doc['start'].bind('click', start_timer)
+    doc['stop'].bind('click', stop_timer)
 </div>
 
 <script type='text/python'>
@@ -144,8 +146,8 @@ exec(doc['py-source'].text)
 <table cellpadding=10>
 <tr>
 <td style="width:100px;">
-<button id="start" onclick="start_timer()">Start</button>
-<br><button id="stop" onclick="stop_timer()">Stop</button>
+<button id="start">Start</button>
+<br><button id="stop">Stop</button>
 </td>
 <td>
 <div id="_timer" style="background-color:black;color:#0F0;padding:15px;font-family:courier;font-weight:bold;font-size:23px;">0.00</div>
@@ -154,12 +156,12 @@ exec(doc['py-source'].text)
 </table>
 </div>
 
-**`request_animation_frame(*function*)`**
+`request_animation_frame(*function*)`
 > runs the *function* repeatedly letting the browser be in charge to update the browser. *function* uses a fake argument
 
 > It is a wrapper of the `requestAnimationFrame` function in javascript. Official docs can be found [here](http://www.w3.org/TR/animation-timing/#dom-windowanimationtiming-requestanimationframe). 
 
-**`cancel_animation_frame(*id*)`**
+`cancel_animation_frame(*id*)`
 > cancels the  repeated execution of the function defined by *request_animation_frame()* and uses the value returned by *request_animation_frame()* as *id*
 
 > It is a wrapper of the `cancelAnimationFrame` function in javascript. Official docs can be found [here](http://www.w3.org/TR/animation-timing/#dom-windowanimationtiming-cancelanimationframe).

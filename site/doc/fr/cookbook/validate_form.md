@@ -49,7 +49,7 @@ Pour cela, on exécute la fonction _validate()_ au moment d'appuyer sur "Envoi".
 <td style="width:40%;padding-right:10px;" id="py_source">
 
     import re
-    from browser import alert, doc
+    from browser import alert, doc, window
     
     def validate():
         if not doc['name'].value:
@@ -65,7 +65,7 @@ Pour cela, on exécute la fonction _validate()_ au moment d'appuyer sur "Envoi".
             doc['date'].focus()
             return False
             
-
+    window.validate = validate
 </td>
 
 </tr>

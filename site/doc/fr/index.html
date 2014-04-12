@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="../doc_brython.css">
 
 <script type="text/javascript" src="/src/brython.js"></script>
+<script type="text/javascript" src="/src/py_string.js"></script>
 
 <script type="text/python">
 from browser import doc, window
@@ -24,6 +25,7 @@ def load(url,target):
         doc[target].html = "Page %s not found" %url
         return False
     doc[target].html = mk
+    #print(mk)
     for script in scripts:
         exec(script,globals())
     return False

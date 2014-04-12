@@ -69,7 +69,7 @@ Exemple :
         doc['send_button'].disabled = True
     
     ws = None
-    def _open():
+    def _open(ev):
         if not __BRYTHON__.has_websocket:
             alert("WebSocket n'est pas pris en charge par votre navigateur")
             return
@@ -81,14 +81,18 @@ Exemple :
         ws.bind('message',on_message)
         ws.bind('close',on_close)
     
-    def send():
+    def send(ev):
         data = doc["data"].value
         if data:
             ws.send(data)
     
-    def close_connection():
+    def close_connection(ev):
         ws.close()
         doc['openbtn'].disabled = False
+    
+    doc['openbtn'].bind('click', _open)
+    doc['data'].bind('click', send)
+    doc['closebtn'].bind('click', close_connection)
     
 </td>
 <td valign="top">
@@ -96,9 +100,10 @@ Exemple :
 exec(doc['py_source'].text)
 </script>
 
-<button id="openbtn" onclick="_open()">Ouvrir la connexion</button>
-<br><input id="data"><button id="send_button" disabled onclick="send()">Envoyer</button>
-<p><button id="closebtn" disabled onclick="close_connection()">Fermer la connexion</button>
+<button id="openbtn">Ouvrir la connexion</button>
+<br><input id="data"><button id="send_button" disabled>Envoyer</button>
+<p><button id="closebtn" disabled>Fermer la connexion</button>
 </td>
 </tr>
 </table>
+
