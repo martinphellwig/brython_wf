@@ -29,13 +29,13 @@ puedes insertar formas y texto :
     panel <= circle
 </td>
 <td>
-<button onclick="run_svg()">click !</button>
+<button id="run_svg">click !</button>
 </td>
 
 <td>
 <script type="text/python">
 from browser import doc, svg
-def run_svg():
+def run_svg(ev):
     title = svg.text('Title',x=70,y=25,font_size=22,
         text_anchor="middle")
     circle = svg.circle(cx=70,cy=120,r=40,stroke="black",
@@ -45,6 +45,7 @@ def run_svg():
     panel <= title
     panel <= circle
 
+doc['run_svg'].bind('click', run_svg)
 </script>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
   width="140" height="200" style="border-style:solid;border-width:1;border-color:#000;">
@@ -74,19 +75,20 @@ Abajo creamos un rectángulo azul con una anchura y una altura de 40 px.
     panel <= rect
 </td>
 <td>
-<button onclick="run_svg1()">click !</button>
+<button id="run_svg1">click !</button>
 </td>
 
 <td>
 <script type="text/python">
 from browser import doc, svg
-def run_svg1():
+def run_svg1(ev):
     rect = svg.rect(x="40",y="100", width="40", height="40",
         stroke_width="2",fill="blue")
     
     panel = doc['panel1']
     panel <= rect
 
+doc['run_svg1'].bind('click', run_svg1)
 </script>
 
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
@@ -113,19 +115,20 @@ Debajo puedes ver un ejemplo de una elipse verde:
     panel <= ellipse
 </td>
 <td>
-<button onclick="run_svg2()">click !</button>
+<button id="run_svg2">click !</button>
 </td>
 
 <td>
 <script type="text/python">
 from browser import doc, svg
-def run_svg2():
+def run_svg2(ev):
     ellipse = svg.ellipse(cx="70",cy="100", rx="40", ry="80",
         stroke="black",stroke_width="2",fill="green")
     
     panel = doc['panel2']
     panel <= ellipse
 
+doc['run_svg2'].bind('click', run_svg2)
 </script>
 
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
@@ -153,19 +156,20 @@ Aquí puedes ver un ejemplo  de una línea marrón de longitud 100 píxeles.
     panel <= line
 </td>
 <td>
-<button onclick="run_svg3()">click !</button>
+<button id="run_svg3">click !</button>
 </td>
 
 <td>
 <script type="text/python">
 from browser import doc, svg
-def run_svg3():
+def run_svg3(ev):
     line = svg.line(x1="20",y1="100", x2="100", y2="20",
                     stroke="brown",stroke_width="2")
     
     panel = doc['panel3']
     panel <= line
 
+doc['run_svg3'].bind('click', run_svg3)
 </script>
 
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
@@ -194,13 +198,13 @@ Un ejemplo de un polígono (una estrella roja con el contorno azul)
     panel <= star
 </td>
 <td>
-<button onclick="run_svg4()">click !</button>
+<button id="run_svg4">click !</button>
 </td>
 
 <td>
 <script type="text/python">
 from browser import doc, svg
-def run_svg4():
+def run_svg4(ev):
     star = svg.polygon(fill="red", stroke="blue", stroke_width="2",
                        points=""" 75,38  90,80  135,80  98,107
                                  111,150 75,125  38,150 51,107
@@ -208,6 +212,8 @@ def run_svg4():
     
     panel = doc['panel4']
     panel <= star
+
+doc['run_svg4'].bind('click', run_svg4)
 </script>
 
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
@@ -235,19 +241,21 @@ Ejemplo  de un rectángulo animado:
     panel <= rect
 </td>
 <td>
-<button onclick="run_svg5()">click !</button>
+<button id="run_svg5">click !</button>
 </td>
 
 <td>
 <script type="text/python">
 from browser import doc, svg
-def run_svg5():
+def run_svg5(ev):
     rect = svg.rect(x=10, y=10, width=100, height=100)
     rect <= svg.animate(attributeName="x", From=-100, to=120, attributeType="XML",
                         dur="10s", repeatCount="indefinite")
     
     panel = doc['panel5']
     panel <= rect
+
+doc['run_svg5'].bind('click', run_svg5)
 </script>
 
 <svg id="panel5" xmlns="http://www.w3.org/2000/svg" 
