@@ -229,11 +229,13 @@ $B.$import_py_module = function(module,path,module_contents) {
         eval(js)
 
     }catch(err){
-        console.log(''+err+' '+' for module '+module.name)
+        console.log(err+' '+' for module '+module.name)
         for(var attr in err){
             console.log(attr+' '+err[attr])
         }
-        //console.log('js code\n'+js)
+        console.log('message: '+err.message)
+        console.log('filename: '+err.fileName)
+        console.log('linenum: '+err.lineNumber)
         if(__BRYTHON__.debug>0){console.log('line info '+__BRYTHON__.line_info)}
         throw err
     }
