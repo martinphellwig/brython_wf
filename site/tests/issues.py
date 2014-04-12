@@ -678,4 +678,11 @@ assert '' in ''
 d = dict.fromkeys(['a','b'],3)
 assert d=={'a':3, 'b':3}
 
+# augmented assignement in class body
+class A:
+    x = 8
+    x += 1
+
+assert A().x==9
+
 print('passed all tests')
