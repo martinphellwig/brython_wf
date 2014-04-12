@@ -19,7 +19,7 @@ Usaremos la función integrada `open()` para leer el contenido de un fichero
     fake_qs = '?foo=%s' %time.time()
     doc['zone'].value = open('cookbook/file.txt'+fake_qs).read()
 
-<button onclick="get_file()">Pruébalo</button>
+<button id="get_file">Pruébalo</button>
 
 </td>
 <td style="background-color:#FF7400;text-align:center;">
@@ -29,9 +29,11 @@ Usaremos la función integrada `open()` para leer el contenido de un fichero
 </table>
 
 <script type="text/python3">
-def get_file():
+def get_file(ev):
     src = doc.get(selector="pre.marked")[0].text
     exec(src)
+
+doc['get_file'].bind('click', get_file)
 </script>
 
 

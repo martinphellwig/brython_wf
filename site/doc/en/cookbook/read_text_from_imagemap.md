@@ -41,8 +41,9 @@ We will use the `onmouseover` atribute of the `area` HTML tag. A text will be sh
 </table>
 
 <script type="text/python3">
-from browser import doc
+from browser import doc, window
 def writetext(txt):
     doc["description"].text = ""
     doc["description"] <= txt
+window.writetext = writetext
 </script>

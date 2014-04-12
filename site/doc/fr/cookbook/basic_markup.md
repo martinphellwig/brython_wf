@@ -28,7 +28,7 @@ Solution
     </body>
     </html>
 
-<button onclick="fill_zone()">Essayez</button>
+<button id="fill_zone">Essayez</button>
 </td>
 <td id="zone" style="background-color:#FF7400;text-align:center;">Contenu initial<p>
 </td>
@@ -36,11 +36,14 @@ Solution
 </table>
 
 <script type="text/python3">
-def fill_zone():
+def fill_zone(ev):
     from browser import doc, html
     doc['zone'] <= html.H1("Introduction à Brython")
     doc['zone'] <= html.H4(html.I("Python dans le navigateur"))
     doc['zone'] <= html.B("Salut !")
+
+doc['fill_zone'].bind('click', fill_zone)
+
 </script>
 
 `B` est une fonction définie dans le module `html`, correspondant à la balise HTML `<B>` (gras)

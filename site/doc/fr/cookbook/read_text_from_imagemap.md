@@ -41,8 +41,9 @@ On utilise l'attribut `onmouseover` de la balise HTML `area` en lui affectant un
 </table>
 
 <script type="text/python3">
-from browser import doc
+from browser import doc, window
 def writetext(txt):
     doc["description"].text = ""
     doc["description"] <= txt
+window.writetext = writetext
 </script>

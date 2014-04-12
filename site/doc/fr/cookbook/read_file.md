@@ -17,8 +17,8 @@ On utilise la fonction intégrée `open()` pour récupérer le contenu du fichie
     import time
     fake_qs = '?foo=%s' %time.time()
     doc['zone'].value = open('cookbook/file.txt'+fake_qs).read()
-
-<button onclick="get_file()">Test it</button>
+    
+<button id="get_file">Test it</button>
 
 </td>
 <td style="background-color:#FF7400;text-align:center;">
@@ -28,9 +28,12 @@ On utilise la fonction intégrée `open()` pour récupérer le contenu du fichie
 </table>
 
 <script type="text/python3">
-def get_file():
+def get_file(ev):
     src = doc.get(selector="pre.marked")[0].text
     exec(src)
+
+doc['get_file'].bind('click', get_file)
+
 </script>
 
 

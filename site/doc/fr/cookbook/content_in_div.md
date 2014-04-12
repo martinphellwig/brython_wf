@@ -25,7 +25,7 @@ Solution
     </body>
     </html>
 
-<button onclick="fill_zone()">Essayer</button>
+<button id="fill_zone">Essayer</button>
 </td>
 <td id="zone" style="background-color:#FF7400;text-align:center;">Contenu initial<p>
 </td>
@@ -33,9 +33,14 @@ Solution
 </table>
 
 <script type="text/python3">
-def fill_zone():
+from browser import doc
+
+def fill_zone(ev):
     doc["zone"] <= "bla "
+
+doc['fill_zone'].bind('click', fill_zone)
 </script>
 
 `doc["zone"]` est l'élément dans la page web qui possède l'id "zone" (ici, la cellule colorée)
+
 

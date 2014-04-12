@@ -14,16 +14,16 @@ Solution
     # doc['zone'] is the colored cell
     alert(doc['zone'].text)
 
-<button onclick="show_text()">Show text</button>
+<button id="show_text">Show text</button>
 
     alert(doc['zone'].html)
 
-<br><button onclick="show_html()">Show html</button>
+<br><button id="show_html">Show html</button>
 
     # doc['entry'] is the input field
     alert(doc['entry'].value)
 
-<br><button onclick="show_value()">Show entry</button>
+<br><button id="show_value">Show entry</button>
 </td>
 <td id="zone" style="background-color:#FF7400;text-align:center;">
 <B>Cell content</B><p>
@@ -34,16 +34,19 @@ Solution
 
 <script type="text/python3">
 from browser import doc
-def show_text():
+def show_text(ev):
     src = doc.get(selector="pre.marked")[0].text
     exec(src)
-def show_html():
+def show_html(ev):
     src = doc.get(selector="pre.marked")[1].text
     exec(src)
-def show_value():
+def show_value(ev):
     src = doc.get(selector="pre.marked")[2].text
     exec(src)
 
+doc['show_text'].bind('click', show_text)
+doc['show_html'].bind('click', show_html)
+doc['show_value'].bind('click', show_value)
 </script>    
 
 Each element in the page has an attribute `text`, a string with the text shown in the element

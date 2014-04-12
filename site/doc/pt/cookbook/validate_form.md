@@ -52,7 +52,7 @@ mostra os dados enviados usando _doc.query_.
 <td style="width:40%;padding-right:10px;" id="py_source">
 
     import re
-    from browser import doc, alert
+    from browser import doc, alert, window
     
     def validate():
         if not doc['name'].value:
@@ -67,7 +67,8 @@ mostra os dados enviados usando _doc.query_.
             alert("A data não está no formato correto")
             doc['date'].focus()
             return False
-            
+
+    window.validate = validate            
 </td>
 </tr>
 </table>

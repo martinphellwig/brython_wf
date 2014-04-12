@@ -16,18 +16,22 @@ caractéres.
     storage['brython_test'] = doc['zone'].value
     
 <input id="zone" value="Armazenamento Local">
-<button onclick="show_locstor(0)">Armazenar valor</button>
+<button id="show_0">Armazenar valor</button>
 
     from browser import alert
     alert(storage['brython_test'])
 
-<button onclick="show_locstor(1)">Mostrar valor armazenado</button>
+<button id="show_1">Mostrar valor armazenado</button>
 
 
 <script type="text/python3">
 def show_locstor(num):
     src = doc.get(selector="pre.marked")[num].text
     exec(src)
+
+doc['show_0'].bind('click', lambda ev:show_locstor(0))
+doc['show_1'].bind('click', lambda ev:show_locstor(1))
+doc['show_2'].bind('click', lambda ev:show_locstor(2))
 </script>
 
 Se um objeto Python pode ser serializado pelo módulo `json`, você pode
@@ -45,7 +49,7 @@ armazenar a versão serializadda, e então recuperar o objeto original:
     alert(b['foo'])
     alert(b['1515'])
 
-<button onclick="show_locstor(2)">Teste</button>
+<button id="show_2">Teste</button>
 
 Atenção, `json` converte chaves de dicionários a seus valores em
 cadeias de caracteres, é por isso que usamos `b['1515']` em vez de

@@ -47,7 +47,7 @@ Para ello, usaremos la función _validate()_  que será invocada cuando pulsemos
 <td style="width:40%;padding-right:10px;" id="py_source">
 
     import re
-    from browser import doc, alert
+    from browser import doc, alert, window
     
     def validate():
         if not doc['name'].value:
@@ -62,6 +62,8 @@ Para ello, usaremos la función _validate()_  que será invocada cuando pulsemos
             alert("La fecha no tiene el formato apropiado")
             doc['date'].focus()
             return False
+    
+    window.validate = validate
             
 </td>
 </tr>

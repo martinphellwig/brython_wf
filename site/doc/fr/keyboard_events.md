@@ -116,6 +116,7 @@ Saisir du texte dans le champ ci-dessous, en appuyant ou pas sur la touche Ctrl
     
     doc['ctrlKey'].bind('keypress', ctrlKey)
 </div>
+
 Notez que `ev.preventDefault()` est appelé pour éviter le comportement par défaut associé à certains raccourcis clavier qui utilisent la touche Ctrl
 
 </td>
@@ -187,6 +188,7 @@ Saisir du texte dans le champ ci-dessous, en appuyant ou pas sur la touche Majus
 
     doc['shiftKey'].bind('keypress', shiftKey)
 </div>
+
 </td>
 </tr>
 
@@ -246,10 +248,9 @@ avec *keydown* <input id="whichKeydown"></input>
 </table>
 
 <script type="text/python">
-exec(doc["codeAltKey"].text)
-exec(doc["codeCharCode"].text)
-exec(doc["codeCtrlKey"].text)
-exec(doc["codeKeyCode"].text)
-exec(doc["codeShiftKey"].text)
-exec(doc["codeWhich"].text)
+for _id in ["AltKey", "CharCode", "CtrlKey", "KeyCode", "ShiftKey", "Which"]:
+    elt_id = "code%s" %_id
+    print(doc[elt_id].text)
+    exec(doc[elt_id].text)
 </script>
+

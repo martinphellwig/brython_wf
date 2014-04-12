@@ -39,7 +39,7 @@ Aquí podéis ver un ejemplo simple :
     # insert table in the element
     doc['zone'] <= table
 
-<button onclick="fill_zone()">Test it</button>
+<button id="fill_zone">Test it</button>
 </td>
 <td id="zone" style="background-color:#FF7400;text-align:center;">Contenido inicial<p>
 </td>
@@ -47,9 +47,10 @@ Aquí podéis ver un ejemplo simple :
 </table>
 
 <script type="text/python3">
-def fill_zone():
+def fill_zone(ev):
     src = doc.get(selector="pre.marked")[0].text
     exec(src)
+doc['fill_zone'].bind('click', fill_zone)
 </script>
 
 Fíjate que el contenido inicial de la celda se ha eliminado : simplemente asignando una cadena vacía a su atributo `text`
@@ -71,7 +72,7 @@ Podemos construir una tabla a partir de una lista de listas :
     doc['zone1'].text = ''
     doc['zone1']<= t
 
-<button onclick="build_table()">Pruébalo</button>
+<button id="build_table">Pruébalo</button>
 </td>
 <td id="zone1" style="background-color:#FF7400;text-align:center;">Contenido inicial<p>
 </td>
@@ -79,8 +80,9 @@ Podemos construir una tabla a partir de una lista de listas :
 </table>
 
 <script type="text/python3">
-def build_table():
+def build_table(ev):
     src = doc.get(selector="pre.marked")[1].text
     exec(src)
+doc['build_table'].bind('click', build_table)
 </script>
 
