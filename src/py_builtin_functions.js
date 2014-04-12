@@ -156,6 +156,13 @@ var $BytesDict = {
     __name__ : 'bytes'
 }
 
+$BytesDict.__add__ = function(self,other){
+    if(!isinstance(other,bytes)){
+        throw TypeError("can't concat bytes to "+__builtins__.str(other))
+    }
+    self.source += other.source
+}
+
 var $bytes_iterator = $B.$iterator_class('bytes_iterator')
 $BytesDict.__iter__ = function(self){
     return $B.$iterator(self.source,$bytes_iterator)
@@ -1555,7 +1562,7 @@ var BaseException = function (msg,js_exc){
     var err = Error()
     err.info = 'Traceback (most recent call last):'
     if(msg===undefined){msg='BaseException'}
-    var tb = None
+    var tb = null
     
     if($B.debug && !msg.info){
         if(js_exc!==undefined){
@@ -1567,7 +1574,7 @@ var BaseException = function (msg,js_exc){
             err.info+='\n'        
         }
         // call stack
-        var last_info
+        var last_info, tb=null
         for(var i=0;i<$B.call_stack.length;i++){
             var call_info = $B.call_stack[i]
             var lib_module = call_info[1]
@@ -1595,14 +1602,16 @@ var BaseException = function (msg,js_exc){
         }
         // error line
         var err_info = $B.line_info
-        while(true){
-            var mod = $B.modules[err_info[1]]
-            if(mod===undefined){break}
-            var caller = mod.caller
-            if(caller===undefined){break}
-            err_info = caller
+        if(err_info!==undefined){
+            while(true){
+                var mod = $B.modules[err_info[1]]
+                if(mod===undefined){break}
+                var caller = mod.caller
+                if(caller===undefined){break}
+                err_info = caller
+            }
         }
-        if(err_info!==last_info){
+        if(err_info!==undefined && err_info!==last_info){
             var module = err_info[1]
             var line_num = err_info[0]
             try{
@@ -1621,6 +1630,14 @@ var BaseException = function (msg,js_exc){
                 tb_lasti:line,
                 tb_next: None   // fix me
             }
+        }
+    }else{
+        // minimal traceback object if debug mode is not set
+        tb = {__class__:$TracebackDict,
+            tb_frame:{__class__:$FrameDict},
+            tb_lineno:-1,
+            tb_lasti:'',
+            tb_next: None   // fix me
         }
     }
     err.message = msg
