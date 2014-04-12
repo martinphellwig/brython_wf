@@ -1,6 +1,6 @@
 // brython.js www.brython.info
 // version [3, 3, 0, 'alpha', 0]
-// implementation [2, 1, 0, 'rc', 1]
+// implementation [2, 1, 0, 'rc', 2]
 // version compiled from commented, indented source files at https://bitbucket.org/olemis/brython/src
 
 var __BRYTHON__=__BRYTHON__ ||{}
@@ -60,7 +60,7 @@ __BRYTHON__.has_websocket=(function(){
 try{var x=window.WebSocket;return x!==undefined}
 catch(err){return false}
 })()
-__BRYTHON__.implementation=[2, 1, 0, 'rc', 1]
+__BRYTHON__.implementation=[2, 1, 0, 'rc', 2]
 __BRYTHON__.version_info=[3, 3, 0, 'alpha', 0]
 __BRYTHON__.builtin_module_names=["posix","builtins",
 "crypto_js",
@@ -4104,7 +4104,6 @@ return self===other
 }
 $ObjectDict.__ge__=$ObjectNI('__ge__','>=')
 $ObjectDict.__getattribute__=function(obj,attr){
-if(obj===undefined){console.log('get attr '+attr+' of undefined')}
 var klass=$B.get_class(obj)
 if(attr==='__class__'){
 return klass.$factory
@@ -4697,7 +4696,6 @@ indent +=4
 for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.append('+arguments[1]+')'
 var $mod_name='ge'+$ix
-if($B.line_info===undefined){$B.line_info=['foo',0]}
 var $root=$B.py2js($py,$mod_name,$B.line_info)
 $root.caller=$B.line_info
 var $js=$root.to_js()
