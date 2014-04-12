@@ -4634,6 +4634,12 @@ function brython(options){
     if(typeof options==='number'){options={'debug':options}}
     __BRYTHON__.debug = options.debug
 
+    // For imports, default mode is to search modules of the standard library
+    // using a static mapping stored in stdlib_paths.js
+    // This can be disabled by setting option "static_stdlib_import" to false
+    if(options.static_stdlib_import===undefined){options.static_stdlib_import=true}
+    __BRYTHON__.static_stdlib_import = options.static_stdlib_import
+
     // If options has an attribute "open", it will be used by the built-in
     // function open() - see py_builtin_functions.js
     if (options.open !== undefined) {__BRYTHON__.builtins.$open = options.open}

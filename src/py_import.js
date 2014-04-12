@@ -299,25 +299,46 @@ $B.$import = function(mod_name,origin){
     var mod;
     var stored = __BRYTHON__.imported[mod_name]
     if(stored===undefined){
-        // if module is in a package (eg "import X.Y") then we must first import X
-        // by searching for the file X/__init__.py, then import X.Y searching either
-        // X/Y.py or X/Y/__init__.py
-        mod = {}
-        var parts = mod_name.split('.')
-        for(var i=0;i<parts.length;i++){
-            var module = new Object()
-            module.name = parts.slice(0,i+1).join('.')
-            if(__BRYTHON__.modules[module.name]===undefined){
-                // this could be a recursive import, so lets set modules={}
+        // search in standard library
+        var stdlib_path = __BRYTHON__.stdlib[mod_name]
+        if(__BRYTHON__.static_stdlib_import && stdlib_path!==undefined){
+            //console.log(mod_name+' found in stdlib '+stdlib_path[0])
+            var module = {name:mod_name}
+            if(stdlib_path[1]=='py'){
+                // load Python module
                 __BRYTHON__.modules[module.name]={__class__:$B.$ModuleDict}
                 __BRYTHON__.imported[module.name]={__class__:$B.$ModuleDict}
-                // Indicate if package only, or package or file
-                if(i<parts.length-1){
-                    // searching for X in "import X.Y"
-                    module.package_only = true
+                mod = $B.$import_py(module, __BRYTHON__.brython_path+stdlib_path[0])
+                mod.$package = stdlib_path[2]
+                __BRYTHON__.modules[module.name] = mod
+                __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]                
+            }else{
+                //load Javascript module
+                mod = $B.$import_js(module)
+                __BRYTHON__.modules[module.name] = mod
+                __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]                
+            }
+        }else{
+            // if module is in a package (eg "import X.Y") then we must first import X
+            // by searching for the file X/__init__.py, then import X.Y searching either
+            // X/Y.py or X/Y/__init__.py
+            mod = {}
+            var parts = mod_name.split('.')
+            for(var i=0;i<parts.length;i++){
+                var module = new Object()
+                module.name = parts.slice(0,i+1).join('.')
+                if(__BRYTHON__.modules[module.name]===undefined){
+                    // this could be a recursive import, so lets set modules={}
+                    __BRYTHON__.modules[module.name]={__class__:$B.$ModuleDict}
+                    __BRYTHON__.imported[module.name]={__class__:$B.$ModuleDict}
+                    // Indicate if package only, or package or file
+                    if(i<parts.length-1){
+                        // searching for X in "import X.Y"
+                        module.package_only = true
+                    }
+                    __BRYTHON__.modules[module.name] = $B.$import_single(module,origin)
+                    __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
                 }
-                __BRYTHON__.modules[module.name] = $B.$import_single(module,origin)
-                __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]
             }
         }
     }else{
