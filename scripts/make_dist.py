@@ -10,7 +10,7 @@ pdir = os.path.dirname(os.getcwd())
 
 # version info
 version = [3,3,0,"alpha",0]
-implementation = [2, 1, 0, 'rc', 1]
+implementation = [2, 1, 0, 'rc', 2]
 
 try:
   import slimit
