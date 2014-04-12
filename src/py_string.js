@@ -251,8 +251,8 @@ var $legacy_format=$StringDict.__mod__ = function(self,args){
                     while(res.length<width){res=pad+res}
                 }
                 return res
-            }else if((this.type=="f" || this.type=="F") && isinstance(src, __builtins__.float)){
-                //this._number_check(src)
+            }else if(this.type=="f" || this.type=="F"){
+                this._number_check(src)
                 //if(!isinstance(src,[__builtins__.int,__builtins__.float])){throw __builtins__.TypeError(
                 //    "%"+this.type+" format : a number is required, not "+str(src.__class__))}
                 var num = parseFloat(src)
@@ -1447,7 +1447,7 @@ for(var $attr in $StringDict){
 $StringSubclassDict.__mro__ = [$StringSubclassDict,$ObjectDict]
 
 // factory for str subclasses
-var $StringSubclassFactory = {
+$B.$StringSubclassFactory = {
     __class__:$B.$factory,
     $dict:$StringSubclassDict
 }
