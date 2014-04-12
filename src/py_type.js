@@ -106,7 +106,7 @@ $B.builtins.type = function(name,bases,cl_dict){
     for(var i=0;i<bases.length;i++){
         // we can't simply push bases[i].__mro__ 
         // because it would be modified in the algorithm
-        if(bases[i]===$B.builtins.str){bases[i] = $StringSubclassFactory}
+        if(bases[i]===$B.builtins.str){bases[i] = $B.$StringSubclassFactory}
         var bmro = []
         for(var k=0;k<bases[i].$dict.__mro__.length;k++){
             bmro.push(bases[i].$dict.__mro__[k])
