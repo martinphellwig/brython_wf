@@ -542,6 +542,10 @@ function $AssignCtx(context){
                     return res
                 }
             }else if(scope.ntype==='class'){
+                // Left part is a "raw_js" in case of augmented assignements
+                // in a class body
+                if(left.type=="raw_js"){return left.to_js()+'='+right.to_js()}
+
                 // assignment in a class : creates a class attribute
                 left.is_left = true // used in to_js() for ids
                 var attr = left.to_js()
@@ -758,9 +762,12 @@ function $CallCtx(context){
                 return 'locals("'+scope.context.tree[0].id+'","'+mod.module+'")'
             }
         }else if(this.func!==undefined && this.func.value ==='globals'){
-            var ctx_node = this
-            while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
-            var module = ctx_node.node.module
+            var module = $get_module(this).module
+            //while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
+            //var module = ctx_node.node.module
+            if(module===undefined){
+                console.log('module undef for '+ctx_node)
+            }
             return 'globals("'+module+'")'
         }else if(this.func!==undefined && this.func.value ==='dir'){
             if(this.tree.length==0){
@@ -2136,9 +2143,7 @@ function $LambdaCtx(context){
     this.vars = []
     this.locals = []
     this.to_js = function(){
-        var ctx_node = this
-        while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
-        var module = ctx_node.node.module
+        var module = $get_module(this).module
         var src = __BRYTHON__.$py_src[module]
         var qesc = new RegExp('"',"g") // to escape double quotes in arguments
 
@@ -2365,6 +2370,7 @@ function $RaiseCtx(context){
 }
 
 function $RawJSCtx(context,js){
+    this.type = "raw_js"
     context.tree.push(this)
     this.parent = context
     this.toString = function(){return '(js) '+js}
@@ -2882,17 +2888,27 @@ function $augmented_assign(context,op){
         if(parent.children[i]===node){var rank = i;break}
     }
 
+    var offset = 1
+    
+    // Create temporary variable
+    var new_node = new $Node()
+    new $NodeJSCtx(new_node,'var $temp,$left')
+    parent.insert(rank,new_node)
+    offset++
+
     // replace current node by "$temp = <placeholder>"
     // at the end of $aumented_assign, control will be
     // passed to the <placeholder> expression
     var new_node = new $Node()
     var new_ctx = new $NodeCtx(new_node)
-    var new_expr = new $ExprCtx(new_ctx,'id',false)
-    var _id = new $IdCtx(new_expr,'$temp')
+    var new_expr = new $ExprCtx(new_ctx,'js',false)
+    // The id must be a "raw_js", otherwise if scope is a class, it would
+    // create a class attribute "$class.$temp"
+    var _id = new $RawJSCtx(new_expr,'$temp')
     var assign = new $AssignCtx(context)
     assign.tree[0] = _id
     _id.parent = assign
-
+    
     var prefix = ''
 
     if(['+=','-=','*=','/='].indexOf(op)>-1 && 
@@ -2904,17 +2920,23 @@ function $augmented_assign(context,op){
             if(scope.globals && scope.globals.indexOf(context.tree[0].value)>-1){
                 prefix = '$globals'
             }
+        }else if(scope.ntype=="class"){
+            var new_node = new $Node()
+            new $NodeJSCtx(new_node,'$left='+context.to_js())
+            parent.insert(rank+offset, new_node)
+            offset++
         }
     }
 
     // insert shortcut node if op is += and both args are numbers
-    var offset = 1
     if(prefix){
         var new_node = new $Node()
         var js = 'if(typeof $temp=="number" && '
-        js += 'typeof '+context.to_js()+'=="number"){'
-        js += context.to_js()+op+'$temp'
-        js += ';'+prefix+'["'+context.tree[0].value+'"]='+context.to_js()
+        js += 'typeof '+context.tree[0].value+'=="number"){'
+        if(scope.ntype=='class'){js+='$left'}
+        else{js += context.to_js()}
+        js += op+'$temp'
+        js += ';'+prefix+'["'+context.tree[0].value+'"]='+context.tree[0].value
         js += '}'
         new $NodeJSCtx(new_node,js)
         parent.insert(rank+offset,new_node)
@@ -2954,7 +2976,10 @@ function $augmented_assign(context,op){
     // create node for "foo.__iadd__(bar)    
     var aa3 = new $Node()
     var js3 = context.to_js()
-    if(prefix){js3 += '='+prefix+'["'+context.to_js()+'"]'}
+    if(prefix){
+        if(scope.ntype=='class'){js3='$left'}
+        else{js3 += '='+prefix+'["'+context.tree[0].value+'"]'}
+    }
     js3 += '=getattr('+context.to_js()
     js3 += ',"'+func+'")($temp)'
     new $NodeJSCtx(aa3,js3)
