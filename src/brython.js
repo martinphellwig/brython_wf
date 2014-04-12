@@ -550,6 +550,7 @@ res +=right.to_js()+';None;'
 return res
 }
 }else if(scope.ntype==='class'){
+if(left.type=="raw_js"){return left.to_js()+'='+right.to_js()}
 left.is_left=true 
 var attr=left.to_js()
 left.in_class='$class.'+attr
@@ -716,9 +717,10 @@ if(scope !==null &&(scope.ntype==='def'||scope.ntype=='generator')){
 return 'locals("'+scope.C.tree[0].id+'","'+mod.module+'")'
 }
 }else if(this.func!==undefined && this.func.value==='globals'){
-var ctx_node=this
-while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
-var module=ctx_node.node.module
+var module=$get_module(this).module
+if(module===undefined){
+console.log('module undef for '+ctx_node)
+}
 return 'globals("'+module+'")'
 }else if(this.func!==undefined && this.func.value==='dir'){
 if(this.tree.length==0){
@@ -1827,9 +1829,7 @@ this.args_start=$pos+6
 this.vars=[]
 this.locals=[]
 this.to_js=function(){
-var ctx_node=this
-while(ctx_node.parent!==undefined){ctx_node=ctx_node.parent}
-var module=ctx_node.node.module
+var module=$get_module(this).module
 var src=__BRYTHON__.$py_src[module]
 var qesc=new RegExp('"',"g")
 var args=src.substring(this.args_start,this.body_start).replace(qesc,'\\"')
@@ -2030,6 +2030,7 @@ return 'throw '+$to_js(this.tree)
 }
 }
 function $RawJSCtx(C,js){
+this.type="raw_js"
 C.tree.push(this)
 this.parent=C
 this.toString=function(){return '(js) '+js}
@@ -2458,10 +2459,15 @@ var parent=node.parent
 for(var i=0;i<parent.children.length;i++){
 if(parent.children[i]===node){var rank=i;break}
 }
+var offset=1
+var new_node=new $Node()
+new $NodeJSCtx(new_node,'var $temp,$left')
+parent.insert(rank,new_node)
+offset++
 var new_node=new $Node()
 var new_ctx=new $NodeCtx(new_node)
-var new_expr=new $ExprCtx(new_ctx,'id',false)
-var _id=new $IdCtx(new_expr,'$temp')
+var new_expr=new $ExprCtx(new_ctx,'js',false)
+var _id=new $RawJSCtx(new_expr,'$temp')
 var assign=new $AssignCtx(C)
 assign.tree[0]=_id
 _id.parent=assign
@@ -2475,15 +2481,21 @@ else if(['def','generator'].indexOf(scope.ntype)>-1){
 if(scope.globals && scope.globals.indexOf(C.tree[0].value)>-1){
 prefix='$globals'
 }
+}else if(scope.ntype=="class"){
+var new_node=new $Node()
+new $NodeJSCtx(new_node,'$left='+C.to_js())
+parent.insert(rank+offset, new_node)
+offset++
 }
 }
-var offset=1
 if(prefix){
 var new_node=new $Node()
 var js='if(typeof $temp=="number" && '
-js +='typeof '+C.to_js()+'=="number"){'
-js +=C.to_js()+op+'$temp'
-js +=';'+prefix+'["'+C.tree[0].value+'"]='+C.to_js()
+js +='typeof '+C.tree[0].value+'=="number"){'
+if(scope.ntype=='class'){js+='$left'}
+else{js +=C.to_js()}
+js +=op+'$temp'
+js +=';'+prefix+'["'+C.tree[0].value+'"]='+C.tree[0].value
 js +='}'
 new $NodeJSCtx(new_node,js)
 parent.insert(rank+offset,new_node)
@@ -2516,7 +2528,10 @@ new $NodeJSCtx(aa2,'else')
 parent.insert(rank+offset,aa2)
 var aa3=new $Node()
 var js3=C.to_js()
-if(prefix){js3 +='='+prefix+'["'+C.to_js()+'"]'}
+if(prefix){
+if(scope.ntype=='class'){js3='$left'}
+else{js3 +='='+prefix+'["'+C.tree[0].value+'"]'}
+}
 js3 +='=getattr('+C.to_js()
 js3 +=',"'+func+'")($temp)'
 new $NodeJSCtx(aa3,js3)
@@ -4089,6 +4104,7 @@ return self===other
 }
 $ObjectDict.__ge__=$ObjectNI('__ge__','>=')
 $ObjectDict.__getattribute__=function(obj,attr){
+if(obj===undefined){console.log('get attr '+attr+' of undefined')}
 var klass=$B.get_class(obj)
 if(attr==='__class__'){
 return klass.$factory
@@ -4302,7 +4318,7 @@ class_dict[attr]=val
 }
 var seqs=[]
 for(var i=0;i<bases.length;i++){
-if(bases[i]===$B.builtins.str){bases[i]=$StringSubclassFactory}
+if(bases[i]===$B.builtins.str){bases[i]=$B.$StringSubclassFactory}
 var bmro=[]
 for(var k=0;k<bases[i].$dict.__mro__.length;k++){
 bmro.push(bases[i].$dict.__mro__[k])
@@ -4681,6 +4697,7 @@ indent +=4
 for(var $j=0;$j<indent;$j++){$py +=' '}
 $py +=$res+'.append('+arguments[1]+')'
 var $mod_name='ge'+$ix
+if($B.line_info===undefined){$B.line_info=['foo',0]}
 var $root=$B.py2js($py,$mod_name,$B.line_info)
 $root.caller=$B.line_info
 var $js=$root.to_js()
@@ -5457,6 +5474,12 @@ $BytearrayDict.$factory=bytearray
 var $BytesDict={
 __class__ : $B.$type,
 __name__ : 'bytes'
+}
+$BytesDict.__add__=function(self,other){
+if(!isinstance(other,bytes)){
+throw TypeError("can't concat bytes to "+__builtins__.str(other))
+}
+self.source +=other.source
 }
 var $bytes_iterator=$B.$iterator_class('bytes_iterator')
 $BytesDict.__iter__=function(self){
@@ -6638,7 +6661,7 @@ var BaseException=function(msg,js_exc){
 var err=Error()
 err.info='Traceback (most recent call last):'
 if(msg===undefined){msg='BaseException'}
-var tb=None
+var tb=null
 if($B.debug && !msg.info){
 if(js_exc!==undefined){
 for(var attr in js_exc){
@@ -6648,7 +6671,7 @@ catch(_err){void(0)}
 }
 err.info+='\n' 
 }
-var last_info
+var last_info, tb=null
 for(var i=0;i<$B.call_stack.length;i++){
 var call_info=$B.call_stack[i]
 var lib_module=call_info[1]
@@ -6674,6 +6697,7 @@ tb_next: None
 }
 }
 var err_info=$B.line_info
+if(err_info!==undefined){
 while(true){
 var mod=$B.modules[err_info[1]]
 if(mod===undefined){break}
@@ -6681,7 +6705,8 @@ var caller=mod.caller
 if(caller===undefined){break}
 err_info=caller
 }
-if(err_info!==last_info){
+}
+if(err_info!==undefined && err_info!==last_info){
 var module=err_info[1]
 var line_num=err_info[0]
 try{
@@ -6699,6 +6724,13 @@ tb_lineno:line_num,
 tb_lasti:line,
 tb_next: None 
 }
+}
+}else{
+tb={__class__:$TracebackDict,
+tb_frame:{__class__:$FrameDict},
+tb_lineno:-1,
+tb_lasti:'',
+tb_next: None 
 }
 }
 err.message=msg
@@ -7202,10 +7234,13 @@ console.log(js)
 }
 eval(js)
 }catch(err){
-console.log(''+err+' '+' for module '+module.name)
+console.log(err+' '+' for module '+module.name)
 for(var attr in err){
 console.log(attr+' '+err[attr])
 }
+console.log('message: '+err.message)
+console.log('filename: '+err.fileName)
+console.log('linenum: '+err.lineNumber)
 if(__BRYTHON__.debug>0){console.log('line info '+__BRYTHON__.line_info)}
 throw err
 }
@@ -8727,7 +8762,8 @@ var width=parseInt(this.precision.substr(1))
 while(res.length<width){res=pad+res}
 }
 return res
-}else if((this.type=="f" || this.type=="F")&& isinstance(src, __builtins__.float)){
+}else if(this.type=="f" || this.type=="F"){
+this._number_check(src)
 var num=parseFloat(src)
 if(this.precision===undefined)this.precision=".6" 
 if(this.precision){num=num.toFixed(parseInt(this.precision.substr(1)))}
@@ -9654,7 +9690,7 @@ return $StringDict[attr].apply(null,args)
 }
 }
 $StringSubclassDict.__mro__=[$StringSubclassDict,$ObjectDict]
-var $StringSubclassFactory={
+$B.$StringSubclassFactory={
 __class__:$B.$factory,
 $dict:$StringSubclassDict
 }

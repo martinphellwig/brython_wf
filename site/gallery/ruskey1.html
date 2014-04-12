@@ -33,12 +33,12 @@ Phonetic ordering of cyrillic (фонетических упорядочение
 We are matching the latin alphabet, uppercase, then lowercase
 """
 
-CYR =  'АБЦДЕФГЧИЙКЛМНОПЯРСТУВЖХЫЗШЩЭЮЁЬЪабцдефгчийклмнопярстувжхызшщэюёьъ '
-FR  =  'ABWDEFGQI8KLMNOP1RCTYVJXUZSH379£µabwdefgqi_klmnop&rctyvjxuzsh"-ç$* '
+CYR =  'АБЦДЕФГЧИЙКЛМНОПЯРСТУВЖХЫЗШЩЭЮЁабцдефгчийклмнопярстувжхызшщэюёьъ '
+FR  =  'ABWDEFGQI8KLMNOP1RCTYVJXUZSH379abwdefgqi_klmnop&rctyvjxuzsh"-ç56 '
 
 trans = dict(zip(FR,CYR))
 
-kb = ['1234567890°','AZERTYUIOP¨£','QSDFGHJKLM%µ','<WXCVBN?./!',' ']
+kb = ['1234567890','AZERTYUIOP','QSDFGHJKLM','<WXCVBN?./!',' ']
 
 def keydown(ev):
     if ev.which in [8,13]:
@@ -48,6 +48,7 @@ def keydown(ev):
     if ev.ctrlKey:    
         return
     fr_letter = ev.char
+    print(fr_letter,'shift',ev.shiftKey)
     ix = FR.find(fr_letter)
     print(ix)
     if ix>-1:
