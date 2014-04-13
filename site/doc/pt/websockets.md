@@ -59,7 +59,7 @@ Exemplo:
     from browser import doc,alert,websocket
     
     def on_open(evt):
-        doc['send_button'].disabled = False
+        doc['sendbtn'].disabled = False
         doc['closebtn'].disabled = False
         doc['openbtn'].disabled = True
     
@@ -72,7 +72,7 @@ Exemplo:
         alert("Connection is closed")
         doc['openbtn'].disabled = False
         doc['closebtn'].disabled = True
-        doc['send_button'].disabled = True
+        doc['sendbtn'].disabled = True
     
     ws = None
     def _open(ev):
@@ -97,7 +97,7 @@ Exemplo:
         doc['openbtn'].disabled = False
 
     doc['openbtn'].bind('click', _open)
-    doc['data'].bind('click', send)
+    doc['sendbtn'].bind('click', send)
     doc['closebtn'].bind('click', close_connection)    
 </td>
 <td valign="top">
@@ -106,7 +106,7 @@ exec(doc['py_source'].text)
 </script>
 
 <button id="openbtn">Abrir conexão</button>
-<br><input id="data"><button id="send_button" disabled>Enviar</button>
+<br><input id="data"><button id="sendbtn" disabled>Enviar</button>
 <p><button id="closebtn" disabled>Fechar conexão</button>
 </td>
 </tr>
