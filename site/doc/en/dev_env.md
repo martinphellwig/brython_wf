@@ -17,11 +17,13 @@ Create a new directory (eg "test") in the Brython directory. With a text editor,
     <body onLoad="brython()">
     <script type="text/python">
     from browser import doc, win, alert
-    def echo():
+    
+    def echo(ev):
         alert("Hello %s !" %doc["zone"].value)
-    win.echo = echo
+    
+    doc["echo"].bind('click', echo)
     </script>
-    <p>Your name is : <input id="zone"><button onclick="echo()">click !</button>
+    <p>Your name is : <input id="zone"><button id="echo">click !</button>
     </body>
     </html>
 

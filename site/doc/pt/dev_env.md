@@ -31,11 +31,13 @@ abaixo e salve-o no diretório _teste_.
     <body onLoad="brython()">
     <script type="text/python">
     from browser import doc, win, alert
-    def echo():
+    
+    def echo(ev):
         alert("Olá %s !" %doc["zone"].value)
-    win.echo = echo
+
+    doc["echo"].bind('click', echo)
     </script>
-    <p>Seu nome é: <input id="zone"><button onclick="echo()">clique !</button>
+    <p>Seu nome é: <input id="zone"><button id="echo">clique !</button>
     </body>
     </html>
 
