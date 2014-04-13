@@ -108,7 +108,7 @@ for dirpath, dirnames, filenames in os.walk(jspath):
     for filename in filenames:
         mod_name = os.path.splitext(filename)[0]
         mod_path = '/'.join(os.path.join(dirpath,mod_name)[len(libfolder):].split(os.sep))
-        out.write('        ["%s","%s","js"],\n' %(mod_name,mod_path))
+        out.write('        ["%s","js"],\n' %mod_name)
 
 pypath = os.path.join(libfolder,'Lib')
 for dirpath, dirnames, filenames in os.walk(pypath):
@@ -123,7 +123,10 @@ for dirpath, dirnames, filenames in os.walk(pypath):
         if filename=='__init__.py':
             mod_name = '.'.join(path[:-1]).lstrip('.')
         mod_path = 'Lib/'+'/'.join(path)
-        out.write('        ["%s","%s","py",%s],\n' %(mod_name,mod_path,str(filename=='__init__.py').lower()))
+        if filename=='__init__.py':
+            out.write('        ["%s","py",true],\n' %mod_name)
+        else:
+            out.write('        ["%s","py"],\n' %mod_name)
 
 out.write("""    ]
     __BRYTHON__.stdlib = {}
