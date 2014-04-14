@@ -304,12 +304,14 @@ $B.$import = function(mod_name,origin){
         if(__BRYTHON__.static_stdlib_import && stdlib_path!==undefined){
             //console.log(mod_name+' found in stdlib '+stdlib_path[0])
             var module = {name:mod_name}
-            if(stdlib_path[1]=='py'){
+            if(stdlib_path[0]=='py'){
                 // load Python module
                 __BRYTHON__.modules[module.name]={__class__:$B.$ModuleDict}
                 __BRYTHON__.imported[module.name]={__class__:$B.$ModuleDict}
-                mod = $B.$import_py(module, __BRYTHON__.brython_path+stdlib_path[0])
-                mod.$package = stdlib_path[2]
+                var path = 'Lib/'+mod_name.split('.').join('/')
+                if(stdlib_path[1]){path+='/__init__'}
+                mod = $B.$import_py(module, __BRYTHON__.brython_path+path)
+                mod.$package = stdlib_path[1]
                 __BRYTHON__.modules[module.name] = mod
                 __BRYTHON__.imported[module.name]=__BRYTHON__.modules[module.name]                
             }else{
