@@ -84,3 +84,4 @@ DOM. `doc["zone"]` est un objet correspondant à l'élément INPUT ; on accède 
 
 L'affichage est réalisé par la fonction `alert()` définie dans le même module
 **browser**, qui affiche une fenêtre avec le texte passé en paramètre
+

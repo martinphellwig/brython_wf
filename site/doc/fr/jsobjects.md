@@ -13,20 +13,20 @@ Brython n'expose par défaut que deux noms dans l'espace de noms global de Javas
 
 Par défaut, un programme Javascript ne donc peut pas accéder aux objets Brython. Par exemple, si on veut utiliser une fonction `echo()` définie dans un script Brython pour réagir à un événement sur un élément de la page, au lieu de la syntaxe
 
-    <button onclick="echo()">
+>    <button onclick="echo()">
 
 qui ne fonctionne pas puisque le nom _echo_ n'est pas accessible depuis Javascript, il faut plutôt affecter un id à l'élément :
 
-    <button id="echo">
+>    <button id="echo">
 
 et définir le lien entre cet élément et un événement _click_ par :
 
-    doc['echo'].bind('click',echo)
+>    doc['echo'].bind('click',echo)
 
 Une autre possibilité est de forcer l'inscription de _echo_ dans l'espace de noms Javascript en le définissant comme attribut de l'objet `window` du module **browser** :
 
-    from browser import window
-    window.echo = echo
+>    from browser import window
+>    window.echo = echo
 
 Cette méthode n'est pas recommandée, parce qu'elle introduit un risque de conflit avec des noms définis dans un programme ou une librairie Javascript utilisée dans la page
 
@@ -38,14 +38,14 @@ Pour les utiliser dans un script Python, il faut les transformer explicitement p
 
 Par exemple :
 
-    <script type="text/javascript">
-    circle = {surface:function(r){return 3.14*r*r}}
-    </script>
-    <script type="text/python">
-    from browser import doc
-    from javascript import JSObject
-    doc['result'].value = JSObject(circle).surface(10)
-    </script>
+>    <script type="text/javascript">
+>    circle = {surface:function(r){return 3.14*r*r}}
+>    </script>
+>    <script type="text/python">
+>    from browser import doc
+>    from javascript import JSObject
+>    doc['result'].value = JSObject(circle).surface(10)
+>    </script>
 
 
 ### Utilisation de constructeurs Javascript dans un script Brython
