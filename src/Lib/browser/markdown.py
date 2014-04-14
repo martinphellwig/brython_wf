@@ -1,5 +1,5 @@
 import browser.html
-import re
+import _jsre as re
 
 class URL:
     def __init__(self,src):
@@ -24,13 +24,21 @@ class CodeBlock:
         res = '<pre class="marked">%s</pre>\n' %res
         return res,[]
 
+class HtmlBlock:
+
+    def __init__(self, src):
+        self.src = src
+    
+    def to_html(self):
+        return self.src
+        
 class Marked:
-    def __init__(self):
-        self.lines = []
+    def __init__(self, line=''):
+        self.line = line
         self.children = []
 
     def to_html(self):
-        return apply_markdown('\n'.join(self.lines))
+        return apply_markdown(self.line)
         
 # get references
 refs = {}
@@ -47,48 +55,146 @@ def mark(src):
     # - a span-level HTML tag (markdown syntax will be processed)
     # - a code block
     
-    lines = src.split('\n')
+    # normalise line feeds
+    src = src.replace('\r\n','\n')
+    
+    # lines followed by dashes
+    src = re.sub(r'(.*?)\n=+\n', '\n# \\1\n', src)
+    src = re.sub(r'(.*?)\n-+\n', '\n## \\1\n', src) 
+
+    lines = src.split('\n')+['']
+    
+    i = bq = 0
+    ul = ol = 0
+    
+    while i<len(lines):
+
+        # enclose lines starting by > in a blockquote
+        if lines[i].startswith('>'):
+            nb = 1
+            while nb<len(lines[i]) and lines[i][nb]=='>':
+                nb += 1
+            lines[i] = lines[i][nb:]
+            if nb>bq:
+                lines.insert(i,'<blockquote>'*(nb-bq))
+                i += 1
+                bq = nb
+            elif nb<bq:
+                lines.insert(i,'</blockquote>'*(bq-nb))
+                i += 1
+                bq = nb
+        elif bq>0:
+            lines.insert(i,'</blockquote>'*bq)
+            i += 1
+            bq = 0
+
+        # unordered lists
+        if lines[i].strip() and lines[i].lstrip()[0] in '-+*' \
+            and len(lines[i].lstrip())>1 \
+            and lines[i].lstrip()[1]==' ' \
+            and (i==0 or ul or not lines[i-1].strip()):
+            # line indentation indicates nesting level
+            nb = 1+len(lines[i])-len(lines[i].lstrip())
+            lines[i] = '<li>'+lines[i][nb:]
+            if nb>ul:
+                lines.insert(i,'<ul>'*(nb-ul))
+                i += 1
+            elif nb<ul:
+                lines.insert(i,'</ul>'*(ul-nb))
+                i += 1
+            ul = nb
+        elif ul:
+            lines.insert(i,'</ul>'*ul)
+            i += 1
+            ul = 0
+
+        # ordered lists
+        mo = re.search(r'^(\d+\.)',lines[i])
+        if mo:
+            if not ol:
+                lines.insert(i,'<ol>')
+                i += 1
+            lines[i] = '<li>'+lines[i][len(mo.groups()[0]):]
+            ol = 1
+        elif ol:
+            lines.insert(i,'</ol>')
+            i += 1
+            ol = 0
+        
+        i += 1
     
     sections = []
     scripts = []
+    htmls = []
     section = Marked()
 
     i = 0
     while i<len(lines):
         line = lines[i]
-        if isinstance(section,Marked):
-            if line.lower().startswith('<script'):
-                j = i+1
-                while j<len(lines):
-                    if lines[j].lower().startswith('</script>'):
-                        scripts.append('\n'.join(lines[i+1:j]))
-                        for k in range(i,j+1):
-                            lines[k] = ''
-                        break
-                    j += 1
-                i = j+1
-                continue
-            if line.strip() and line.startswith('    '):
-                if section.lines:
-                    sections.append(section)
-                section = CodeBlock(line[4:])
-            else:
-                mo = re.search(ref_pattern,line)
-                if mo is not None:
-                    key = mo.groups()[0]
-                    value = URL(mo.groups()[1])
-                    refs[key.lower()] = value
-                else:
-                    section.lines.append(line)
-        elif isinstance(section,CodeBlock):
-            if line.startswith('    ') or not line.strip():
-                section.lines.append(line[4:])
-            else:
+        if line.strip() and line.startswith('    '):
+            if isinstance(section,Marked) and section.line:
                 sections.append(section)
-                section = Marked()                
-                section.lines.append(line)
-        i += 1
-    if section.lines:
+            section = CodeBlock(line[4:])
+            j = i+1
+            while j<len(lines) and lines[j].strip() \
+                and lines[j].startswith('    '):
+                    section.lines.append(lines[j][4:])
+                    j += 1
+            sections.append(section)
+            section = Marked()
+            i = j   
+            continue
+
+        elif line.lower().startswith('<script'):
+            if isinstance(section,Marked) and section.line:
+                sections.append(section)
+                section = Marked()
+            j = i+1
+            while j<len(lines):
+                if lines[j].lower().startswith('</script>'):
+                    scripts.append('\n'.join(lines[i+1:j]))
+                    for k in range(i,j+1):
+                        lines[k] = ''
+                    break
+                j += 1
+            i = j
+            continue
+
+        # atext header
+        elif line.startswith('#'):
+            level = 1
+            line = lines[i]
+            while level<len(line) and line[level]=='#' and level<=6:
+                level += 1
+            if not line[level+1:].strip():
+                if level==1:
+                    i += 1
+                    continue
+                else:
+                    lines[i] = '<H%s>%s</H%s>\n' %(level-1,'#',level-1)
+            else:
+                lines[i] = '<H%s>%s</H%s>\n' %(level,line[level+1:],level)
+
+        else:
+            mo = re.search(ref_pattern,line)
+            if mo is not None:
+                if isinstance(section,Marked) and section.line:
+                    sections.append(section)
+                    section = Marked()
+                key = mo.groups()[0]
+                value = URL(mo.groups()[1])
+                refs[key.lower()] = value
+            else:
+                if line.strip():
+                    if section.line:
+                        section.line += ' '
+                    section.line += line
+                else:
+                    sections.append(section)
+                    section = Marked()
+            i += 1
+
+    if isinstance(section,Marked) and section.line:
         sections.append(section)
 
     res = ''
@@ -124,89 +230,80 @@ def apply_markdown(src):
 
     scripts = []
 
-    # blockquotes
-    lines = src.split('\n')
-    while True:
-        nb = 0
-        i = 0
-        while i<len(lines):
-            if lines[i].startswith('>'):
-                head = '\n'.join(lines[:i])
-                bqlines = []
-                nb += 1
-                rest = lines[i][1:]
-                if rest.lstrip().startswith('>'):
-                    rest = rest.lstrip()
-                bqlines.append(rest)
-                j = i+1
-                while j<len(lines):
-                    if lines[j].startswith('>'):
-                        rest = lines[j][1:]
-                        if rest.lstrip().startswith('>'):
-                            rest = rest.lstrip()
-                        bqlines.append(rest)
-                        j += 1
-                    elif lines[j].strip() and lines[j][0]!=' ':
-                        bqlines.append(lines[j])
-                        j += 1
-                    else:
-                        break
-                # bqlines holds the lines in the blockquote, stripped of
-                # the leading >
-                # we apply the whole markdown process to these lines
-                mk,_scripts = mark('\n'.join(bqlines))
-                scripts += _scripts
-                src = head
-                src += '\n<blockquote>' + mk + '</blockquote>'
-                src += '\n'.join(lines[j:])
-                break
-            i += 1
-        if nb==0:break
-        lines = src.splitlines()
-
     # replace \` by &#96;
-    src = re.sub(r'\\\`','&#96;',src)
+    src = src.replace(r'\\\`','&#96;')
 
-    # escape < > & in inline code
-    code_pattern = r'\`(\S.*?\S)\`'
-    src = re.sub(code_pattern,s_escape,src)
-    # also convert _
-    src = re.sub(code_pattern,s_unmark,src)
-    
-    # inline links
-    link_pattern1 = r'\[(.+?)\]\s?\((.+?)\)'
-    def repl(mo):
-        g1,g2 = mo.groups()
-        g2 = re.sub('_','&#95;',g2)
-        return '<a href="%s">%s</a>' %(g2,g1)
-    src = re.sub(link_pattern1,repl,src)
+    # escape "<", ">", "&" and "_" in inline code
+    code_pattern = r'\`(.*?)\`'
+    i = 0
+    while i<len(src):
+        if src[i]=='`':
+            j = i+1
+            while j<len(src) and src[j]!='`':
+                j += 1
+            if j!=len(src):
+                czone = unmark(escape(src[i+1:j]))
+                src = src[:i]+'`'+czone+src[j:]
+                i = j
+        if src[i]=='[':
+            start_a = i+1
+            while True:
+                end_a = src.find(']',i)
+                if end_a == -1:
+                    break
+                if src[end_a-1]=='\\':
+                    i = end_a+1
+                else:
+                    break
+            if end_a>-1 and src[start_a:end_a].find('\n')==-1:
+                link = src[start_a:end_a]
+                rest = src[end_a+1:].lstrip()
+                if rest and rest[0]=='(':
+                    j = 0
+                    while True:
+                        end_href = rest.find(')',j)
+                        if end_href == -1:
+                            break
+                        if rest[end_href-1]=='\\':
+                            j = end_href+1
+                        else:
+                            break
+                    if end_href>-1 and rest[:end_href].find('\n')==-1:
+                        tag = '<a href="'+rest[1:end_href]+'">'+link+'</a>'
+                        src = src[:start_a-1]+tag+rest[end_href+1:]
+                        i = start_a+len(tag)
+                elif rest and rest[0]=='[':
+                    j = 0
+                    while True:
+                        end_key = rest.find(']',j)
+                        if end_key == -1:
+                            break
+                        if rest[end_key-1]=='\\':
+                            j = end_key+1
+                        else:
+                            break
+                    if end_key>-1 and rest[:end_key].find('\n')==-1:
+                        if not key:
+                            key = link
+                        if key.lower() not in refs:
+                            raise KeyError('unknown reference %s' %key)
+                        url = refs[key.lower()]
+                        tag = '<a href="'+url+'">'+link+'</a>'
+                        src = src[:start_a-1]+tag+rest[end_key+1:]
+                        i = start_a+len(tag)
+        
+        i += 1
 
-    # reference links
-    link_pattern2 = r'\[(.+?)\]\s?\[(.*?)\]'
-    while True:
-        mo = re.search(link_pattern2,src)
-        if mo is None:break
-        text,key = mo.groups()
-        print(text,key)
-        if not key:key=text # implicit link name
-        if key.lower() not in refs:
-            raise KeyError('unknow reference %s' %key)
-        url = refs[key.lower()]
-        repl = '<a href="'+url.href+'"'
-        if url.alt:
-            repl += ' title="'+url.alt+'"'
-        repl += '>%s</a>' %text
-        src = re.sub(link_pattern2,repl,src,count=1)
 
     # emphasis
 
     # replace \* by &#42;
-    src = re.sub(r'\\\*','&#42;',src)
+    src = src.replace(r'\\\*','&#42;')
     # replace \_ by &#95;
-    src = re.sub(r'\\\_','&#95;',src)
+    src = src.replace(r'\\\_','&#95;')
     # _ and * surrounded by spaces are not markup
-    src = re.sub(r' _ ',' &#95; ',src)
-    src = re.sub(r' \* ',' &#42; ',src)
+    src = src.replace(r' _ ',' &#95; ')
+    src = src.replace(r' \\* ',' &#42; ')
 
     strong_patterns = [('STRONG',r'\*\*(.*?)\*\*'),('B',r'__(.*?)__')]
     for tag,strong_pattern in strong_patterns:
@@ -216,91 +313,12 @@ def apply_markdown(src):
     for tag,em_pattern in em_patterns:
         src = re.sub(em_pattern,r'<%s>\1</%s>' %(tag,tag),src)
 
-    # inline code
     # replace \` by &#96;
-    src = re.sub(r'\\\`','&#96;',src)
+    src = src.replace(r'\\\`','&#96;')
 
     code_pattern = r'\`(.*?)\`'
     src = re.sub(code_pattern,r'<code>\1</code>',src)
-
-    # unordered lists
-    lines = src.split('\n')
-    while True:
-        nb = 0
-        i = 0
-        while i<len(lines):
-            mo = re.search(r'^( *[+*-])',lines[i])
-            if mo:
-                starter = mo.groups()[0]
-                if not lines[i].strip(starter):
-                    i += 1
-                    continue
-                nb += 1
-                lines[i] = '<ul>\n<li>'+lines[i][len(starter):]
-                j = i+1
-                while j<len(lines):
-                    if lines[j].startswith(starter):
-                        lines[j] = '<li>'+lines[j][len(starter):]
-                        j += 1
-                    elif lines[j].startswith(' ') and lines[j].lstrip().startswith(starter):
-                        j += 1
-                    elif not lines[j].strip():
-                        j+=1
-                    elif lines[j].startswith(' '*len(starter)):
-                        j+=1
-                    else:
-                        break
-                lines[j-1] += '\n</ul>'
-            i += 1
-        src = '\n'.join(lines)
-        if nb==0:break
-        lines = src.splitlines()
-
-    # ordered lists
-    lines = src.split('\n')
-    while True:
-        nb = 0
-        i = 0
-        while i<len(lines):
-            if re.search(r'^\d+\.',lines[i]):
-                nb += 1
-                lines[i] = '<ol>\n<li>'+lines[i][lines[i].find('.')+1:]
-                j = i+1
-                while j<len(lines):
-                    if re.search(r'^\d+\.',lines[j]):
-                        lines[j] = '<li>'+lines[j][lines[j].find('.')+1:]
-                        j += 1
-                    else:
-                        break
-                lines[j-1] += '\n</ol>'
-            i += 1
-        src = '\n'.join(lines)
-        if nb==0:break
-        lines = src.splitlines()
-
-    # headers
-    i = 1
-    while i<len(lines):
-        line = lines[i]
-        if line.startswith('=') and not line.strip('=').strip():
-            lines[i-1] = '<H1>%s</H1>' %lines[i-1]
-            del lines[i]
-        elif line.startswith('-') and not line.strip('-').strip():
-            lines[i-1] = '<H2>%s</H2>' %lines[i-1]
-            del lines[i]
-        else:
-            i += 1
-           
-    atx_header_pattern = '^(#+)(.*)(#*)'
-    for i,line in enumerate(lines):
-        mo = re.search(atx_header_pattern,line)
-        if not mo:continue
-        level = len(mo.groups()[0])
-        lines[i] = re.sub(atx_header_pattern,
-            '<H%s>%s</H%s>\n' %(level,mo.groups()[1],level),
-            line,count=1)
-
-    src = '\n'.join(lines)      
-    src = re.sub('\n\n+','\n<p>',src)+'\n'
+    
+    src = '<p>'+src+'</p>'
 
     return src,scripts
