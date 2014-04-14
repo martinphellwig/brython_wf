@@ -1667,6 +1667,7 @@ $B.exception = function(js_exc){
         //console.log('$B.exception '+js_exc)
         //for(var attr in js_exc){console.log(attr+' '+js_exc[attr])}
         //console.log('line info '+__BRYTHON__.line_info)
+        console.log(js_exc.info)
     }
     if(!js_exc.py_error){
         if($B.debug>0 && js_exc.info===undefined){
