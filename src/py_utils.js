@@ -999,6 +999,11 @@ if (window.IDBRequest !== undefined) {
     }
 }
 
+$B.set_line = function(line_num,module_name){
+    $B.line_info = [line_num, module_name]
+    return $B.builtins.None
+}
+
 // functions to define iterators
 $B.$iterator = function(items,klass){
     var res = {
