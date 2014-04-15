@@ -13,8 +13,8 @@ Brython est conforme à la syntaxe de Python 3
 
 - générateurs (mot-clé `yield`), expressions de générateur : `foo(x for x in bar if x>5)`
 - opérateur ternaire : `x = r1 if condition else r2`
-- la définition des fonctions peut comporter des valeurs par défaut et des arguments et mot-clés optionnels : <br>`def foo(x,y=0,\*args,\*\*kw):`
-- décompactage de listes ou de dictionnaires dans l'appel de fonctions : `x = foo(\*args,\*\*kw)`
+- la définition des fonctions peut comporter des valeurs par défaut et des arguments et mot-clés optionnels : <br>`def foo(x,y=0,*args,**kw):`
+- décompactage de listes ou de dictionnaires dans l'appel de fonctions : `x = foo(*args,**kw)`
 - classes avec héritage multiple
 - décorateurs
 - importation : 
@@ -30,6 +30,7 @@ Mots clés et fonctions intégrées
 --------------------------------
 
 Brython supporte l'essentiel des mots-clés et des fonctions de Python 3 :
+
 - mots clés : `as, assert, break, class, continue, def, del, elif, else, except, False, finally, for, from, global, if, import, is, lambda, None, pass, return, True, try, while, with, yield`
 - fonctions intégrées : `abs(), all(), any(), ascii(), bin(), bool(), bytes(), callable(), chr(), classmethod(), delattr(), dict(), dir(), divmod(), enumerate(), eval(), exec(), filter(), float(), frozenset(), getattr(), globals(), hasattr(), hash(), hex(), id(), input(), int(), isinstance(), iter(), len(), list(), locals(), map(), max(), min(), next(), object(), open(), ord(), pow(), print(), property(), range(), repr(), reversed(), round(), set(), setattr(), slice(), sorted(), str(), sum(), super(), tuple(), type(), zip(), __import__`
 

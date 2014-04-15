@@ -25,7 +25,6 @@ def load(url,target):
         doc[target].html = "Page %s not found" %url
         return False
     doc[target].html = mk
-    #print(mk)
     for script in scripts:
         exec(script,globals())
     return False
