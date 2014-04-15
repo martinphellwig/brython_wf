@@ -1853,6 +1853,13 @@ function $check_unbound(assigned,scope,varname){
                 var new_node = new $Node()
                 var js = 'throw UnboundLocalError("local variable '+"'"
                 js += varname+"'"+' referenced before assignment")'
+                
+                // If the id is in a "elif", the exception must be in
+                // a "else if" otherwise there is a Javascript syntax error
+                if(ctx.tree[0].type=='condition' && 
+                    ctx.tree[0].token=='elif'){
+                    js = 'else if(true){'+js+'}'
+                }
                 new $NodeJSCtx(new_node,js)
                 pnode.insert(rank,new_node)
             }
@@ -2852,7 +2859,7 @@ function $add_line_num(node,rank){
         else if(elt.type==='except'){flag=false}
         else if(elt.type==='single_kw'){flag=false}
         if(flag){
-            var js = '__BRYTHON__.line_info=['+node.line_num+',"'+node.module+'"];'
+            var js = '__BRYTHON__.set_line('+node.line_num+',"'+node.module+'");'
             if(node.module===undefined){console.log('tiens, module undef !')}
             // add a trailing None for interactive mode
             js += 'None;'
@@ -4790,7 +4797,6 @@ function brython(options){
 
             }catch($err){
                 if(__BRYTHON__.debug>1){
-    
                     console.log('PY2JS '+$err)
                     for(var attr in $err){
                         console.log(attr+' : '+$err[attr])
