@@ -1,1 +1,10 @@
 pyc
+
+syntax: regexp
+^\.pydevproject$
+syntax: regexp
+^\.project$
+syntax: regexp
+^\.settings$
+syntax: regexp
+^dist$
