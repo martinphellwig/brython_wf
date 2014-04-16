@@ -51,7 +51,8 @@ If you get an error executing minified_pyminifier.py or
 something is broken.
 """
 
-import sys, re, cStringIO, tokenize
+import sys, re, tokenize
+from io import StringIO
 from optparse import OptionParser
 
 # Compile our regular expressions for speed
@@ -92,7 +93,7 @@ def remove_comments_and_docstrings(source):
         def noop():
             pass
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     out = ""
     prev_toktype = tokenize.INDENT
     last_lineno = -1
@@ -173,7 +174,7 @@ def reduce_operators(source):
         def foo(foo,bar,blah):
             test="This is a %s"%foo
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     remove_columns = []
     out = ""
     out_line = ""
@@ -419,7 +420,7 @@ def dedent(source):
         def foo(bar):
          test = "This is a test"
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     out = ""
     last_lineno = -1
     last_col = 0
@@ -515,7 +516,7 @@ def remove_blank_lines(source):
         test = "foo"
         test2 = "bar"
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     source = [a for a in io_obj.readlines() if a.strip()]
     return "".join(source)
 
@@ -669,8 +670,8 @@ def main():
     options, args = parser.parse_args()
     try:
         source = open(args[0]).read()
-    except Exception, e:
-        print e
+    except Exception as exception_instance:
+        print(exception_instance)
         parser.print_help()
         sys.exit(2)
     # Minify our input script
@@ -686,7 +687,7 @@ def main():
         f.write(result)
         f.close()
     else:
-        print result
+        print(result)
 
 if __name__ == "__main__":
     main()

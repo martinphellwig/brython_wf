@@ -4,6 +4,7 @@ import re
 import datetime
 import os
 import sys
+import slimit
 
 # path of parent directory
 pdir = os.path.dirname(os.getcwd())
@@ -12,11 +13,9 @@ pdir = os.path.dirname(os.getcwd())
 version = [3,3,0,"alpha",0]
 implementation = [2, 1, 0, 'rc', 2]
 
-try:
-  import slimit
-  minify=slimit.minify
-except ImportError:
-  minify=None
+
+
+
 
 def custom_minify(src):
     _res=''
