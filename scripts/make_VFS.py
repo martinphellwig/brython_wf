@@ -13,11 +13,7 @@ def process(filename):
 
   #check to see if slimit or some other minification library is installed
   #set minify equal to slimit's minify function
-  try:
-    import slimit
-    js_minify=slimit.minify
-  except ImportError:
-    js_minify=None  
+  js_minify=None  
 
   print("generating %s" % filename)
   _main_root=os.path.dirname(filename)
