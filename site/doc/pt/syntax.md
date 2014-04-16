@@ -7,8 +7,9 @@ Brython usa a mesma sintaxe que Python:
 - listas são criadas com `[]` ou `list()`, tuplas com `()` ou
   `tuple()`, dicionários com `{}` ou `dict()`, e conjuntos com `set()`
 - criação de listas, dicionários e conjuntos por compreensão:
- -`[ expr for item in iterable if condition ]` ` dict((i,2*i) for i in
- -range(5))` `set(x for x in 'abcdcga')`
+ - `[ expr for item in iterable if condition ]` 
+ - ` dict((i,2*i) for i in range(5))` 
+ - `set(x for x in 'abcdcga')`
 - geradores (palavra-chave `yield`), expresões geradoras: `foo(x for x
   in bar if x>5)`
 - operador ternário: `x = r1 if condition else r2`
@@ -20,11 +21,11 @@ Brython usa a mesma sintaxe que Python:
 - classes com herança múltipla
 - decoradores
 - imports:
- -`import foo`
- -`from foo import X`
- -`import foo as bar`
- -`from foo import X as Y`
- -`from foo import *`
+ - `import foo`
+ - `from foo import X`
+ - `import foo as bar`
+ - `from foo import X as Y`
+ - `from foo import *`
 
 ## Palavras-chave e funções integradas
 

@@ -37,7 +37,7 @@ Soluci&oacute;n
 
 <script type="text/python3">
 def fill_zone(ev):
-    frmo browser import doc,html
+    from browser import doc,html
     doc['zone'] <= html.H1("Presentando a Brython")
     doc['zone'] <= html.H4(html.I("Python en el navegador"))
     doc['zone'] <= html.B("Hola mundo !")

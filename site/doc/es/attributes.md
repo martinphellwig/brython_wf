@@ -49,7 +49,7 @@ Para destruir un elemento se usa la palabra clave `del`
 
 La colección `options` asociada con un objeto SELECT tiene una interfaz que funciona como una lista Python :
 
- - accede a una opción mediante su índice : `option = elt.options[index]`
- - inserta una opción en la posición *index* : `elt.options.insert(index,option)`
- - inserta una opción al final de la lista : `elt.options.append(option)`
- - elimina una opción : `del elt.options[index]`
+- accede a una opción mediante su índice : `option = elt.options[index]`
+- inserta una opción en la posición *index* : `elt.options.insert(index,option)`
+- inserta una opción al final de la lista : `elt.options.append(option)`
+- elimina una opción : `del elt.options[index]`

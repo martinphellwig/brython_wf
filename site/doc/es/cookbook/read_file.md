@@ -15,7 +15,7 @@ Usaremos la función integrada `open()` para leer el contenido de un fichero
 
     import time
     from browser import doc
-
+    
     fake_qs = '?foo=%s' %time.time()
     doc['zone'].value = open('cookbook/file.txt'+fake_qs).read()
 

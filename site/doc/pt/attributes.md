@@ -58,7 +58,7 @@ Para destruir um elemento, use a palavra-chave `del`:
 A coleção `options` associada com um objeto SELECT tem uma interface
 de lista de Python:
 
- - acesso a uma opção por seus índices: `option = elt.options[índice]`
- - inserção de uma opção na posição _índice_ : `elt.options.insert(índice,opção)`
- - inserção de uma opção ao final de uma lista : `elt.options.append(opção)`
- - excluindo uma opção : `del elt.options[índice]`
+- acesso a uma opção por seus índices: `option = elt.options[índice]`
+- inserção de uma opção na posição _índice_ : `elt.options.insert(índice,opção)`
+- inserção de uma opção ao final de uma lista : `elt.options.append(opção)`
+- excluindo uma opção : `del elt.options[índice]`
