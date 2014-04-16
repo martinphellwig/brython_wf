@@ -9753,9 +9753,10 @@ if(!isinstance(sub,str)){throw __builtins__.TypeError(
 if(!isinstance(start,__builtins__.int)||!isinstance(end,__builtins__.int)){throw __builtins__.TypeError(
 "slice indices must be integers or None or have an __index__ method")}
 var s=self.substring(start,end)
-var reversed=''
+var reversed='',rsub=''
 for(var i=s.length-1;i>=0;i--){reversed +=s.charAt(i)}
-var res=reversed.search($re_escape(sub))
+for(var i=sub.length-1;i>=0;i--){rsub +=sub.charAt(i)}
+var res=reversed.search($re_escape(rsub))
 if(res==-1){return -1}
 else{return start+s.length-1-res-sub.length+1}
 }
