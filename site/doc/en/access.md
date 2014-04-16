@@ -18,8 +18,9 @@ We can also get all the elements of a given type, for instance all the hypertext
 >    links = doc[html.A]
 
 Finally, all the elements in the page have a method `get()` that can be used to search elements :
- - `elt.get(name=N)` returns a list of all the elements descending from `elt` whose attribute `name` is equal to `N`
- - `elt.get(selector=S)` returns a list with all the elements descending from `elt` whose CSS selector matches `S`
+
+- `elt.get(name=N)` returns a list of all the elements descending from `elt` whose attribute `name` is equal to `N`
+- `elt.get(selector=S)` returns a list with all the elements descending from `elt` whose CSS selector matches `S`
 
 A few examples :
 

@@ -3,7 +3,7 @@ module **browser.local_storage**
 
 This module uses the local storage defined in HTML5. The specification can be found following [this link](http://dev.w3.org/html5/webstorage/#the-localstorage-attribute)
 
-What **`HTML5 localStorage`** is?: 
+What is **`HTML5 localStorage`** ?: 
 
 - localStorage is a client-side key-value database, i.e. the data is stored in the users browser. This means the users data is saved on their machine inside their browser. This also means that the stored data is only available to them when the user is on that machine and in that browser. Remember that `local_storage` is per browser not per computer.
 - Keys and values are strings so if you enter, for example, a list when you try to get the values you will obtain a string and not the original list. Remember this!!

@@ -132,7 +132,7 @@ exec(doc["ct-example"].text)
     def show():
         doc['_timer'].text = '%.2f' %(time.time()-counter)
     
-    def start_timer():
+    def start_timer(ev):
         global _timer,counter
         if _timer is None:
             counter = time.time()
@@ -148,14 +148,16 @@ exec(doc["ct-example"].text)
             _timer = 'hold'
             doc['start'].text = 'Restart'
     
-    def stop_timer():
+    def stop_timer(ev):
         global _timer
         timer.clear_interval(_timer)
         _timer = None
         t = 0
         doc['_timer'].text = '%.2f' %0
         doc['start'].text = 'Start'
-
+    
+    doc['start'].bind('click', start_timer)
+    doc['stop'].bind('click', stop_timer)
 </div>
 
 <script type='text/python'>
@@ -165,8 +167,8 @@ exec(doc['py-source'].text)
 <table cellpadding=10>
 <tr>
 <td style="width:100px;">
-<button id="start" onclick="start_timer()">Start</button>
-<br><button id="stop" onclick="stop_timer()">Stop</button>
+<button id="start">Start</button>
+<br><button id="stop">Stop</button>
 </td>
 <td>
 <div id="_timer" style="background-color:black;color:#0F0;padding:15px;font-family:courier;font-weight:bold;font-size:23px;">0.00</div>
@@ -175,14 +177,14 @@ exec(doc['py-source'].text)
 </table>
 </div>
 
-**`request_animation_frame(*function*)`**
+**`request_animation_frame(`*function*`)`**
 > Executa a função *function* repetidamente deixando o navegador responsável por atualizar as chamadas. A função *function* usa um argumento falso.
 
 > Encapsula a função `requestAnimationFrame` de
 > javascript. Documentação oficial pode ser encontrada
 > [aqui](http://www.w3.org/TR/animation-timing/#dom-windowanimationtiming-requestanimationframe).
 
-**`cancel_animation_frame(*id*)`**
+**`cancel_animation_frame(`*id*`)`**
 
 > Cancela a execução repetida da função definida por
 > *request_animation_frame()* e usa o valor retornado por

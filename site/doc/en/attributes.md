@@ -50,8 +50,8 @@ To destroy an element, use the keyword `del`
 
 The `options` collection associated with a SELECT object has an interface of a Python list :
 
- - access to an option by its index : `option = elt.options[index]`
- - insertion of an option at the _index_ position : `elt.options.insert(index,option)`
- - insertion of an option at the end of the list : `elt.options.append(option)`
- - deleting an option : `del elt.options[index]`
+- access to an option by its index : `option = elt.options[index]`
+- insertion of an option at the _index_ position : `elt.options.insert(index,option)`
+- insertion of an option at the end of the list : `elt.options.append(option)`
+- deleting an option : `del elt.options[index]`
 

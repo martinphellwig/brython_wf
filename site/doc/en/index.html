@@ -12,7 +12,7 @@ from browser import doc, window
 from ... import header
 header.show('../../')
 
-import browser.markdown as markdown
+from browser import markdown
 import time
 
 def load(url,target):
@@ -26,10 +26,8 @@ def load(url,target):
         return False
     doc[target].html = mk
     t1 = time.time()
-    print('markdown done in %s' %(t1-t0))
     for script in scripts:
         exec(script,globals())
-    print('exec scripts in %s' %(time.time()-t1))
     return False
 
 # put in global namespace, for inline callbacks

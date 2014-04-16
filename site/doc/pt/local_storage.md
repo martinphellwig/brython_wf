@@ -50,4 +50,4 @@ seguinte:
 Um exemplo mais completo usando `local_storage`, um aplicativo de
 lista TO-DO (a fazer), pode ser encontrado no iframe abaixo.
 
-<iframe src="./examples/local_storage/local-storage-example.html" width=800, height=500></iframe>
+<iframe src="../en/examples/local_storage/local-storage-example.html" width=800, height=500></iframe>

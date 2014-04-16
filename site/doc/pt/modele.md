@@ -10,9 +10,10 @@ Compilando e executando
  <td>função <code>brython(_debug\_mode)</code> em __py2js.js__
   <p>Se o código estiver em um arquivo externo, ele é obtido por uma chamada Ajax
   <p>Esta função cria as seguintes variáveis de ambiente:
-  -`document.$py_src`: objeto indexado pelos nomes dos módulos, o valor é o código fonte do módulo
-  -`document.$debug`: nível de depuração
-  -`document.$exc_stack`: uma lista de erros gerados durante a análise ou em tempo de execução
+  
+- `document.$py_src`: objeto indexado pelos nomes dos módulos, o valor é o código fonte do módulo
+- `document.$debug`: nível de depuração
+- `document.$exc_stack`: uma lista de erros gerados durante a análise ou em tempo de execução
 </td>
 </tr>
 
@@ -21,9 +22,10 @@ Compilando e executando
  <td>função <code>\_\_BRYTHON\_\_.py2js(_source,module_)</code> em __py2js.js__ <br>
   
   Esta função chama :
-  -`$tokenize(<i>source</i>)`: análise de sintaxe das marcas (tokens) no código fonte Python e construção da árvore ; retorna a raiz da árvore
-  -`transform(<i>root</i>)`: transforma a árvore para preparar a conversão para Javascript (ver abaixo)
-  -`$add_line_num()` para adicionar números de linhas se o modo de depuração for maior que 0
+  
+- `$tokenize(<i>source</i>)`: análise de sintaxe das marcas (tokens) no código fonte Python e construção da árvore ; retorna a raiz da árvore
+- `transform(<i>root</i>)`: transforma a árvore para preparar a conversão para Javascript (ver abaixo)
+- `$add_line_num()` para adicionar números de linhas se o modo de depuração for maior que 0
   
   A função `py2js` retorna a raiz da árvore
 </td>
@@ -49,18 +51,18 @@ Compilando e executando
 
 O script __brython.js__ é gerado pela compilação de vários scripts :
 
--**brython\_builtins.js**: define o objeto `__BRYTHON__` que atua como intermediador entre objetos Javascript nativos (`Date, RegExp, Storage...`) e Brython
--**py2js.js**: faz a conversão de código Python para código Javascript
--**py\_utils.js**: funções de utilidades (p.ex. conversões de tipos entre Javascript e Python)
--**py\_object.js**: implementa a classe `object` de Python
--**py\_builtin\_functions.js** : funções embutidas de Python
--**js\_objects.js**: interface para objetos e construtores Javascript
--**py\_import.js**: implementação de <tt>import</tt>
--**py\_dict.js**: implementação da classe `dict` de Python
--**py\_list.js**: implementação da classe `list` de Python, baseada no tipo `Array` de Javascript
--**py\_string.js**: implementação da classe `str` de Python, baseada no tipo `String` de Javascript
--**py\_set.js**: implementação da classe `set` de Python
--**py\_dom.js**: interação com o documento HTML (DOM)
+- **brython\_builtins.js**: define o objeto `__BRYTHON__` que atua como intermediador entre objetos Javascript nativos (`Date, RegExp, Storage...`) e Brython
+- **py2js.js**: faz a conversão de código Python para código Javascript
+- **py\_utils.js**: funções de utilidades (p.ex. conversões de tipos entre Javascript e Python)
+- **py\_object.js**: implementa a classe `object` de Python
+- **py\_builtin\_functions.js** : funções embutidas de Python
+- **js\_objects.js**: interface para objetos e construtores Javascript
+- **py\_import.js**: implementação de <tt>import</tt>
+- **py\_dict.js**: implementação da classe `dict` de Python
+- **py\_list.js**: implementação da classe `list` de Python, baseada no tipo `Array` de Javascript
+- **py\_string.js**: implementação da classe `str` de Python, baseada no tipo `String` de Javascript
+- **py\_set.js**: implementação da classe `set` de Python
+- **py\_dom.js**: interação com o documento HTML (DOM)
 
 ### Mais sobre tradução e execução
 
@@ -75,17 +77,17 @@ pelas seguintes etapas:
   O código Python é dividido em marcas que podem ter os seguintes
   tipos:
 
-  - palavra-chave
-  - identificador
-  - literal (sequência, inteiro, ponto flutuante)
-  - operador
-  - ponto (.)
-  - dois pontos (:)
-  - ponto e vírgula (;)
-  - parêntese / colchete / chave
-  - designação (sinal de igual =)
-  - decorador (@)
-  - fim de linha
+- palavra-chave
+- identificador
+- literal (sequência, inteiro, ponto flutuante)
+- operador
+- ponto (.)
+- dois pontos (:)
+- ponto e vírgula (;)
+- parêntese / colchete / chave
+- designação (sinal de igual =)
+- decorador (@)
+- fim de linha
 
 Para cada marca, é feita uma chamada da função _$transition()_. Ela
 retorna um novo estado dependendo do estado atual e da marca.
@@ -101,12 +103,13 @@ operador...) é gerido por uma classe: veja no código fonte de
 **py2js.js** entre `function $AbstractExprCtx` e `function $UnaryCtx`.
 
 Nesta etapa, erros podem ser reportados:
--erros de sintaxe
--erros de indentação
--sequências literais não finalizadas
--parênteses / colchetes / chaves faltando ou sobrando
--caractére ilegal
--palavra-chave de Python não gerida por Brython
+
+- erros de sintaxe
+- erros de indentação
+- sequências literais não finalizadas
+- parênteses / colchetes / chaves faltando ou sobrando
+- caractére ilegal
+- palavra-chave de Python não gerida por Brython
 
 <li>Tranformando a árvore
 

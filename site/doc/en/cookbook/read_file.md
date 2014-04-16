@@ -15,7 +15,7 @@ We use the built-in function `open()` to load the file content
 
     import time
     from browser import doc
-
+    
     fake_qs = '?foo=%s' %time.time()
     doc['zone'].value = open('cookbook/file.txt'+fake_qs).read()
 

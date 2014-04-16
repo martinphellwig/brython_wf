@@ -41,7 +41,6 @@ você pode inserir formas e texto:
 <td>
 <script type="text/python">
 def run_svg(ev):
-    import svg
     title = svg.text('Título',x=70,y=25,font_size=22,
         text_anchor="middle")
     circle = svg.circle(cx=70,cy=120,r=40,stroke="black",

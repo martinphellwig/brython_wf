@@ -6,6 +6,7 @@ To run the Python scripts in the page, you must call the function `brython()` on
 `<body onload="brython(`*[options]*`)">`
 
 *options* can be an integer, in this case it is the debug level :
+
 - 0 (default) : no debugging. Use this when the application is debugged, it slightly speeds up execution
 - 1 : error messages are printed in the browser console (or to the output stream specified by `sys.stderr`)
 - 2 : the translation of Python code into Javascript code is printed in the console

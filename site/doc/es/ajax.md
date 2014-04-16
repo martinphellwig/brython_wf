@@ -9,7 +9,7 @@ El módulo permite ejecutar peticiones Ajax. En el módulo se define una única 
 
 Este objeto posee los siguientes atributos y métodos:
 
-`bind(*evt, funcion*)`:
+`bind(`_evt, funcion_`)`:
 > adjunta la función al evento *evt*. *evt* es una cadena que define uno de los siguientes estados
 de la petición
 
@@ -21,7 +21,7 @@ de la petición
 
 > La _función_ toma un único argumento: el objeto `ajax`.
 
-Es equivalente a: _req.on_evt = func_
+Es equivalente a: _req.on\_evt = func_
 
 `open(`_method, url, async_`)`
 > _method_ es el método HTTP usado para la petición (normalmente GET o POST), _url_ es la url a llamar, _async_ es el booleano que indica si la llamada es asíncrona o no

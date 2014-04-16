@@ -27,9 +27,11 @@ Esta función crea las siguientes variables de entorno :
 <td>función <code>\_\_BRYTHON\_\_.$py2js(_source,module_)</code> in __py2js.js__
 
 Esta función llama a :
+
 - <code>$tokenize(_source_)</code> : análisis sintáctico de los tokens en el código fuente Python y en la construcción del árbol. ;
 
    Devuelve la raíz del árbol
+
 - <code>transform(_root_)</code> : transforma el árbol para prepararlo para la conversión a Javascript (ver debajo)
 - `$add_line_num()` para añadir números de línea en el caso de que el 'debug mode' sea superior a 0
 
