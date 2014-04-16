@@ -6,6 +6,7 @@ import datetime
 import tarfile
 import zipfile
 import make_VFS
+import custom_minify
 
 # path of parent directory
 pdir = os.path.dirname(os.getcwd())
@@ -14,54 +15,6 @@ pdir = os.path.dirname(os.getcwd())
 version = [3,3,0,"alpha",0]
 implementation = [2, 1, 0, 'rc', 2]
 
-
-def custom_minify(src):
-    _res=''
-    pos = 0
-    while pos<len(src):
-        if src[pos] in ['"',"'"]:
-            end = src.find(src[pos],pos+1)
-            if end==-1:
-                line = src[:pos].count('\n')
-                raise SyntaxError('string not closed in %s line %s : %s' %(fname,line,src[pos:pos+20]))
-            _res += src[pos:end+1]
-            pos = end+1
-        elif src[pos]=='\r':
-            pos += 1
-        elif src[pos]==' ':
-            if _res and _res[-1] in '({=[)}];\n':
-                pos += 1
-                continue
-            _res += ' '
-            while pos<len(src) and src[pos]==' ':
-                pos+=1
-        elif src[pos] in '\r\n':
-            _res += src[pos]
-            while pos<len(src) and src[pos] in '\r\n ':
-                pos+=1
-        elif src[pos:pos+2]=='//':
-            end = src.find('\n',pos)
-            if end==-1:
-                break
-            pos = end
-        elif src[pos:pos+2]=='/*':
-            end = src.find('*/',pos)
-            if end==-1:
-                break
-            pos = end+2
-        elif src[pos] in '={[(' and _res and _res[-1]==' ':
-            _res = _res[:-1]+src[pos]
-            pos += 1
-        elif src[pos]==';' and pos<len(src)-1 and src[pos+1] in '\r\n':
-            pos +=1
-        else:
-            _res += src[pos]
-            pos += 1
-
-    while '\n\n' in _res:
-       _res = _res.replace('\n\n','\n')
-
-    return _res
 
 abs_path = lambda path:os.path.join(os.path.dirname(os.getcwd()),'src',path)
 
@@ -160,7 +113,7 @@ src_size = 0
 for fname in sources:
     src = open(abs_path(fname)+'.js').read()+'\n'
     src_size += len(src)
-    res+=custom_minify(src)
+    res+= custom_minify.javascript(src, fname)
 
 res = res.replace('context','C')
 
