@@ -6,6 +6,7 @@ import datetime
 import tarfile
 import zipfile
 import slimit
+import make_VFS
 
 # path of parent directory
 pdir = os.path.dirname(os.getcwd())
@@ -264,11 +265,9 @@ for arc,wfunc in (dist1,dist1.add),(dist2,dist2.add),(dist3,dist3.write):
 
 sys.path.append("scripts")
 
-try:
-  import make_VFS
-except ImportError:
-  print("Cannot find make_VFS, so we won't make py_VFS.js")
-  sys.exit()
+
+
+
 
 make_VFS.process(os.path.join(pdir,'src','py_VFS.js'))
 
