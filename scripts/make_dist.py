@@ -5,7 +5,6 @@ import re
 import datetime
 import tarfile
 import zipfile
-import slimit
 import make_VFS
 
 # path of parent directory
@@ -161,10 +160,7 @@ src_size = 0
 for fname in sources:
     src = open(abs_path(fname)+'.js').read()+'\n'
     src_size += len(src)
-    try:
-      res+=slimit.minify(src)
-    except:
-      res+=custom_minify(src)
+    res+=custom_minify(src)
 
 res = res.replace('context','C')
 
