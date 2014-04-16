@@ -1,9 +1,10 @@
 # script to compact all Brython scripts in a single one
-import tokenize
-import re
-import datetime
 import os
 import sys
+import re
+import datetime
+import tarfile
+import zipfile
 import slimit
 
 # path of parent directory
@@ -12,9 +13,6 @@ pdir = os.path.dirname(os.getcwd())
 # version info
 version = [3,3,0,"alpha",0]
 implementation = [2, 1, 0, 'rc', 2]
-
-
-
 
 
 def custom_minify(src):
@@ -163,7 +161,7 @@ for fname in sources:
     src = open(abs_path(fname)+'.js').read()+'\n'
     src_size += len(src)
     try:
-      res+=minify(src)
+      res+=slimit.minify(src)
     except:
       res+=custom_minify(src)
 
@@ -181,9 +179,6 @@ if implementation[3]=='rc':
     vname += 'rc%s' %implementation[4]
 
 # zip files
-import os
-import tarfile
-import zipfile
 
 dest_dir = os.path.join(pdir,'dist')
 if not os.path.exists(dest_dir):
@@ -243,14 +238,6 @@ dist1 = tarfile.open(dest_path+'.gz',mode='w:gz')
 dist2 = tarfile.open(dest_path+'.bz2',mode='w:bz2')
 dist3 = zipfile.ZipFile(dest_path+'.zip',mode='w',compression=zipfile.ZIP_DEFLATED)
 
-def is_valid(filename):
-    if filename.startswith('.'):
-        return False
-    if not filename.lower().endswith('.js'):
-        return False
-    return True
-
-
 for arc,wfunc in (dist1,dist1.add),(dist2,dist2.add),(dist3,dist3.write):
 
     for path in 'README.txt','LICENCE.txt':
@@ -274,7 +261,7 @@ for arc,wfunc in (dist1,dist1.add),(dist2,dist2.add),(dist3,dist3.write):
 
     arc.close()
 
-import sys
+
 sys.path.append("scripts")
 
 try:
