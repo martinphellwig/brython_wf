@@ -10,7 +10,7 @@ import custom_minify
 
 # path of parent directory
 pdir = os.path.dirname(os.getcwd())
-   
+    
 # version info
 version = [3,3,0,"alpha",0]
 implementation = [2, 1, 0, 'rc', 2]
@@ -47,7 +47,7 @@ def update_version_number(abs_path, now, implementation, version):
     out.write(']\n')
     out.close()
     
-update_version_number(abs_path, now, implementation, version)
+
 
 
 def create_stdlib_paths():
@@ -96,7 +96,7 @@ def create_stdlib_paths():
     
     print('static stdlib mapping ok')
 
-create_stdlib_paths()
+
 
 
 def create_py_loader(version, sources):
@@ -110,7 +110,7 @@ def create_py_loader(version, sources):
     out.write(loader_src)
     out.close()
 
-create_py_loader(version, sources)
+
 
 def create_brython(version, implementation, sources, abs_path):
     res = '// brython.js www.brython.info\n'
@@ -132,8 +132,6 @@ def create_brython(version, implementation, sources, abs_path):
     
     print('size : originals %s compact %s gain %.2f' %(src_size,len(res),100*(src_size-len(res))/src_size))
 
-create_brython(version, implementation, sources, abs_path)
-
 def is_valid(filename):
     if filename.startswith('.'):
         return False
@@ -142,7 +140,7 @@ def is_valid(filename):
             return False
     return True
 
-def create_archives():
+def create_archives(implementation, pdir):
     # version name
     vname = '.'.join(str(x) for x in implementation[:3])
     if implementation[3]=='rc':
@@ -224,10 +222,6 @@ def create_archives():
     
         arc.close()
 
-create_archives()
-
-sys.path.append("scripts")
-
 
 def create_py_vfs(pdir):
     make_VFS.process(os.path.join(pdir,'src','py_VFS.js'))
@@ -238,7 +232,6 @@ def create_py_vfs(pdir):
     out.write(open(os.path.join(pdir,'src','py_VFS.js')).read())
     out.close()
 
-create_py_vfs(pdir)
 
 
 def create_change_log(pdir, implementation):
@@ -254,4 +247,12 @@ def create_change_log(pdir, implementation):
     except:
         print("Warning - no changelog file")
 
+
+update_version_number(abs_path, now, implementation, version)
+create_stdlib_paths()
+create_py_loader(version, sources)
+create_brython(version, implementation, sources, abs_path)
+create_archives(implementation, pdir)
+sys.path.append("scripts")
+create_py_vfs(pdir)
 create_change_log(pdir, implementation)
