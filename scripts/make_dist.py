@@ -8,20 +8,6 @@ import zipfile
 import make_VFS
 import custom_minify
 
-# path of parent directory
-pdir = os.path.dirname(os.getcwd())
-    
-# version info
-version = [3,3,0,"alpha",0]
-implementation = [2, 1, 0, 'rc', 2]
-sources = ['brython_builtins','version_info','py2js','py_object','py_type',
-    'py_utils','py_builtin_functions','js_objects','stdlib_paths','py_import',
-    'py_float','py_int','py_complex','py_dict','py_list','py_string','py_set',
-    'py_dom']
-   
-   
-abs_path = lambda path:os.path.join(os.path.dirname(os.getcwd()),'src',path)
-now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
 def update_version_number(abs_path, now, implementation, version):    
     # update version number
@@ -99,7 +85,7 @@ def create_stdlib_paths():
 
 
 
-def create_py_loader(version, sources):
+def create_py_loader(version, sources, abs_path):
     # build brython.js from base Javascript files
     
     loader_src = open(abs_path('py_loader.js')).read()
@@ -140,7 +126,7 @@ def is_valid(filename):
             return False
     return True
 
-def create_archives(implementation, pdir):
+def create_archives(implementation, pdir, now):
     # version name
     vname = '.'.join(str(x) for x in implementation[:3])
     if implementation[3]=='rc':
@@ -234,7 +220,7 @@ def create_py_vfs(pdir):
 
 
 
-def create_change_log(pdir, implementation):
+def create_change_log(pdir, implementation, now):
     # changelog file
     try:
         _in = open(os.path.join(pdir,'dist','changelog.txt')).read()
@@ -248,11 +234,31 @@ def create_change_log(pdir, implementation):
         print("Warning - no changelog file")
 
 
-update_version_number(abs_path, now, implementation, version)
-create_stdlib_paths()
-create_py_loader(version, sources)
-create_brython(version, implementation, sources, abs_path)
-create_archives(implementation, pdir)
-sys.path.append("scripts")
-create_py_vfs(pdir)
-create_change_log(pdir, implementation)
+def main():
+    # path of parent directory
+    pdir = os.path.dirname(os.getcwd())
+        
+    # version info
+    version = [3,3,0,"alpha",0]
+    implementation = [2, 1, 0, 'rc', 2]
+    sources = ['brython_builtins','version_info','py2js','py_object','py_type',
+        'py_utils','py_builtin_functions','js_objects','stdlib_paths','py_import',
+        'py_float','py_int','py_complex','py_dict','py_list','py_string','py_set',
+        'py_dom']
+       
+       
+    abs_path = lambda path:os.path.join(os.path.dirname(os.getcwd()),'src',path)
+    now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+
+    
+    update_version_number(abs_path, now, implementation, version)
+    create_stdlib_paths()
+    create_py_loader(version, sources, abs_path)
+    create_brython(version, implementation, sources, abs_path)
+    create_archives(implementation, pdir, now)
+    sys.path.append("scripts")
+    create_py_vfs(pdir)
+    create_change_log(pdir, implementation, now)
+    
+if __name__ == '__main__':
+    main()
