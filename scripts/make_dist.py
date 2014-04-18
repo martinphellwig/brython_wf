@@ -2,6 +2,12 @@
 """
 Script to build the Brython Distribution
 """
+# The Brython version (i.e. this project)
+VERSION_BR = [2, 1, 0, 'rc', 2]
+
+# The version of the targeted Python language
+VERSION_PY = [3, 3, 0, "alpha", 0]
+
 import os
 import sys
 import re
@@ -11,13 +17,6 @@ import zipfile
 
 import make_VFS
 import custom_minify
-
-# The Brython version (i.e. this project)
-VERSION_BR = (2, 1, 0, 'rc', 2)
-
-# The version of the targeted Python language
-VERSION_PY = (3, 3, 0, "alpha", 0)
-
 
 # Anchor projects root folder two folders up relative from this file.
 _ROOT_FOLDER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -35,8 +34,8 @@ def write_js_version_info(target_dir):
     print('# Writing version_info.js ... ', end='')
     file_name = 'version_info.js'
     content = [
-        '__BRYTHON__.implementation = %s' % list(VERSION_BR),
-        '__BRYTHON__.version_info = %s' % list(VERSION_PY),
+        '__BRYTHON__.implementation = %s' % VERSION_BR,
+        '__BRYTHON__.version_info = %s' % VERSION_PY,
         '__BRYTHON__.builtin_module_names = ']
 
     # Collecting all modules
