@@ -1,7 +1,9 @@
 #! /usr/bin/env python
+
 """
 Script to build the Brython Distribution
 """
+
 # The Brython version (i.e. this project)
 VERSION_BR = [2, 1, 0, 'rc', 2]
 
@@ -286,13 +288,13 @@ def main():
 
     
     write_js_version_info(abs_path(''))
-#     create_stdlib_paths()
-#     create_py_loader(version, sources, abs_path)
-#     create_brython(version, implementation, sources, abs_path)
-#     create_archives(implementation, pdir, now)
-#     sys.path.append("scripts")
-#     create_py_vfs(pdir)
-#     create_change_log(pdir, implementation, now)
+    create_stdlib_paths()
+    create_py_loader(version, sources, abs_path)
+    create_brython(version, implementation, sources, abs_path)
+    create_archives(implementation, pdir, now)
+    sys.path.append("scripts")
+    create_py_vfs(pdir)
+    create_change_log(pdir, implementation, now)
     
 if __name__ == '__main__':
     main()
