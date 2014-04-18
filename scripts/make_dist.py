@@ -1,39 +1,74 @@
-# script to compact all Brython scripts in a single one
+#! /usr/bin/env python
+"""
+Script to build the Brython Distribution
+"""
 import os
 import sys
 import re
 import datetime
 import tarfile
 import zipfile
+
 import make_VFS
 import custom_minify
 
+# The Brython version (i.e. this project)
+VERSION_BR = (2, 1, 0, 'rc', 2)
 
-def update_version_number(abs_path, now, implementation, version):    
-    # update version number
-    out = open(abs_path('version_info.js'),'w')
-    #implementation[2] = now
-    out.write('__BRYTHON__.implementation = %s\n' % implementation)
-    out.write('__BRYTHON__.version_info = %s\n' %str(version))
-    # builtin module names = list of scripts in src/libs
-    out.write('__BRYTHON__.builtin_module_names = ["posix",')
-    out.write(',\n    '.join(['"%s"' %fname.split('.')[0]
-         for fname in os.listdir(abs_path('libs'))]))
-    # add Python scripts in Lib that start with _ and are not found in CPython Lib
-    #using sys.executable to find stdlib dir doesn't work under linux..
-    stdlib_path = os.path.dirname(os.__file__)
-    #stdlib_path = os.path.join(os.path.dirname(sys.executable),'Lib')
-    stdlib_mods = [f for f in os.listdir(stdlib_path) if f.startswith('_')]
-    # Pierre, I think we need the os.listdir on the line below or 
-    # brython_modes = []
-    brython_mods = [f for f in os.listdir(abs_path('Lib'))
-        if f.startswith('_') and f!='__pycache__']
-    brython_py_builtins = [os.path.splitext(x)[0] for x in brython_mods if not x in stdlib_mods]
-    out.write(',\n    '+',\n    '.join(['"%s"' %f for f in brython_py_builtins]))
-    out.write(']\n')
-    out.close()
-    
+# The version of the targeted Python language
+VERSION_PY = (3, 3, 0, "alpha", 0)
 
+
+# Anchor projects root folder two folders up relative from this file.
+_ROOT_FOLDER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# The 'Lib' and 'libs' folder are in the 'src' folder under the root folder.
+_DIR_SRC = os.path.join(_ROOT_FOLDER, 'src')
+_DIR_LIB = os.path.join(_DIR_SRC, 'Lib')
+_DIR_LIBS = os.path.join(_DIR_SRC, 'libs')
+
+
+def write_js_version_info(target_dir):
+    """
+    Write implementation version, language version and built-in module names.
+    """
+    print('# Writing version_info.js ... ', end='')
+    file_name = 'version_info.js'
+    content = [
+        '__BRYTHON__.implementation = %s' % list(VERSION_BR),
+        '__BRYTHON__.version_info = %s' % list(VERSION_PY),
+        '__BRYTHON__.builtin_module_names = ']
+
+    # Collecting all modules
+    modules = ['posix']
+
+    # builtin module names, i.e. list of scripts in libs
+    for module in os.listdir(path=_DIR_LIBS):
+        module = module.split('.')[0]
+        modules.append(module)
+
+    # Add all modules in Lib folder that start with an underscore and do not
+    # exists in sys.builtin_module_names or are a '__pycache__'
+    for module in os.listdir(path=_DIR_LIB):
+        module = module.split('.')[0]
+        if module.startswith('_') and module.lower() != '__pycache__':
+            if module not in sys.builtin_module_names:
+                modules.append(module)
+
+    modules.sort()
+    content.append('[')
+    for module in modules:
+        content.append('"' + module + '",')
+    content.append(']')
+
+    content = '\n'.join(content)
+
+    # Writing the actual file
+    file_path = os.path.join(target_dir, file_name)
+    with open(file_path, 'w') as file_write:
+        file_write.write(content)
+
+    print('done')
 
 
 def create_stdlib_paths():
@@ -251,14 +286,14 @@ def main():
     now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
     
-    update_version_number(abs_path, now, implementation, version)
-    create_stdlib_paths()
-    create_py_loader(version, sources, abs_path)
-    create_brython(version, implementation, sources, abs_path)
-    create_archives(implementation, pdir, now)
-    sys.path.append("scripts")
-    create_py_vfs(pdir)
-    create_change_log(pdir, implementation, now)
+    write_js_version_info(abs_path(''))
+#     create_stdlib_paths()
+#     create_py_loader(version, sources, abs_path)
+#     create_brython(version, implementation, sources, abs_path)
+#     create_archives(implementation, pdir, now)
+#     sys.path.append("scripts")
+#     create_py_vfs(pdir)
+#     create_change_log(pdir, implementation, now)
     
 if __name__ == '__main__':
     main()
